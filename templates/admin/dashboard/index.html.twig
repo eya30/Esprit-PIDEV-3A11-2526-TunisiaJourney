@@ -1,0 +1,375 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Tableau de bord{% endblock %}
+{% block page_title %}Tableau de bord{% endblock %}
+
+{% block body %}
+<!-- Statistiques -->
+<div class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-number">{{ stats.voyages|default(0) }}</div>
+                    <div class="stat-label">Voyages</div>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-plane"></i>
+                </div>
+            </div>
+            <div class="stat-trend">
+                <span class="trend-up"><i class="fas fa-arrow-up"></i> +{{ stats.voyages|default(0) > 0 ? (stats.voyages|default(0) / 10)|round : 12 }}%</span>
+                <span class="trend-text">depuis le mois dernier</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-number">{{ stats.programmes|default(0) }}</div>
+                    <div class="stat-label">Programmes</div>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+            </div>
+            <div class="stat-trend">
+                <span class="trend-up"><i class="fas fa-arrow-up"></i> +{{ stats.programmes|default(0) > 0 ? (stats.programmes|default(0) / 10)|round : 8 }}%</span>
+                <span class="trend-text">nouveaux programmes</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-number">{{ stats.reservations|default(0) }}</div>
+                    <div class="stat-label">Réservations</div>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-ticket-alt"></i>
+                </div>
+            </div>
+            <div class="stat-trend">
+                <span class="trend-up"><i class="fas fa-arrow-up"></i> +{{ stats.reservations|default(0) > 0 ? (stats.reservations|default(0) / 10)|round : 23 }}%</span>
+                <span class="trend-text">ce mois</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-number">{{ stats.clients|default(0) }}</div>
+                    <div class="stat-label">Clients</div>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+            </div>
+            <div class="stat-trend">
+                <span class="trend-up"><i class="fas fa-arrow-up"></i> +{{ stats.clients|default(0) > 0 ? (stats.clients|default(0) / 10)|round : 15 }}%</span>
+                <span class="trend-text">nouveaux clients</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Graphique en camembert et Destinations Populaires -->
+<div class="row g-4 mb-5">
+    <div class="col-md-5">
+        <div class="card-dashboard">
+            <div class="card-header-dashboard">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i> Programmes les plus réservés</h5>
+            </div>
+            <div class="card-body-dashboard" style="text-align: center;">
+                <div style="max-width: 280px; margin: 0 auto;">
+                    <canvas id="popularProgrammesPieChart" height="250"></canvas>
+                </div>
+                <div class="mt-3 text-muted small">
+                    <i class="fas fa-info-circle"></i> Répartition des réservations par programme
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div class="card-dashboard">
+            <div class="card-header-dashboard">
+                <h5 class="mb-0"><i class="fas fa-star me-2"></i> Destinations populaires</h5>
+            </div>
+            <div class="card-body-dashboard">
+                <div class="destination-list">
+                    {% for destination in destinations_populaires|default([]) %}
+                        <div class="destination-item">
+                            <div class="destination-info">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>{{ destination.nom }}</span>
+                            </div>
+                            <div class="destination-percent">{{ destination.pourcentage }}%</div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {{ destination.pourcentage }}%"></div>
+                        </div>
+                    {% else %}
+                        <div class="destination-item">
+                            <div class="destination-info">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Sidi Bou Said</span>
+                            </div>
+                            <div class="destination-percent">78%</div>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 78%"></div></div>
+                        <div class="destination-item">
+                            <div class="destination-info">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Djerba</span>
+                            </div>
+                            <div class="destination-percent">65%</div>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 65%"></div></div>
+                        <div class="destination-item">
+                            <div class="destination-info">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Sahara</span>
+                            </div>
+                            <div class="destination-percent">52%</div>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 52%"></div></div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Évolution des réservations -->
+<div class="row g-4 mb-5">
+    <div class="col-md-12">
+        <div class="card-dashboard">
+            <div class="card-header-dashboard">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i> Évolution des réservations</h5>
+                <select class="chart-select" id="chartPeriod" style="padding: 6px 12px; border: 1px solid #E8DFD1; border-radius: 10px; background: white;">
+                    <option value="week">Cette semaine</option>
+                    <option value="month">Ce mois</option>
+                    <option value="year">Cette année</option>
+                </select>
+            </div>
+            <div class="card-body-dashboard">
+                <canvas id="reservationsChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Derniers voyages et réservations -->
+<div class="row g-4">
+    <div class="col-md-7">
+        <div class="card-dashboard">
+            <div class="card-header-dashboard">
+                <h5 class="mb-0"><i class="fas fa-clock me-2"></i> Derniers voyages</h5>
+                <a href="{{ path('admin_voyage_index') }}" class="btn-link">Voir tous <i class="fas fa-arrow-right ms-1"></i></a>
+            </div>
+            <div class="table-responsive">
+                <table class="table admin-table mb-0" style="border: none;">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Prix</th>
+                            <th>Capacité</th>
+                            <th>Date</th>
+                        </thead>
+                    <tbody>
+                        {% for voyage in derniers_voyages|default([]) %}
+                         <tr>
+                            <td><strong>{{ voyage.nom }}</strong></td>
+                            <td class="price">{{ voyage.prix|number_format(0, ',', ' ') }} DT</td>
+                            <td>{{ voyage.capacite }} pers</td>
+                            <td>{{ voyage.dateCreation|date('d/m/Y') }}</td>
+                         </tr>
+                        {% else %}
+                         <tr>
+                            <td colspan="4" class="text-center py-4 text-muted">Aucun voyage</td>
+                         </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <div class="card-dashboard">
+            <div class="card-header-dashboard">
+                <h5 class="mb-0"><i class="fas fa-ticket-alt me-2"></i> Dernières réservations</h5>
+                <a href="{{ path('admin_reservation_index') }}" class="btn-link">Voir tous <i class="fas fa-arrow-right ms-1"></i></a>
+            </div>
+            <div class="table-responsive">
+                <table class="table admin-table mb-0" style="border: none;">
+                    <thead>
+                         <tr>
+                            <th>Client</th>
+                            <th>Total</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reservation in dernieres_reservations|default([]) %}
+                         <tr>
+                            <td>{{ reservation.prenom }} {{ reservation.nom }}</td>
+                            <td class="price">{{ reservation.prixProg|number_format(2, ',', ' ') }} DT</td>
+                            <td>
+                                <span class="badge-status {% if reservation.statutPaiement == 'payé' %}badge-success{% else %}badge-pending{% endif %}">
+                                    {{ reservation.statutPaiement|default('En attente') }}
+                                </span>
+                            </td>
+                         </tr>
+                        {% else %}
+                         <tr>
+                            <td colspan="3" class="text-center py-4 text-muted">Aucune réservation</td>
+                         </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Données pour le graphique en camembert (programmes les plus réservés)
+    const pieLabels = {{ pie_labels|raw }};
+    const pieData = {{ pie_data|raw }};
+    const pieColors = {{ pie_colors|raw }};
+    
+    // Créer le graphique en camembert (plus petit)
+    if (document.getElementById('popularProgrammesPieChart')) {
+        const pieCtx = document.getElementById('popularProgrammesPieChart').getContext('2d');
+        new Chart(pieCtx, {
+            type: 'pie',
+            data: {
+                labels: pieLabels,
+                datasets: [{
+                    data: pieData,
+                    backgroundColor: pieColors,
+                    borderWidth: 0,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            font: {
+                                size: 10
+                            },
+                            padding: 8,
+                            usePointStyle: true,
+                            boxWidth: 8,
+                            generateLabels: function(chart) {
+                                const data = chart.data;
+                                if (data.labels.length && data.datasets.length) {
+                                    return data.labels.map((label, i) => {
+                                        const value = data.datasets[0].data[i];
+                                        const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                        const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                        return {
+                                            text: `${label} (${percentage}%)`,
+                                            fillStyle: data.datasets[0].backgroundColor[i],
+                                            hidden: false,
+                                            index: i
+                                        };
+                                    });
+                                }
+                                return [];
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                return `${label}: ${value} réservation(s) (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Données pour le graphique linéaire
+    const reservationsData = {
+        week: {{ stats_reservations_week|raw }},
+        month: [{{ stats_reservations_month|default('[45,52,48,60,55,70,65,72,68,80,85,78,90,88,95,92,100,98,105,110,108,115,120,118,125,130,128,135,140,138]')|raw }}],
+        year: [{{ stats_reservations_year|default('[120,145,168,190,210,245,278,310,345,380,420,450]')|raw }}]
+    };
+    
+    const labels = {
+        week: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+        month: Array.from({length: 30}, (_, i) => i + 1),
+        year: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']
+    };
+    
+    let lineChart;
+    
+    function initLineChart() {
+        const ctx = document.getElementById('reservationsChart').getContext('2d');
+        lineChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels.week,
+                datasets: [{
+                    label: 'Réservations',
+                    data: reservationsData.week,
+                    borderColor: '#1B2A4A',
+                    backgroundColor: 'rgba(27,42,74,0.05)',
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#1B2A4A',
+                    pointBorderColor: '#fff',
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        grid: { color: '#F0E8DD' },
+                        title: { display: true, text: 'Nombre de réservations' }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+    
+    function updateChart(period) {
+        lineChart.data.labels = labels[period];
+        lineChart.data.datasets[0].data = reservationsData[period];
+        lineChart.update();
+    }
+    
+    if (document.getElementById('reservationsChart')) {
+        initLineChart();
+        
+        document.getElementById('chartPeriod')?.addEventListener('change', function(e) {
+            updateChart(e.target.value);
+        });
+    }
+</script>
+{% endblock %}

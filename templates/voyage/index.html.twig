@@ -1,0 +1,952 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TunisiaJourney - Découvrez la Tunisie{% endblock %}
+
+{% block stylesheets %}
+<style>
+    :root {
+        --tunisia-red: #E31B23;
+        --tunisia-dark-red: #C41E3A;
+        --tunisia-orange: #FF6B35;
+        --tunisia-gold: #FFD700;
+        --tunisia-blue: #0054A6;
+        --tunisia-sand: #FDF5E6;
+        --tunisia-white: #FFFFFF;
+        --tunisia-cream: #FEF9E6;
+        --tunisia-soft: #F5CAC3;
+        --dark-gray: #2C3E50;
+    }
+
+    /* Hero Section */
+    .hero {
+        position: relative;
+        height: 70vh;
+        min-height: 500px;
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: white;
+        overflow: hidden;
+    }
+
+    .hero-bg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        z-index: 1;
+    }
+
+    .hero::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.3) 100%);
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 3;
+        max-width: 800px;
+        padding: 3rem;
+        animation: fadeInUp 1.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(50px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 4rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-shadow: 3px 3px 12px rgba(0,0,0,0.5);
+        color: #F5CAC3;
+        letter-spacing: 2px;
+    }
+
+    .hero p {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        font-weight: 300;
+        line-height: 1.8;
+        color: rgba(255,255,255,0.95);
+    }
+
+    .section-title {
+        text-align: center;
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: var(--tunisia-red);
+        margin-bottom: 1rem;
+        position: relative;
+    }
+
+    .section-title:after {
+        content: '✦ ✦ ✦';
+        display: block;
+        color: #F5CAC3;
+        font-size: 1.3rem;
+        margin-top: 0.8rem;
+        letter-spacing: 12px;
+    }
+
+    .section-subtitle {
+        text-align: center;
+        color: var(--dark-gray);
+        font-size: 1rem;
+        margin-bottom: 2.5rem;
+        font-style: italic;
+        opacity: 0.8;
+    }
+
+    /* Filters Bar */
+    .filters-bar {
+        background: white;
+        padding: 1.5rem 2rem;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        margin-bottom: 3rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filter-group label {
+        font-weight: 500;
+        color: var(--dark-gray);
+        font-size: 0.9rem;
+    }
+
+    .filter-select {
+        padding: 10px 20px;
+        border: 2px solid #F5CAC3;
+        border-radius: 25px;
+        background: white;
+        font-size: 0.9rem;
+        color: var(--dark-gray);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 150px;
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--tunisia-red);
+        box-shadow: 0 0 0 3px rgba(227,27,35,0.1);
+    }
+
+    .search-input {
+        padding: 10px 20px;
+        border: 2px solid #F5CAC3;
+        border-radius: 25px;
+        background: white;
+        font-size: 0.9rem;
+        width: 250px;
+        transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--tunisia-red);
+        box-shadow: 0 0 0 3px rgba(227,27,35,0.1);
+        width: 280px;
+    }
+
+    .btn-filter {
+        background: linear-gradient(135deg, var(--tunisia-red), #F5CAC3);
+        color: white;
+        padding: 10px 25px;
+        border-radius: 25px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(227,27,35,0.4);
+    }
+
+    /* Cards - Taille uniforme */
+    .card-custom {
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        transition: all 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        margin-bottom: 30px;
+        border: none;
+        position: relative;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card-custom:hover {
+        transform: translateY(-12px);
+        box-shadow: 0 25px 50px rgba(227,27,35,0.25);
+    }
+
+    .card-img {
+        height: 250px;
+        overflow: hidden;
+        position: relative;
+        flex-shrink: 0;
+    }
+
+    .card-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: linear-gradient(135deg, var(--tunisia-red), #F5CAC3);
+        color: white;
+        padding: 6px 15px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 0.7rem;
+        z-index: 2;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    }
+
+    .wishlist-star {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        z-index: 10;
+        cursor: pointer;
+        font-size: 28px;
+        color: #ccc;
+        transition: all 0.3s ease;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        background: rgba(0,0,0,0.3);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .wishlist-star:hover {
+        transform: scale(1.1);
+        background: rgba(0,0,0,0.5);
+    }
+
+    .wishlist-star.active {
+        color: #FFD700;
+    }
+
+    .card-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.7s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    }
+
+    .card-custom:hover .card-img img {
+        transform: scale(1.08);
+    }
+
+    .card-content {
+        padding: 1.5rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--tunisia-red);
+        margin-bottom: 0.5rem;
+        min-height: 60px;
+    }
+
+    .card-location {
+        color: var(--tunisia-orange);
+        font-size: 0.85rem;
+        margin-bottom: 0.8rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .card-desc {
+        color: #6c757d;
+        line-height: 1.5;
+        margin-bottom: 1rem;
+        font-size: 0.85rem;
+        flex: 1;
+    }
+
+    .card-price {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: var(--tunisia-red);
+        margin-bottom: 1rem;
+    }
+
+    .card-price span {
+        font-size: 0.8rem;
+        font-weight: 400;
+        color: #6c757d;
+    }
+
+    .card-meta {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        font-size: 0.75rem;
+        color: #6c757d;
+        flex-wrap: wrap;
+    }
+
+    .card-meta i {
+        color: var(--tunisia-orange);
+        margin-right: 3px;
+        width: 14px;
+    }
+
+    /* Boutons améliorés */
+    .button-group {
+        display: flex;
+        gap: 12px;
+        margin-top: auto;
+    }
+
+    .btn-details {
+        flex: 1;
+        background: transparent;
+        border: 2px solid var(--tunisia-red);
+        color: var(--tunisia-red);
+        padding: 10px 0;
+        border-radius: 40px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        transition: all 0.3s ease;
+        font-size: 0.8rem;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+
+    .btn-details::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 0%;
+        height: 100%;
+        background: var(--tunisia-red);
+        transition: all 0.3s ease;
+        z-index: -1;
+    }
+
+    .btn-details:hover::before {
+        width: 100%;
+    }
+
+    .btn-details:hover {
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(227,27,35,0.3);
+    }
+
+    .btn-programmes {
+        flex: 1;
+        background: linear-gradient(135deg, var(--tunisia-red), var(--tunisia-orange));
+        color: white;
+        border: none;
+        padding: 10px 0;
+        border-radius: 40px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        transition: all 0.3s ease;
+        font-size: 0.8rem;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+
+    .btn-programmes::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(135deg, var(--tunisia-orange), var(--tunisia-red));
+        transition: all 0.3s ease;
+        z-index: -1;
+    }
+
+    .btn-programmes:hover::before {
+        width: 100%;
+    }
+
+    .btn-programmes:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(227,27,35,0.4);
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 3rem;
+    }
+
+    .pagination a, .pagination span {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: white;
+        color: var(--dark-gray);
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    .pagination a:hover, .pagination .active {
+        background: linear-gradient(135deg, var(--tunisia-red), #F5CAC3);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    /* Wishlist Sidebar */
+    .wishlist-sidebar {
+        position: fixed;
+        top: 0;
+        right: -450px;
+        width: 450px;
+        height: 100vh;
+        background: white;
+        box-shadow: -5px 0 30px rgba(0,0,0,0.1);
+        z-index: 1060;
+        transition: right 0.3s ease;
+        overflow-y: auto;
+        padding: 1.5rem;
+    }
+
+    .wishlist-sidebar.open {
+        right: 0;
+    }
+
+    .wishlist-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 1055;
+        display: none;
+    }
+
+    .wishlist-overlay.active {
+        display: block;
+    }
+
+    .wishlist-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 1rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 2px solid #F0E8DD;
+    }
+
+    .wishlist-header h4 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.5rem;
+        color: var(--tunisia-red);
+        margin: 0;
+    }
+
+    .close-wishlist {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #9CA3AF;
+        transition: all 0.2s;
+    }
+
+    .close-wishlist:hover {
+        color: var(--tunisia-red);
+        transform: rotate(90deg);
+    }
+
+    .wishlist-item {
+        display: flex;
+        gap: 1rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background: #FEF9F0;
+        border-radius: 16px;
+        border: 1px solid #F0E8DD;
+        transition: all 0.2s;
+        position: relative;
+    }
+
+    .wishlist-item:hover {
+        transform: translateX(-5px);
+        border-color: var(--tunisia-red);
+    }
+
+    .wishlist-item-img {
+        width: 80px;
+        height: 80px;
+        border-radius: 12px;
+        object-fit: cover;
+    }
+
+    .wishlist-item-info {
+        flex: 1;
+    }
+
+    .wishlist-item-title {
+        font-weight: 700;
+        color: var(--tunisia-red);
+        margin-bottom: 0.3rem;
+    }
+
+    .wishlist-item-price {
+        color: var(--tunisia-orange);
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .wishlist-item-remove {
+        position: absolute;
+        top: 5px;
+        right: 10px;
+        background: none;
+        border: none;
+        color: #EF4444;
+        cursor: pointer;
+        font-size: 1.2rem;
+    }
+
+    .empty-wishlist {
+        text-align: center;
+        padding: 2rem;
+        color: #9CA3AF;
+    }
+
+    .wishlist-icon {
+        cursor: pointer;
+        margin-right: 2rem;
+        transition: all 0.3s ease;
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: white;
+        padding: 8px 16px;
+        border-radius: 30px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .wishlist-icon i {
+        font-size: 1.2rem;
+        color: var(--tunisia-red);
+    }
+
+    .wishlist-icon span {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--dark-gray);
+    }
+
+    .wishlist-icon:hover {
+        transform: scale(1.02);
+        background: #FFF9F0;
+    }
+
+    .wishlist-count {
+        background: #E31B23;
+        color: white;
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 50%;
+        margin-left: 5px;
+    }
+
+    /* Message aucun résultat */
+    .no-results {
+        text-align: center;
+        padding: 4rem;
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #F0E8DD;
+    }
+
+    .no-results i {
+        font-size: 3rem;
+        color: #E8DFD1;
+        margin-bottom: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .hero h1 { font-size: 2.5rem; }
+        .hero-content { padding: 2rem; }
+        .section-title { font-size: 2rem; }
+        .filters-bar { flex-direction: column; }
+        .search-input { width: 100%; }
+        .card-img { height: 200px; }
+        .button-group { flex-direction: column; gap: 8px; }
+        .wishlist-sidebar { width: 100%; right: -100%; }
+        .card-title { min-height: auto; font-size: 1.2rem; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<section class="hero">
+    <img class="hero-bg" src="https://switchmed.eu/wp-content/uploads/2020/04/tunisia-1.jpg" alt="Voyage en Tunisie">
+    <div class="hero-content">
+        <h1>Nos Voyages en Tunisie</h1>
+        <p>Découvrez nos séjours exclusifs, conçus pour vous faire vivre la magie de la Tunisie.</p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-end mb-3">
+            <div class="wishlist-icon" id="wishlistIcon">
+                <i class="fas fa-heart"></i>
+                <span>Ma Wishlist</span>
+                <span class="wishlist-count" id="wishlistCount">0</span>
+            </div>
+        </div>
+
+        <div class="filters-bar">
+            <div class="filter-group">
+                <label><i class="fas fa-search me-1"></i></label>
+                <input type="text" class="search-input" id="searchInput" placeholder="Rechercher un voyage...">
+            </div>
+            <div class="filter-group">
+                <label for="duration">Durée :</label>
+                <select class="filter-select" id="durationFilter">
+                    <option value="all">Toutes les durées</option>
+                    <option value="3">3 jours</option>
+                    <option value="5">5 jours</option>
+                    <option value="7">7 jours</option>
+                    <option value="10">10 jours et plus</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="budget">Budget :</label>
+                <select class="filter-select" id="budgetFilter">
+                    <option value="all">Tous les budgets</option>
+                    <option value="budget">Économique (moins de 500 DT)</option>
+                    <option value="medium">Confort (500 - 1000 DT)</option>
+                    <option value="luxury">Luxe (1000 DT et plus)</option>
+                </select>
+            </div>
+            <button class="btn-filter" id="filterBtn"><i class="fas fa-filter me-1"></i> Filtrer</button>
+        </div>
+
+        <h2 class="section-title">Séjours Disponibles</h2>
+        <p class="section-subtitle">Choisissez votre prochaine aventure tunisienne</p>
+
+        <div class="row" id="voyagesGrid">
+            {% for voyage in voyages %}
+                <div class="col-md-6 col-lg-4 voyage-item mb-4" data-id="{{ voyage.idV }}" data-name="{{ voyage.nom|lower }}" data-price="{{ voyage.prix }}" data-duree="{{ voyage.duree|default(5) }}" data-image="{{ voyage.image ? asset('uploads/voyages/' ~ voyage.image) : 'https://images.pexels.com/photos/1618750/pexels-photo-1618750.jpeg?auto=compress&cs=tinysrgb&w=800' }}">
+                    <div class="card-custom h-100">
+                        <div class="card-img">
+                            <img src="{{ voyage.image ? asset('uploads/voyages/' ~ voyage.image) : 'https://images.pexels.com/photos/1618750/pexels-photo-1618750.jpeg?auto=compress&cs=tinysrgb&w=800' }}" alt="{{ voyage.nom }}" loading="lazy">
+                            <span class="card-badge">À découvrir</span>
+                            <div class="wishlist-star" data-id="{{ voyage.idV }}">
+                                <i class="far fa-star"></i>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">{{ voyage.nom }}</h3>
+                            <p class="card-location"><i class="fas fa-map-marker-alt"></i> {{ voyage.lieu|default('Tunisie') }}</p>
+                            <p class="card-desc">{{ voyage.description|slice(0, 100) }}{% if voyage.description|length > 100 %}...{% endif %}</p>
+                            <div class="card-meta">
+                                <span><i class="fas fa-user"></i> {{ voyage.capacite|default('2-8') }} pers</span>
+                                <span><i class="fas fa-clock"></i> {{ voyage.heure|date('H:i') }}</span>
+                                <span><i class="fas fa-calendar-alt"></i> {{ voyage.duree|default(5) }} jours</span>
+                            </div>
+                            <div class="card-price">{{ voyage.prix|number_format(0, ',', ' ') }} TND <span>/personne</span></div>
+                            <div class="button-group">
+                                <a href="{{ path('app_voyage_show', {'idV': voyage.idV}) }}" class="btn-details">
+                                    <i class="fas fa-info-circle me-1"></i> Détails
+                                </a>
+                                <a href="{{ path('app_voyage_programmes', {'idV': voyage.idV}) }}" class="btn-programmes">
+                                    <i class="fas fa-calendar-alt me-1"></i> Programmes
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="col-12 text-center py-5">
+                    <div class="no-results">
+                        <i class="fas fa-suitcase"></i>
+                        <p class="text-muted mb-0">Aucun voyage trouvé.</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="pagination">
+            <a href="#"><i class="fas fa-chevron-left"></i></a>
+            <span class="active">1</span>
+            <a href="#">2</a>
+            <a href="#">3</a>
+            <a href="#"><i class="fas fa-chevron-right"></i></a>
+        </div>
+    </div>
+</section>
+
+<div class="wishlist-overlay" id="wishlistOverlay"></div>
+<div class="wishlist-sidebar" id="wishlistSidebar">
+    <div class="wishlist-header">
+        <h4><i class="fas fa-heart me-2"></i> Ma Wishlist</h4>
+        <button class="close-wishlist" id="closeWishlistBtn">&times;</button>
+    </div>
+    <div id="wishlistList">
+        <div class="empty-wishlist">
+            <i class="fas fa-heart fa-3x mb-2"></i>
+            <p>Votre wishlist est vide</p>
+            <p class="small">Ajoutez vos voyages préférés avec l'étoile ⭐</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    // Wishlist
+    let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+    
+    function saveWishlist() {
+        localStorage.setItem('wishlist', JSON.stringify(wishlist));
+        updateWishlistUI();
+        updateWishlistSidebar();
+        updateWishlistCount();
+    }
+    
+    function updateWishlistCount() {
+        const count = wishlist.length;
+        const countElement = document.getElementById('wishlistCount');
+        if (countElement) countElement.textContent = count;
+    }
+    
+    function updateWishlistUI() {
+        document.querySelectorAll('.wishlist-star').forEach(star => {
+            const id = parseInt(star.dataset.id);
+            const icon = star.querySelector('i');
+            if (wishlist.includes(id)) {
+                icon.className = 'fas fa-star';
+                star.classList.add('active');
+            } else {
+                icon.className = 'far fa-star';
+                star.classList.remove('active');
+            }
+        });
+        updateWishlistCount();
+    }
+    
+    function updateWishlistSidebar() {
+        const container = document.getElementById('wishlistList');
+        if (!container) return;
+        
+        if (wishlist.length === 0) {
+            container.innerHTML = `
+                <div class="empty-wishlist">
+                    <i class="fas fa-heart fa-3x mb-2"></i>
+                    <p>Votre wishlist est vide</p>
+                    <p class="small">Ajoutez vos voyages préférés avec l'étoile ⭐</p>
+                </div>
+            `;
+            return;
+        }
+        
+        let html = '';
+        wishlist.forEach(id => {
+            const voyageElement = document.querySelector(`.voyage-item[data-id="${id}"]`);
+            if (voyageElement) {
+                const name = voyageElement.querySelector('.card-title')?.textContent || '';
+                const price = voyageElement.querySelector('.card-price')?.textContent || '';
+                const image = voyageElement.dataset.image || '';
+                html += `
+                    <div class="wishlist-item" data-id="${id}">
+                        <img src="${image}" class="wishlist-item-img" alt="${name}">
+                        <div class="wishlist-item-info">
+                            <div class="wishlist-item-title">${name}</div>
+                            <div class="wishlist-item-price">${price}</div>
+                        </div>
+                        <button class="wishlist-item-remove" onclick="removeFromWishlist(${id})">
+                            <i class="fas fa-times-circle"></i>
+                        </button>
+                    </div>
+                `;
+            }
+        });
+        container.innerHTML = html;
+    }
+    
+    function toggleWishlist(id) {
+        const index = wishlist.indexOf(id);
+        if (index === -1) {
+            wishlist.push(id);
+        } else {
+            wishlist.splice(index, 1);
+        }
+        saveWishlist();
+    }
+    
+    function removeFromWishlist(id) {
+        const index = wishlist.indexOf(id);
+        if (index !== -1) {
+            wishlist.splice(index, 1);
+            saveWishlist();
+            updateWishlistUI();
+        }
+    }
+    
+    document.querySelectorAll('.wishlist-star').forEach(star => {
+        star.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const id = parseInt(this.dataset.id);
+            toggleWishlist(id);
+        });
+    });
+    
+    updateWishlistUI();
+    updateWishlistSidebar();
+    
+    // Sidebar
+    const wishlistIcon = document.getElementById('wishlistIcon');
+    const wishlistSidebar = document.getElementById('wishlistSidebar');
+    const wishlistOverlay = document.getElementById('wishlistOverlay');
+    const closeWishlistBtn = document.getElementById('closeWishlistBtn');
+    
+    function openWishlist() {
+        if (wishlistSidebar && wishlistOverlay) {
+            wishlistSidebar.classList.add('open');
+            wishlistOverlay.classList.add('active');
+            updateWishlistSidebar();
+        }
+    }
+    
+    function closeWishlist() {
+        if (wishlistSidebar && wishlistOverlay) {
+            wishlistSidebar.classList.remove('open');
+            wishlistOverlay.classList.remove('active');
+        }
+    }
+    
+    if (wishlistIcon) wishlistIcon.addEventListener('click', openWishlist);
+    if (closeWishlistBtn) closeWishlistBtn.addEventListener('click', closeWishlist);
+    if (wishlistOverlay) wishlistOverlay.addEventListener('click', closeWishlist);
+    
+    // FILTRAGE
+    const filterBtn = document.getElementById('filterBtn');
+    const searchInput = document.getElementById('searchInput');
+    const durationFilter = document.getElementById('durationFilter');
+    const budgetFilter = document.getElementById('budgetFilter');
+    
+    function applyFilters() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const duration = durationFilter.value;
+        const budget = budgetFilter.value;
+        
+        let visibleCount = 0;
+        
+        document.querySelectorAll('.voyage-item').forEach(item => {
+            const name = item.dataset.name || '';
+            const price = parseInt(item.dataset.price) || 0;
+            const duree = parseInt(item.dataset.duree) || 0;
+            
+            let show = true;
+            
+            // Filtre par recherche
+            if (searchTerm && !name.includes(searchTerm)) {
+                show = false;
+            }
+            
+            // Filtre par durée
+            if (show && duration !== 'all') {
+                if (duration === '10') {
+                    if (duree < 10) show = false;
+                } else {
+                    if (duree != duration) show = false;
+                }
+            }
+            
+            // Filtre par budget
+            if (show && budget !== 'all') {
+                if (budget === 'budget' && price >= 500) show = false;
+                if (budget === 'medium' && (price < 500 || price > 1000)) show = false;
+                if (budget === 'luxury' && price < 1000) show = false;
+            }
+            
+            item.style.display = show ? '' : 'none';
+            if (show) visibleCount++;
+        });
+        
+        // Afficher message si aucun résultat
+        const existingMsg = document.getElementById('noResultMsg');
+        if (visibleCount === 0) {
+            if (!existingMsg) {
+                const grid = document.getElementById('voyagesGrid');
+                const msg = document.createElement('div');
+                msg.id = 'noResultMsg';
+                msg.className = 'col-12';
+                msg.innerHTML = `
+                    <div class="no-results">
+                        <i class="fas fa-search"></i>
+                        <p class="text-muted mb-0">Aucun voyage ne correspond à vos critères</p>
+                    </div>
+                `;
+                grid.appendChild(msg);
+            }
+        } else if (existingMsg) {
+            existingMsg.remove();
+        }
+    }
+    
+    if (filterBtn) filterBtn.addEventListener('click', applyFilters);
+    if (searchInput) searchInput.addEventListener('keyup', applyFilters);
+    if (durationFilter) durationFilter.addEventListener('change', applyFilters);
+    if (budgetFilter) budgetFilter.addEventListener('change', applyFilters);
+    
+    // Appliquer les filtres au chargement
+    applyFilters();
+</script>
+{% endblock %}
