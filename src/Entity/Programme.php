@@ -1,0 +1,154 @@
+<?php
+
+namespace App\Entity;
+
+use App\Repository\ProgrammeRepository;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity(repositoryClass: ProgrammeRepository::class)]
+#[ORM\Table(name: 'programmes')]
+class Programme
+{
+    #[ORM\Id]
+    #[ORM\Column(name: "idProg", type: "string", length: 50)]
+    private ?string $idProg = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $nom = null;
+
+    #[ORM\Column(type: Types::TEXT)]
+    private ?string $description = null;
+
+    #[ORM\Column(name: "dateDebut", type: Types::DATE_MUTABLE)]
+    private ?\DateTimeInterface $dateDebut = null;
+
+    #[ORM\Column(name: "dateFin", type: Types::DATE_MUTABLE)]
+    private ?\DateTimeInterface $dateFin = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $lieu = null;
+
+    #[ORM\Column(name: "activiteAssociee", length: 255)]
+    private ?string $activiteAssociee = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $hotel = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $image = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(name: "idV", referencedColumnName: "idV", nullable: true)]
+    private ?Voyage $voyage = null;
+
+    public function getIdProg(): ?string
+    {
+        return $this->idProg;
+    }
+
+    public function setIdProg(string $idProg): static
+    {
+        $this->idProg = $idProg;
+        return $this;
+    }
+
+    public function getNom(): ?string
+    {
+        return $this->nom;
+    }
+
+    public function setNom(string $nom): static
+    {
+        $this->nom = $nom;
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(string $description): static
+    {
+        $this->description = $description;
+        return $this;
+    }
+
+    public function getDateDebut(): ?\DateTimeInterface
+    {
+        return $this->dateDebut;
+    }
+
+    public function setDateDebut(\DateTimeInterface $dateDebut): static
+    {
+        $this->dateDebut = $dateDebut;
+        return $this;
+    }
+
+    public function getDateFin(): ?\DateTimeInterface
+    {
+        return $this->dateFin;
+    }
+
+    public function setDateFin(\DateTimeInterface $dateFin): static
+    {
+        $this->dateFin = $dateFin;
+        return $this;
+    }
+
+    public function getLieu(): ?string
+    {
+        return $this->lieu;
+    }
+
+    public function setLieu(string $lieu): static
+    {
+        $this->lieu = $lieu;
+        return $this;
+    }
+
+    public function getActiviteAssociee(): ?string
+    {
+        return $this->activiteAssociee;
+    }
+
+    public function setActiviteAssociee(string $activiteAssociee): static
+    {
+        $this->activiteAssociee = $activiteAssociee;
+        return $this;
+    }
+
+    public function getHotel(): ?string
+    {
+        return $this->hotel;
+    }
+
+    public function setHotel(string $hotel): static
+    {
+        $this->hotel = $hotel;
+        return $this;
+    }
+
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): static
+    {
+        $this->image = $image;
+        return $this;
+    }
+
+    public function getVoyage(): ?Voyage
+    {
+        return $this->voyage;
+    }
+
+    public function setVoyage(?Voyage $voyage): static
+    {
+        $this->voyage = $voyage;
+        return $this;
+    }
+}
