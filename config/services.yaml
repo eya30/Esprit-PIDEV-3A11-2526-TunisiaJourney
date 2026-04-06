@@ -1,0 +1,19 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    App\Service\BrevoMailerService:
+        arguments:
+            $apiKey: '%env(BREVO_API_KEY)%'
+    App\Service\GeminiAIService:
+        arguments:
+            $apiKey: '%env(GEMINI_API_KEY)%'
+            $connection: '@doctrine.dbal.default_connection'

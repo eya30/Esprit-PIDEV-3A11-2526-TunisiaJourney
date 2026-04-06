@@ -1,0 +1,285 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Réservations du programme - {{ programme.nom }}{% endblock %}
+{% block page_title %}Réservations : {{ programme.nom }}{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="{{ path('admin_voyage_programmes', {'id': programme.idV}) }}" class="btn-back">
+            <i class="fas fa-arrow-left me-2"></i> Retour aux programmes
+        </a>
+        <h4 class="mb-1 mt-3" style="font-family: 'Playfair Display', serif;">Réservations du programme</h4>
+        <p class="text-muted small" style="color: #93032E !important;">
+            Lieu: {{ programme.lieu }} | Dates: {{ programme.dateDebut|date('d/m/Y') }} - {{ programme.dateFin|date('d/m/Y') }}
+        </p>
+    </div>
+    <div class="d-flex gap-3">
+        <a href="{{ path('admin_programme_reservations', {'id': programme.idProg, 'sort': 'nom'}) }}" class="btn-elegant" style="background: #93032E;">
+            <i class="fas fa-sort-alpha-down"></i>
+            <span>Trier A-Z</span>
+        </a>
+        <button id="exportPdfBtn" class="btn-elegant btn-elegant-outline">
+            <i class="fas fa-file-pdf"></i>
+            <span>Exporter PDF</span>
+        </button>
+    </div>
+</div>
+
+<div class="admin-table">
+    <table class="table" id="reservationsTable">
+        <thead>
+            <tr>
+                <th>Client</th>
+                <th>Contact</th>
+                <th>Nb personnes</th>
+                <th>Prix total</th>
+                <th>Date réservation</th>
+                <th>Statut</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reservation in reservations %}
+                <tr>
+                    <td class="client-name">
+                        <strong>{{ reservation.prenom }} {{ reservation.nom }}</strong>
+                    </td>
+                    <td>
+                        <div><i class="fas fa-phone me-1" style="color: #93032E;"></i> {{ reservation.telephone }}</div>
+                        <div><i class="fas fa-envelope me-1" style="color: #93032E;"></i> {{ reservation.email }}</div>
+                    </td>
+                    <td class="client-nbre">{{ reservation.nbre }} pers</td>
+                    <td class="reservation-price">{{ reservation.prixProg|number_format(2, ',', ' ') }} DT</td>
+                    <td class="reservation-date">{{ reservation.dateProgramme|date('d/m/Y H:i') }}</td>
+                    <td>
+                        {% if reservation.statutPaiement == 'payé' %}
+                            <span class="badge-status badge-success">Payé</span>
+                        {% else %}
+                            <span class="badge-status badge-pending">En attente</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <form method="post" action="{{ path('admin_reservation_delete', {'id': reservation.idRP}) }}" style="display: inline-block;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_reservation_' ~ reservation.idRP) }}">
+                                <button type="submit" class="action-btn delete-btn" onclick="return confirm('Supprimer cette réservation ?')" title="Supprimer">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7" class="text-center py-5">
+                        <i class="fas fa-ticket-alt fa-3x mb-3" style="color: #E8DFD1;"></i>
+                        <p class="text-muted mb-0">Aucune réservation pour ce programme</p>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+    /* Boutons élégants */
+    .btn-elegant {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 24px;
+        border-radius: 40px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        background: #93032E;
+        color: white;
+        box-shadow: 0 4px 12px rgba(147, 3, 46, 0.2);
+    }
+    
+    .btn-elegant:hover {
+        background: #6B0221;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(147, 3, 46, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-elegant-outline {
+        background: transparent;
+        border: 2px solid #93032E;
+        color: #93032E;
+        box-shadow: none;
+    }
+    
+    .btn-elegant-outline:hover {
+        background: #93032E;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(147, 3, 46, 0.3);
+    }
+    
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #FEF9F0;
+        border: 1px solid #E8DFD1;
+        padding: 8px 20px;
+        border-radius: 40px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: #4A3B2F;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    
+    .btn-back:hover {
+        border-color: #93032E;
+        color: #93032E;
+        background: #FFF9F0;
+        transform: translateX(-3px);
+    }
+    
+    .admin-table {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #F0E8DD;
+        overflow-x: auto;
+    }
+    
+    .admin-table th {
+        background: #FEF9F0;
+        padding: 14px 20px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #93032E;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #F0E8DD;
+    }
+    
+    .admin-table td {
+        padding: 14px 20px;
+        font-size: 13px;
+        border-bottom: 1px solid #F5F0E8;
+        color: #4A3B2F;
+        vertical-align: middle;
+    }
+    
+    .admin-table tr:hover td {
+        background: #FFF9F0;
+    }
+    
+    .client-name strong {
+        color: #2C1810;
+    }
+    
+    .client-nbre {
+        white-space: nowrap;
+    }
+    
+    .reservation-price {
+        font-weight: 700;
+        color: #93032E;
+        font-size: 0.95rem;
+        white-space: nowrap;
+    }
+    
+    .reservation-date {
+        white-space: nowrap;
+        color: #9CA3AF;
+        font-size: 0.85rem;
+    }
+    
+    .badge-status {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-block;
+        text-align: center;
+        min-width: 85px;
+    }
+    
+    .badge-success {
+        background: #E0F2E9;
+        color: #047857;
+    }
+    
+    .badge-pending {
+        background: #FEF3C7;
+        color: #B45309;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        font-size: 0.9rem;
+        text-decoration: none;
+    }
+    
+    .delete-btn {
+        background: #FEF2F2;
+        color: #EF4444;
+    }
+    
+    .delete-btn:hover {
+        background: #EF4444;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    @media (max-width: 768px) {
+        .admin-table {
+            overflow-x: auto;
+        }
+    }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+    document.getElementById('exportPdfBtn')?.addEventListener('click', function() {
+        const element = document.getElementById('reservationsTable');
+        const titleDiv = document.createElement('div');
+        titleDiv.innerHTML = `
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h1 style="color: #93032E;">TunisiaJourney</h1>
+                <h2>Réservations du programme: {{ programme.nom }}</h2>
+                <p>Lieu: {{ programme.lieu }} | Dates: {{ programme.dateDebut|date('d/m/Y') }} - {{ programme.dateFin|date('d/m/Y') }}</p>
+                <p>Généré le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}</p>
+                <hr>
+            </div>
+        `;
+        const cloneTable = element.cloneNode(true);
+        const container = document.createElement('div');
+        container.appendChild(titleDiv);
+        container.appendChild(cloneTable);
+        
+        html2pdf().set({
+            margin: [0.5, 0.5, 0.5, 0.5],
+            filename: `reservations_${new Date().toISOString().slice(0,19)}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+        }).from(container).save();
+    });
+</script>
+{% endblock %}
