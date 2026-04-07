@@ -1,0 +1,504 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Réservation - {{ activite.Titre }}{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .reservation-page {
+        min-height: 80vh;
+        padding: 3rem 0 5rem;
+    }
+
+    .reservation-card {
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 8px 40px rgba(38,70,83,0.10);
+        max-width: 860px;
+        margin: 0 auto;
+    }
+
+    .reservation-header {
+        background: #264653;
+        padding: 2rem 2.5rem;
+        border-radius: 24px 24px 0 0;
+    }
+
+    .reservation-header h2 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: white;
+        margin: 0 0 0.6rem 0;
+    }
+
+    .reservation-header-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.2rem;
+        margin-top: 0.5rem;
+    }
+
+    .reservation-header-meta span {
+        color: rgba(255,255,255,0.85);
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .reservation-header-meta i { color: #F5A623; font-size: 0.9rem; }
+
+    .reservation-body { padding: 2.5rem 2.5rem 3rem; }
+
+    .field-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 2rem;
+        padding: 1.1rem 0;
+        border-bottom: 1px solid #F0EBE3;
+    }
+
+    .field-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 180px;
+        padding-top: 12px;
+        font-weight: 600;
+        font-size: 1rem;
+        color: #264653;
+        flex-shrink: 0;
+    }
+
+    .field-label i { color: #264653; font-size: 1rem; width: 18px; text-align: center; }
+
+    .field-input-wrap { flex: 1; display: flex; flex-direction: column; }
+
+    .field-input {
+        width: 100%;
+        padding: 11px 16px;
+        border: 1.5px solid #D9D0C7;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-family: 'Montserrat', sans-serif;
+        background: #F8F5F0;
+        color: #1a1a1a;
+        box-sizing: border-box;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .field-input:focus {
+        outline: none;
+        border-color: #264653;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(38,70,83,0.08);
+    }
+
+    /* Erreur : bordure rouge, fond identique à l'état normal — pas de rose pastel */
+    .field-input.is-error {
+        border: 2px solid #C0392B !important;
+        background: #F8F5F0 !important;
+    }
+
+    .field-error {
+        color: #C0392B;
+        font-size: 0.83rem;
+        margin-top: 6px;
+        font-weight: 600;
+        display: none;          /* caché par défaut, affiché par JS après réponse serveur */
+        align-items: center;
+        gap: 5px;
+    }
+
+    .field-error.visible {
+        display: flex;
+    }
+
+    .prix-section {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid #F0EBE3;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+    }
+
+    .prix-row { display: flex; align-items: center; gap: 2rem; padding: 0.3rem 0; }
+
+    .prix-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 180px;
+        font-weight: 600;
+        font-size: 1rem;
+        color: #264653;
+        flex-shrink: 0;
+    }
+
+    .prix-label i { color: #264653; font-size: 1rem; width: 18px; text-align: center; }
+
+    .prix-value { font-size: 1.15rem; font-weight: 700; color: #C0392B; }
+    .prix-value.neutral { color: #264653; font-size: 1rem; font-weight: 600; }
+
+    .reservation-actions {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-top: 2.5rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid #F0EBE3;
+        flex-wrap: wrap;
+    }
+
+    .btn-annuler {
+        background: #264653;
+        color: white !important;
+        border: none;
+        padding: 13px 40px;
+        border-radius: 30px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-annuler:hover { background: #1a3340; color: white !important; text-decoration: none; }
+
+    .btn-confirmer {
+        background: #C0392B !important;
+        color: white !important;
+        border: none;
+        padding: 13px 40px;
+        border-radius: 50px !important;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        display: inline-flex !important;
+        align-items: center;
+        gap: 8px;
+        -webkit-text-fill-color: white !important;
+    }
+
+    .btn-confirmer:hover {
+        background: #a93226 !important;
+        color: white !important;
+        -webkit-text-fill-color: white !important;
+    }
+
+    .btn-confirmer:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .flash-success {
+        background: #F0FFF4;
+        border: 1px solid #6EE7B7;
+        color: #065F46;
+        padding: 12px 18px;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        font-weight: 500;
+        display: none;
+    }
+
+    @media (max-width: 640px) {
+        .reservation-body   { padding: 1.5rem; }
+        .reservation-header { padding: 1.5rem; border-radius: 18px 18px 0 0; }
+        .field-row          { flex-direction: column; gap: 0.5rem; }
+        .field-label        { min-width: unset; padding-top: 0; }
+        .prix-row           { flex-direction: column; gap: 0.3rem; }
+        .prix-label         { min-width: unset; }
+        .reservation-actions { flex-direction: column; align-items: center; }
+        .btn-annuler, .btn-confirmer { width: 100%; justify-content: center; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="reservation-page">
+    <div class="container">
+
+        {# Message succès affiché dynamiquement par JS (pas de rechargement) #}
+        <div class="flash-success" id="flashSuccess">
+            <i class="fas fa-check-circle me-2"></i>
+            <span id="flashSuccessText"></span>
+        </div>
+
+        <div class="reservation-card" id="reservationCard">
+
+            <div class="reservation-header">
+                <h2>Activité : {{ activite.Titre }}</h2>
+                <div class="reservation-header-meta">
+                    <span><i class="fas fa-clock"></i> {{ activite.HeureDebut }} ({{ activite.Duree }})</span>
+                    <span><i class="fas fa-coins"></i> {{ activite.Prix|number_format(2, ',', ' ') }} TND par personne</span>
+                    <span><i class="fas fa-users"></i> {{ placesDisponibles }} place(s) disponible(s)</span>
+                </div>
+            </div>
+
+            <div class="reservation-body">
+
+                {#
+                    novalidate   → désactive la validation HTML5 native
+                    autocomplete → désactive l'historique de saisie
+                    La validation est 100% assurée par le Symfony Validator Component côté serveur.
+                    Le JS ne fait que soumettre en AJAX et afficher la réponse JSON du serveur.
+                #}
+                <form id="reservationForm"
+                      method="POST"
+                      action="{{ path('app_reservationact_new', {'IDAct': activite.IDAct}) }}"
+                      novalidate
+                      autocomplete="off">
+
+                    {# NOM #}
+                    <div class="field-row">
+                        <div class="field-label"><i class="fas fa-user"></i> Nom :</div>
+                        <div class="field-input-wrap">
+                            <input type="text"
+                                   name="nom"
+                                   id="field-nom"
+                                   class="field-input"
+                                   placeholder="Votre nom"
+                                   autocomplete="off">
+                            <div class="field-error" id="error-nom">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# PRÉNOM #}
+                    <div class="field-row">
+                        <div class="field-label"><i class="fas fa-user"></i> Prénom :</div>
+                        <div class="field-input-wrap">
+                            <input type="text"
+                                   name="prenom"
+                                   id="field-prenom"
+                                   class="field-input"
+                                   placeholder="Votre prénom"
+                                   autocomplete="off">
+                            <div class="field-error" id="error-prenom">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# TÉLÉPHONE #}
+                    <div class="field-row">
+                        <div class="field-label"><i class="fas fa-phone"></i> Téléphone :</div>
+                        <div class="field-input-wrap">
+                            <input type="text"
+                                   name="telephone"
+                                   id="field-telephone"
+                                   class="field-input"
+                                   placeholder="8 chiffres (ex: 71234567)"
+                                   autocomplete="off"
+                                   maxlength="8">
+                            <div class="field-error" id="error-telephone">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# EMAIL #}
+                    <div class="field-row">
+                        <div class="field-label"><i class="fas fa-envelope"></i> Email :</div>
+                        <div class="field-input-wrap">
+                            <input type="text"
+                                   name="email"
+                                   id="field-email"
+                                   class="field-input"
+                                   placeholder="exemple@domaine.com"
+                                   autocomplete="off">
+                            <div class="field-error" id="error-email">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# NOMBRE DE PERSONNES #}
+                    <div class="field-row">
+                        <div class="field-label"><i class="fas fa-users"></i> Personnes :</div>
+                        <div class="field-input-wrap">
+                            <input type="text"
+                                   name="nombrePlaces"
+                                   id="field-nombrePlaces"
+                                   class="field-input"
+                                   placeholder="Ex: 2"
+                                   autocomplete="off">
+                            <div class="field-error" id="error-nombrePlaces">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# SECTION PRIX — affichage UX uniquement #}
+                    <div class="prix-section">
+                        <div class="prix-row">
+                            <div class="prix-label"><i class="fas fa-tag"></i> Prix original :</div>
+                            <div class="prix-value neutral" id="prixOriginal">
+                                {{ activite.Prix|number_format(2, ',', ' ') }} TND / personne
+                            </div>
+                        </div>
+                        <div class="prix-row">
+                            <div class="prix-label"><i class="fas fa-coins"></i> Total à payer :</div>
+                            <div class="prix-value" id="prixTotal">0,00 TND</div>
+                        </div>
+                    </div>
+
+                    {# BOUTONS #}
+                    <div class="reservation-actions">
+                        <a href="{{ path('app_activite_show', {'IDAct': activite.IDAct}) }}"
+                           class="btn-annuler">
+                            <i class="fas fa-times"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn-confirmer" id="btnConfirmer">
+                            <i class="fas fa-check"></i> Confirmer la réservation
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+
+    var redirectUrl = "{{ path('app_activite_show', {'IDAct': activite.IDAct}) }}";
+
+    /* ── Calcul du prix (UX, pas de validation) ────────────────────────── */
+    var prixUnit       = {{ activite.Prix }};
+    var inputPlaces    = document.getElementById('field-nombrePlaces');
+    var prixOrigEl     = document.getElementById('prixOriginal');
+    var prixTotalEl    = document.getElementById('prixTotal');
+
+    function fmt(n) { return n.toFixed(2).replace('.', ',') + ' TND'; }
+
+    function updatePrix() {
+        var n = parseInt(inputPlaces.value, 10);
+        if (!isNaN(n) && n > 0) {
+            prixOrigEl.textContent  = fmt(prixUnit) + ' × ' + n;
+            prixTotalEl.textContent = fmt(prixUnit * n);
+        } else {
+            prixOrigEl.textContent  = fmt(prixUnit) + ' / personne';
+            prixTotalEl.textContent = '0,00 TND';
+        }
+    }
+
+    if (inputPlaces) {
+        inputPlaces.addEventListener('input', updatePrix);
+    }
+
+    /* ── Affichage / effacement des erreurs renvoyées par Symfony ──────── */
+
+    var fields = ['nom', 'prenom', 'telephone', 'email', 'nombrePlaces'];
+
+    /**
+     * Affiche un message d'erreur sur un champ.
+     * msg vide → efface l'erreur et retire la bordure rouge.
+     */
+    function setFieldError(name, msg) {
+        var input    = document.getElementById('field-' + name);
+        var errorDiv = document.getElementById('error-' + name);
+        var span     = errorDiv ? errorDiv.querySelector('span') : null;
+
+        if (!input || !errorDiv || !span) return;
+
+        if (msg) {
+            input.classList.add('is-error');
+            span.textContent = msg;
+            errorDiv.classList.add('visible');
+        } else {
+            input.classList.remove('is-error');
+            span.textContent = '';
+            errorDiv.classList.remove('visible');
+        }
+    }
+
+    /**
+     * Efface toutes les erreurs (appelé avant chaque soumission
+     * et lorsqu'un champ est modifié après une erreur).
+     */
+    function clearAllErrors() {
+        fields.forEach(function (name) { setFieldError(name, ''); });
+    }
+
+    /* Quand l'utilisateur modifie un champ en erreur → effacer immédiatement
+       cette erreur (le serveur revalidera à la prochaine soumission)         */
+    fields.forEach(function (name) {
+        var input = document.getElementById('field-' + name);
+        if (input) {
+            input.addEventListener('input', function () {
+                setFieldError(name, '');
+                if (name === 'nombrePlaces') updatePrix();
+            });
+        }
+    });
+
+    /* ── Soumission AJAX — validation par Symfony Validator côté serveur ── */
+
+    var form        = document.getElementById('reservationForm');
+    var btnConfirm  = document.getElementById('btnConfirmer');
+    var flashBox    = document.getElementById('flashSuccess');
+    var flashText   = document.getElementById('flashSuccessText');
+
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            clearAllErrors();
+
+            btnConfirm.disabled = true;
+            btnConfirm.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi...';
+
+            var formData = new FormData(form);
+
+            fetch(form.action, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData
+            })
+            .then(function (response) { return response.json(); })
+            .then(function (data) {
+
+                if (data.success) {
+                    /* Succès : afficher le message et rediriger */
+                    flashText.textContent = 'Votre réservation a été enregistrée avec succès !';
+                    flashBox.style.display = 'flex';
+                    form.reset();
+                    updatePrix();
+                    setTimeout(function () {
+                        window.location.href = redirectUrl;
+                    }, 1500);
+                } else {
+                    /* Erreurs Symfony : les afficher champ par champ */
+                    if (data.errors) {
+                        Object.keys(data.errors).forEach(function (field) {
+                            setFieldError(field, data.errors[field]);
+                        });
+                    }
+                    btnConfirm.disabled = false;
+                    btnConfirm.innerHTML = '<i class="fas fa-check"></i> Confirmer la réservation';
+                }
+            })
+            .catch(function () {
+                /* Erreur réseau : fallback soumission classique */
+                form.submit();
+            });
+        });
+    }
+
+})();
+</script>
+{% endblock %}
