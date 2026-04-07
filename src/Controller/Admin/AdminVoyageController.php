@@ -141,7 +141,7 @@ class AdminVoyageController extends AbstractController
                     $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
                     $safeFilename = preg_replace('/[^a-zA-Z0-9]/', '_', $originalFilename);
                     $imageName = $safeFilename . '_' . uniqid() . '.' . $imageFile->guessExtension();
-                    $imageFile->move($this->getParameter('uploads_directory'), $imageName);
+                    $imageFile->move($this->getParameter('uploads_directory') . '/voyages', $imageName);
                 }
 
                 $connection->executeStatement(
@@ -246,14 +246,14 @@ class AdminVoyageController extends AbstractController
                 $imageFile = $request->files->get('image');
 
                 if ($imageFile) {
-                    if ($imageName && file_exists($this->getParameter('uploads_directory') . '/' . $imageName)) {
-                        unlink($this->getParameter('uploads_directory') . '/' . $imageName);
+                    if ($imageName && file_exists($this->getParameter('uploads_directory') . '/voyages/' . $imageName)) {
+                        unlink($this->getParameter('uploads_directory') . '/voyages/' . $imageName);
                     }
 
                     $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
                     $safeFilename = preg_replace('/[^a-zA-Z0-9]/', '_', $originalFilename);
                     $imageName = $safeFilename . '_' . uniqid() . '.' . $imageFile->guessExtension();
-                    $imageFile->move($this->getParameter('uploads_directory'), $imageName);
+                    $imageFile->move($this->getParameter('uploads_directory') . '/voyages', $imageName);
                 }
 
                 $connection->executeStatement(
@@ -293,8 +293,8 @@ class AdminVoyageController extends AbstractController
         if ($this->isCsrfTokenValid('delete_voyage_' . $id, $request->request->get('_token'))) {
             $voyage = $connection->fetchAssociative("SELECT image FROM voyages WHERE idV = ?", [$id]);
             
-            if ($voyage && $voyage['image'] && file_exists($this->getParameter('uploads_directory') . '/' . $voyage['image'])) {
-                unlink($this->getParameter('uploads_directory') . '/' . $voyage['image']);
+            if ($voyage && $voyage['image'] && file_exists($this->getParameter('uploads_directory') . '/voyages/' . $voyage['image'])) {
+                unlink($this->getParameter('uploads_directory') . '/voyages/' . $voyage['image']);
             }
             
             $connection->executeStatement("DELETE FROM voyages WHERE idV = ?", [$id]);

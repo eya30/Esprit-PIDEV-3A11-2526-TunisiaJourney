@@ -28,48 +28,7 @@ class AdminDashboardController extends AbstractController
             'clients' => $usersCount,
         ];
         
-        // PROGRAMMES les plus réservés (pour le graphique en camembert)
-        $programmesPopulaires = $connection->fetchAllAssociative("
-            SELECT p.nom as programme_nom, p.lieu, COUNT(r.idRP) as total
-            FROM programmes p
-            LEFT JOIN reservationprog r ON r.idP = p.idProg
-            GROUP BY p.idProg
-            ORDER BY total DESC
-            LIMIT 6
-        ");
-        
-        // Préparer les données pour le pie chart
-        $pieLabels = [];
-        $pieData = [];
-        
-        // Couleurs sophistiquées : bleu nuit, rouge pastel, vert militaire, jaune moutarde, etc.
-        $pieColors = [
-            '#1B2A4A', // Bleu nuit
-            '#E8A3A3', // Rouge pastel
-            '#5B6C3F', // Vert militaire
-            '#D4A13E', // Jaune moutarde
-            '#8B5E3C', // Marron élégant
-            '#4A6B6B', // Vert sauge
-            '#A8554E', // Terre cuite
-            '#7C6E65', // Taupe
-            '#2D6A4F', // Vert forêt
-            '#9C6B3E'  // Ocre
-        ];
-        
-        foreach ($programmesPopulaires as $programme) {
-            if ($programme['total'] > 0) {
-                $pieLabels[] = $programme['programme_nom'] . ' (' . $programme['lieu'] . ')';
-                $pieData[] = $programme['total'];
-            }
-        }
-        
-        // S'il n'y a pas de données, afficher des données fictives
-        if (empty($pieData)) {
-            $pieLabels = ['Aucune réservation'];
-            $pieData = [1];
-        }
-        
-        // Destinations populaires (basé sur les voyages)
+        // Destinations populaires (basé sur les réservations via programmes)
         $destinationsPopulaires = $connection->fetchAllAssociative("
             SELECT v.nom, COUNT(r.idRP) as total
             FROM voyages v
@@ -119,9 +78,6 @@ class AdminDashboardController extends AbstractController
             'derniers_voyages' => $derniersVoyages,
             'dernieres_reservations' => $dernieresReservations,
             'stats_reservations_week' => json_encode($reservationsWeek),
-            'pie_labels' => json_encode($pieLabels),
-            'pie_data' => json_encode($pieData),
-            'pie_colors' => json_encode($pieColors),
         ]);
     }
 }
