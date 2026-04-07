@@ -1,0 +1,452 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ action }} un produit - TunisiaJourney{% endblock %}
+
+{% block stylesheets %}
+<style>
+    :root {
+        --tunisia-red: #E31B23;
+        --tunisia-orange: #FF6B35;
+        --tunisia-sand: #FDF5E6;
+        --tunisia-soft: #F5CAC3;
+        --dark-gray: #2C3E50;
+    }
+
+    /* Hero */
+    .hero {
+        position: relative;
+        height: 38vh;
+        min-height: 260px;
+        background-image: linear-gradient(rgba(227,27,35,0.22), rgba(245,202,195,0.32)),
+            url('https://switchmed.eu/wp-content/uploads/2020/04/tunisia-1.jpg');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: white;
+        overflow: hidden;
+    }
+
+    .hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.28) 100%);
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 700px;
+        padding: 2.5rem;
+        animation: fadeInUp 1s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(40px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 0.8rem;
+        text-shadow: 3px 3px 12px rgba(0,0,0,0.5);
+        color: #F5CAC3;
+        letter-spacing: 2px;
+    }
+
+    .hero p {
+        font-size: 1.05rem;
+        font-weight: 300;
+        line-height: 1.7;
+        color: rgba(255,255,255,0.92);
+    }
+
+    /* Titre section */
+    .section-title {
+        text-align: center;
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.4rem;
+        font-weight: 700;
+        color: var(--tunisia-red);
+        margin-bottom: 0.5rem;
+    }
+
+    .section-title:after {
+        content: '✦ ✦ ✦';
+        display: block;
+        color: #F5CAC3;
+        font-size: 1.1rem;
+        margin-top: 0.6rem;
+        letter-spacing: 12px;
+    }
+
+    .section-subtitle {
+        text-align: center;
+        color: var(--dark-gray);
+        font-size: 0.95rem;
+        margin-bottom: 2.5rem;
+        font-style: italic;
+        opacity: 0.75;
+    }
+
+    /* Carte formulaire */
+    .form-card {
+        background: white;
+        border-radius: 28px;
+        padding: 2.5rem 3rem;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.09);
+        transition: box-shadow 0.3s ease;
+    }
+
+    .form-card:hover {
+        box-shadow: 0 25px 60px rgba(227,27,35,0.11);
+    }
+
+    /* Labels */
+    .form-label-custom {
+        display: block;
+        font-weight: 600;
+        font-size: 0.88rem;
+        color: var(--dark-gray);
+        margin-bottom: 0.45rem;
+    }
+
+    .form-label-custom i {
+        color: var(--tunisia-orange);
+        margin-right: 6px;
+        width: 16px;
+    }
+
+    /* Inputs texte/number */
+    .input-custom {
+        width: 100%;
+        padding: 11px 20px;
+        border: 2px solid #F5CAC3;
+        border-radius: 25px;
+        background: white;
+        font-size: 0.92rem;
+        color: var(--dark-gray);
+        font-family: 'Montserrat', sans-serif;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+    }
+
+    textarea.input-custom {
+        border-radius: 18px;
+        resize: vertical;
+        min-height: 110px;
+    }
+
+    .input-custom:focus {
+        outline: none;
+        border-color: var(--tunisia-red);
+        box-shadow: 0 0 0 3px rgba(227,27,35,0.1);
+    }
+
+    .input-custom::placeholder {
+        color: #bbb;
+        font-style: italic;
+    }
+
+    /* Select disponibilité */
+    select.input-custom {
+        appearance: auto;
+        cursor: pointer;
+    }
+
+    /* Champ fichier */
+    .file-input-wrapper input[type="file"] {
+        width: 100%;
+        padding: 10px 18px;
+        border: 2px dashed #F5CAC3;
+        border-radius: 18px;
+        background: #FEF9F0;
+        font-size: 0.88rem;
+        color: var(--dark-gray);
+        font-family: 'Montserrat', sans-serif;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+    }
+
+    .file-input-wrapper input[type="file"]:hover {
+        border-color: var(--tunisia-red);
+        background: white;
+    }
+
+    /* Séparateur */
+    .form-divider {
+        height: 1px;
+        background: linear-gradient(to right, transparent, #F5CAC3, transparent);
+        margin: 1.8rem 0;
+    }
+
+    /* Bouton retour */
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: transparent;
+        border: 2px solid var(--tunisia-red);
+        color: var(--tunisia-red);
+        padding: 10px 24px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        font-family: 'Montserrat', sans-serif;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        margin-bottom: 2rem;
+    }
+
+    .btn-back:hover {
+        background: var(--tunisia-red);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    /* Bouton soumettre */
+    .btn-submit {
+        width: 100%;
+        background: linear-gradient(135deg, var(--tunisia-red), var(--tunisia-orange));
+        color: white;
+        border: none;
+        padding: 14px;
+        border-radius: 30px;
+        font-weight: 700;
+        font-size: 1rem;
+        font-family: 'Montserrat', sans-serif;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 0.5rem;
+    }
+
+    .btn-submit:hover {
+        background: linear-gradient(135deg, var(--tunisia-orange), var(--tunisia-red));
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(227,27,35,0.4);
+    }
+
+    /* Bandeau info */
+    .info-badge {
+        background: #FEF9F0;
+        border: 1px solid #F5CAC3;
+        border-radius: 16px;
+        padding: 1rem 1.3rem;
+        margin-bottom: 1.8rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.88rem;
+        color: #6c757d;
+    }
+
+    .info-badge i {
+        color: var(--tunisia-orange);
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    /* Erreurs */
+    .field-error {
+        color: var(--tunisia-red);
+        font-size: 0.8rem;
+        margin-top: 5px;
+        padding-left: 12px;
+    }
+
+    @media (max-width: 768px) {
+        .hero h1 { font-size: 2.1rem; }
+        .hero-content { padding: 1.5rem; }
+        .section-title { font-size: 1.9rem; }
+        .form-card { padding: 1.8rem 1.3rem; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>{{ action }} un Produit</h1>
+        <p>Remplissez le formulaire pour ajouter ou modifier un article artisanal tunisien.</p>
+    </div>
+</section>
+
+<!-- FORMULAIRE -->
+<section class="py-5" style="background: var(--tunisia-sand);">
+    <div class="container">
+
+        <h2 class="section-title">Fiche Produit</h2>
+        <p class="section-subtitle">Chaque pièce artisanale mérite une belle présentation</p>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+
+                <a href="{{ path('app_produit_index') }}" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Retour à la boutique
+                </a>
+
+                <div class="info-badge">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Tous les champs sont obligatoires. L'image doit être au format JPG ou PNG (max 2 Mo).</span>
+                </div>
+
+                <div class="form-card">
+                    {{ form_start(form) }}
+
+                        <!-- Titre -->
+                        <div class="mb-3">
+                            <label class="form-label-custom">
+                                <i class="fas fa-tag"></i> Titre du produit
+                            </label>
+                            {{ form_widget(form.titre, {
+                                'attr': {
+                                    'class': 'input-custom',
+                                    'placeholder': 'Ex : Tapis berbère, Poterie de Nabeul...'
+                                }
+                            }) }}
+                            {% if form_errors(form.titre) %}
+                                <div class="field-error">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ form_errors(form.titre) }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-divider"></div>
+
+                        <!-- Prix & Stock -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-custom">
+                                    <i class="fas fa-money-bill-wave"></i> Prix (TND)
+                                </label>
+                                {{ form_widget(form.prix, {
+                                    'attr': {
+                                        'class': 'input-custom',
+                                        'placeholder': 'Ex : 120'
+                                    }
+                                }) }}
+                                {% if form_errors(form.prix) %}
+                                    <div class="field-error">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ form_errors(form.prix) }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-custom">
+                                    <i class="fas fa-boxes"></i> Stock disponible
+                                </label>
+                                {{ form_widget(form.stock, {
+                                    'attr': {
+                                        'class': 'input-custom',
+                                        'placeholder': 'Ex : 25'
+                                    }
+                                }) }}
+                                {% if form_errors(form.stock) %}
+                                    <div class="field-error">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ form_errors(form.stock) }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Poids & Disponibilité -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-custom">
+                                    <i class="fas fa-weight-hanging"></i> Poids (grammes)
+                                </label>
+                                {{ form_widget(form.poids, {
+                                    'attr': {
+                                        'class': 'input-custom',
+                                        'placeholder': 'Ex : 350'
+                                    }
+                                }) }}
+                                {% if form_errors(form.poids) %}
+                                    <div class="field-error">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ form_errors(form.poids) }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-custom">
+                                    <i class="fas fa-check-circle"></i> Disponibilité
+                                </label>
+                                {# Disponibilite est un entier : 1 = en stock, 0 = rupture #}
+                                {{ form_widget(form.disponibilite, {
+                                    'attr': { 'class': 'input-custom' }
+                                }) }}
+                                {% if form_errors(form.disponibilite) %}
+                                    <div class="field-error">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ form_errors(form.disponibilite) }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="form-divider"></div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label class="form-label-custom">
+                                <i class="fas fa-align-left"></i> Description
+                            </label>
+                            {{ form_widget(form.description, {
+                                'attr': {
+                                    'class': 'input-custom',
+                                    'rows': 4,
+                                    'placeholder': "Décrivez l'article : matériaux, origine, dimensions..."
+                                }
+                            }) }}
+                            {% if form_errors(form.description) %}
+                                <div class="field-error">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ form_errors(form.description) }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Image -->
+                        <div class="mb-4">
+                            <label class="form-label-custom">
+                                <i class="fas fa-image"></i> Image du produit
+                            </label>
+                            <div class="file-input-wrapper">
+                                {{ form_widget(form.image) }}
+                            </div>
+                            {% if form_errors(form.image) %}
+                                <div class="field-error">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ form_errors(form.image) }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Bouton -->
+                        <button type="submit" class="btn-submit">
+                            <i class="fas fa-save me-2"></i>{{ action }} le produit
+                        </button>
+
+                    {{ form_end(form) }}
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

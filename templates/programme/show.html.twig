@@ -1,0 +1,534 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ programme.nom }} - TunisiaJourney{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .back-arrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--tunisia-red);
+        text-decoration: none;
+        font-weight: 500;
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+    }
+    
+    .back-arrow:hover {
+        transform: translateX(-5px);
+        color: var(--tunisia-orange);
+    }
+    
+    .programme-container {
+        display: flex;
+        gap: 2rem;
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        border: 1px solid #F0E8DD;
+    }
+    
+    .programme-image {
+        flex: 1;
+        min-width: 0;
+        background: #FEF9F0;
+        min-height: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .programme-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+    
+    .programme-image-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #E8DFD1;
+        font-size: 3rem;
+        background: #FEF9F0;
+    }
+    
+    .programme-info {
+        flex: 1;
+        padding: 2rem;
+    }
+    
+    .programme-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--tunisia-red);
+        margin-bottom: 1rem;
+    }
+    
+    .programme-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin: 1.5rem 0;
+        padding: 1rem 0;
+        border-top: 1px solid #F0E8DD;
+        border-bottom: 1px solid #F0E8DD;
+    }
+    
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .meta-item i {
+        color: var(--tunisia-red);
+        width: 20px;
+    }
+    
+    .programme-description {
+        color: #4A3B2F;
+        line-height: 1.8;
+        margin: 1.5rem 0;
+    }
+    
+    .btn-reserve {
+        background: var(--tunisia-blue);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+        display: inline-block;
+    }
+    
+    .btn-reserve:hover {
+        background: #00408a;
+        transform: translateY(-2px);
+    }
+    
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal.active {
+        display: flex;
+    }
+    
+    .modal-content {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        max-width: 480px;
+        width: 90%;
+    }
+    
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #E8DFD1;
+    }
+    
+    .modal-header h3 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--tunisia-blue);
+        margin: 0;
+    }
+    
+    .close-modal {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #9CA3AF;
+    }
+    
+    .close-modal:hover {
+        color: var(--tunisia-red);
+    }
+    
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-group label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--dark-gray);
+        margin-bottom: 0.3rem;
+    }
+    
+    .form-group input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #E8DFD1;
+        border-radius: 10px;
+        font-size: 0.9rem;
+    }
+    
+    .form-group input:focus {
+        outline: none;
+        border-color: var(--tunisia-blue);
+    }
+    
+    .form-group input.error {
+        border-color: #EF4444;
+        background: #FEF2F2;
+    }
+    
+    .error-message {
+        color: #EF4444;
+        font-size: 0.7rem;
+        margin-top: 0.2rem;
+        display: none;
+    }
+    
+    .error-message.show {
+        display: block;
+    }
+    
+    .btn-submit {
+        width: 100%;
+        background: var(--tunisia-blue);
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        margin-top: 0.5rem;
+    }
+    
+    .btn-submit:hover {
+        background: #00408a;
+    }
+    
+    .success-toast {
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: #10B981;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        z-index: 1100;
+        animation: slideInRight 0.3s ease, fadeOut 0.3s ease 3.7s forwards;
+        font-size: 0.9rem;
+    }
+    
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes fadeOut {
+        to { opacity: 0; visibility: hidden; }
+    }
+    
+    .success-toast i {
+        font-size: 1.2rem;
+    }
+    
+    @media (max-width: 768px) {
+        .programme-container {
+            flex-direction: column;
+        }
+        
+        .programme-image {
+            min-height: 300px;
+        }
+        
+        .programme-info {
+            padding: 1.5rem;
+        }
+        
+        .programme-title {
+            font-size: 1.5rem;
+        }
+        
+        .modal-content {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <a href="{{ path('app_voyage_programmes', {'idV': programme.voyage.idV}) }}" class="back-arrow">
+        <i class="fas fa-arrow-left"></i> Retour aux programmes
+    </a>
+    
+    <div class="programme-container">
+        <div class="programme-image">
+            {% if programme.image and programme.image != 'NULL' and programme.image != '' %}
+                <img src="{{ asset('uploads/programmes/' ~ programme.image|replace({' ': '%20'})) }}" alt="{{ programme.nom }}">
+            {% else %}
+                <div class="programme-image-placeholder">
+                    <i class="fas fa-image"></i>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="programme-info">
+            <h1 class="programme-title">{{ programme.nom }}</h1>
+            
+            <div class="programme-meta">
+                <div class="meta-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>{{ programme.lieu }}</span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-hotel"></i>
+                    <span>{{ programme.hotel }}</span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>{{ programme.dateDebut|date('d/m/Y') }} - {{ programme.dateFin|date('d/m/Y') }}</span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-tag"></i>
+                    <span>{{ programme.activiteAssociee }}</span>
+                </div>
+            </div>
+            
+            <div class="programme-description">
+                {{ programme.description }}
+            </div>
+            
+            <button class="btn-reserve" onclick="openReservationModal('{{ programme.idProg }}', '{{ programme.nom }}')">
+                Réserver ce programme <i class="fas fa-arrow-right ms-2"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de réservation -->
+<div id="reservationModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Réserver un programme</h3>
+            <button class="close-modal" onclick="closeReservationModal()">&times;</button>
+        </div>
+        <form id="reservationForm" method="post">
+            <input type="hidden" name="idProg" id="programmeId">
+            <div class="form-group">
+                <label>Nom *</label>
+                <input type="text" name="nom" id="nom" placeholder="Votre nom" required>
+                <div class="error-message" id="nomError">Le nom est requis</div>
+            </div>
+            <div class="form-group">
+                <label>Prénom *</label>
+                <input type="text" name="prenom" id="prenom" placeholder="Votre prénom" required>
+                <div class="error-message" id="prenomError">Le prénom est requis</div>
+            </div>
+            <div class="form-group">
+                <label>Téléphone *</label>
+                <input type="tel" name="telephone" id="telephone" placeholder="Ex: 12345678" required>
+                <div class="error-message" id="telephoneError">Téléphone invalide (8 chiffres minimum)</div>
+            </div>
+            <div class="form-group">
+                <label>Email *</label>
+                <input type="email" name="email" id="email" placeholder="exemple@email.com" required>
+                <div class="error-message" id="emailError">Email invalide</div>
+            </div>
+            <div class="form-group">
+                <label>Nombre de personnes *</label>
+                <input type="number" name="nbre" id="nbre" min="1" value="1" required>
+                <div class="error-message" id="nbreError">Minimum 1 personne</div>
+            </div>
+            <button type="submit" class="btn-submit" id="submitBtn">
+                Confirmer la réservation
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    let isSubmitting = false;
+    
+    function validateForm() {
+        let isValid = true;
+        
+        const nom = document.getElementById('nom').value.trim();
+        if (nom.length < 2) {
+            document.getElementById('nomError').classList.add('show');
+            document.getElementById('nom').classList.add('error');
+            isValid = false;
+        } else {
+            document.getElementById('nomError').classList.remove('show');
+            document.getElementById('nom').classList.remove('error');
+        }
+        
+        const prenom = document.getElementById('prenom').value.trim();
+        if (prenom.length < 2) {
+            document.getElementById('prenomError').classList.add('show');
+            document.getElementById('prenom').classList.add('error');
+            isValid = false;
+        } else {
+            document.getElementById('prenomError').classList.remove('show');
+            document.getElementById('prenom').classList.remove('error');
+        }
+        
+        const telephone = document.getElementById('telephone').value.trim();
+        const phoneRegex = /^[0-9]{8,}$/;
+        if (!phoneRegex.test(telephone)) {
+            document.getElementById('telephoneError').classList.add('show');
+            document.getElementById('telephone').classList.add('error');
+            isValid = false;
+        } else {
+            document.getElementById('telephoneError').classList.remove('show');
+            document.getElementById('telephone').classList.remove('error');
+        }
+        
+        const email = document.getElementById('email').value.trim();
+        const emailRegex = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            document.getElementById('emailError').classList.add('show');
+            document.getElementById('email').classList.add('error');
+            isValid = false;
+        } else {
+            document.getElementById('emailError').classList.remove('show');
+            document.getElementById('email').classList.remove('error');
+        }
+        
+        const nbre = parseInt(document.getElementById('nbre').value);
+        if (isNaN(nbre) || nbre < 1) {
+            document.getElementById('nbreError').classList.add('show');
+            document.getElementById('nbre').classList.add('error');
+            isValid = false;
+        } else {
+            document.getElementById('nbreError').classList.remove('show');
+            document.getElementById('nbre').classList.remove('error');
+        }
+        
+        return isValid;
+    }
+    
+    function showSuccessToast() {
+        const toast = document.createElement('div');
+        toast.className = 'success-toast';
+        toast.innerHTML = '<i class="fas fa-check-circle"></i> Réservation confirmée ! Redirection...';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
+    }
+    
+    function openReservationModal(programmeId, programmeNom) {
+        const modal = document.getElementById('reservationModal');
+        const form = document.getElementById('reservationForm');
+        form.action = "{{ path('app_reservation_new', {'idProg': 'PROGRAMME_ID'}) }}".replace('PROGRAMME_ID', programmeId);
+        document.getElementById('programmeId').value = programmeId;
+        modal.classList.add('active');
+        document.getElementById('reservationForm').reset();
+        document.querySelectorAll('.error-message').forEach(el => el.classList.remove('show'));
+        document.querySelectorAll('.form-group input').forEach(el => el.classList.remove('error'));
+    }
+    
+    function closeReservationModal() {
+        const modal = document.getElementById('reservationModal');
+        modal.classList.remove('active');
+    }
+    
+    document.getElementById('reservationForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        if (!validateForm()) return;
+        if (isSubmitting) return;
+        isSubmitting = true;
+        
+        const submitBtn = document.getElementById('submitBtn');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = 'Traitement...';
+        submitBtn.disabled = true;
+        
+        try {
+            const formData = new FormData(this);
+            const response = await fetch(this.action, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (response.ok) {
+                closeReservationModal();
+                showSuccessToast();
+                setTimeout(() => {
+                    window.location.href = "{{ path('app_voyage_index') }}";
+                }, 4000);
+            } else {
+                alert('Une erreur est survenue.');
+                isSubmitting = false;
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        } catch (error) {
+            alert('Une erreur est survenue.');
+            isSubmitting = false;
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    });
+    
+    // Validation temps réel
+    ['nom', 'prenom', 'telephone', 'email', 'nbre'].forEach(field => {
+        document.getElementById(field)?.addEventListener('input', function() {
+            const errorId = field + 'Error';
+            if (field === 'telephone') {
+                if (/^[0-9]{8,}$/.test(this.value.trim())) {
+                    document.getElementById(errorId).classList.remove('show');
+                    this.classList.remove('error');
+                }
+            } else if (field === 'email') {
+                if (/^[^\s@]+@([^\s@]+\.)+[^\s@]+$/.test(this.value.trim())) {
+                    document.getElementById(errorId).classList.remove('show');
+                    this.classList.remove('error');
+                }
+            } else if (field === 'nbre') {
+                if (parseInt(this.value) >= 1) {
+                    document.getElementById(errorId).classList.remove('show');
+                    this.classList.remove('error');
+                }
+            } else {
+                if (this.value.trim().length >= 2) {
+                    document.getElementById(errorId).classList.remove('show');
+                    this.classList.remove('error');
+                }
+            }
+        });
+    });
+    
+    window.onclick = function(event) {
+        const modal = document.getElementById('reservationModal');
+        if (event.target === modal) closeReservationModal();
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,181 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Tableau de bord - Boutique{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="stat-card shadow-sm" style="background: white; border-radius: 20px; padding: 25px; border: 1px solid #F0E8DD;">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-number" style="font-size: 2rem; font-weight: 800; color: #2C1810;">{{ stats.produits|default(0) }}</div>
+                        <div class="stat-label" style="color: #93032E; font-weight: 600; text-transform: uppercase; font-size: 0.8rem;">Produits en vente</div>
+                    </div>
+                    <div class="stat-icon" style="background: #FEF9F0; color: #93032E; width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-box-open"></i>
+                    </div>
+                </div>
+                <div class="stat-trend mt-3" style="font-size: 0.85rem;">
+                    <span class="trend-up" style="color: #1DB469;"><i class="fas fa-check-circle"></i> Catalogue actif</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="stat-card shadow-sm" style="background: white; border-radius: 20px; padding: 25px; border: 1px solid #F0E8DD;">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-number" style="font-size: 2rem; font-weight: 800; color: #2C1810;">{{ stats.commandes|default(0) }}</div>
+                        <div class="stat-label" style="color: #93032E; font-weight: 600; text-transform: uppercase; font-size: 0.8rem;">Commandes Totales</div>
+                    </div>
+                    <div class="stat-icon" style="background: #FEF9F0; color: #93032E; width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                </div>
+                <div class="stat-trend mt-3" style="font-size: 0.85rem;">
+                    <span class="trend-up" style="color: #1DB469;"><i class="fas fa-arrow-up"></i> +{{ stats.commandes > 0 ? '5' : '0' }}%</span>
+                    <span class="text-muted ms-1">depuis le lancement</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="stat-card shadow-sm" style="background: white; border-radius: 20px; padding: 25px; border: 1px solid #F0E8DD;">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-number" style="font-size: 2rem; font-weight: 800; color: #2C1810;">{{ stats.chiffreAffaires|default(0)|number_format(0, ',', ' ') }}</div>
+                        <div class="stat-label" style="color: #93032E; font-weight: 600; text-transform: uppercase; font-size: 0.8rem;">Revenus (TND)</div>
+                    </div>
+                    <div class="stat-icon" style="background: #EFFFF6; color: #1DB469; width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                </div>
+                <div class="stat-trend mt-3" style="font-size: 0.85rem;">
+                    <span class="trend-up" style="color: #1DB469;"><i class="fas fa-chart-line"></i> Chiffre d'affaires réel</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm" style="border-radius: 24px; background: white; padding: 20px;">
+                <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0" style="font-family: 'Playfair Display', serif; color: #2C1810;">
+                        <i class="fas fa-chart-area me-2" style="color: #93032E;"></i> Évolution des ventes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="salesChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm" style="border-radius: 24px; background: white; padding: 20px;">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="mb-0" style="font-family: 'Playfair Display', serif; color: #2C1810;">
+                        <i class="fas fa-fire me-2" style="color: #93032E;"></i> Top Produits
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="product-ranking">
+                        {% for item in top_produits %}
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="fw-bold text-dark" style="font-size: 0.9rem;">{{ item.titre }}</span>
+                                    <span class="badge" style="background: #FEF9F0; color: #93032E;">{{ item.totalQte }} vendus</span>
+                                </div>
+                                <div class="progress" style="height: 10px; border-radius: 5px; background: #F8F4EF;">
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="width: {{ item.pourcentage }}%; background: #93032E; border-radius: 5px;" 
+                                         aria-valuenow="{{ item.pourcentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <p class="text-center text-muted py-5">Aucune donnée de vente disponible.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm" style="border-radius: 24px; background: white; padding: 20px;">
+                <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0" style="font-family: 'Playfair Display', serif; color: #2C1810;">
+                        <i class="fas fa-receipt me-2" style="color: #93032E;"></i> Commandes Récentes
+                    </h5>
+                    <a href="{{ path('admin_commande_index') }}" class="btn btn-sm" style="color: #93032E; font-weight: 600;">Voir tout <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+                <div class="table-responsive mt-3">
+                    <table class="table align-middle">
+                        <thead class="text-muted" style="font-size: 0.8rem; text-transform: uppercase;">
+                            <tr>
+                                <th class="border-0">ID</th>
+                                <th class="border-0">Date</th>
+                                <th class="border-0">Total</th>
+                                <th class="border-0">Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in dernieres_commandes %}
+                            <tr style="border-bottom: 1px solid #F8F4EF;">
+                                <td class="fw-bold">#{{ c.id }}</td>
+                                <td>{{ c.dateC|date('d/m/Y') }}</td>
+                                <td class="text-danger fw-bold">{{ c.total|number_format(2, ',', ' ') }} TND</td>
+                                <td>
+                                    {% if c.statut == 'Livré' %}
+                                        <span class="badge" style="background: #EFFFF6; color: #1DB469;">{{ c.statut }}</span>
+                                    {% else %}
+                                        <span class="badge" style="background: #FFF9F0; color: #D48D3B;">{{ c.statut|default('En attente') }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+                datasets: [{
+                    label: 'Ventes (TND)',
+                    data: [200, 450, 380, 800, 520, 1074, 750], // Données démo
+                    borderColor: '#93032E',
+                    backgroundColor: 'rgba(147, 3, 46, 0.05)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#93032E',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#F0E8DD' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,814 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TunisiaJourney - Découvrez la beauté de la Tunisie{% endblock %}
+
+{% block stylesheets %}
+<style>
+    :root {
+        --tunisia-red: #E31B23;
+        --tunisia-dark-red: #C41E3A;
+        --tunisia-orange: #FF6B35;
+        --tunisia-gold: #FFD700;
+        --tunisia-blue: #0054A6;
+        --tunisia-sand: #FDF5E6;
+        --tunisia-white: #FFFFFF;
+        --tunisia-cream: #FEF9E6;
+        --tunisia-soft: #F5CAC3;
+        --dark-gray: #2C3E50;
+    }
+
+    /* Hero Section */
+    .hero {
+        position: relative;
+        height: 95vh;
+        min-height: 700px;
+        background-image: linear-gradient(rgba(227,27,35,0.2), rgba(245,202,195,0.3)), url('https://switchmed.eu/wp-content/uploads/2020/04/tunisia-1.jpg');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: white;
+        overflow: hidden;
+    }
+
+    .hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.3) 100%);
+    }
+
+    .hero::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 150px;
+        background: linear-gradient(to top, var(--tunisia-sand), transparent);
+        pointer-events: none;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 950px;
+        padding: 4rem;
+        background: rgba(0,0,0,0.3);
+        backdrop-filter: blur(12px);
+        border-radius: 60px;
+        border: 1px solid rgba(255,255,255,0.3);
+        box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+        animation: fadeInUp 1.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(50px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        text-shadow: 3px 3px 12px rgba(0,0,0,0.5);
+        color: #F5CAC3;
+        letter-spacing: 2px;
+        animation: fadeInUp 0.8s ease 0.2s both;
+    }
+
+    .hero p {
+        font-size: 1.3rem;
+        margin-bottom: 2.5rem;
+        font-weight: 300;
+        line-height: 1.8;
+        color: rgba(255,255,255,0.95);
+        animation: fadeInUp 0.8s ease 0.4s both;
+    }
+
+    .btn-hero {
+        background: linear-gradient(135deg, #E31B23, #F5CAC3);
+        color: white;
+        padding: 15px 45px;
+        border-radius: 50px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        box-shadow: 0 8px 25px rgba(227,27,35,0.4);
+        font-size: 1.1rem;
+        border: none;
+        animation: fadeInUp 0.8s ease 0.6s both;
+    }
+
+    .btn-hero:hover {
+        background: linear-gradient(135deg, #C41E3A, #E5B699);
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(227,27,35,0.6);
+        color: white;
+    }
+
+    /* Section Titles */
+    .section-title {
+        text-align: center;
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: var(--tunisia-red);
+        margin-bottom: 1rem;
+        position: relative;
+    }
+
+    .section-title:after {
+        content: '✦ ✦ ✦';
+        display: block;
+        color: #F5CAC3;
+        font-size: 1.3rem;
+        margin-top: 0.8rem;
+        letter-spacing: 12px;
+    }
+
+    .section-subtitle {
+        text-align: center;
+        color: var(--dark-gray);
+        font-size: 1rem;
+        margin-bottom: 2.5rem;
+        font-style: italic;
+        opacity: 0.8;
+    }
+
+    /* Cards */
+    .card-custom {
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        transition: all 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        margin-bottom: 30px;
+        cursor: pointer;
+        border: none;
+    }
+
+    .card-custom:hover {
+        transform: translateY(-12px);
+        box-shadow: 0 25px 50px rgba(227,27,35,0.25);
+    }
+
+    .card-img {
+        height: 280px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .card-img::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 80px;
+        background: linear-gradient(to top, white, transparent);
+        opacity: 0;
+        transition: opacity 0.4s ease;
+    }
+
+    .card-custom:hover .card-img::after {
+        opacity: 1;
+    }
+
+    .card-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: linear-gradient(135deg, var(--tunisia-red), #F5CAC3);
+        color: white;
+        padding: 6px 15px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        z-index: 2;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    }
+
+    .card-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.7s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    }
+
+    .card-custom:hover .card-img img {
+        transform: scale(1.08);
+    }
+
+    .card-content {
+        padding: 1.8rem;
+    }
+
+    .card-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--tunisia-red);
+        margin-bottom: 0.5rem;
+        transition: color 0.3s ease;
+    }
+
+    .card-custom:hover .card-title {
+        color: #F5CAC3;
+    }
+
+    .card-location {
+        color: var(--tunisia-orange);
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+        font-weight: 500;
+    }
+
+    .card-desc {
+        color: #6c757d;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .btn-card {
+        background: transparent;
+        border: 2px solid var(--tunisia-red);
+        color: var(--tunisia-red);
+        padding: 10px 30px;
+        border-radius: 30px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+
+    .btn-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--tunisia-red);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s ease;
+        z-index: -1;
+    }
+
+    .btn-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .btn-card:hover {
+        color: white;
+        border-color: var(--tunisia-red);
+        transform: translateY(-2px);
+    }
+
+    /* Service Cards */
+    .service-card {
+        background: white;
+        border-radius: 24px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .service-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--tunisia-red), #F5CAC3);
+        transform: scaleX(0);
+        transition: transform 0.4s ease;
+    }
+
+    .service-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .service-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(227,27,35,0.15);
+    }
+
+    .service-icon {
+        width: 90px;
+        height: 90px;
+        background: linear-gradient(135deg, var(--tunisia-red), #F5CAC3);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        transition: all 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        box-shadow: 0 8px 20px rgba(227,27,35,0.2);
+    }
+
+    .service-icon i {
+        font-size: 2.2rem;
+        color: white;
+        transition: transform 0.3s ease;
+    }
+
+    .service-card:hover .service-icon {
+        transform: rotateY(360deg);
+        box-shadow: 0 12px 30px rgba(227,27,35,0.3);
+    }
+
+    .service-card:hover .service-icon i {
+        transform: scale(1.1);
+    }
+
+    .service-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--tunisia-red);
+        margin-bottom: 0.8rem;
+    }
+
+    /* Newsletter */
+    .newsletter {
+        background: linear-gradient(135deg, var(--tunisia-red) 0%, #F5CAC3 100%);
+        padding: 4rem;
+        border-radius: 40px;
+        margin: 3rem 0;
+        box-shadow: 0 20px 40px rgba(227,27,35,0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .newsletter::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 400px;
+        height: 400px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        animation: float 8s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translate(0, 0); }
+        50% { transform: translate(-20px, -20px); }
+    }
+
+    .newsletter h3 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.2rem;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+        color: white;
+        position: relative;
+        z-index: 1;
+    }
+
+    .newsletter-input {
+        background: white;
+        border: 2px solid #F5CAC3;
+        padding: 14px 25px;
+        border-radius: 50px;
+        width: 65%;
+        margin-right: 10px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .newsletter-input:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(245,202,195,0.5);
+        transform: scale(1.02);
+    }
+
+    .btn-subscribe {
+        background: #F5CAC3;
+        color: var(--dark-gray);
+        padding: 14px 35px;
+        border-radius: 50px;
+        font-weight: 700;
+        border: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-subscribe:hover {
+        background: #E5B699;
+        transform: translateY(-2px);
+        color: white;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    @media (max-width: 768px) {
+        .hero h1 { font-size: 2.5rem; }
+        .hero-content { padding: 2rem; margin: 0 1rem; }
+        .section-title { font-size: 2rem; }
+        .newsletter-input { width: 100%; margin-bottom: 1rem; }
+        .card-img { height: 220px; }
+        .btn-hero { padding: 12px 30px; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<!-- HERO SECTION -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>Tunisie, Terre de Lumière</h1>
+        <p>Entre mer turquoise et sable doré, découvrez un pays où chaque sourire est une invitation et chaque paysage un poème.</p>
+        <a href="#destinations" class="btn-hero">Commencer l'Aventure</a>
+    </div>
+</section>
+
+<!-- DESTINATIONS VOYAGES -->
+<section id="destinations" class="py-5">
+    <div class="container">
+        <h2 class="section-title">Voyages en Tunisie</h2>
+        <p class="section-subtitle">Découvrez les trésors cachés de notre belle Tunisie</p>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <div class="card-img">
+                        <img src="https://media.istockphoto.com/id/1178164847/photo/blue-and-white-arabic-cafe-against-the-sea-in-sidi-bou-said-seascape-mountains-and-palm-trees.jpg?s=612x612&w=0&k=20&c=6wBvw3sL_b73JMZ96zug0DAi-SCXEEueMu6pKX61XAE=" alt="Sidi Bou Said">
+                        <span class="card-badge">Populaire</span>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Sidi Bou Said</h3>
+                        <p class="card-location"><i class="fas fa-map-marker-alt"></i> Carthage</p>
+                        <p class="card-desc">Le joyau bleu et blanc perché au-dessus de la mer, un lieu d'inspiration pour les artistes du monde entier.</p>
+                        <a href="#" class="btn-card">Découvrir</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <div class="card-img">
+                        <img src="https://images.pexels.com/photos/16563665/pexels-photo-16563665.jpeg?_gl=1*ip1lfx*_ga*MTM5NTY1OTg2Mi4xNzcxMzIyNjYx*_ga_8JE65Q40S6*czE3NzQ1MTM0ODgkbzQkZzEkdDE3NzQ1MTM3OTIkajUzJGwwJGgw" alt="Djerba">
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Djerba</h3>
+                        <p class="card-location"><i class="fas fa-map-marker-alt"></i> Île de Djerba</p>
+                        <p class="card-desc">L'île aux palmiers, où les plages de sable fin rencontrent une culture millénaire.</p>
+                        <a href="#" class="btn-card">Découvrir</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <div class="card-img">
+                        <img src="https://images.pexels.com/photos/35976808/pexels-photo-35976808.jpeg?_gl=1*fh6day*_ga*MTM5NTY1OTg2Mi4xNzcxMzIyNjYx*_ga_8JE65Q40S6*czE3NzQ1MTM0ODgkbzQkZzEkdDE3NzQ1MTQwMjUkajIzJGwwJGgw" alt="Sahara">
+                        <span class="card-badge">Aventure</span>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Sahara Tunisien</h3>
+                        <p class="card-location"><i class="fas fa-map-marker-alt"></i> Douz / Tozeur</p>
+                        <p class="card-desc">Les dunes infinies, des couchers de soleil magiques, des nuits inoubliables sous les étoiles.</p>
+                        <a href="#" class="btn-card">Découvrir</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <div class="card-img">
+                        <img src="https://media.istockphoto.com/id/2178100446/photo/archaeological-site-of-carthage-tunisia.jpg?s=612x612&w=0&k=20&c=v-OhT9Sp6w1CjEbnNpglfmAQRNbbOByWogaBjasOX2g=" alt="Carthage">
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Carthage</h3>
+                        <p class="card-location"><i class="fas fa-map-marker-alt"></i> Carthage</p>
+                        <p class="card-desc">Vestiges de l'antique cité punique et romaine, classée au patrimoine mondial de l'UNESCO.</p>
+                        <a href="#" class="btn-card">Découvrir</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <div class="card-img">
+                        <img src="https://images.pexels.com/photos/35284188/pexels-photo-35284188.jpeg?_gl=1*1r4adwm*_ga*MTM5NTY1OTg2Mi4xNzcxMzIyNjYx*_ga_8JE65Q40S6*czE3NzQ1MTM0ODgkbzQkZzEkdDE3NzQ1MTQxODMkajUxJGwwJGgw" alt="Tozeur">
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Tozeur</h3>
+                        <p class="card-location"><i class="fas fa-map-marker-alt"></i> Tozeur</p>
+                        <p class="card-desc">La porte du désert, avec ses oasis luxuriantes, ses palmeraies et son architecture unique en briques.</p>
+                        <a href="#" class="btn-card">Découvrir</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <div class="card-img">
+                        <img src="https://images.pexels.com/photos/891125/pexels-photo-891125.jpeg?_gl=1*5m8w99*_ga*MTM5NTY1OTg2Mi4xNzcxMzIyNjYx*_ga_8JE65Q40S6*czE3NzQ1MTM0ODgkbzQkZzEkdDE3NzQ1MTQyNDYkajUyJGwwJGgw" alt="Monastir">
+                        <span class="card-badge">Nouveau</span>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Monastir</h3>
+                        <p class="card-location"><i class="fas fa-map-marker-alt"></i> Monastir</p>
+                        <p class="card-desc">Ville balnéaire historique avec son ribat médiéval et ses plages de rêve.</p>
+                        <a href="#" class="btn-card">Découvrir</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- HÔTELS SECTION -->
+<section class="py-5" style="background: var(--tunisia-cream);">
+    <div class="container">
+        <h2 class="section-title">Hôtels de Charme</h2>
+        <p class="section-subtitle">Un hébergement d'exception pour un séjour inoubliable</p>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <div class="card-img">
+                        <img src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/26/38/af/1b/hotel-royal-azur-thalassa.jpg?w=1200&h=-1&s=1" alt="Hôtel Luxe">
+                        <span class="card-badge">5 Étoiles</span>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Palais Hammamet</h3>
+                        <p class="card-location"><i class="fas fa-map-marker-alt"></i> Hammamet</p>
+                        <p class="card-desc">Hôtel 5 étoiles avec vue sur mer, spa traditionnel et piscine à débordement.</p>
+                        <a href="#" class="btn-card">Réserver</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <div class="card-img">
+                        <img src="https://a0.muscache.com/im/pictures/hosting/Hosting-1542609659392383400/original/0a2f0b81-e7da-417d-8006-509e69d87039.jpeg" alt="Riad">
+                        <span class="card-badge">Traditionnel</span>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Riad Sidi Bou</h3>
+                        <p class="card-location"><i class="fas fa-map-marker-alt"></i> Sidi Bou Said</p>
+                        <p class="card-desc">Riad traditionnel avec patio andalou, fontaine centrale et vue panoramique.</p>
+                        <a href="#" class="btn-card">Réserver</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <div class="card-img">
+                        <img src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/03/5d/80/f0/camp-mars.jpg?w=900&h=500&s=1" alt="Camp Désert">
+                        <span class="card-badge">Aventure</span>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Camp Sahara</h3>
+                        <p class="card-location"><i class="fas fa-map-marker-alt"></i> Douz</p>
+                        <p class="card-desc">Nuit sous les étoiles, randonnée à dos de dromadaire, dîner traditionnel.</p>
+                        <a href="#" class="btn-card">Réserver</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ÉVÉNEMENTS SECTION -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="section-title">Événements Culturels</h2>
+        <p class="section-subtitle">Vivez la culture tunisienne dans toute sa splendeur</p>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <div class="card-img">
+                        <img src="https://festivaldehammamet.com/telechargements/actualites/festival_international_hammamet_168.png" alt="Festival">
+                        <span class="card-badge">Été 2026</span>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Festival de Carthage</h3>
+                        <p class="card-location"><i class="fas fa-calendar-alt"></i> Juillet - Août 2026</p>
+                        <p class="card-desc">Le plus grand festival culturel de Tunisie, musique, théâtre et danse dans un cadre historique.</p>
+                        <a href="#" class="btn-card">En savoir plus</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <div class="card-img">
+                        <img src="https://www.lequotidien.com.tn/images/Festival_douz.jpg" alt="Sahara Festival">
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Festival du Sahara</h3>
+                        <p class="card-location"><i class="fas fa-calendar-alt"></i> Décembre 2026</p>
+                        <p class="card-desc">Célébration des traditions nomades au cœur du désert, musique, danses et folklore.</p>
+                        <a href="#" class="btn-card">En savoir plus</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <div class="card-img">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTRA3fGfU1S1982guQEH96pRNEDAr2vg79NTA&s" alt="Concert">
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Jazz à Hammamet</h3>
+                        <p class="card-location"><i class="fas fa-calendar-alt"></i> Juillet 2026</p>
+                        <p class="card-desc">Festival de jazz international en bord de mer, des artistes du monde entier.</p>
+                        <a href="#" class="btn-card">En savoir plus</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PRODUITS ARTISANAUX SECTION -->
+<section class="py-5" style="background: var(--tunisia-cream);">
+    <div class="container">
+        <h2 class="section-title">Produits Artisanaux Tunisiens</h2>
+        <p class="section-subtitle">Des trésors faits main par nos artisans talentueux</p>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="service-card">
+                    <div class="service-icon"><i class="fas fa-palette"></i></div>
+                    <h3 class="service-title">Poterie de Nabeul</h3>
+                    <p class="card-desc">Plats, vases et céramiques peints à la main</p>
+                    <span style="color: var(--tunisia-red); font-weight: 700;">À partir de 25 TND</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="service-card">
+                    <div class="service-icon"><i class="fas fa-rug"></i></div>
+                    <h3 class="service-title">Tapis Kairouanais</h3>
+                    <p class="card-desc">Tapis traditionnel tissé à la main</p>
+                    <span style="color: var(--tunisia-red); font-weight: 700;">À partir de 350 TND</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="service-card">
+                    <div class="service-icon"><i class="fas fa-utensils"></i></div>
+                    <h3 class="service-title">Produits du Terroir</h3>
+                    <p class="card-desc">Harissa, huile d'olive, dattes, épices</p>
+                    <span style="color: var(--tunisia-red); font-weight: 700;">À partir de 10 TND</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="service-card">
+                    <div class="service-icon"><i class="fas fa-gem"></i></div>
+                    <h3 class="service-title">Bijoux Berbères</h3>
+                    <p class="card-desc">Argent, corail et pierres semi-précieuses</p>
+                    <span style="color: var(--tunisia-red); font-weight: 700;">À partir de 80 TND</span>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <div class="card-img">
+                        <img src="https://ik.imagekit.io/yawakit/yawakit/279349321_419307756867240_1223823847118876224_n_b0e1f09e98_DT5elcLN5.jpg" alt="Makroudh">
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Makroudh</h3>
+                        <p class="card-desc">Pâtisserie traditionnelle aux dattes et miel de qualité supérieure</p>
+                        <span style="color: var(--tunisia-red); font-weight: 800; font-size: 1.1rem;">15 TND / kg</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <div class="card-img">
+                        <img src="https://www.diari.tn/sites/default/files/image/recette/couscous-viande_0.jpg" alt="Couscous">
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Couscous Traditionnel</h3>
+                        <p class="card-desc">Le plat national tunisien préparé selon la recette ancestrale</p>
+                        <span style="color: var(--tunisia-red); font-weight: 800; font-size: 1.1rem;">À partir de 25 TND</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <div class="card-img">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0jDM8qVmoOfqDCrvUzEUQdlcL4pob3weA3w&s" alt="Brik">
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Brik à l'Oeuf</h3>
+                        <p class="card-desc">Spécialité croustillante en feuille de malsouka dorée</p>
+                        <span style="color: var(--tunisia-red); font-weight: 800; font-size: 1.1rem;">3 TND / pièce</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <div class="card-img">
+                        <img src="https://assets.afcdn.com/recipe/20250304/158702_w1024h1024c1cx3306cy2204cxt0cyt0cxb6612cyb4408.webp" alt="Couscous Royal">
+                        <span class="card-badge">Spécialité</span>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Couscous Royal</h3>
+                        <p class="card-desc">Avec agneau, poulet, merguez et légumes du marché</p>
+                        <span style="color: var(--tunisia-red); font-weight: 800; font-size: 1.1rem;">35 TND / personne</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <div class="card-img">
+                        <img src="https://img.cuisineaz.com/660x495/2024/08/16/i199460-salade-mechouia-tunisienne.jpg" alt="Mechouia">
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Salade Mechouia</h3>
+                        <p class="card-desc">Salade grillée traditionnelle aux poivrons et tomates</p>
+                        <span style="color: var(--tunisia-red); font-weight: 800; font-size: 1.1rem;">8 TND</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <div class="card-img">
+                        <img src="https://www.kilometre-0.fr/wp-content/uploads/2021/07/20210715Cuisine_mart70.jpg" alt="Chakhchoukha">
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Chakhchoukha</h3>
+                        <p class="card-desc">Plat traditionnel du sud à base de pain émietté et sauce rouge</p>
+                        <span style="color: var(--tunisia-red); font-weight: 800; font-size: 1.1rem;">20 TND</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FORUM SECTION -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="section-title">Forum des Voyageurs</h2>
+        <p class="section-subtitle">Partagez vos expériences</p>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card-custom">
+                    <div class="card-content">
+                        <h3 class="card-title">💬 Discussions</h3>
+                        <p class="card-desc"><i class="fas fa-comment me-2" style="color: var(--tunisia-red);"></i> "Chneya a7sen makel fel medina?" - 28 réponses</p>
+                        <p class="card-desc"><i class="fas fa-comment me-2" style="color: var(--tunisia-red);"></i> "Conseils Sahara 3la famille?" - 42 réponses</p>
+                        <p class="card-desc"><i class="fas fa-comment me-2" style="color: var(--tunisia-red);"></i> "Souvenirs men Djerba?" - 19 réponses</p>
+                        <a href="#" class="btn-card mt-2">Participer</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card-custom">
+                    <div class="card-content">
+                        <h3 class="card-title">🌟 Communauté</h3>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <h4 style="color: var(--tunisia-red); font-size: 2rem; font-weight: 700;">2,500+</h4>
+                                <small>Membres</small>
+                            </div>
+                            <div class="col-6">
+                                <h4 style="color: #F5CAC3; font-size: 2rem; font-weight: 700;">4.9/5</h4>
+                                <small>Satisfaction</small>
+                            </div>
+                        </div>
+                        <a href="#" class="btn-card mt-3 w-100">Créer un sujet</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    document.querySelector('.btn-subscribe')?.addEventListener('click', () => {
+        const email = document.querySelector('.newsletter-input').value;
+        if(email && email.includes('@')) {
+            alert('Merci pour votre inscription!');
+            document.querySelector('.newsletter-input').value = '';
+        } else {
+            alert('Veuillez entrer une adresse email valide.');
+        }
+    });
+</script>
+{% endblock %}

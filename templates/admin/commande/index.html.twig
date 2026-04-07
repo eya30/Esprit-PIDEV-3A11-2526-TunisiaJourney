@@ -1,0 +1,148 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Gestion des Commandes{% endblock %}
+{% block page_title %}Liste des commandes{% endblock %}
+
+{% block body %}
+<div class="page-header mb-4">
+    <p class="page-header-subtitle">Gérez l'ensemble des commandes passées</p>
+</div>
+
+<div class="d-flex justify-content-end mb-4" style="gap: 12px;">
+    <a href="{{ path('admin_commande_export_pdf') }}" class="btn btn-pdf" target="_blank">
+        <i class="fas fa-file-pdf me-2"></i> Exporter en PDF
+    </a>
+    <a href="{{ path('admin_produit_index') }}" class="btn btn-retour">
+        <i class="fas fa-arrow-left me-2"></i> Retour aux produits
+    </a>
+</div>
+
+<div class="admin-table">
+    <table class="table">
+        <thead>
+            <tr>
+                <th style="width: 60px">#</th>
+                <th style="width: 100px">DATE</th>
+                <th>ARTICLES</th>
+                <th style="width: 200px">ADRESSE</th>
+                <th style="width: 150px">PAIEMENT</th>
+                <th style="width: 120px">TOTAL</th>
+                <th style="width: 130px">STATUT</th>
+                <th style="width: 80px">ACTION</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for commande in commandes %}
+            <tr>
+                <td><strong>#{{ commande.id }}</strong></td>
+                <td>{{ commande.dateC|date('d/m/Y') }}</td>
+                <td>
+                    {% for ligne in commande.lignes %}
+                        <div class="ligne-produit">
+                            {% if ligne.produit.image %}
+                                <img src="{{ asset('uploads/produits/' ~ ligne.produit.image) }}"
+                                     alt="{{ ligne.produit.titre }}">
+                            {% else %}
+                                <div class="ligne-placeholder"><i class="fas fa-box"></i></div>
+                            {% endif %}
+                            <span>{{ ligne.produit.titre }} × {{ ligne.quantite }}</span>
+                        </div>
+                    {% else %}
+                        <span style="color:#9CA3AF; font-size:0.8rem;">—</span>
+                    {% endfor %}
+                </td>
+                <td style="font-size:0.85rem;">
+                    {{ commande.adresseLiv ?? '—' }}
+                    {% if commande.codePostal %}
+                        <br><small style="color:#9CA3AF;">{{ commande.codePostal }}</small>
+                    {% endif %}
+                </td>
+                <td style="font-size:0.85rem;">
+                    <i class="fas fa-credit-card me-1" style="color:#C49A6C;"></i>
+                    {{ commande.modePaiement ?? '—' }}
+                </td>
+                <td class="commande-price">{{ commande.total|number_format(2, ',', ' ') }} TND</td>
+                <td>
+                    {% set s = commande.statut|default('En attente') %}
+                    {% if s == 'Livrée' %}
+                        <span class="badge-statut badge-livree">{{ s }}</span>
+                    {% elseif s == 'Confirmée' %}
+                        <span class="badge-statut badge-confirmee">{{ s }}</span>
+                    {% elseif s == 'Expédiée' %}
+                        <span class="badge-statut badge-expediee">{{ s }}</span>
+                    {% elseif s == 'Annulée' %}
+                        <span class="badge-statut badge-annulee">{{ s }}</span>
+                    {% else %}
+                        <span class="badge-statut badge-attente">{{ s }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <form method="post"
+                          action="{{ path('admin_commande_delete', {id: commande.id}) }}"
+                          onsubmit="return confirm('Supprimer la commande #{{ commande.id }} ?')">
+                        <button type="submit" class="action-btn delete-btn" title="Supprimer">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" class="text-center py-5">
+                    <i class="fas fa-shopping-bag fa-3x mb-3" style="color:#E8DFD1;"></i>
+                    <p class="text-muted mb-0">Aucune commande trouvée</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Total général -->
+{% if commandes|length > 0 %}
+<div class="total-general">
+    <span><i class="fas fa-coins me-2"></i> Chiffre d'affaires total :</span>
+    <strong>
+        {% set ca = 0 %}
+        {% for c in commandes %}{% set ca = ca + (c.total ?? 0) %}{% endfor %}
+        {{ ca|number_format(2, ',', ' ') }} TND
+    </strong>
+</div>
+{% endif %}
+
+<style>
+    .page-header-subtitle { font-size:0.9rem; color:#93032E; font-weight:500; margin:0; }
+
+    .admin-table { background:white; border-radius:20px; border:1px solid #F0E8DD; overflow-x:auto; }
+    .admin-table .table { margin-bottom:0; min-width:900px; }
+    .admin-table th { background:#FEF9F0; padding:16px 20px; font-size:12px; font-weight:700; color:#93032E; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid #F0E8DD; white-space:nowrap; }
+    .admin-table td { padding:14px 20px; font-size:13px; border-bottom:1px solid #F5F0E8; color:#4A3B2F; vertical-align:middle; background:white; }
+    .admin-table tr:hover td { background:#FFF9F0; }
+
+    .ligne-produit { display:flex; align-items:center; gap:6px; margin-bottom:4px; font-size:0.82rem; }
+    .ligne-produit img { width:28px; height:28px; object-fit:cover; border-radius:6px; border:1px solid #F0E8DD; }
+    .ligne-placeholder { width:28px; height:28px; background:#FEF9F0; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#E8DFD1; font-size:0.85rem; }
+
+    .commande-price { font-weight:700; color:#93032E; }
+
+    .badge-statut { display:inline-flex; align-items:center; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:600; white-space:nowrap; }
+    .badge-attente   { background:#FEF3C7; color:#D97706; }
+    .badge-confirmee { background:#D1FAE5; color:#065F46; }
+    .badge-expediee  { background:#DBEAFE; color:#1D4ED8; }
+    .badge-livree    { background:#F3F4F6; color:#374151; }
+    .badge-annulee   { background:#FEE2E2; color:#991B1B; }
+
+    .action-btn { width:34px; height:34px; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; transition:all 0.2s; cursor:pointer; border:none; font-size:0.85rem; }
+    .delete-btn { background:#FEF2F2; color:#EF4444; }
+    .delete-btn:hover { background:#EF4444; color:white; transform:translateY(-2px); }
+
+    .btn-pdf { background:#93032E; border:none; padding:10px 24px; border-radius:40px; font-size:13px; font-weight:600; color:white; transition:all 0.2s; text-decoration:none; display:inline-flex; align-items:center; }
+    .btn-pdf:hover { background:#6B0221; transform:translateY(-2px); box-shadow:0 4px 12px rgba(147,3,46,0.3); color:white; }
+
+    .btn-retour { background:white; border:2px solid #93032E; padding:10px 24px; border-radius:40px; font-size:13px; font-weight:600; color:#93032E; transition:all 0.2s; text-decoration:none; display:inline-flex; align-items:center; }
+    .btn-retour:hover { background:#93032E; color:white; transform:translateY(-2px); }
+
+    .total-general { display:flex; justify-content:flex-end; align-items:center; gap:12px; margin-top:20px; padding:16px 24px; background:white; border-radius:16px; border:1px solid #F0E8DD; font-size:1rem; color:#4A3B2F; }
+    .total-general strong { font-size:1.2rem; color:#93032E; font-weight:800; }
+</style>
+{% endblock %}

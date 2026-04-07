@@ -1,0 +1,693 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TunisiaJourney - Découvrez la Tunisie{% endblock %}
+
+{% block stylesheets %}
+<style>
+    :root {
+        --tunisia-red: #E31B23;
+        --tunisia-dark-red: #C41E3A;
+        --tunisia-orange: #FF6B35;
+        --tunisia-gold: #FFD700;
+        --tunisia-blue: #0054A6;
+        --tunisia-sand: #FDF5E6;
+        --tunisia-white: #FFFFFF;
+        --tunisia-cream: #FEF9E6;
+        --tunisia-soft: #F5CAC3;
+        --dark-gray: #2C3E50;
+    }
+
+    /* Hero Section */
+    .hero {
+        position: relative;
+        height: 70vh;
+        min-height: 500px;
+        background-image: linear-gradient(rgba(227,27,35,0.2), rgba(245,202,195,0.3)), url('https://switchmed.eu/wp-content/uploads/2020/04/tunisia-1.jpg');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: white;
+        overflow: hidden;
+    }
+
+    .hero::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.3) 100%);
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 800px;
+        padding: 3rem;
+        animation: fadeInUp 1.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(50px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 4rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-shadow: 3px 3px 12px rgba(0,0,0,0.5);
+        color: #F5CAC3;
+        letter-spacing: 2px;
+    }
+
+    .hero p {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        font-weight: 300;
+        line-height: 1.8;
+        color: rgba(255,255,255,0.95);
+    }
+
+    /* Section Titles */
+    .section-title {
+        text-align: center;
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: var(--tunisia-red);
+        margin-bottom: 1rem;
+        position: relative;
+    }
+
+    .section-title:after {
+        content: '✦ ✦ ✦';
+        display: block;
+        color: #F5CAC3;
+        font-size: 1.3rem;
+        margin-top: 0.8rem;
+        letter-spacing: 12px;
+    }
+
+    .section-subtitle {
+        text-align: center;
+        color: var(--dark-gray);
+        font-size: 1rem;
+        margin-bottom: 2.5rem;
+        font-style: italic;
+        opacity: 0.8;
+    }
+
+    /* Filters Bar */
+    .filters-bar {
+        background: white;
+        padding: 1.5rem 2rem;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        margin-bottom: 3rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filter-group label {
+        font-weight: 500;
+        color: var(--dark-gray);
+        font-size: 0.9rem;
+    }
+
+    .filter-select {
+        padding: 10px 20px;
+        border: 2px solid #F5CAC3;
+        border-radius: 25px;
+        background: white;
+        font-size: 0.9rem;
+        color: var(--dark-gray);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 150px;
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--tunisia-red);
+        box-shadow: 0 0 0 3px rgba(227,27,35,0.1);
+    }
+
+    .search-input {
+        padding: 10px 20px;
+        border: 2px solid #F5CAC3;
+        border-radius: 25px;
+        background: white;
+        font-size: 0.9rem;
+        width: 250px;
+        transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--tunisia-red);
+        box-shadow: 0 0 0 3px rgba(227,27,35,0.1);
+        width: 280px;
+    }
+
+    .btn-filter {
+        background: linear-gradient(135deg, var(--tunisia-red), #F5CAC3);
+        color: white;
+        padding: 10px 25px;
+        border-radius: 25px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(227,27,35,0.4);
+    }
+
+    /* Cards */
+    .card-custom {
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        transition: all 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        margin-bottom: 30px;
+        cursor: pointer;
+        border: none;
+        position: relative;
+    }
+
+    .card-custom:hover {
+        transform: translateY(-12px);
+        box-shadow: 0 25px 50px rgba(227,27,35,0.25);
+    }
+
+    .card-img {
+        height: 280px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .card-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: linear-gradient(135deg, var(--tunisia-red), #F5CAC3);
+        color: white;
+        padding: 6px 15px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        z-index: 2;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    }
+
+    .card-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.7s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    }
+
+    .card-custom:hover .card-img img {
+        transform: scale(1.08);
+    }
+
+    .card-content {
+        padding: 1.8rem;
+    }
+
+    .card-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--tunisia-red);
+        margin-bottom: 0.5rem;
+    }
+
+    .card-location {
+        color: var(--tunisia-orange);
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .card-desc {
+        color: #6c757d;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .card-price {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: var(--tunisia-red);
+        margin-bottom: 1rem;
+    }
+
+    .card-price span {
+        font-size: 0.9rem;
+        font-weight: 400;
+        color: #6c757d;
+    }
+
+    .card-meta {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .card-meta i {
+        color: var(--tunisia-orange);
+        margin-right: 3px;
+    }
+
+    /* Button Group - DEUX BOUTONS */
+    .button-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 1rem;
+    }
+
+    .btn-details {
+        flex: 1;
+        background: transparent;
+        border: 2px solid var(--tunisia-red);
+        color: var(--tunisia-red);
+        padding: 10px 0;
+        border-radius: 30px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+    }
+
+    .btn-details:hover {
+        background: var(--tunisia-red);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-programmes {
+        flex: 1;
+        background: linear-gradient(135deg, var(--tunisia-red), var(--tunisia-orange));
+        color: white;
+        border: none;
+        padding: 10px 0;
+        border-radius: 30px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+    }
+
+    .btn-programmes:hover {
+        background: linear-gradient(135deg, var(--tunisia-orange), var(--tunisia-red));
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 3rem;
+    }
+
+    .pagination a, .pagination span {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: white;
+        color: var(--dark-gray);
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    .pagination a:hover, .pagination .active {
+        background: linear-gradient(135deg, var(--tunisia-red), #F5CAC3);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+        .hero h1 { font-size: 2.5rem; }
+        .hero-content { padding: 2rem; }
+        .section-title { font-size: 2rem; }
+        .filters-bar { flex-direction: column; }
+        .search-input { width: 100%; }
+        .card-img { height: 220px; }
+        .button-group { flex-direction: column; gap: 8px; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<!-- HERO SECTION -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>Nos Voyages en Tunisie</h1>
+        <p>Découvrez nos séjours exclusifs, conçus pour vous faire vivre la magie de la Tunisie.</p>
+    </div>
+</section>
+
+<!-- VOYAGES LISTING -->
+<section class="py-5">
+    <div class="container">
+        <!-- Filters -->
+        <div class="filters-bar">
+            <div class="filter-group">
+                <label><i class="fas fa-search me-1"></i></label>
+                <input type="text" class="search-input" placeholder="Rechercher un voyage...">
+            </div>
+            <div class="filter-group">
+                <label for="destination">Destination :</label>
+                <select class="filter-select" id="destination">
+                    <option value="">Toutes</option>
+                    <option value="sidi-bou-said">Sidi Bou Said</option>
+                    <option value="djerba">Djerba</option>
+                    <option value="sahara">Sahara</option>
+                    <option value="carthage">Carthage</option>
+                    <option value="tozeur">Tozeur</option>
+                    <option value="monastir">Monastir</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="duration">Durée :</label>
+                <select class="filter-select" id="duration">
+                    <option value="">Toutes</option>
+                    <option value="3">3 jours</option>
+                    <option value="5">5 jours</option>
+                    <option value="7">7 jours</option>
+                    <option value="10">10 jours+</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="price">Budget :</label>
+                <select class="filter-select" id="price">
+                    <option value="">Tous</option>
+                    <option value="budget">Économique</option>
+                    <option value="medium">Confort</option>
+                    <option value="luxury">Luxe</option>
+                </select>
+            </div>
+            <button class="btn-filter"><i class="fas fa-filter me-1"></i> Filtrer</button>
+        </div>
+
+        <h2 class="section-title">Séjours Disponibles</h2>
+        <p class="section-subtitle">Choisissez votre prochaine aventure tunisienne</p>
+
+        <div class="row" id="voyagesGrid">
+            {% for voyage in voyages %}
+                <div class="col-md-4 voyage-item" data-name="{{ voyage.nom|lower }}" data-price="{{ voyage.prix }}">
+                    <div class="card-custom">
+                        <div class="card-img">
+                            <img src="{{ voyage.image ? asset('uploads/voyages/' ~ voyage.image) : 'https://images.pexels.com/photos/1618750/pexels-photo-1618750.jpeg?auto=compress&cs=tinysrgb&w=800' }}" alt="{{ voyage.nom }}">
+                            <span class="card-badge">À découvrir</span>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">{{ voyage.nom }}</h3>
+                            <p class="card-location"><i class="fas fa-map-marker-alt"></i> {{ voyage.lieu|default('Tunisie') }}</p>
+                            <p class="card-desc">{{ voyage.description|slice(0, 120) }}...</p>
+                            <div class="card-meta">
+                                <span><i class="fas fa-user"></i> {{ voyage.capacite|default('2-8') }} pers</span>
+                                <span><i class="fas fa-clock"></i> {{ voyage.heure|date('H:i') }}</span>
+                                <span><i class="fas fa-star"></i> 4.8/5</span>
+                            </div>
+                            <div class="card-price">{{ voyage.prix|number_format(0, ',', ' ') }} TND <span>/personne</span></div>
+                            <!-- DEUX BOUTONS -->
+                            <div class="button-group">
+                                <a href="{{ path('app_voyage_show', {'idV': voyage.idV}) }}" class="btn-details">
+                                    <i class="fas fa-info-circle me-1"></i> Détails
+                                </a>
+                                <a href="{{ path('app_voyage_programmes', {'idV': voyage.idV}) }}" class="btn-programmes">
+                                    <i class="fas fa-calendar-alt me-1"></i> Programmes
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="col-12 text-center">
+                    <p>Aucun voyage trouvé.</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <a href="#"><i class="fas fa-chevron-left"></i></a>
+            <span class="active">1</span>
+            <a href="#">2</a>
+            <a href="#">3</a>
+            <a href="#"><i class="fas fa-chevron-right"></i></a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    // Filter functionality
+    document.querySelector('.btn-filter')?.addEventListener('click', () => {
+        const destination = document.getElementById('destination').value;
+        const duration = document.getElementById('duration').value;
+        const price = document.getElementById('price').value;
+        const search = document.querySelector('.search-input').value.toLowerCase();
+        
+        document.querySelectorAll('.voyage-item').forEach(item => {
+            const name = item.getAttribute('data-name');
+            let show = true;
+            
+            if(search && !name.includes(search)) {
+                show = false;
+            }
+            
+            // Ici vous pouvez ajouter plus de logique de filtrage
+            item.style.display = show ? 'block' : 'none';
+        });
+        
+        console.log('Filtres appliqués:', { destination, duration, price, search });
+    });
+
+    // Search input enhancement
+    document.querySelector('.search-input')?.addEventListener('input', (e) => {
+        const value = e.target.value.toLowerCase();
+        document.querySelectorAll('.voyage-item').forEach(item => {
+            const name = item.getAttribute('data-name');
+            if(name.includes(value)) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+</script>
+
+<!-- Scripts pour le sidebar des réservations -->
+<script>
+    // Gestion du sidebar des réservations
+    const reservationIcon = document.getElementById('reservationIcon');
+    const sidebar = document.getElementById('reservationsSidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+    
+    function openSidebar() {
+        if (sidebar && overlay) {
+            sidebar.classList.add('open');
+            overlay.classList.add('active');
+            loadReservations();
+        }
+    }
+    
+    function closeSidebar() {
+        if (sidebar && overlay) {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        }
+    }
+    
+    if (reservationIcon) {
+        reservationIcon.addEventListener('click', openSidebar);
+    }
+    if (closeSidebarBtn) {
+        closeSidebarBtn.addEventListener('click', closeSidebar);
+    }
+    if (overlay) {
+        overlay.addEventListener('click', closeSidebar);
+    }
+    
+    // Charger les réservations
+    async function loadReservations() {
+        const container = document.getElementById('reservationsList');
+        if (!container) return;
+        
+        try {
+            const response = await fetch('/api/reservations');
+            const reservations = await response.json();
+            
+            const countBadge = document.getElementById('reservationCount');
+            if (countBadge) countBadge.textContent = reservations.length;
+            
+            if (reservations.length === 0) {
+                container.innerHTML = '<div class="empty-reservations"><i class="fas fa-ticket-alt fa-3x mb-2"></i><p>Aucune réservation trouvée</p></div>';
+                return;
+            }
+            
+            container.innerHTML = reservations.map(res => `
+                <div class="reservation-card" data-id="${res.idRP}">
+                    <div class="reservation-info">
+                        <div class="reservation-name">${escapeHtml(res.prenom)} ${escapeHtml(res.nom)}</div>
+                        <div class="reservation-details">
+                            <div><i class="fas fa-phone"></i> ${escapeHtml(res.telephone)}</div>
+                            <div><i class="fas fa-envelope"></i> ${escapeHtml(res.email)}</div>
+                            <div><i class="fas fa-users"></i> ${res.nbre} personnes</div>
+                            <div><i class="fas fa-calendar"></i> ${res.dateProgramme}</div>
+                            <div><i class="fas fa-tag"></i> ${res.prixProg} DT</div>
+                        </div>
+                    </div>
+                    <div class="reservation-actions">
+                        <button class="btn-edit-reservation" onclick="editReservation(${res.idRP})">
+                            <i class="fas fa-edit"></i> Modifier
+                        </button>
+                        <button class="btn-delete-reservation" onclick="deleteReservation(${res.idRP})">
+                            <i class="fas fa-trash"></i> Supprimer
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        } catch (error) {
+            container.innerHTML = '<div class="empty-reservations"><i class="fas fa-exclamation-circle fa-3x mb-2"></i><p>Erreur de chargement</p></div>';
+        }
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    // Éditer une réservation
+    async function editReservation(id) {
+        try {
+            const response = await fetch(`/api/reservations/${id}`);
+            const res = await response.json();
+            
+            document.getElementById('editReservationId').value = res.idRP;
+            document.getElementById('editNom').value = res.nom;
+            document.getElementById('editPrenom').value = res.prenom;
+            document.getElementById('editTelephone').value = res.telephone;
+            document.getElementById('editEmail').value = res.email;
+            document.getElementById('editNbre').value = res.nbre;
+            
+            document.getElementById('editModal').classList.add('active');
+        } catch (error) {
+            alert('Erreur lors du chargement');
+        }
+    }
+    
+    // Fermer le modal d'édition
+    const closeEditModal = document.getElementById('closeEditModal');
+    if (closeEditModal) {
+        closeEditModal.addEventListener('click', () => {
+            document.getElementById('editModal').classList.remove('active');
+        });
+    }
+    
+    // Soumettre l'édition
+    const editForm = document.getElementById('editReservationForm');
+    if (editForm) {
+        editForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editReservationId').value;
+            const data = {
+                nom: document.getElementById('editNom').value,
+                prenom: document.getElementById('editPrenom').value,
+                telephone: document.getElementById('editTelephone').value,
+                email: document.getElementById('editEmail').value,
+                nbre: parseInt(document.getElementById('editNbre').value)
+            };
+            
+            try {
+                const response = await fetch(`/api/reservations/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    document.getElementById('editModal').classList.remove('active');
+                    loadReservations();
+                    showToast('Réservation modifiée avec succès !');
+                } else {
+                    alert('Erreur lors de la modification');
+                }
+            } catch (error) {
+                alert('Erreur lors de la modification');
+            }
+        });
+    }
+    
+    // Supprimer une réservation
+    async function deleteReservation(id) {
+        if (!confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?')) return;
+        
+        try {
+            const response = await fetch(`/api/reservations/${id}`, {
+                method: 'DELETE'
+            });
+            
+            if (response.ok) {
+                loadReservations();
+                showToast('Réservation supprimée avec succès !');
+            } else {
+                alert('Erreur lors de la suppression');
+            }
+        } catch (error) {
+            alert('Erreur lors de la suppression');
+        }
+    }
+    
+    function showToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'alert alert-success toast-message';
+        toast.innerHTML = `<i class="fas fa-check-circle me-2"></i> ${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+</script>
+{% endblock %}
