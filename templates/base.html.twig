@@ -1163,43 +1163,48 @@
         if (reservationIcon) reservationIcon.addEventListener('click', openSidebar);
         if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeSidebar);
         if (overlay) overlay.addEventListener('click', closeSidebar);
-
-        async function loadReservations() {
-            const container = document.getElementById('reservationsList');
-            if (!container) return;
-            try {
-                const response = await fetch('/api/reservations');
-                const reservations = await response.json();
-                if (reservations.length === 0) {
-                    container.innerHTML = '<div class="empty-reservations"><i class="fas fa-ticket-alt fa-3x mb-2"></i><p>Aucune réservation trouvée</p></div>';
-                    return;
-                }
-                container.innerHTML = reservations.map(res => `
-                    <div class="reservation-card" data-id="${res.idRP}">
-                        <div class="reservation-info">
-                            <div class="reservation-name">${escapeHtml(res.prenom)} ${escapeHtml(res.nom)}</div>
-                            <div class="reservation-details">
-                                <div><i class="fas fa-phone"></i> ${escapeHtml(res.telephone)}</div>
-                                <div><i class="fas fa-envelope"></i> ${escapeHtml(res.email)}</div>
-                                <div><i class="fas fa-users"></i> ${res.nbre} personnes</div>
-                                <div><i class="fas fa-calendar"></i> ${res.dateProgramme}</div>
-                                <div><i class="fas fa-tag"></i> ${res.prixProg} DT</div>
-                            </div>
-                        </div>
-                        <div class="reservation-actions">
-                            <button class="btn-edit-reservation" onclick="editReservation(${res.idRP})">
-                                <i class="fas fa-edit"></i> Modifier
-                            </button>
-                            <button class="btn-delete-reservation" onclick="deleteReservation(${res.idRP})">
-                                <i class="fas fa-trash"></i> Supprimer
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
-            } catch (error) {
-                container.innerHTML = '<div class="empty-reservations"><i class="fas fa-exclamation-circle fa-3x mb-2"></i><p>Erreur de chargement</p></div>';
-            }
+async function loadReservations() {
+    const container = document.getElementById('reservationsList');
+    if (!container) return;
+    try {
+        const response = await fetch('/api/reservations');
+        const reservations = await response.json();
+        
+        // 🔥 DEBUG : Afficher dans la console
+        console.log('Réservations reçues:', reservations);
+        console.log('Nombre de réservations:', reservations.length);
+        
+        if (reservations.length === 0) {
+            container.innerHTML = '<div class="empty-reservations"><i class="fas fa-ticket-alt fa-3x mb-2"></i><p>Aucune réservation trouvée</p><p class="small">Connectez-vous avec le même email que votre réservation</p></div>';
+            return;
         }
+        container.innerHTML = reservations.map(res => `
+            <div class="reservation-card" data-id="${res.idRP}">
+                <div class="reservation-info">
+                    <div class="reservation-name">${escapeHtml(res.prenom)} ${escapeHtml(res.nom)}</div>
+                    <div class="reservation-details">
+                        <div><i class="fas fa-phone"></i> ${escapeHtml(res.telephone)}</div>
+                        <div><i class="fas fa-envelope"></i> ${escapeHtml(res.email)}</div>
+                        <div><i class="fas fa-users"></i> ${res.nbre} personnes</div>
+                        <div><i class="fas fa-calendar"></i> ${res.dateProgramme}</div>
+                        <div><i class="fas fa-tag"></i> ${res.prixProg} DT</div>
+                    </div>
+                </div>
+                <div class="reservation-actions">
+                    <button class="btn-edit-reservation" onclick="editReservation(${res.idRP})">
+                        <i class="fas fa-edit"></i> Modifier
+                    </button>
+                    <button class="btn-delete-reservation" onclick="deleteReservation(${res.idRP})">
+                        <i class="fas fa-trash"></i> Supprimer
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Erreur:', error);
+        container.innerHTML = '<div class="empty-reservations"><i class="fas fa-exclamation-circle fa-3x mb-2"></i><p>Erreur de chargement</p></div>';
+    }
+}
 
         function escapeHtml(str) {
             if (!str) return '';

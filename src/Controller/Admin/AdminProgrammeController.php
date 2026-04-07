@@ -96,12 +96,6 @@ class AdminProgrammeController extends AbstractController
                 $errors[] = 'La date de fin doit être postérieure ou égale à la date de début.';
             }
 
-            if ($formData['idV'] === '') {
-                $errors[] = 'Veuillez sélectionner un voyage associé.';
-            } elseif (!is_numeric($formData['idV'])) {
-                $errors[] = 'Le voyage sélectionné est invalide.';
-            }
-
             if (count($errors) === 0) {
                 $violations = $validator->validate($programme);
                 if (count($violations) > 0) {
@@ -119,7 +113,7 @@ class AdminProgrammeController extends AbstractController
                     $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
                     $safeFilename = preg_replace('/[^a-zA-Z0-9]/', '_', $originalFilename);
                     $imageName = $safeFilename . '_' . uniqid() . '.' . $imageFile->guessExtension();
-                    $imageFile->move($this->getParameter('uploads_directory') . '/programmes', $imageName);
+                    $imageFile->move($this->getParameter('uploads_programmes_directory'), $imageName);
                 }
 
                 $idProg = uniqid('PRG_');
@@ -209,12 +203,6 @@ class AdminProgrammeController extends AbstractController
                 $errors[] = 'La date de fin doit être postérieure ou égale à la date de début.';
             }
 
-            if ($formData['idV'] === '') {
-                $errors[] = 'Veuillez sélectionner un voyage associé.';
-            } elseif (!is_numeric($formData['idV'])) {
-                $errors[] = 'Le voyage sélectionné est invalide.';
-            }
-
             if (count($errors) === 0) {
                 $violations = $validator->validate($programmeEntity);
                 if (count($violations) > 0) {
@@ -229,14 +217,14 @@ class AdminProgrammeController extends AbstractController
                 $imageFile = $request->files->get('image');
 
                 if ($imageFile) {
-                    if ($imageName && file_exists($this->getParameter('uploads_directory') . '/programmes/' . $imageName)) {
-                        unlink($this->getParameter('uploads_directory') . '/programmes/' . $imageName);
+                    if ($imageName && file_exists($this->getParameter('uploads_programmes_directory') . '/' . $imageName)) {
+                        unlink($this->getParameter('uploads_programmes_directory') . '/' . $imageName);
                     }
 
                     $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
                     $safeFilename = preg_replace('/[^a-zA-Z0-9]/', '_', $originalFilename);
                     $imageName = $safeFilename . '_' . uniqid() . '.' . $imageFile->guessExtension();
-                    $imageFile->move($this->getParameter('uploads_directory') . '/programmes', $imageName);
+                    $imageFile->move($this->getParameter('uploads_programmes_directory'), $imageName);
                 }
 
                 $connection->executeStatement(
@@ -281,8 +269,8 @@ class AdminProgrammeController extends AbstractController
         if ($this->isCsrfTokenValid('delete_programme_' . $id, $request->request->get('_token'))) {
             $programme = $connection->fetchAssociative("SELECT image FROM programmes WHERE idProg = ?", [$id]);
             
-            if ($programme && $programme['image'] && file_exists($this->getParameter('uploads_directory') . '/programmes/' . $programme['image'])) {
-                unlink($this->getParameter('uploads_directory') . '/programmes/' . $programme['image']);
+            if ($programme && $programme['image'] && file_exists($this->getParameter('uploads_programmes_directory') . '/' . $programme['image'])) {
+                unlink($this->getParameter('uploads_programmes_directory') . '/' . $programme['image']);
             }
             
             $connection->executeStatement("DELETE FROM programmes WHERE idProg = ?", [$id]);

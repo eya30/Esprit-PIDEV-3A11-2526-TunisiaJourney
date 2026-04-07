@@ -1,0 +1,996 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Utilisateurs — Administration{% endblock %}
+{% block page_title %}Utilisateurs{% endblock %}
+
+{% block stylesheets %}
+<style>
+    :root {
+        --rouge:      #93032E;
+        --rouge-vif:  #B5043A;
+        --rouge-pale: #FFF1F0;
+        --creme:      #FFF9F0;
+        --or:         #C49A6C;
+        --nuit:       #2C1810;
+        --gris:       #4A3B2F;
+        --border:     #F0E8DD;
+        --bg:         #F5F7FA;
+    }
+
+    .users-toolbar {
+        background: white; border-radius: 20px; border: 1px solid var(--border);
+        padding: 18px 24px; display: flex; align-items: center; gap: 14px;
+        margin-bottom: 28px; flex-wrap: wrap;
+    }
+    .search-box { flex: 1; min-width: 220px; position: relative; }
+    .search-box i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--or); font-size: .9rem; }
+    .search-box input {
+        width: 100%; padding: 10px 14px 10px 38px;
+        border: 1.5px solid var(--border); border-radius: 40px;
+        font-size: .85rem; background: var(--creme); color: var(--nuit);
+        outline: none; transition: border-color .2s;
+    }
+    .search-box input:focus { border-color: var(--rouge); background: white; }
+    .search-box input::placeholder { color: #bbb; }
+
+    .toolbar-select {
+        padding: 10px 16px; border: 1.5px solid var(--border); border-radius: 40px;
+        font-size: .85rem; background: var(--creme); color: var(--gris);
+        outline: none; cursor: pointer; transition: border-color .2s;
+        appearance: none; padding-right: 32px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23C49A6C' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat; background-position: right 12px center;
+    }
+    .toolbar-select:focus { border-color: var(--rouge); }
+
+    .users-count { font-size: .82rem; color: #aaa; white-space: nowrap; margin-left: auto; }
+    .users-count strong { color: var(--rouge); }
+
+    .users-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+
+    .user-card {
+        background: white; border-radius: 22px; border: 1px solid var(--border);
+        padding: 28px 20px 20px; display: flex; flex-direction: column;
+        align-items: center; gap: 12px; position: relative;
+        transition: all .3s cubic-bezier(.34,1.56,.64,1); cursor: pointer; overflow: hidden;
+    }
+    .user-card::before {
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+        background: linear-gradient(90deg, var(--rouge), var(--or));
+        transform: scaleX(0); transform-origin: left; transition: transform .3s ease;
+    }
+    .user-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px -12px rgba(147,3,46,.18); border-color: transparent; }
+    .user-card:hover::before { transform: scaleX(1); }
+
+    .user-status-badge {
+        position: absolute; top: 14px; right: 14px;
+        width: 10px; height: 10px; border-radius: 50%;
+        border: 2px solid white; box-shadow: 0 0 0 1px var(--border);
+    }
+    .user-status-badge.actif  { background: #22C55E; }
+    .user-status-badge.bloque { background: #EF4444; }
+
+    .user-card-avatar {
+        width: 80px; height: 80px; border-radius: 50%;
+        background: linear-gradient(135deg, var(--rouge-vif), var(--rouge));
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: white;
+        border: 3px solid var(--rouge-pale); box-shadow: 0 4px 16px rgba(147,3,46,.22);
+        overflow: hidden; flex-shrink: 0;
+    }
+    .user-card-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+    .user-card-name {
+        font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700;
+        color: var(--nuit); text-align: center; margin: 0; line-height: 1.3;
+    }
+
+    .user-card-role {
+        font-size: .7rem; font-weight: 600; text-transform: uppercase;
+        letter-spacing: .6px; padding: 3px 10px; border-radius: 20px;
+        background: #FEF3C7; color: #92400E;
+    }
+    .user-card-role.membre { background: var(--rouge-pale); color: var(--rouge); }
+
+    .user-card-email { font-size: .73rem; color: #aaa; text-align: center; word-break: break-all; }
+
+    .btn-delete-user {
+        display: flex; align-items: center; gap: 6px; padding: 8px 18px;
+        background: transparent; border: 1.5px solid #FECACA; border-radius: 40px;
+        color: #EF4444; font-size: .75rem; font-weight: 600; cursor: pointer;
+        transition: all .2s; margin-top: 4px; width: 100%; justify-content: center;
+    }
+    .btn-delete-user:hover { background: #FEF2F2; border-color: #EF4444; }
+
+    /* ── Modal Profil ── */
+    .user-profile-overlay { display: none; position: fixed; inset: 0; z-index: 3000; }
+    .user-profile-overlay.active { display: block; }
+    .user-profile-blur {
+        position: absolute; inset: 0;
+        backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        background: rgba(44,24,16,.4); cursor: pointer;
+    }
+    .user-profile-panel {
+        position: absolute; top: 50%; right: 0;
+        transform: translateY(-50%) translateX(100%);
+        width: min(520px, 96vw); height: 100vh;
+        background: linear-gradient(160deg, #FFF9F0 0%, #F5EDD8 100%);
+        box-shadow: -12px 0 60px rgba(44,24,16,.2);
+        overflow-y: auto; transition: transform .45s cubic-bezier(.76,0,.24,1); padding: 0 0 40px;
+    }
+    .user-profile-overlay.active .user-profile-panel { transform: translateY(-50%) translateX(0); }
+
+    .upanel-header {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 20px 28px 14px; position: sticky; top: 0; z-index: 1;
+        background: linear-gradient(160deg, #FFF9F0 0%, #F5EDD8 100%);
+        border-bottom: 1px solid rgba(147,3,46,.1);
+    }
+    .upanel-title { font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 700; color: var(--nuit); margin: 0; }
+    .upanel-close {
+        width: 34px; height: 34px; border-radius: 50%; border: none;
+        background: rgba(147,3,46,.1); color: var(--rouge); font-size: 1.1rem;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; transition: background .2s, transform .2s;
+    }
+    .upanel-close:hover { background: var(--rouge); color: white; transform: rotate(90deg); }
+
+    .upanel-body { padding: 20px 28px; display: flex; flex-direction: column; gap: 16px; }
+
+    .upanel-hero {
+        background: white; border-radius: 16px; padding: 24px;
+        display: flex; align-items: center; gap: 18px;
+        box-shadow: 0 3px 16px rgba(44,24,16,.07);
+    }
+    .upanel-avatar {
+        width: 80px; height: 80px; border-radius: 50%;
+        background: linear-gradient(135deg, var(--rouge-vif), var(--rouge));
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; color: white;
+        border: 3px solid var(--rouge-pale); box-shadow: 0 4px 14px rgba(147,3,46,.22);
+        flex-shrink: 0; overflow: hidden;
+    }
+    .upanel-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .upanel-fullname { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 700; color: var(--nuit); margin: 0 0 3px; }
+    .upanel-email { font-size: .78rem; color: var(--rouge); margin: 0 0 8px; }
+    .upanel-badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        background: var(--rouge-pale); color: var(--rouge);
+        font-size: .65rem; font-weight: 700;
+        padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(147,3,46,.18);
+    }
+    .upanel-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #22C55E; }
+    .upanel-badge-dot.bloque { background: #EF4444; }
+
+    .upanel-card { background: white; border-radius: 14px; padding: 20px 22px; box-shadow: 0 3px 16px rgba(44,24,16,.06); }
+    .upanel-card-title {
+        font-family: 'Playfair Display', serif; font-size: .9rem; font-weight: 700; color: var(--nuit);
+        margin: 0 0 14px; padding-bottom: 8px; border-bottom: 1.5px solid var(--border);
+        display: flex; align-items: center; gap: 7px;
+    }
+    .upanel-card-title i { color: var(--rouge); font-size: .82rem; }
+    .upanel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .upanel-field { display: flex; flex-direction: column; gap: 3px; }
+    .upanel-label { font-size: .62rem; font-weight: 700; color: #aaa; letter-spacing: .6px; text-transform: uppercase; }
+    .upanel-value {
+        font-size: .84rem; color: var(--nuit); font-weight: 500;
+        padding: 8px 12px; background: var(--creme); border-radius: 8px; border: 1px solid var(--border);
+    }
+    .upanel-value.empty { color: #C0B090; font-style: italic; }
+
+    .upanel-role-badge {
+        display: inline-block; font-size: .72rem; font-weight: 700;
+        text-transform: uppercase; letter-spacing: .5px;
+        padding: 4px 12px; border-radius: 20px;
+    }
+    .upanel-role-badge.admin  { background: #FEF3C7; color: #92400E; }
+    .upanel-role-badge.membre { background: var(--rouge-pale); color: var(--rouge); }
+
+    .upanel-actions { display: flex; gap: 10px; }
+    .upanel-btn-edit {
+        flex: 2; display: flex; align-items: center; justify-content: center; gap: 6px;
+        padding: 12px; background: linear-gradient(90deg, var(--rouge), var(--rouge-vif));
+        color: white; border: none; border-radius: 50px; font-size: .85rem; font-weight: 700;
+        cursor: pointer; box-shadow: 0 4px 14px rgba(147,3,46,.28); transition: transform .18s, box-shadow .18s;
+    }
+    .upanel-btn-edit:hover { transform: translateY(-2px); box-shadow: 0 7px 20px rgba(147,3,46,.4); }
+    .upanel-btn-delete {
+        flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+        padding: 12px; background: transparent; border: 1.5px solid #FECACA;
+        color: #EF4444; border-radius: 50px; font-size: .85rem; font-weight: 700; cursor: pointer; transition: all .2s;
+    }
+    .upanel-btn-delete:hover { background: #FEF2F2; border-color: #EF4444; }
+
+    /* ── Modal Edit ── */
+    .user-edit-overlay { display: none; position: fixed; inset: 0; z-index: 3500; }
+    .user-edit-overlay.active { display: block; }
+    .user-edit-blur {
+        position: absolute; inset: 0; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        background: rgba(44,24,16,.4); cursor: pointer;
+    }
+    .user-edit-panel {
+        position: absolute; top: 50%; right: 0;
+        transform: translateY(-50%) translateX(100%);
+        width: min(520px, 96vw); height: 100vh;
+        background: linear-gradient(160deg, #FFF9F0 0%, #F5EDD8 100%);
+        box-shadow: -12px 0 60px rgba(44,24,16,.2);
+        overflow-y: auto; transition: transform .45s cubic-bezier(.76,0,.24,1); padding: 0 0 40px;
+    }
+    .user-edit-overlay.active .user-edit-panel { transform: translateY(-50%) translateX(0); }
+
+    .uedit-field { display: flex; flex-direction: column; gap: 4px; }
+    .uedit-field label { font-size: .65rem; font-weight: 700; color: #aaa; letter-spacing: .5px; text-transform: uppercase; }
+    .uedit-field input {
+        width: 100%; padding: 10px 13px; border: 1.5px solid var(--border); border-radius: 9px;
+        font-size: .84rem; color: var(--nuit); background: var(--creme); outline: none;
+        transition: border-color .2s, background .2s;
+    }
+    .uedit-field input:focus { border-color: var(--rouge); background: white; }
+    .uedit-field select {
+        width: 100%; padding: 10px 13px; border: 1.5px solid var(--border); border-radius: 9px;
+        font-size: .84rem; color: var(--nuit); background: var(--creme); outline: none;
+        cursor: pointer; appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23C49A6C' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat; background-position: right 12px center;
+        transition: border-color .2s;
+    }
+    .uedit-field select:focus { border-color: var(--rouge); }
+
+    .uedit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .uedit-avatar {
+        width: 72px; height: 72px; border-radius: 50%;
+        background: linear-gradient(135deg, var(--rouge-vif), var(--rouge));
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: white;
+        border: 3px solid var(--rouge-pale); box-shadow: 0 4px 14px rgba(147,3,46,.22);
+        cursor: pointer; overflow: hidden; position: relative; flex-shrink: 0;
+    }
+    .uedit-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .uedit-avatar-overlay {
+        position: absolute; inset: 0; background: rgba(0,0,0,.35); border-radius: 50%;
+        display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .2s;
+    }
+    .uedit-avatar:hover .uedit-avatar-overlay { opacity: 1; }
+    .uedit-avatar-overlay i { color: white; font-size: .85rem; }
+
+    .btn-remove-photo {
+        display: flex; align-items: center; gap: 5px; padding: 6px 14px;
+        background: transparent; border: 1.5px solid #FECACA; border-radius: 40px;
+        color: #EF4444; font-size: .72rem; font-weight: 600; cursor: pointer; transition: all .2s;
+    }
+    .btn-remove-photo:hover { background: #FEF2F2; }
+
+    /* ── Champ en erreur ── */
+    .uedit-field input.input-error {
+        border-color: #93032E !important;
+        background: #FFF1F0 !important;
+    }
+
+    /* ── Message d'erreur sous le champ ── */
+    .field-error {
+        color: #93032E;
+        font-size: .68rem;
+        font-weight: 600;
+        margin-top: 2px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .field-error::before {
+        content: '!';
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 13px; height: 13px;
+        border-radius: 50%;
+        background: #93032E;
+        color: white;
+        font-size: .6rem;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    /* ── Confirm suppression ── */
+    .delete-confirm-overlay {
+        display: none; position: fixed; inset: 0; z-index: 4000;
+        background: rgba(44,24,16,.5); backdrop-filter: blur(4px);
+        align-items: center; justify-content: center;
+    }
+    .delete-confirm-overlay.active { display: flex; }
+    .delete-confirm-box {
+        background: white; border-radius: 20px; padding: 32px 28px;
+        max-width: 380px; width: 90%; text-align: center;
+        box-shadow: 0 20px 60px rgba(44,24,16,.2);
+    }
+    .delete-confirm-icon {
+        width: 56px; height: 56px; border-radius: 50%; background: #FEF2F2;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 16px; font-size: 1.4rem; color: #EF4444;
+    }
+    .delete-confirm-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: var(--nuit); margin: 0 0 8px; }
+    .delete-confirm-text { font-size: .83rem; color: #888; margin: 0 0 24px; }
+    .delete-confirm-actions { display: flex; gap: 10px; }
+    .btn-confirm-cancel {
+        flex: 1; padding: 11px; border: 1.5px solid var(--border); border-radius: 40px;
+        background: transparent; color: var(--gris); font-size: .84rem; font-weight: 600; cursor: pointer; transition: all .2s;
+    }
+    .btn-confirm-cancel:hover { border-color: var(--gris); }
+    .btn-confirm-delete {
+        flex: 1; padding: 11px; background: #EF4444; border: none; border-radius: 40px;
+        color: white; font-size: .84rem; font-weight: 700; cursor: pointer; transition: all .2s;
+    }
+    .btn-confirm-delete:hover { background: #DC2626; }
+
+    .btn-toggle-statut {
+        display: flex; align-items: center; gap: 6px; padding: 8px 18px;
+        background: transparent; border-radius: 40px;
+        font-size: .75rem; font-weight: 600; cursor: pointer;
+        transition: all .2s; width: 100%; justify-content: center;
+    }
+    .btn-bloquer  { border: 1.5px solid #FED7AA; color: #EA580C; }
+    .btn-bloquer:hover  { background: #FFF7ED; border-color: #EA580C; }
+    .btn-debloquer { border: 1.5px solid #BBF7D0; color: #16A34A; }
+    .btn-debloquer:hover { background: #F0FDF4; border-color: #16A34A; }
+
+    /* ── Modal confirm blocage ── */
+    .toggle-confirm-overlay {
+        display: none; position: fixed; inset: 0; z-index: 4000;
+        background: rgba(44,24,16,.5); backdrop-filter: blur(4px);
+        align-items: center; justify-content: center;
+    }
+    .toggle-confirm-overlay.active { display: flex; }
+    .toggle-confirm-box {
+        background: white; border-radius: 20px; padding: 32px 28px;
+        max-width: 380px; width: 90%; text-align: center;
+        box-shadow: 0 20px 60px rgba(44,24,16,.2);
+    }
+    .toggle-confirm-icon {
+        width: 56px; height: 56px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 16px; font-size: 1.4rem;
+    }
+    .toggle-confirm-icon.bloquer   { background: #FFF7ED; color: #EA580C; }
+    .toggle-confirm-icon.debloquer { background: #F0FDF4; color: #16A34A; }
+    .toggle-confirm-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: var(--nuit); margin: 0 0 8px; }
+    .toggle-confirm-text  { font-size: .83rem; color: #888; margin: 0 0 24px; }
+    .toggle-confirm-actions { display: flex; gap: 10px; }
+    .btn-confirm-toggle-bloquer {
+        flex: 1; padding: 11px; background: #EA580C; border: none; border-radius: 40px;
+        color: white; font-size: .84rem; font-weight: 700; cursor: pointer; transition: all .2s;
+    }
+    .btn-confirm-toggle-bloquer:hover { background: #C2410C; }
+    .btn-confirm-toggle-debloquer {
+        flex: 1; padding: 11px; background: #16A34A; border: none; border-radius: 40px;
+        color: white; font-size: .84rem; font-weight: 700; cursor: pointer; transition: all .2s;
+    }
+    .btn-confirm-toggle-debloquer:hover { background: #15803D; }
+</style>
+{% endblock %}
+
+{% block body %}
+
+{# ── Variables session erreurs ── #}
+{% set adminErrors  = app.session.get('_admin_edit_errors') %}
+{% set adminData    = app.session.get('_admin_edit_data') %}
+{% set adminEditId  = app.session.get('_admin_edit_id') %}
+
+{# ── TOOLBAR ── #}
+<div class="users-toolbar">
+    <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Rechercher un utilisateur...">
+    </div>
+    <select class="toolbar-select" id="sortSelect">
+        <option value="">Trier par...</option>
+        <option value="nom_asc">Prénom A→Z</option>
+        <option value="nom_desc">Prénom Z→A</option>
+        <option value="inscription_asc">Inscription ↑</option>
+        <option value="inscription_desc">Inscription ↓</option>
+        <option value="naissance_asc">Naissance ↑</option>
+        <option value="naissance_desc">Naissance ↓</option>
+    </select>
+    <select class="toolbar-select" id="filterStatut">
+        <option value="">Tous les statuts</option>
+        <option value="ACTIF">Actif</option>
+        <option value="BLOQUE">Bloqué</option>
+    </select>
+    <select class="toolbar-select" id="filterRole">
+        <option value="">Tous les rôles</option>
+        <option value="MEMBRE">Membre</option>
+        <option value="ADMIN">Admin</option>
+    </select>
+    <span class="users-count">
+        <strong>{{ users|length }}</strong> utilisateur{{ users|length > 1 ? 's' : '' }}
+    </span>
+    <a href="{{ path('admin_users_export_excel') }}" class="toolbar-btn" style="text-decoration:none; color:inherit;">
+        <i class="fas fa-file-excel" style="color:#16A34A;"></i> Exporter Excel
+    </a>
+</div>
+
+{# ── GRILLE ── #}
+<div class="users-grid" id="usersGrid">
+    {% for user in users %}
+    <div class="user-card"
+         onclick="openUserProfile({{ user.id }})"
+         data-id="{{ user.id }}"
+         data-nom="{{ user.nom }}"
+         data-prenom="{{ user.prenom }}"
+         data-email="{{ user.email }}"
+         data-telephone="{{ user.telephone }}"
+         data-adresse="{{ user.adresse }}"
+         data-naissance="{{ user.dateNaissance ? user.dateNaissance|date('d/m/Y') : '' }}"
+         data-inscription="{{ user.dateInscription ? user.dateInscription|date('d/m/Y') : '' }}"
+         data-statut="{{ user.statut }}"
+         data-role="{{ user.role }}"
+         data-niveau="{{ user.niveau }}"
+         data-photo="{{ user.profileImageUrl }}">
+
+        <span class="user-status-badge {{ user.statut == 'ACTIF' ? 'actif' : 'bloque' }}"></span>
+
+        <div class="user-card-avatar">
+            {% if user.profileImageUrl %}
+                <img src="{{ user.profileImageUrl }}" alt="{{ user.prenom }}">
+            {% else %}
+                {{ user.prenom|slice(0,1)|upper }}{{ user.nom|slice(0,1)|upper }}
+            {% endif %}
+        </div>
+
+        <p class="user-card-name">{{ user.prenom }} {{ user.nom }}</p>
+
+        {% set role = user.role|upper %}
+        <span class="user-card-role {{ role == 'ADMIN' ? 'admin' : 'membre' }}">
+            {{ role == 'ADMIN' ? 'Admin' : 'Membre' }}
+        </span>
+
+        <span class="user-card-email">{{ user.email }}</span>
+
+        <button class="btn-delete-user"
+                onclick="event.stopPropagation(); confirmDelete({{ user.id }}, '{{ user.prenom }} {{ user.nom }}')">
+            <i class="fas fa-trash-alt"></i> Supprimer
+        </button>
+
+        {% if user.role == 'MEMBRE' %}
+        <button class="btn-toggle-statut {{ user.statut == 'ACTIF' ? 'btn-bloquer' : 'btn-debloquer' }}"
+                onclick="event.stopPropagation(); toggleStatut({{ user.id }}, '{{ user.statut }}', '{{ user.prenom }} {{ user.nom }}')">
+            {% if user.statut == 'ACTIF' %}
+                <i class="fas fa-ban"></i> Bloquer
+            {% else %}
+                <i class="fas fa-check-circle"></i> Débloquer
+            {% endif %}
+        </button>
+        {% endif %}
+    </div>
+    {% else %}
+    <div style="grid-column:1/-1;text-align:center;padding:60px;color:#bbb;">
+        <i class="fas fa-users" style="font-size:3rem;margin-bottom:12px;display:block;"></i>
+        Aucun utilisateur trouvé.
+    </div>
+    {% endfor %}
+</div>
+
+{# ══════════════════════════════════════
+   MODAL PROFIL
+══════════════════════════════════════ #}
+<div class="user-profile-overlay" id="userProfileModal">
+    <div class="user-profile-blur" onclick="closeUserProfile()"></div>
+    <div class="user-profile-panel">
+        <div class="upanel-header">
+            <h2 class="upanel-title"><i class="fas fa-user-circle me-2" style="color:var(--rouge)"></i> Profil utilisateur</h2>
+            <button class="upanel-close" onclick="closeUserProfile()">&times;</button>
+        </div>
+        <div class="upanel-body">
+
+            <div class="upanel-hero">
+                <div class="upanel-avatar" id="upanelAvatar"></div>
+                <div>
+                    <p class="upanel-fullname" id="upanelFullname">—</p>
+                    <p class="upanel-email"    id="upanelEmail">—</p>
+                    <span class="upanel-badge">
+                        <span class="upanel-badge-dot" id="upanelStatusDot"></span>
+                        <span id="upanelStatusText">—</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="upanel-card">
+                <div class="upanel-card-title"><i class="fas fa-id-card"></i> Informations personnelles</div>
+                <div class="upanel-grid">
+                    <div class="upanel-field"><span class="upanel-label">Nom</span><span class="upanel-value" id="upanelNom">—</span></div>
+                    <div class="upanel-field"><span class="upanel-label">Prénom</span><span class="upanel-value" id="upanelPrenom">—</span></div>
+                    <div class="upanel-field"><span class="upanel-label">Date de naissance</span><span class="upanel-value" id="upanelNaissance">—</span></div>
+                    <div class="upanel-field"><span class="upanel-label">Téléphone</span><span class="upanel-value" id="upanelTelephone">—</span></div>
+                    <div class="upanel-field" style="grid-column:1/-1"><span class="upanel-label">Adresse</span><span class="upanel-value" id="upanelAdresse">—</span></div>
+                </div>
+            </div>
+
+            <div class="upanel-card">
+                <div class="upanel-card-title"><i class="fas fa-shield-alt"></i> Informations du compte</div>
+                <div class="upanel-grid">
+                    <div class="upanel-field">
+                        <span class="upanel-label">Rôle</span>
+                        <span id="upanelRole">—</span>
+                    </div>
+                    <div class="upanel-field" id="upanelStatutField">
+                        <span class="upanel-label">Statut</span>
+                        <span class="upanel-value" id="upanelStatut">—</span>
+                    </div>
+                    <div class="upanel-field" id="upanelNiveauField" style="display:none;">
+                        <span class="upanel-label">Niveau</span>
+                        <span class="upanel-value" id="upanelNiveau">—</span>
+                    </div>
+                    <div class="upanel-field" style="grid-column:1/-1">
+                        <span class="upanel-label">Date d'inscription</span>
+                        <span class="upanel-value" id="upanelInscription">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="upanel-actions">
+                <button class="upanel-btn-edit" onclick="openUserEdit()"><i class="fas fa-pen"></i> Modifier</button>
+                <button class="upanel-btn-delete" id="upanelDeleteBtn"><i class="fas fa-trash-alt"></i> Supprimer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ══════════════════════════════════════
+   MODAL EDIT
+══════════════════════════════════════ #}
+<div class="user-edit-overlay" id="userEditModal">
+    <div class="user-edit-blur" onclick="closeUserEdit()"></div>
+    <div class="user-edit-panel">
+        <div class="upanel-header">
+            <h2 class="upanel-title"><i class="fas fa-pen me-2" style="color:var(--rouge)"></i> Modifier l'utilisateur</h2>
+            <button class="upanel-close" onclick="closeUserEdit()">&times;</button>
+        </div>
+        <div class="upanel-body">
+            <form id="adminEditUserForm" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="_token" value="{{ csrf_token('admin_user_edit') }}">
+                <input type="hidden" name="userId" id="editUserId">
+                <input type="file" name="photo" id="editPhotoInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
+
+                <div class="upanel-hero" style="margin-bottom:16px;">
+                    <div class="uedit-avatar" id="ueditAvatar"
+                         onclick="document.getElementById('editPhotoInput').click()"
+                         title="Cliquer pour changer la photo">
+                        <div class="uedit-avatar-overlay"><i class="fas fa-camera"></i></div>
+                    </div>
+                    <div>
+                        <p style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--nuit);margin:0 0 6px;" id="ueditHeroName">—</p>
+                        <p style="font-size:.74rem;color:#aaa;margin:0 0 10px;">Cliquez sur l'avatar pour changer la photo</p>
+                        <button type="button" class="btn-remove-photo" id="btnRemovePhoto">
+                            <i class="fas fa-times"></i> Supprimer la photo
+                        </button>
+                    </div>
+                </div>
+
+                <div class="upanel-card" style="margin-bottom:14px;">
+                    <div class="upanel-card-title"><i class="fas fa-id-card"></i> Informations personnelles</div>
+                    <div class="uedit-grid">
+
+                        {# ── Nom ── #}
+                        <div class="uedit-field">
+                            <label>Nom</label>
+                            <input type="text" name="nom" id="editNom"
+                                   class="{{ adminErrors and adminErrors['nom'] is defined ? 'input-error' : '' }}">
+                            {% if adminErrors and adminErrors['nom'] is defined %}
+                                <span class="field-error">{{ adminErrors['nom'][0] }}</span>
+                            {% endif %}
+                        </div>
+
+                        {# ── Prénom ── #}
+                        <div class="uedit-field">
+                            <label>Prénom</label>
+                            <input type="text" name="prenom" id="editPrenom"
+                                   class="{{ adminErrors and adminErrors['prenom'] is defined ? 'input-error' : '' }}">
+                            {% if adminErrors and adminErrors['prenom'] is defined %}
+                                <span class="field-error">{{ adminErrors['prenom'][0] }}</span>
+                            {% endif %}
+                        </div>
+
+                        {# ── Date de naissance ── #}
+                        <div class="uedit-field">
+                            <label>Date de naissance</label>
+                            <input type="date" name="dateNaissance" id="editDateNaissance"
+                                   class="{{ adminErrors and adminErrors['dateNaissance'] is defined ? 'input-error' : '' }}">
+                            {% if adminErrors and adminErrors['dateNaissance'] is defined %}
+                                <span class="field-error">{{ adminErrors['dateNaissance'][0] }}</span>
+                            {% endif %}
+                        </div>
+
+                        {# ── Téléphone ── #}
+                        <div class="uedit-field">
+                            <label>Téléphone</label>
+                            <input type="text" name="telephone" id="editTelephone"
+                                   class="{{ adminErrors and adminErrors['telephone'] is defined ? 'input-error' : '' }}">
+                            {% if adminErrors and adminErrors['telephone'] is defined %}
+                                <span class="field-error">{{ adminErrors['telephone'][0] }}</span>
+                            {% endif %}
+                        </div>
+
+                        {# ── Adresse ── #}
+                        <div class="uedit-field" style="grid-column:1/-1">
+                            <label>Adresse</label>
+                            <input type="text" name="adresse" id="editAdresse"
+                                   class="{{ adminErrors and adminErrors['adresse'] is defined ? 'input-error' : '' }}">
+                            {% if adminErrors and adminErrors['adresse'] is defined %}
+                                <span class="field-error">{{ adminErrors['adresse'][0] }}</span>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="upanel-card" style="margin-bottom:14px;">
+                    <div class="upanel-card-title"><i class="fas fa-shield-alt"></i> Rôle du compte</div>
+                    <div style="display:flex;flex-direction:column;gap:12px;">
+                        <div class="uedit-field">
+                            <label>Rôle</label>
+                            <select name="role" id="editRole">
+                                <option value="MEMBRE">Membre</option>
+                                <option value="ADMIN">Admin</option>
+                            </select>
+                        </div>
+                        <div class="uedit-field" id="editNiveauField" style="display:none;">
+                            <label>Niveau</label>
+                            <select name="niveau" id="editNiveau">
+                                <option value="ADMIN">Admin</option>
+                                <option value="SUPER_ADMIN">Super Admin</option>
+                            </select>
+                        </div>
+                        <div class="uedit-field" id="editStatutField">
+                            <label>Statut</label>
+                            <select name="statut" id="editStatut">
+                                <option value="ACTIF">Actif</option>
+                                <option value="BLOQUE">Bloqué</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="upanel-actions">
+                    <button type="button" class="upanel-btn-delete" onclick="closeUserEdit()"><i class="fas fa-times"></i> Annuler</button>
+                    <button type="submit" class="upanel-btn-edit"><i class="fas fa-check"></i> Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{# ══════════════════════════════════════
+   CONFIRM SUPPRESSION
+══════════════════════════════════════ #}
+<div class="delete-confirm-overlay" id="deleteConfirmOverlay">
+    <div class="delete-confirm-box">
+        <div class="delete-confirm-icon"><i class="fas fa-trash-alt"></i></div>
+        <p class="delete-confirm-title">Supprimer cet utilisateur ?</p>
+        <p class="delete-confirm-text" id="deleteConfirmText">Cette action est irréversible.</p>
+        <div class="delete-confirm-actions">
+            <button class="btn-confirm-cancel" onclick="closeDeleteConfirm()">Annuler</button>
+            <form id="deleteUserForm" method="POST" style="flex:1;">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete_user') }}">
+                <button type="submit" class="btn-confirm-delete" style="width:100%;">Supprimer</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{# ══════════════════════════════════════
+   CONFIRM BLOCAGE / DÉBLOCAGE
+══════════════════════════════════════ #}
+<div class="toggle-confirm-overlay" id="toggleConfirmOverlay">
+    <div class="toggle-confirm-box">
+        <div class="toggle-confirm-icon" id="toggleConfirmIcon">
+            <i id="toggleConfirmIconI" class="fas fa-ban"></i>
+        </div>
+        <p class="toggle-confirm-title" id="toggleConfirmTitle">Bloquer cet utilisateur ?</p>
+        <p class="toggle-confirm-text"  id="toggleConfirmText">Il ne pourra plus se connecter.</p>
+        <div class="toggle-confirm-actions">
+            <button class="btn-confirm-cancel" onclick="closeToggleConfirm()">Annuler</button>
+            <form id="toggleStatutForm" method="POST" style="flex:1;">
+                <input type="hidden" name="_token" value="{{ csrf_token('toggle_statut') }}">
+                <button type="submit" id="toggleConfirmBtn" style="width:100%;">Confirmer</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+let currentUserId   = null;
+let currentUserData = null;
+
+{# ── Données erreurs session passées à JS ── #}
+const adminEditErrors = {{ app.session.get('_admin_edit_errors') ? app.session.get('_admin_edit_errors')|json_encode|raw : 'null' }};
+const adminEditData   = {{ app.session.get('_admin_edit_data')   ? app.session.get('_admin_edit_data')|json_encode|raw   : 'null' }};
+const adminEditId     = {{ app.session.get('_admin_edit_id')     ? app.session.get('_admin_edit_id')|json_encode|raw     : 'null' }};
+
+function openUserProfile(userId) {
+    const card = document.querySelector(.user-card[data-id="${userId}"]);
+    if (!card) return;
+    currentUserId   = userId;
+    currentUserData = card.dataset;
+    const d = card.dataset;
+
+    const av = document.getElementById('upanelAvatar');
+    if (d.photo) {
+        av.innerHTML = <img src="${d.photo}" alt="${d.prenom}">;
+    } else {
+        av.textContent = ${(d.prenom||'').charAt(0).toUpperCase()}${(d.nom||'').charAt(0).toUpperCase()};
+        av.style.fontSize = '1.8rem';
+    }
+
+    document.getElementById('upanelFullname').textContent    = ${d.prenom} ${d.nom};
+    document.getElementById('upanelEmail').textContent       = d.email || '—';
+
+    const isActif = d.statut === 'ACTIF';
+    document.getElementById('upanelStatusDot').className     = 'upanel-badge-dot' + (isActif ? '' : ' bloque');
+    document.getElementById('upanelStatusText').textContent  = isActif ? 'Compte actif' : 'Compte bloqué';
+
+    document.getElementById('upanelNom').textContent         = d.nom        || '—';
+    document.getElementById('upanelPrenom').textContent      = d.prenom     || '—';
+    document.getElementById('upanelTelephone').textContent   = d.telephone  || 'Non renseigné';
+    document.getElementById('upanelAdresse').textContent     = d.adresse    || 'Non renseignée';
+    document.getElementById('upanelNaissance').textContent   = d.naissance  || 'Non renseignée';
+    document.getElementById('upanelInscription').textContent = d.inscription || '—';
+
+    const role      = (d.role || '').toUpperCase();
+    const roleLabel = role === 'ADMIN' ? 'Admin' : 'Membre';
+    const roleClass = role === 'ADMIN' ? 'admin' : 'membre';
+    document.getElementById('upanelRole').innerHTML =
+        <span class="upanel-role-badge ${roleClass}">${roleLabel}</span>;
+
+    const niveauField = document.getElementById('upanelNiveauField');
+    const statutField = document.getElementById('upanelStatutField');
+    if (role === 'ADMIN') {
+        niveauField.style.display = '';
+        statutField.style.display = 'none';
+        document.getElementById('upanelNiveau').textContent = d.niveau || '—';
+    } else {
+        niveauField.style.display = 'none';
+        statutField.style.display = '';
+        document.getElementById('upanelStatut').textContent = d.statut || '—';
+    }
+
+    document.getElementById('upanelDeleteBtn').onclick = () =>
+        confirmDelete(userId, ${d.prenom} ${d.nom});
+
+    document.getElementById('userProfileModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeUserProfile() {
+    document.getElementById('userProfileModal').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+function openUserEdit() {
+    if (!currentUserData) return;
+    const d = currentUserData;
+
+    document.getElementById('editUserId').value    = currentUserId;
+    document.getElementById('editNom').value       = d.nom       || '';
+    document.getElementById('editPrenom').value    = d.prenom    || '';
+    document.getElementById('editTelephone').value = d.telephone || '';
+    document.getElementById('editAdresse').value   = d.adresse   || '';
+    document.getElementById('ueditHeroName').textContent = ${d.prenom} ${d.nom};
+
+    const roleSelect = document.getElementById('editRole');
+    roleSelect.value = (d.role || 'MEMBRE').toUpperCase();
+
+    document.getElementById('editStatut').value = (d.statut || 'ACTIF');
+    document.getElementById('editNiveau').value = (d.niveau || 'ADMIN');
+
+    function updateRoleFields() {
+        const selectedRole = document.getElementById('editRole').value;
+        if (selectedRole === 'ADMIN') {
+            document.getElementById('editNiveauField').style.display = '';
+            document.getElementById('editStatutField').style.display = 'none';
+        } else {
+            document.getElementById('editNiveauField').style.display = 'none';
+            document.getElementById('editStatutField').style.display = '';
+        }
+    }
+    updateRoleFields();
+    document.getElementById('editRole').onchange = updateRoleFields;
+
+    const naiss = d.naissance || '';
+    if (naiss) {
+        const parts = naiss.split('/');
+        document.getElementById('editDateNaissance').value =
+            parts.length === 3 ? ${parts[2]}-${parts[1]}-${parts[0]} : '';
+    } else {
+        document.getElementById('editDateNaissance').value = '';
+    }
+
+    const av = document.getElementById('ueditAvatar');
+    if (d.photo) {
+        av.innerHTML = <img src="${d.photo}" alt="photo"><div class="uedit-avatar-overlay"><i class="fas fa-camera"></i></div>;
+    } else {
+        av.innerHTML = ${(d.prenom||'').charAt(0).toUpperCase()}${(d.nom||'').charAt(0).toUpperCase()}<div class="uedit-avatar-overlay"><i class="fas fa-camera"></i></div>;
+    }
+
+    document.getElementById('adminEditUserForm').action = /admin/users/${currentUserId}/edit;
+
+    closeUserProfile();
+    document.getElementById('userEditModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+/* ── Si erreurs de validation : rouvrir le modal avec les données saisies ── */
+if (adminEditErrors !== null && adminEditId !== null) {
+
+    /* Cherche la card de l'utilisateur concerné et simule un openUserEdit */
+    const targetCard = document.querySelector(.user-card[data-id="${adminEditId}"]);
+    if (targetCard) {
+        currentUserId   = adminEditId;
+        currentUserData = targetCard.dataset;
+    }
+
+    /* Pré-remplir avec les données soumises (session), pas les données BDD */
+    if (adminEditData) {
+        document.getElementById('editNom').value           = adminEditData.nom           || '';
+        document.getElementById('editPrenom').value        = adminEditData.prenom        || '';
+        document.getElementById('editTelephone').value     = adminEditData.telephone     || '';
+        document.getElementById('editAdresse').value       = adminEditData.adresse       || '';
+        document.getElementById('editDateNaissance').value = adminEditData.dateNaissance || '';
+    }
+
+    document.getElementById('editUserId').value = adminEditId;
+    document.getElementById('adminEditUserForm').action = /admin/users/${adminEditId}/edit;
+
+    /* Appliquer les classes d'erreur sur les champs concernés */
+    const fieldMap = { nom: 'editNom', prenom: 'editPrenom', telephone: 'editTelephone', adresse: 'editAdresse', dateNaissance: 'editDateNaissance' };
+    for (const [field, inputId] of Object.entries(fieldMap)) {
+        if (adminEditErrors[field]) {
+            const input = document.getElementById(inputId);
+            if (input) input.classList.add('input-error');
+        }
+    }
+
+    /* Ouvrir le modal edit directement */
+    document.getElementById('userEditModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    /* Nettoyage session côté serveur après affichage */
+    fetch('{{ path("admin_users_clear_edit_errors") }}', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    });
+}
+
+function closeUserEdit() {
+    document.getElementById('userEditModal').classList.remove('active');
+    document.body.style.overflow = '';
+    if (currentUserId) openUserProfile(currentUserId);
+}
+
+/* Prévisualisation photo */
+document.getElementById('editPhotoInput').addEventListener('change', function() {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        document.getElementById('ueditAvatar').innerHTML =
+            `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+             <div class="uedit-avatar-overlay"><i class="fas fa-camera"></i></div>`;
+    };
+    reader.readAsDataURL(file);
+});
+
+/* Supprimer photo */
+document.getElementById('btnRemovePhoto').addEventListener('click', function() {
+    const d = currentUserData || {};
+    document.getElementById('ueditAvatar').innerHTML =
+        `${(d.prenom||'U').charAt(0).toUpperCase()}${(d.nom||'').charAt(0).toUpperCase()}
+         <div class="uedit-avatar-overlay"><i class="fas fa-camera"></i></div>`;
+    document.getElementById('editPhotoInput').value = '';
+    let inp = document.getElementById('removePhotoField');
+    if (!inp) {
+        inp = document.createElement('input');
+        inp.type = 'hidden'; inp.name = 'remove_photo'; inp.id = 'removePhotoField';
+        document.getElementById('adminEditUserForm').appendChild(inp);
+    }
+    inp.value = '1';
+});
+
+/* Confirmer suppression */
+function confirmDelete(userId, userName) {
+    document.getElementById('deleteConfirmText').textContent =
+        Voulez-vous vraiment supprimer "${userName}" ? Cette action est irréversible.;
+    document.getElementById('deleteUserForm').action = /admin/users/${userId}/delete;
+    document.getElementById('deleteConfirmOverlay').classList.add('active');
+}
+function closeDeleteConfirm() {
+    document.getElementById('deleteConfirmOverlay').classList.remove('active');
+}
+
+/* Tri */
+document.getElementById('sortSelect').addEventListener('change', function() {
+    const val  = this.value;
+    const grid = document.getElementById('usersGrid');
+    const cards = Array.from(grid.querySelectorAll('.user-card'));
+    cards.sort((a, b) => {
+        if (val === 'nom_asc')          return a.dataset.prenom.localeCompare(b.dataset.prenom);
+        if (val === 'nom_desc')         return b.dataset.prenom.localeCompare(a.dataset.prenom);
+        if (val === 'inscription_asc')  return parseDate(a.dataset.inscription) - parseDate(b.dataset.inscription);
+        if (val === 'inscription_desc') return parseDate(b.dataset.inscription) - parseDate(a.dataset.inscription);
+        if (val === 'naissance_asc')    return parseDate(a.dataset.naissance)   - parseDate(b.dataset.naissance);
+        if (val === 'naissance_desc')   return parseDate(b.dataset.naissance)   - parseDate(a.dataset.naissance);
+        return 0;
+    });
+    cards.forEach(card => grid.appendChild(card));
+});
+
+function parseDate(str) {
+    if (!str) return 0;
+    const parts = str.split('/');
+    return parts.length === 3
+        ? new Date(${parts[2]}-${parts[1]}-${parts[0]}).getTime()
+        : 0;
+}
+
+/* Recherche + filtres */
+function applyFilters() {
+    const search = document.getElementById('searchInput').value.toLowerCase().trim();
+    const statut = document.getElementById('filterStatut').value;
+    const role   = document.getElementById('filterRole').value;
+    document.querySelectorAll('.user-card').forEach(card => {
+        const text        = (card.dataset.nom + ' ' + card.dataset.prenom + ' ' + card.dataset.email).toLowerCase();
+        const matchSearch = !search || text.includes(search);
+        const matchStatut = !statut || card.dataset.statut === statut;
+        const matchRole   = !role   || card.dataset.role   === role;
+        card.style.display = (matchSearch && matchStatut && matchRole) ? '' : 'none';
+    });
+}
+document.getElementById('searchInput').addEventListener('input', applyFilters);
+document.getElementById('filterStatut').addEventListener('change', applyFilters);
+document.getElementById('filterRole').addEventListener('change', applyFilters);
+
+/* Échap */
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeUserProfile(); closeUserEdit(); closeDeleteConfirm(); closeToggleConfirm(); }
+});
+
+function toggleStatut(userId, statutActuel, userName) {
+    const bloquer = statutActuel === 'ACTIF';
+
+    /* Icône et couleur selon l'action */
+    const icon  = document.getElementById('toggleConfirmIcon');
+    const iconI = document.getElementById('toggleConfirmIconI');
+    const btn   = document.getElementById('toggleConfirmBtn');
+
+    if (bloquer) {
+        icon.className  = 'toggle-confirm-icon bloquer';
+        iconI.className = 'fas fa-ban';
+        document.getElementById('toggleConfirmTitle').textContent = Bloquer "${userName}" ?;
+        document.getElementById('toggleConfirmText').textContent  = 'Il ne pourra plus se connecter tant qu\'il est bloqué.';
+        btn.className   = 'btn-confirm-toggle-bloquer';
+        btn.textContent = 'Bloquer';
+    } else {
+        icon.className  = 'toggle-confirm-icon debloquer';
+        iconI.className = 'fas fa-check-circle';
+        document.getElementById('toggleConfirmTitle').textContent = Débloquer "${userName}" ?;
+        document.getElementById('toggleConfirmText').textContent  = 'Il pourra à nouveau se connecter.';
+        btn.className   = 'btn-confirm-toggle-debloquer';
+        btn.textContent = 'Débloquer';
+    }
+
+    document.getElementById('toggleStatutForm').action = /admin/users/${userId}/toggle-statut;
+    document.getElementById('toggleConfirmOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeToggleConfirm() {
+    document.getElementById('toggleConfirmOverlay').classList.remove('active');
+    document.body.style.overflow = '';
+}
+</script>
+{% endblock %}

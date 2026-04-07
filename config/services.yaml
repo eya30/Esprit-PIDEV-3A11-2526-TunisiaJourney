@@ -12,13 +12,10 @@ parameters:
     imgbb_api_key: '%env(IMGBB_API_KEY)%'
 
 services:
-    # default configuration for services in *this* file
     _defaults:
-        autowire: true      # Automatically injects dependencies in your services.
-        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        autowire: true
+        autoconfigure: true
 
-    # makes classes in src/ available to be used as services
-    # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
         exclude:
@@ -26,15 +23,10 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
-    # Services personnalisés
-    App\Service\BrevoMailerService:
-        arguments:
-            $apiKey: '%env(BREVO_API_KEY)%'
-            
+    # ✅ Service Gemini uniquement
     App\Service\GeminiAIService:
         arguments:
             $apiKey: '%env(GEMINI_API_KEY)%'
             $connection: '@doctrine.dbal.default_connection'
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+    # ❌ BrevoMailerService est COMPLÈTEMENT SUPPRIMÉ

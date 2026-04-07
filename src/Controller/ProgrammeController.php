@@ -19,10 +19,8 @@ class ProgrammeController extends AbstractController
     #[Route('/', name: 'app_programme_index', methods: ['GET'])]
     public function index(ProgrammeRepository $programmeRepository): Response
     {
-        $programmes = $programmeRepository->findAll();
-        
         return $this->render('programme/index.html.twig', [
-            'programmes' => $programmes,
+            'programmes' => $programmeRepository->findAll(),
         ]);
     }
 
@@ -40,10 +38,7 @@ class ProgrammeController extends AbstractController
             $imageFile = $form->get('imageFile')->getData();
             if ($imageFile) {
                 $newFilename = uniqid() . '.' . $imageFile->guessExtension();
-                $imageFile->move(
-                    $this->getParameter('programmes_images_directory'),
-                    $newFilename
-                );
+                $imageFile->move($this->getParameter('programmes_images_directory'), $newFilename);
                 $programme->setImage($newFilename);
             }
             
@@ -69,20 +64,22 @@ class ProgrammeController extends AbstractController
         ]);
     }
 
+    // ✅ CORRECTION : Version ultra-simple compatible Symfony 7+
     #[Route('/{idProg}/with-data', name: 'app_programme_show_with_data', methods: ['GET'])]
     public function showWithData(Programme $programme, Request $request): Response
     {
-        $oldData = [
-            'nom' => $request->query->get('nom', ''),
-            'prenom' => $request->query->get('prenom', ''),
-            'telephone' => $request->query->get('telephone', ''),
-            'email' => $request->query->get('email', ''),
-            'nbre' => $request->query->get('nbre', '1')
-        ];
+        // 🟢 Les messages flash (error/success) sont automatiquement disponibles 
+        // dans Twig via app.flashes() après un redirect. Aucun besoin de getFlashBag() !
         
         return $this->render('programme/show.html.twig', [
             'programme' => $programme,
-            'old' => $oldData
+            'old' => [
+                'nom' => $request->query->get('nom', ''),
+                'prenom' => $request->query->get('prenom', ''),
+                'telephone' => $request->query->get('telephone', ''),
+                'email' => $request->query->get('email', ''),
+                'nbre' => $request->query->get('nbre', ''),
+            ]
         ]);
     }
 
@@ -97,10 +94,7 @@ class ProgrammeController extends AbstractController
             $imageFile = $form->get('imageFile')->getData();
             if ($imageFile) {
                 $newFilename = uniqid() . '.' . $imageFile->guessExtension();
-                $imageFile->move(
-                    $this->getParameter('programmes_images_directory'),
-                    $newFilename
-                );
+                $imageFile->move($this->getParameter('programmes_images_directory'), $newFilename);
                 $programme->setImage($newFilename);
             }
             
@@ -131,11 +125,9 @@ class ProgrammeController extends AbstractController
     #[Route('/voyage/{idV}', name: 'app_programme_by_voyage', methods: ['GET'])]
     public function programmesByVoyage(Voyage $voyage, ProgrammeRepository $programmeRepository): Response
     {
-        $programmes = $programmeRepository->findBy(['voyage' => $voyage]);
-        
         return $this->render('programme/by_voyage.html.twig', [
             'voyage' => $voyage,
-            'programmes' => $programmes,
+            'programmes' => $programmeRepository->findBy(['voyage' => $voyage]),
         ]);
     }
 }

@@ -17,11 +17,11 @@
         --dark-gray: #2C3E50;
     }
 
-    /* Hero Section - Plus petite et plus claire */
+    /* Hero Section */
     .hero {
         position: relative;
-        height: 55vh;
-        min-height: 400px;
+        height: 70vh;
+        min-height: 500px;
         background: #000;
         display: flex;
         align-items: center;
@@ -29,8 +29,6 @@
         text-align: center;
         color: white;
         overflow: hidden;
-        border-radius: 0 0 30px 30px;
-        margin-bottom: 2rem;
     }
 
     .hero-bg {
@@ -39,81 +37,55 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-        object-position: center 30%;
+        object-position: center;
         z-index: 1;
-        filter: brightness(0.85) contrast(1.1);
     }
 
     .hero::before {
         content: '';
         position: absolute;
         top: 0; left: 0; right: 0; bottom: 0;
-        background: linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.2) 100%);
-        z-index: 2;
+        background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.3) 100%);
     }
 
     .hero-content {
         position: relative;
         z-index: 3;
-        max-width: 700px;
-        padding: 2rem;
+        max-width: 800px;
+        padding: 3rem;
         animation: fadeInUp 1.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-        background: rgba(0,0,0,0.25);
-        backdrop-filter: blur(8px);
-        border-radius: 40px;
-        border: 1px solid rgba(255,255,255,0.2);
     }
 
     @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(30px); }
+        from { opacity: 0; transform: translateY(50px); }
         to { opacity: 1; transform: translateY(0); }
     }
 
     .hero h1 {
         font-family: 'Cormorant Garamond', serif;
-        font-size: 3rem;
+        font-size: 4rem;
         font-weight: 700;
-        margin-bottom: 0.8rem;
-        text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+        margin-bottom: 1rem;
+        text-shadow: 3px 3px 12px rgba(0,0,0,0.5);
         color: #F5CAC3;
-        letter-spacing: 1px;
+        letter-spacing: 2px;
     }
 
     .hero p {
-        font-size: 1rem;
-        margin-bottom: 1.5rem;
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
         font-weight: 300;
-        line-height: 1.6;
+        line-height: 1.8;
         color: rgba(255,255,255,0.95);
     }
 
-    .hero .btn-hero {
-        background: linear-gradient(135deg, #E31B23, #C41E3A);
-        color: white;
-        padding: 10px 28px;
-        border-radius: 40px;
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 0.9rem;
-        transition: all 0.3s ease;
-        display: inline-block;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    }
-
-    .hero .btn-hero:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(227,27,35,0.4);
-        background: linear-gradient(135deg, #C41E3A, #E31B23);
-    }
-
-    /* Section Titles améliorés */
     .section-title {
         text-align: center;
         font-family: 'Cormorant Garamond', serif;
-        font-size: 2.5rem;
+        font-size: 2.8rem;
         font-weight: 700;
         color: var(--tunisia-red);
-        margin-bottom: 0.8rem;
+        margin-bottom: 1rem;
         position: relative;
     }
 
@@ -121,30 +93,30 @@
         content: '✦ ✦ ✦';
         display: block;
         color: #F5CAC3;
-        font-size: 1.1rem;
-        margin-top: 0.5rem;
-        letter-spacing: 10px;
+        font-size: 1.3rem;
+        margin-top: 0.8rem;
+        letter-spacing: 12px;
     }
 
     .section-subtitle {
         text-align: center;
         color: var(--dark-gray);
-        font-size: 0.95rem;
-        margin-bottom: 2rem;
+        font-size: 1rem;
+        margin-bottom: 2.5rem;
         font-style: italic;
         opacity: 0.8;
     }
 
-    /* Filters Bar amélioré */
+    /* Filters Bar */
     .filters-bar {
         background: white;
-        padding: 1.2rem 1.8rem;
-        border-radius: 50px;
+        padding: 1.5rem 2rem;
+        border-radius: 20px;
         box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        margin-bottom: 2.5rem;
+        margin-bottom: 3rem;
         display: flex;
         flex-wrap: wrap;
-        gap: 0.8rem;
+        gap: 1rem;
         align-items: center;
         justify-content: center;
     }
@@ -158,19 +130,19 @@
     .filter-group label {
         font-weight: 500;
         color: var(--dark-gray);
-        font-size: 0.85rem;
+        font-size: 0.9rem;
     }
 
     .filter-select {
-        padding: 8px 18px;
+        padding: 10px 20px;
         border: 2px solid #F5CAC3;
-        border-radius: 30px;
+        border-radius: 25px;
         background: white;
-        font-size: 0.85rem;
+        font-size: 0.9rem;
         color: var(--dark-gray);
         cursor: pointer;
         transition: all 0.3s ease;
-        min-width: 130px;
+        min-width: 150px;
     }
 
     .filter-select:focus {
@@ -180,12 +152,12 @@
     }
 
     .search-input {
-        padding: 8px 18px;
+        padding: 10px 20px;
         border: 2px solid #F5CAC3;
-        border-radius: 30px;
+        border-radius: 25px;
         background: white;
-        font-size: 0.85rem;
-        width: 220px;
+        font-size: 0.9rem;
+        width: 250px;
         transition: all 0.3s ease;
     }
 
@@ -193,19 +165,18 @@
         outline: none;
         border-color: var(--tunisia-red);
         box-shadow: 0 0 0 3px rgba(227,27,35,0.1);
-        width: 250px;
+        width: 280px;
     }
 
     .btn-filter {
         background: linear-gradient(135deg, var(--tunisia-red), #F5CAC3);
         color: white;
-        padding: 8px 22px;
-        border-radius: 30px;
+        padding: 10px 25px;
+        border-radius: 25px;
         border: none;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s ease;
-        font-size: 0.85rem;
     }
 
     .btn-filter:hover {
@@ -213,13 +184,13 @@
         box-shadow: 0 8px 20px rgba(227,27,35,0.4);
     }
 
-    /* Cards */
+    /* Cards - Taille uniforme */
     .card-custom {
         background: white;
-        border-radius: 20px;
+        border-radius: 24px;
         overflow: hidden;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-        transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        transition: all 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
         margin-bottom: 30px;
         border: none;
         position: relative;
@@ -229,8 +200,8 @@
     }
 
     .card-custom:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 20px 40px rgba(227,27,35,0.15);
+        transform: translateY(-12px);
+        box-shadow: 0 25px 50px rgba(227,27,35,0.25);
     }
 
     .card-img {
@@ -242,31 +213,31 @@
 
     .card-badge {
         position: absolute;
-        top: 12px;
-        right: 12px;
+        top: 15px;
+        right: 15px;
         background: linear-gradient(135deg, var(--tunisia-red), #F5CAC3);
         color: white;
-        padding: 4px 12px;
-        border-radius: 20px;
+        padding: 6px 15px;
+        border-radius: 25px;
         font-weight: 600;
-        font-size: 0.65rem;
+        font-size: 0.7rem;
         z-index: 2;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
     }
 
     .wishlist-star {
         position: absolute;
-        top: 12px;
-        left: 12px;
+        top: 15px;
+        left: 15px;
         z-index: 10;
         cursor: pointer;
-        font-size: 24px;
+        font-size: 28px;
         color: #ccc;
         transition: all 0.3s ease;
         text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         background: rgba(0,0,0,0.3);
-        width: 36px;
-        height: 36px;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -286,15 +257,15 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transition: transform 0.5s ease;
+        transition: transform 0.7s cubic-bezier(0.2, 0.9, 0.4, 1.1);
     }
 
     .card-custom:hover .card-img img {
-        transform: scale(1.05);
+        transform: scale(1.08);
     }
 
     .card-content {
-        padding: 1.3rem;
+        padding: 1.5rem;
         flex: 1;
         display: flex;
         flex-direction: column;
@@ -302,16 +273,17 @@
 
     .card-title {
         font-family: 'Cormorant Garamond', serif;
-        font-size: 1.2rem;
+        font-size: 1.3rem;
         font-weight: 700;
         color: var(--tunisia-red);
-        margin-bottom: 0.4rem;
+        margin-bottom: 0.5rem;
+        min-height: 60px;
     }
 
     .card-location {
         color: var(--tunisia-orange);
-        font-size: 0.8rem;
-        margin-bottom: 0.6rem;
+        font-size: 0.85rem;
+        margin-bottom: 0.8rem;
         font-weight: 500;
         display: flex;
         align-items: center;
@@ -321,29 +293,29 @@
     .card-desc {
         color: #6c757d;
         line-height: 1.5;
-        margin-bottom: 0.8rem;
-        font-size: 0.8rem;
+        margin-bottom: 1rem;
+        font-size: 0.85rem;
         flex: 1;
     }
 
     .card-price {
-        font-size: 1.1rem;
+        font-size: 1.2rem;
         font-weight: 800;
         color: var(--tunisia-red);
-        margin-bottom: 0.8rem;
+        margin-bottom: 1rem;
     }
 
     .card-price span {
-        font-size: 0.7rem;
+        font-size: 0.8rem;
         font-weight: 400;
         color: #6c757d;
     }
 
     .card-meta {
         display: flex;
-        gap: 0.8rem;
-        margin-bottom: 0.8rem;
-        font-size: 0.7rem;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        font-size: 0.75rem;
         color: #6c757d;
         flex-wrap: wrap;
     }
@@ -351,29 +323,29 @@
     .card-meta i {
         color: var(--tunisia-orange);
         margin-right: 3px;
-        width: 12px;
+        width: 14px;
     }
 
     /* Boutons améliorés */
     .button-group {
         display: flex;
-        gap: 10px;
+        gap: 12px;
         margin-top: auto;
     }
 
     .btn-details {
         flex: 1;
         background: transparent;
-        border: 1.5px solid var(--tunisia-red);
+        border: 2px solid var(--tunisia-red);
         color: var(--tunisia-red);
-        padding: 8px 0;
-        border-radius: 30px;
+        padding: 10px 0;
+        border-radius: 40px;
         font-weight: 600;
         text-decoration: none;
         display: inline-block;
         text-align: center;
         transition: all 0.3s ease;
-        font-size: 0.75rem;
+        font-size: 0.8rem;
         position: relative;
         overflow: hidden;
         z-index: 1;
@@ -398,6 +370,7 @@
     .btn-details:hover {
         color: white;
         transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(227,27,35,0.3);
     }
 
     .btn-programmes {
@@ -405,19 +378,38 @@
         background: linear-gradient(135deg, var(--tunisia-red), var(--tunisia-orange));
         color: white;
         border: none;
-        padding: 8px 0;
-        border-radius: 30px;
+        padding: 10px 0;
+        border-radius: 40px;
         font-weight: 600;
         text-decoration: none;
         display: inline-block;
         text-align: center;
         transition: all 0.3s ease;
-        font-size: 0.75rem;
+        font-size: 0.8rem;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+
+    .btn-programmes::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(135deg, var(--tunisia-orange), var(--tunisia-red));
+        transition: all 0.3s ease;
+        z-index: -1;
+    }
+
+    .btn-programmes:hover::before {
+        width: 100%;
     }
 
     .btn-programmes:hover {
         transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(227,27,35,0.3);
+        box-shadow: 0 5px 15px rgba(227,27,35,0.4);
     }
 
     /* Pagination */
@@ -425,22 +417,22 @@
         display: flex;
         justify-content: center;
         gap: 0.5rem;
-        margin-top: 2rem;
+        margin-top: 3rem;
     }
 
     .pagination a, .pagination span {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 36px;
-        height: 36px;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
         background: white;
         color: var(--dark-gray);
         text-decoration: none;
         font-weight: 600;
         transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
     }
 
     .pagination a:hover, .pagination .active {
@@ -453,8 +445,8 @@
     .wishlist-sidebar {
         position: fixed;
         top: 0;
-        right: -400px;
-        width: 400px;
+        right: -450px;
+        width: 450px;
         height: 100vh;
         background: white;
         box-shadow: -5px 0 30px rgba(0,0,0,0.1);
@@ -494,7 +486,7 @@
 
     .wishlist-header h4 {
         font-family: 'Cormorant Garamond', serif;
-        font-size: 1.3rem;
+        font-size: 1.5rem;
         color: var(--tunisia-red);
         margin: 0;
     }
@@ -531,8 +523,8 @@
     }
 
     .wishlist-item-img {
-        width: 70px;
-        height: 70px;
+        width: 80px;
+        height: 80px;
         border-radius: 12px;
         object-fit: cover;
     }
@@ -545,13 +537,12 @@
         font-weight: 700;
         color: var(--tunisia-red);
         margin-bottom: 0.3rem;
-        font-size: 0.9rem;
     }
 
     .wishlist-item-price {
         color: var(--tunisia-orange);
         font-weight: 600;
-        font-size: 0.85rem;
+        font-size: 0.9rem;
     }
 
     .wishlist-item-remove {
@@ -562,7 +553,7 @@
         border: none;
         color: #EF4444;
         cursor: pointer;
-        font-size: 1.1rem;
+        font-size: 1.2rem;
     }
 
     .empty-wishlist {
@@ -573,24 +564,25 @@
 
     .wishlist-icon {
         cursor: pointer;
+        margin-right: 2rem;
         transition: all 0.3s ease;
         position: relative;
         display: inline-flex;
         align-items: center;
         gap: 8px;
         background: white;
-        padding: 6px 14px;
+        padding: 8px 16px;
         border-radius: 30px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
     .wishlist-icon i {
-        font-size: 1rem;
+        font-size: 1.2rem;
         color: var(--tunisia-red);
     }
 
     .wishlist-icon span {
-        font-size: 0.85rem;
+        font-size: 0.9rem;
         font-weight: 600;
         color: var(--dark-gray);
     }
@@ -603,85 +595,83 @@
     .wishlist-count {
         background: #E31B23;
         color: white;
-        font-size: 0.65rem;
+        font-size: 0.7rem;
         font-weight: 600;
         padding: 2px 6px;
         border-radius: 50%;
         margin-left: 5px;
     }
 
+    /* Message aucun résultat */
     .no-results {
         text-align: center;
-        padding: 3rem;
+        padding: 4rem;
         background: white;
         border-radius: 20px;
         border: 1px solid #F0E8DD;
     }
 
     .no-results i {
-        font-size: 2.5rem;
+        font-size: 3rem;
         color: #E8DFD1;
-        margin-bottom: 0.8rem;
+        margin-bottom: 1rem;
     }
 
     @media (max-width: 768px) {
-        .hero { height: 45vh; min-height: 350px; }
-        .hero h1 { font-size: 2rem; }
-        .hero-content { padding: 1.2rem; margin: 0 1rem; }
-        .hero .btn-hero { padding: 8px 20px; font-size: 0.8rem; }
+        .hero h1 { font-size: 2.5rem; }
+        .hero-content { padding: 2rem; }
         .section-title { font-size: 2rem; }
-        .filters-bar { flex-direction: column; border-radius: 25px; }
+        .filters-bar { flex-direction: column; }
         .search-input { width: 100%; }
         .card-img { height: 200px; }
-        .button-group { flex-direction: column; gap: 6px; }
+        .button-group { flex-direction: column; gap: 8px; }
         .wishlist-sidebar { width: 100%; right: -100%; }
+        .card-title { min-height: auto; font-size: 1.2rem; }
     }
 </style>
 {% endblock %}
 
 {% block body %}
-<!-- Hero Section - Plus petite et plus claire -->
 <section class="hero">
-    <img class="hero-bg" src="{{ asset('images/tunisia-hero.jpg') }}" alt="Voyage en Tunisie">
+    <img class="hero-bg" src="https://switchmed.eu/wp-content/uploads/2020/04/tunisia-1.jpg" alt="Voyage en Tunisie">
     <div class="hero-content">
         <h1>Nos Voyages en Tunisie</h1>
         <p>Découvrez nos séjours exclusifs, conçus pour vous faire vivre la magie de la Tunisie.</p>
-        <a href="#voyages" class="btn-hero">Explorer maintenant</a>
     </div>
 </section>
 
-<section id="voyages" class="py-5">
+<section class="py-5">
     <div class="container">
         <div class="d-flex justify-content-end mb-3">
             <div class="wishlist-icon" id="wishlistIcon">
                 <i class="fas fa-heart"></i>
-                <span>Wishlist</span>
+                <span>Ma Wishlist</span>
                 <span class="wishlist-count" id="wishlistCount">0</span>
             </div>
         </div>
 
         <div class="filters-bar">
             <div class="filter-group">
-                <i class="fas fa-search text-muted"></i>
-                <input type="text" class="search-input" id="searchInput" placeholder="Rechercher...">
+                <label><i class="fas fa-search me-1"></i></label>
+                <input type="text" class="search-input" id="searchInput" placeholder="Rechercher un voyage...">
             </div>
             <div class="filter-group">
-                <label> Durée</label>
+                <label for="duration">Durée :</label>
                 <select class="filter-select" id="durationFilter">
-                    <option value="all">Toutes</option>
+                    <option value="all">Toutes les durées</option>
                     <option value="3">3 jours</option>
                     <option value="5">5 jours</option>
                     <option value="7">7 jours</option>
-                    <option value="10">10 jours+</option>
+                    <option value="10">10 jours et plus</option>
                 </select>
             </div>
             <div class="filter-group">
-                <label>Budget</label>
+                <label for="budget">Budget :</label>
                 <select class="filter-select" id="budgetFilter">
-                    <option value="all">Tous</option>
-                    <option value="budget">Éco (-500 DT)</option>
-                    <option value="medium">Confort (500-1000 DT)</option>
-                    <option value="luxury">Luxe (1000+ DT)</option>
+                    <option value="all">Tous les budgets</option>
+                    <option value="budget">Économique (moins de 500 DT)</option>
+                    <option value="medium">Confort (500 - 1000 DT)</option>
+                    <option value="luxury">Luxe (1000 DT et plus)</option>
                 </select>
             </div>
             <button class="btn-filter" id="filterBtn"><i class="fas fa-filter me-1"></i> Filtrer</button>
@@ -704,13 +694,13 @@
                         <div class="card-content">
                             <h3 class="card-title">{{ voyage.nom }}</h3>
                             <p class="card-location"><i class="fas fa-map-marker-alt"></i> {{ voyage.lieu|default('Tunisie') }}</p>
-                            <p class="card-desc">{{ voyage.description|slice(0, 90) }}{% if voyage.description|length > 90 %}...{% endif %}</p>
+                            <p class="card-desc">{{ voyage.description|slice(0, 100) }}{% if voyage.description|length > 100 %}...{% endif %}</p>
                             <div class="card-meta">
-                                <span><i class="fas fa-user"></i> {{ voyage.capacite|default('2-8') }}</span>
+                                <span><i class="fas fa-user"></i> {{ voyage.capacite|default('2-8') }} pers</span>
                                 <span><i class="fas fa-clock"></i> {{ voyage.heure|date('H:i') }}</span>
-                                <span><i class="fas fa-calendar-alt"></i> {{ voyage.duree|default(5) }}j</span>
+                                <span><i class="fas fa-calendar-alt"></i> {{ voyage.duree|default(5) }} jours</span>
                             </div>
-                            <div class="card-price">{{ voyage.prix|number_format(0, ',', ' ') }} TND <span>/pers</span></div>
+                            <div class="card-price">{{ voyage.prix|number_format(0, ',', ' ') }} TND <span>/personne</span></div>
                             <div class="button-group">
                                 <a href="{{ path('app_voyage_show', {'idV': voyage.idV}) }}" class="btn-details">
                                     <i class="fas fa-info-circle me-1"></i> Détails
@@ -742,7 +732,6 @@
     </div>
 </section>
 
-<!-- Wishlist Sidebar -->
 <div class="wishlist-overlay" id="wishlistOverlay"></div>
 <div class="wishlist-sidebar" id="wishlistSidebar">
     <div class="wishlist-header">
@@ -763,20 +752,20 @@
 <script>
     // Wishlist
     let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
-    
+   
     function saveWishlist() {
         localStorage.setItem('wishlist', JSON.stringify(wishlist));
         updateWishlistUI();
         updateWishlistSidebar();
         updateWishlistCount();
     }
-    
+   
     function updateWishlistCount() {
         const count = wishlist.length;
         const countElement = document.getElementById('wishlistCount');
         if (countElement) countElement.textContent = count;
     }
-    
+   
     function updateWishlistUI() {
         document.querySelectorAll('.wishlist-star').forEach(star => {
             const id = parseInt(star.dataset.id);
@@ -791,11 +780,11 @@
         });
         updateWishlistCount();
     }
-    
+   
     function updateWishlistSidebar() {
         const container = document.getElementById('wishlistList');
         if (!container) return;
-        
+       
         if (wishlist.length === 0) {
             container.innerHTML = `
                 <div class="empty-wishlist">
@@ -806,7 +795,7 @@
             `;
             return;
         }
-        
+       
         let html = '';
         wishlist.forEach(id => {
             const voyageElement = document.querySelector(`.voyage-item[data-id="${id}"]`);
@@ -830,7 +819,7 @@
         });
         container.innerHTML = html;
     }
-    
+   
     function toggleWishlist(id) {
         const index = wishlist.indexOf(id);
         if (index === -1) {
@@ -840,7 +829,7 @@
         }
         saveWishlist();
     }
-    
+   
     function removeFromWishlist(id) {
         const index = wishlist.indexOf(id);
         if (index !== -1) {
@@ -849,7 +838,7 @@
             updateWishlistUI();
         }
     }
-    
+   
     document.querySelectorAll('.wishlist-star').forEach(star => {
         star.addEventListener('click', function(e) {
             e.stopPropagation();
@@ -857,16 +846,16 @@
             toggleWishlist(id);
         });
     });
-    
+   
     updateWishlistUI();
     updateWishlistSidebar();
-    
+   
     // Sidebar
     const wishlistIcon = document.getElementById('wishlistIcon');
     const wishlistSidebar = document.getElementById('wishlistSidebar');
     const wishlistOverlay = document.getElementById('wishlistOverlay');
     const closeWishlistBtn = document.getElementById('closeWishlistBtn');
-    
+   
     function openWishlist() {
         if (wishlistSidebar && wishlistOverlay) {
             wishlistSidebar.classList.add('open');
@@ -874,40 +863,44 @@
             updateWishlistSidebar();
         }
     }
-    
+   
     function closeWishlist() {
         if (wishlistSidebar && wishlistOverlay) {
             wishlistSidebar.classList.remove('open');
             wishlistOverlay.classList.remove('active');
         }
     }
-    
+   
     if (wishlistIcon) wishlistIcon.addEventListener('click', openWishlist);
     if (closeWishlistBtn) closeWishlistBtn.addEventListener('click', closeWishlist);
     if (wishlistOverlay) wishlistOverlay.addEventListener('click', closeWishlist);
-    
+   
     // FILTRAGE
     const filterBtn = document.getElementById('filterBtn');
     const searchInput = document.getElementById('searchInput');
     const durationFilter = document.getElementById('durationFilter');
     const budgetFilter = document.getElementById('budgetFilter');
-    
+   
     function applyFilters() {
         const searchTerm = searchInput.value.toLowerCase();
         const duration = durationFilter.value;
         const budget = budgetFilter.value;
-        
+       
         let visibleCount = 0;
-        
+       
         document.querySelectorAll('.voyage-item').forEach(item => {
             const name = item.dataset.name || '';
             const price = parseInt(item.dataset.price) || 0;
             const duree = parseInt(item.dataset.duree) || 0;
-            
+           
             let show = true;
-            
-            if (searchTerm && !name.includes(searchTerm)) show = false;
-            
+           
+            // Filtre par recherche
+            if (searchTerm && !name.includes(searchTerm)) {
+                show = false;
+            }
+           
+            // Filtre par durée
             if (show && duration !== 'all') {
                 if (duration === '10') {
                     if (duree < 10) show = false;
@@ -915,17 +908,19 @@
                     if (duree != duration) show = false;
                 }
             }
-            
+           
+            // Filtre par budget
             if (show && budget !== 'all') {
                 if (budget === 'budget' && price >= 500) show = false;
                 if (budget === 'medium' && (price < 500 || price > 1000)) show = false;
                 if (budget === 'luxury' && price < 1000) show = false;
             }
-            
+           
             item.style.display = show ? '' : 'none';
             if (show) visibleCount++;
         });
-        
+       
+        // Afficher message si aucun résultat
         const existingMsg = document.getElementById('noResultMsg');
         if (visibleCount === 0) {
             if (!existingMsg) {
@@ -945,12 +940,13 @@
             existingMsg.remove();
         }
     }
-    
+   
     if (filterBtn) filterBtn.addEventListener('click', applyFilters);
     if (searchInput) searchInput.addEventListener('keyup', applyFilters);
     if (durationFilter) durationFilter.addEventListener('change', applyFilters);
     if (budgetFilter) budgetFilter.addEventListener('change', applyFilters);
-    
+   
+    // Appliquer les filtres au chargement
     applyFilters();
 </script>
 {% endblock %}

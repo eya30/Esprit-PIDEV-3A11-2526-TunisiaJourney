@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Dompdf\Dompdf;
+use Dompdf\Options;
 
 #[Route('/admin/reservations')]
 class AdminReservationController extends AbstractController
@@ -22,7 +23,6 @@ class AdminReservationController extends AbstractController
         $sort = $request->query->get('sort', 'idRP');
         $direction = $request->query->get('direction', 'DESC');
         
-        // Colonnes autorisées pour le tri (sécurité)
         $allowedSorts = ['idRP', 'nom', 'prenom', 'email', 'telephone', 'nbre', 'prixProg', 'dateProgramme', 'statutPaiement', 'programme_nom'];
         if (!in_array($sort, $allowedSorts)) {
             $sort = 'idRP';
@@ -30,7 +30,6 @@ class AdminReservationController extends AbstractController
         
         $direction = strtoupper($direction) === 'ASC' ? 'ASC' : 'DESC';
         
-        // Construction de la requête avec recherche
         $searchCondition = "";
         $params = [];
         
@@ -39,7 +38,6 @@ class AdminReservationController extends AbstractController
             $params['search'] = "%$search%";
         }
         
-        // Compter le nombre total de réservations
         $countQuery = "
             SELECT COUNT(*) FROM reservationprog r 
             LEFT JOIN programmes p ON r.idP = p.idProg 
@@ -48,7 +46,6 @@ class AdminReservationController extends AbstractController
         $totalReservations = $connection->fetchOne($countQuery, $params);
         $totalPages = max(1, ceil($totalReservations / self::ITEMS_PER_PAGE));
         
-        // Déterminer la colonne de tri pour programme_nom (cas particulier car vient d'une jointure)
         $orderByClause = "";
         if ($sort === 'programme_nom') {
             $orderByClause = " ORDER BY p.nom $direction";
@@ -56,7 +53,6 @@ class AdminReservationController extends AbstractController
             $orderByClause = " ORDER BY r.$sort $direction";
         }
         
-        // Récupérer les réservations paginées
         $reservations = $connection->fetchAllAssociative("
             SELECT r.*, p.nom as programme_nom, v.nom as voyage_nom
             FROM reservationprog r 
@@ -93,34 +89,32 @@ class AdminReservationController extends AbstractController
     #[Route('/pdf', name: 'admin_reservation_pdf')]
     public function pdf(Connection $connection): Response
     {
-        // Récupérer toutes les réservations
         $reservations = $connection->fetchAllAssociative("
             SELECT r.*, p.nom as programme_nom, v.nom as voyage_nom
             FROM reservationprog r 
             LEFT JOIN programmes p ON r.idP = p.idProg 
             LEFT JOIN voyages v ON p.idV = v.idV
-            ORDER BY r.nom ASC
+            ORDER BY r.dateProgramme DESC
         ");
 
-        // Générer le HTML pour le PDF
+        $options = new Options();
+        $options->set('defaultFont', 'Helvetica');
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        
+        $dompdf = new Dompdf($options);
+        
         $html = $this->renderView('admin/reservation/pdf.html.twig', [
             'reservations' => $reservations,
         ]);
 
-        // Créer le PDF
-        $dompdf = new Dompdf();
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
 
-        // Retourner le PDF
-        return new Response(
-            $dompdf->output(),
-            200,
-            [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'attachment; filename="reservations.pdf"'
-            ]
-        );
+        return new Response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="rapport_reservations_' . date('Y-m-d') . '.pdf"'
+        ]);
     }
 }
