@@ -23,6 +23,10 @@
     .form-label-custom i { color:var(--tunisia-orange); margin-right:6px; width:16px; }
     .input-custom { width:100%; padding:11px 20px; border:2px solid #F5CAC3; border-radius:25px; background:white; font-size:0.92rem; color:var(--dark-gray); font-family:'Montserrat',sans-serif; transition:all 0.3s ease; box-sizing:border-box; }
     .input-custom:focus { outline:none; border-color:var(--tunisia-red); box-shadow:0 0 0 3px rgba(227,27,35,0.1); }
+    
+    /* Correction du champ CSRF "1" */
+    input[type="hidden"] { display: none !important; }
+
     select.input-custom { appearance:auto; cursor:pointer; }
     .form-divider { height:1px; background:linear-gradient(to right,transparent,#F5CAC3,transparent); margin:1.5rem 0; }
     .field-error { color:var(--tunisia-red); font-size:0.8rem; margin-top:4px; padding-left:12px; }
@@ -52,6 +56,30 @@
 {% endblock %}
 
 {% block body %}
+<div class="container mt-3">
+    {% if not form.vars.valid %}
+        <div class="alert alert-danger" style="border-radius:15px;">
+            <strong><i class="fas fa-exclamation-triangle"></i> Le formulaire est invalide :</strong>
+            <ul class="mb-0">
+                {% for child in form.children %}
+                    {% for error in child.vars.errors %}
+                        <li>{{ child.vars.label|default(child.vars.name) }} : {{ error.message }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.vars.errors %}
+                    <li>{{ error.message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+    
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }}" style="border-radius:15px;">{{ message }}</div>
+        {% endfor %}
+    {% endfor %}
+</div>
+
 <section class="hero">
     <div class="hero-content">
         <h1>Finaliser la Commande</h1>
@@ -71,8 +99,6 @@
                 </a>
 
                 <div class="row g-4">
-
-                    <!-- Formulaire -->
                     <div class="col-lg-7">
                         <div class="form-card">
                             {{ form_start(form) }}
@@ -84,42 +110,35 @@
                             <div class="mb-3">
                                 <label class="form-label-custom"><i class="fas fa-map-marker-alt"></i> Adresse de livraison</label>
                                 {{ form_widget(form.AdresseLiv, {'attr': {'class': 'input-custom', 'placeholder': '12 Rue de la Médina, Tunis'}}) }}
-                                {% if form_errors(form.AdresseLiv) %}<div class="field-error">{{ form_errors(form.AdresseLiv) }}</div>{% endif %}
+                                {{ form_errors(form.AdresseLiv) }}
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label-custom"><i class="fas fa-mail-bulk"></i> Code postal</label>
                                 {{ form_widget(form.CodePostal, {'attr': {'class': 'input-custom', 'placeholder': '1000'}}) }}
-                                {% if form_errors(form.CodePostal) %}<div class="field-error">{{ form_errors(form.CodePostal) }}</div>{% endif %}
+                                {{ form_errors(form.CodePostal) }}
                             </div>
 
                             <div class="form-divider"></div>
 
-                            <div class="form-section-label">
-                                <i class="fas fa-calendar-alt"></i> Date & Paiement
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label-custom"><i class="fas fa-calendar-alt"></i> Date de commande</label>
-                                {{ form_widget(form.DateC, {'attr': {'class': 'input-custom'}}) }}
-                                {% if form_errors(form.DateC) %}<div class="field-error">{{ form_errors(form.DateC) }}</div>{% endif %}
-                            </div>
-
                             <div class="mb-3">
                                 <label class="form-label-custom"><i class="fas fa-credit-card"></i> Mode de paiement</label>
                                 {{ form_widget(form.ModePaiement, {'attr': {'class': 'input-custom'}}) }}
-                                {% if form_errors(form.ModePaiement) %}<div class="field-error">{{ form_errors(form.ModePaiement) }}</div>{% endif %}
+                                {{ form_errors(form.ModePaiement) }}
                             </div>
 
                             <button type="submit" class="btn-submit">
                                 <i class="fas fa-check-circle me-2"></i> Confirmer la commande
                             </button>
 
+                            {# Rendu manuel du jeton CSRF pour éviter l'affichage parasite #}
+                            {{ form_widget(form._token) }}
+
+                            {# Fermeture propre sans rendu automatique du reste #}
                             {{ form_end(form, {'render_rest': false}) }}
                         </div>
                     </div>
 
-                    <!-- Récap panier -->
                     <div class="col-lg-5">
                         <div class="recap-card">
                             <h4><i class="fas fa-shopping-bag me-2" style="color:var(--tunisia-orange);"></i> Votre commande</h4>
@@ -150,7 +169,6 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>

@@ -15,50 +15,32 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class CommandeType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options): void
-    {
-        $builder
-            ->add('Quantite', IntegerType::class, [
-                'label' => false,
-                'attr'  => ['placeholder' => 'Ex : 2', 'min' => 1],
-            ])
-            ->add('DateC', DateType::class, [
-                'label'  => false,
-                'widget' => 'single_text',
-            ])
-            ->add('AdresseLiv', TextType::class, [
-                'label' => false,
-                'attr'  => ['placeholder' => 'Ex : 12 Rue de la Médina, Tunis'],
-            ])
-            ->add('CodePostal', TextType::class, [
-                'label' => false,
-                'attr'  => ['placeholder' => 'Ex : 1000'],
-            ])
-            ->add('ModePaiement', ChoiceType::class, [
-                'label'   => false,
-                'choices' => [
-                    'Carte bancaire'  => 'Carte bancaire',
-                    'Virement'        => 'Virement',
-                    'Paiement à la livraison' => 'Paiement à la livraison',
-                ],
-            ])
-            ->add('Statut', ChoiceType::class, [
-                'label'   => false,
-                'choices' => [
-                    'En attente'  => 'En attente',
-                    'Confirmée'   => 'Confirmée',
-                    'Expédiée'    => 'Expédiée',
-                    'Livrée'      => 'Livrée',
-                    'Annulée'     => 'Annulée',
-                ],
-            ])
-            ->add('Total', NumberType::class, [
-                'label' => false,
-                'attr'  => ['placeholder' => 'Calculé automatiquement', 'readonly' => true],
-                'required' => false,
-            ])
-        ;
-    }
+   // src/Form/CommandeType.php
+
+public function buildForm(FormBuilderInterface $builder, array $options): void
+{
+    $builder
+       
+        ->add('AdresseLiv', TextType::class, [
+            'label' => false,
+            'attr'  => ['placeholder' => 'Ex : 12 Rue de la Médina, Tunis'],
+        ])
+        ->add('CodePostal', TextType::class, [
+            'label' => false,
+            'attr'  => ['placeholder' => 'Ex : 1000'],
+        ])
+        ->add('ModePaiement', ChoiceType::class, [
+            'label'   => false,
+            'choices' => [
+                'Carte bancaire'          => 'Carte bancaire',
+                'Virement'                => 'Virement',
+                'Paiement à la livraison' => 'Paiement à la livraison',
+            ],
+        ])
+        // ON RETIRE DateC, Statut et Total d'ici car on les gère dans le contrôleur !
+    ;
+}
+
 
     public function configureOptions(OptionsResolver $resolver): void
     {

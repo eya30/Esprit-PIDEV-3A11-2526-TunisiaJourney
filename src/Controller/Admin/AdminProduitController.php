@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Controller\Admin;
 
 use App\Entity\Produit;
@@ -30,28 +29,17 @@ class AdminProduitController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Gestion de l'image pour l'ajout
-            $file = $form->get('image')->getData();
-            if ($file) {
-                $fileName = uniqid() . '.' . $file->guessExtension();
-                $file->move(
-                    $this->getParameter('kernel.project_dir') . '/public/uploads/produits',
-                    $fileName
-                );
-                $produit->setImage($fileName);
-            }
-
+            $this->handleImage($form, $produit);
             $em->persist($produit);
             $em->flush();
-
             $this->addFlash('success', 'Produit créé avec succès !');
             return $this->redirectToRoute('admin_produit_index');
         }
 
         return $this->render('admin/produit/form.html.twig', [
-            'form' => $form->createView(),
-            'action' => 'Ajouter',
-            'produit' => $produit
+            'form'    => $form->createView(),
+            'action'  => 'Ajouter',
+            'produit' => $produit,
         ]);
     }
 
@@ -62,26 +50,16 @@ class AdminProduitController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $file = $form->get('image')->getData();
-            if ($file) {
-                $fileName = uniqid() . '.' . $file->guessExtension();
-                $file->move(
-                    $this->getParameter('kernel.project_dir') . '/public/uploads/produits',
-                    $fileName
-                );
-                $produit->setImage($fileName);
-            }
-
+            $this->handleImage($form, $produit);
             $em->flush();
-
             $this->addFlash('success', 'Produit modifié avec succès !');
             return $this->redirectToRoute('admin_produit_index');
         }
 
         return $this->render('admin/produit/form.html.twig', [
-            'form' => $form->createView(),
-            'action' => 'Modifier',
-            'produit' => $produit
+            'form'    => $form->createView(),
+            'action'  => 'Modifier',
+            'produit' => $produit,
         ]);
     }
 
@@ -90,8 +68,35 @@ class AdminProduitController extends AbstractController
     {
         $em->remove($produit);
         $em->flush();
-
         $this->addFlash('success', 'Produit supprimé avec succès !');
         return $this->redirectToRoute('admin_produit_index');
+    }
+
+    // ── Helper : gestion de l'upload image ──────────────────────────────
+    private function handleImage($form, Produit $produit): void
+    {
+        $file = $form->get('imageFile')->getData();
+
+        if (!$file) {
+            return;
+        }
+
+        $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/produits';
+
+        // Créer le dossier s'il n'existe pas
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        // Supprimer l'ancienne image si elle existe
+        $ancienneImage = $produit->getImage();
+        if ($ancienneImage && file_exists($uploadDir . '/' . $ancienneImage)) {
+            unlink($uploadDir . '/' . $ancienneImage);
+        }
+
+        $extension = $file->guessExtension() ?? 'jpg';
+        $fileName  = uniqid('produit_') . '.' . $extension;
+        $file->move($uploadDir, $fileName);
+        $produit->setImage($fileName);
     }
 }

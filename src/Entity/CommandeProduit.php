@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Entity;
 
 use App\Repository\CommandeProduitRepository;
@@ -18,8 +19,8 @@ class CommandeProduit
     #[ORM\JoinColumn(name: 'IDPR', referencedColumnName: 'IDPR', nullable: false)]
     private ?Produit $produit = null;
 
-    #[ORM\Column(name: 'Quantite')]
-    private ?int $quantite = null;
+    #[ORM\Column(name: 'Quantite', type: 'integer', nullable: false, options: ['default' => 1])]
+    private int $quantite = 1;
 
     public function getCommande(): ?Commande { return $this->commande; }
     public function setCommande(?Commande $commande): self { $this->commande = $commande; return $this; }
@@ -27,6 +28,6 @@ class CommandeProduit
     public function getProduit(): ?Produit { return $this->produit; }
     public function setProduit(?Produit $produit): self { $this->produit = $produit; return $this; }
 
-    public function getQuantite(): ?int { return $this->quantite; }
+    public function getQuantite(): int { return $this->quantite; }
     public function setQuantite(int $quantite): self { $this->quantite = $quantite; return $this; }
 }

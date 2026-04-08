@@ -5,559 +5,205 @@
 {% block stylesheets %}
 <style>
     :root {
-        --tunisia-red: #E31B23;
-        --tunisia-dark-red: #C41E3A;
-        --tunisia-orange: #FF6B35;
-        --tunisia-gold: #FFD700;
-        --tunisia-blue: #0054A6;
-        --tunisia-sand: #FDF5E6;
-        --tunisia-soft: #F5CAC3;
-        --dark-gray: #2C3E50;
+        --tunisia-red: #E31B23; --tunisia-orange: #FF6B35;
+        --tunisia-sand: #FDF5E6; --tunisia-soft: #F5CAC3; --dark-gray: #2C3E50;
     }
+    .hero { position:relative; height:70vh; min-height:500px; background-image:linear-gradient(rgba(227,27,35,0.2),rgba(245,202,195,0.3)),url('https://switchmed.eu/wp-content/uploads/2020/04/tunisia-1.jpg'); background-size:cover; background-position:center; background-attachment:fixed; display:flex; align-items:center; justify-content:center; text-align:center; color:white; overflow:hidden; }
+    .hero-content { position:relative; z-index:2; max-width:800px; padding:3rem; animation:fadeInUp 1.2s cubic-bezier(0.2,0.9,0.4,1.1); }
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(50px)} to{opacity:1;transform:translateY(0)} }
+    .hero h1 { font-family:'Cormorant Garamond',serif; font-size:4rem; font-weight:700; margin-bottom:1rem; text-shadow:3px 3px 12px rgba(0,0,0,0.5); color:#F5CAC3; letter-spacing:2px; }
+    
+    /* Barre de filtres */
+    .filters-bar { background:white; padding:1.5rem 2rem; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.08); margin-bottom:2rem; display:flex; flex-wrap:wrap; gap:1.5rem; align-items:center; justify-content:center; }
+    .filter-group { display:flex; align-items:center; gap:0.5rem; }
+    .filter-group label { font-weight:600; color:var(--dark-gray); font-size:0.9rem; }
+    .filter-select, .search-input { padding:10px 18px; border:2px solid var(--tunisia-soft); border-radius:25px; background:white; font-size:0.9rem; transition:all 0.3s; }
+    .filter-select:focus, .search-input:focus { outline:none; border-color:var(--tunisia-red); }
 
-    /* ── Hero ── */
-    .hero {
-        position: relative;
-        height: 70vh;
-        min-height: 500px;
-        background-image: linear-gradient(rgba(227,27,35,0.2), rgba(245,202,195,0.3)),
-            url('https://switchmed.eu/wp-content/uploads/2020/04/tunisia-1.jpg');
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        color: white;
-        overflow: hidden;
+    /* Custom Category Select */
+    .custom-select-wrapper { position: relative; width: 220px; cursor: pointer; }
+    .custom-select-trigger { 
+        padding: 10px 20px; border: 2px solid var(--tunisia-soft); border-radius: 25px; 
+        background: white; display: flex; align-items: center; justify-content: space-between;
+        font-weight: 600; color: var(--dark-gray); font-size: 0.9rem;
     }
+    .custom-options {
+        position: absolute; top: 110%; left: 0; right: 0; background: white;
+        border-radius: 15px; border: 2px solid var(--tunisia-soft); box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        z-index: 100; opacity: 0; visibility: hidden; transition: all 0.3s;
+    }
+    .custom-select-wrapper.open .custom-options { opacity: 1; visibility: visible; }
+    .custom-option { padding: 10px 20px; transition: 0.3s; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; }
+    .custom-option:hover { background: var(--tunisia-sand); color: var(--tunisia-red); }
+    .custom-option.selected { background: var(--tunisia-red); color: white; }
 
-    .hero::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.3) 100%);
-    }
+    /* Cards */
+    .card-custom { background:white; border-radius:24px; overflow:hidden; box-shadow:0 15px 35px rgba(0,0,0,0.1); transition:all 0.4s; margin-bottom:30px; }
+    .card-custom:hover { transform:translateY(-10px); }
+    .card-img { height:260px; overflow:hidden; position:relative; }
+    .card-img img { width:100%; height:100%; object-fit:cover; }
+    .badge-cat-card { position:absolute; top:15px; left:15px; padding:5px 12px; border-radius:20px; font-size:0.75rem; font-weight:700; background:rgba(227,27,35,0.9); color:white; }
+    .card-content { padding:1.5rem; }
+    .card-title { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:700; color:var(--tunisia-red); }
+    .card-price { font-size:1.3rem; font-weight:800; color:var(--tunisia-red); margin: 10px 0; }
+    
+    .btn-commander { display:block; width:100%; text-align:center; background:linear-gradient(135deg,var(--tunisia-red),var(--tunisia-orange)); color:white; padding:12px; border-radius:30px; font-weight:700; text-decoration:none; }
+    .btn-panier { background:var(--dark-gray); color:white; padding:12px 25px; border-radius:30px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:8px; transition:0.3s; }
+    .btn-panier:hover { background:var(--tunisia-red); color:white; }
 
-    .hero-content {
-        position: relative;
-        z-index: 2;
-        max-width: 800px;
-        padding: 3rem;
-        animation: fadeInUp 1.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-    }
-
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(50px); }
-        to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .hero h1 {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 4rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
-        text-shadow: 3px 3px 12px rgba(0,0,0,0.5);
-        color: #F5CAC3;
-        letter-spacing: 2px;
-    }
-
-    .hero p {
-        font-size: 1.2rem;
-        margin-bottom: 2rem;
-        font-weight: 300;
-        line-height: 1.8;
-        color: rgba(255,255,255,0.95);
-    }
-
-    /* ── Section titles ── */
-    .section-title {
-        text-align: center;
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 2.8rem;
-        font-weight: 700;
-        color: var(--tunisia-red);
-        margin-bottom: 1rem;
-        position: relative;
-    }
-
-    .section-title:after {
-        content: '✦ ✦ ✦';
-        display: block;
-        color: #F5CAC3;
-        font-size: 1.3rem;
-        margin-top: 0.8rem;
-        letter-spacing: 12px;
-    }
-
-    .section-subtitle {
-        text-align: center;
-        color: var(--dark-gray);
-        font-size: 1rem;
-        margin-bottom: 2.5rem;
-        font-style: italic;
-        opacity: 0.8;
-    }
-
-    /* ── Filters bar ── */
-    .filters-bar {
-        background: white;
-        padding: 1.5rem 2rem;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        margin-bottom: 3rem;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .filter-group {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .filter-group label {
-        font-weight: 500;
-        color: var(--dark-gray);
-        font-size: 0.9rem;
-    }
-
-    .filter-select {
-        padding: 10px 20px;
-        border: 2px solid #F5CAC3;
-        border-radius: 25px;
-        background: white;
-        font-size: 0.9rem;
-        color: var(--dark-gray);
-        cursor: pointer;
-        transition: all 0.3s ease;
-        min-width: 150px;
-        font-family: 'Montserrat', sans-serif;
-    }
-
-    .filter-select:focus {
-        outline: none;
-        border-color: var(--tunisia-red);
-        box-shadow: 0 0 0 3px rgba(227,27,35,0.1);
-    }
-
-    .search-input {
-        padding: 10px 20px;
-        border: 2px solid #F5CAC3;
-        border-radius: 25px;
-        background: white;
-        font-size: 0.9rem;
-        width: 250px;
-        transition: all 0.3s ease;
-        font-family: 'Montserrat', sans-serif;
-    }
-
-    .search-input:focus {
-        outline: none;
-        border-color: var(--tunisia-red);
-        box-shadow: 0 0 0 3px rgba(227,27,35,0.1);
-        width: 280px;
-    }
-
-    .btn-filter {
-        background: linear-gradient(135deg, var(--tunisia-red), #F5CAC3);
-        color: white;
-        padding: 10px 25px;
-        border-radius: 25px;
-        border: none;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-family: 'Montserrat', sans-serif;
-        text-decoration: none;
-        display: inline-block;
-    }
-
-    .btn-filter:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(227,27,35,0.4);
-        color: white;
-    }
-
-    /* ── Cards ── */
-    .card-custom {
-        background: white;
-        border-radius: 24px;
-        overflow: hidden;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-        transition: all 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-        margin-bottom: 30px;
-        border: none;
-        position: relative;
-    }
-
-    .card-custom:hover {
-        transform: translateY(-12px);
-        box-shadow: 0 25px 50px rgba(227,27,35,0.25);
-    }
-
-    .card-img {
-        height: 260px;
-        overflow: hidden;
-        position: relative;
-    }
-
-    .card-img img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.7s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-    }
-
-    .card-custom:hover .card-img img {
-        transform: scale(1.08);
-    }
-
-    .card-badge {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        padding: 6px 15px;
-        border-radius: 25px;
-        font-weight: 600;
-        font-size: 0.75rem;
-        z-index: 2;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-    }
-
-    .badge-stock {
-        background: linear-gradient(135deg, #10B981, #34D399);
-        color: white;
-    }
-
-    .badge-rupture {
-        background: linear-gradient(135deg, #EF4444, #F87171);
-        color: white;
-    }
-
-    .card-content {
-        padding: 1.8rem;
-    }
-
-    .card-title {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--tunisia-red);
-        margin-bottom: 0.5rem;
-    }
-
-    .card-desc {
-        color: #6c757d;
-        line-height: 1.6;
-        margin-bottom: 1rem;
-        font-size: 0.9rem;
-    }
-
-    .card-meta {
-        display: flex;
-        gap: 1rem;
-        margin-bottom: 1rem;
-        font-size: 0.85rem;
-        color: #6c757d;
-        flex-wrap: wrap;
-    }
-
-    .card-meta i {
-        color: var(--tunisia-orange);
-        margin-right: 3px;
-    }
-
-    .card-price {
-        font-size: 1.3rem;
-        font-weight: 800;
-        color: var(--tunisia-red);
-        margin-bottom: 1rem;
-    }
-
-    .card-price span {
-        font-size: 0.9rem;
-        font-weight: 400;
-        color: #6c757d;
-    }
-
-    /* ── Bouton Commander ── */
-    .btn-commander {
-        display: block;
-        width: 100%;
-        text-align: center;
-        background: linear-gradient(135deg, var(--tunisia-red), var(--tunisia-orange));
-        color: white;
-        border: none;
-        padding: 11px 0;
-        border-radius: 30px;
-        font-weight: 700;
-        font-size: 0.9rem;
-        font-family: 'Montserrat', sans-serif;
-        text-decoration: none;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        margin-top: 1rem;
-    }
-
-    .btn-commander:hover {
-        background: linear-gradient(135deg, var(--tunisia-orange), var(--tunisia-red));
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(227,27,35,0.35);
-        color: white;
-    }
-
-    .btn-commander-disabled {
-        background: #e5e7eb !important;
-        color: #9ca3af !important;
-        cursor: not-allowed;
-        transform: none !important;
-        box-shadow: none !important;
-    }
-
-    /* ── Bouton panier ── */
-    .btn-panier {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: linear-gradient(135deg, var(--tunisia-red), var(--tunisia-orange));
-        color: white;
-        padding: 10px 24px;
-        border-radius: 30px;
-        font-weight: 700;
-        font-size: 0.9rem;
-        font-family: 'Montserrat', sans-serif;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(227,27,35,0.3);
-    }
-
-    .btn-panier:hover {
-        background: linear-gradient(135deg, var(--tunisia-orange), var(--tunisia-red));
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(227,27,35,0.4);
-        color: white;
-    }
-
-    /* ── Empty state ── */
-    .empty-state {
-        text-align: center;
-        padding: 4rem 2rem;
-        color: #9CA3AF;
-    }
-
-    .empty-state i {
-        font-size: 4rem;
-        color: #F5CAC3;
-        margin-bottom: 1rem;
-    }
-
-    .empty-state p {
-        font-size: 1.1rem;
-        margin-bottom: 1.5rem;
-    }
-
-    @media (max-width: 768px) {
-        .hero h1 { font-size: 2.5rem; }
-        .hero-content { padding: 2rem; }
-        .section-title { font-size: 2rem; }
-        .filters-bar { flex-direction: column; align-items: stretch; }
-        .search-input { width: 100%; }
-        .card-img { height: 200px; }
-        .button-group { flex-direction: column; gap: 8px; }
-    }
+    @media(max-width:768px) { .filters-bar { flex-direction: column; align-items: stretch; } .custom-select-wrapper { width: 100%; } }
 </style>
 {% endblock %}
 
 {% block body %}
 
-<!-- ── HERO ── -->
 <section class="hero">
     <div class="hero-content">
         <h1>Boutique Artisanale</h1>
-        <p>Artisanat tunisien authentique — poterie, tapis, céramique et bien plus encore.</p>
+        <p>Découvrez l'excellence du savoir-faire tunisien.</p>
     </div>
 </section>
 
-<!-- ── LISTING ── -->
-<section class="py-5" style="background: var(--tunisia-sand);">
+<section class="py-5" style="background:var(--tunisia-sand);">
     <div class="container">
+       <div class="filters-bar">
+    <div class="filter-group">
+        <input type="text" class="search-input" id="searchInput" placeholder="Rechercher...">
+    </div>
 
-        <!-- Filtres -->
-        <div class="filters-bar">
-            <div class="filter-group">
-                <label><i class="fas fa-search me-1"></i></label>
-                <input type="text" class="search-input" id="searchInput" placeholder="Rechercher un produit...">
+    <div class="filter-group">
+        <label>Catégorie :</label>
+        <div class="custom-select-wrapper" id="catSelector">
+            <div class="custom-select-trigger">
+                <span><i class="fas fa-th-large me-2"></i>Toutes</span>
+                <i class="fas fa-chevron-down arrow"></i>
             </div>
-            <div class="filter-group">
-                <label for="priceFilter">Budget :</label>
-                <select class="filter-select" id="priceFilter">
-                    <option value="all">Tous prix</option>
-                    <option value="0-50">Moins de 50 TND</option>
-                    <option value="50-100">50 – 100 TND</option>
-                    <option value="100-200">100 – 200 TND</option>
-                    <option value="200+">Plus de 200 TND</option>
-                </select>
+            <div class="custom-options">
+                <div class="custom-option selected" data-cat="all"><i class="fas fa-th-large"></i> Toutes</div>
+                <div class="custom-option" data-cat="Artisanat"><i class="fas fa-hammer"></i> Artisanat</div>
+                <div class="custom-option" data-cat="Bijoux"><i class="fas fa-gem"></i> Bijoux</div>
+                <div class="custom-option" data-cat="Vêtements"><i class="fas fa-tshirt"></i> Vêtements</div>
+                <div class="custom-option" data-cat="Décoration"><i class="fas fa-couch"></i> Décoration</div>
+                <div class="custom-option" data-cat="Alimentaire"><i class="fas fa-utensils"></i> Alimentaire</div>
             </div>
-            <div class="filter-group">
-                <label for="dispoFilter">Disponibilité :</label>
-                <select class="filter-select" id="dispoFilter">
-                    <option value="all">Tous</option>
-                    <option value="1">En stock</option>
-                    <option value="0">Rupture</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label for="triFilter">Trier par :</label>
-                <select class="filter-select" id="triFilter">
-                    <option value="default">Par défaut</option>
-                    <option value="prix-asc">Prix croissant ↑</option>
-                    <option value="prix-desc">Prix décroissant ↓</option>
-                    <option value="nom-asc">Nom A → Z</option>
-                    <option value="nom-desc">Nom Z → A</option>
-                    <option value="stock-desc">Stock (+ au -)</option>
-                </select>
-            </div>
-            <button class="btn-filter" id="filterBtn">
-                <i class="fas fa-filter me-1"></i> Filtrer
-            </button>
         </div>
+    </div>
 
-        <!-- Bouton panier -->
-        <div class="d-flex justify-content-end mb-3">
-            <a href="{{ path('app_panier_index') }}" class="btn-panier">
-                <i class="fas fa-shopping-cart me-2"></i> Mon panier
-            </a>
-        </div>
+    <div class="filter-group">
+        <label>Budget :</label>
+        <select class="filter-select" id="priceFilter">
+            <option value="all">Tous prix</option>
+            <option value="0-50">0 - 50 TND</option>
+            <option value="50-100">50 - 100 TND</option>
+            <option value="100+">100+ TND</option>
+        </select>
+    </div>
 
-        <h2 class="section-title">Nos Produits Artisanaux</h2>
-        <p class="section-subtitle">Soutenez l'artisanat local, chaque pièce est unique</p>
+    <div class="filter-group">
+        <label>Trier par :</label>
+        <select class="filter-select" id="triFilter">
+            <option value="default">Par défaut</option>
+            <option value="prix-asc">Prix croissant</option>
+            <option value="prix-desc">Prix décroissant</option>
+            <option value="nom-asc">Nom (A-Z)</option>
+        </select>
+    </div>
+    
+    <a href="{{ path('app_panier_index') }}" class="btn-panier">
+        <i class="fas fa-shopping-cart"></i> Mon panier
+    </a>
+</div>
 
-        <!-- Grille produits -->
         <div class="row" id="produitsGrid">
             {% for produit in produits %}
-                <div class="col-md-4 produit-item"
-                     data-titre="{{ produit.titre|lower }}"
-                     data-prix="{{ produit.prix }}"
-                     data-dispo="{{ produit.disponibilite }}"
-                     data-stock="{{ produit.stock ?? 0 }}">
+                <div class="col-md-4 produit-item" 
+                     data-titre="{{ produit.titre|lower }}" 
+                     data-prix="{{ produit.prix }}" 
+                     data-cat="{{ produit.categorie }}"
+                     data-dispo="{{ produit.disponibilite ? '1' : '0' }}">
                     <div class="card-custom">
                         <div class="card-img">
-                            <img src="{{ produit.image ? asset('uploads/produits/' ~ produit.image) : 'https://images.pexels.com/photos/585750/pexels-photo-585750.jpeg?auto=compress&cs=tinysrgb&w=800' }}"
-                                 alt="{{ produit.titre }}">
-                            {% if produit.disponibilite %}
-                                <span class="card-badge badge-stock">
-                                    <i class="fas fa-check-circle me-1"></i> En stock
-                                </span>
-                            {% else %}
-                                <span class="card-badge badge-rupture">
-                                    <i class="fas fa-times-circle me-1"></i> Rupture
-                                </span>
-                            {% endif %}
+                            <img src="{{ asset('uploads/produits/' ~ produit.image) }}" alt="{{ produit.titre }}">
+                            <span class="badge-cat-card">{{ produit.categorie }}</span>
                         </div>
                         <div class="card-content">
                             <h3 class="card-title">{{ produit.titre }}</h3>
-                            <p class="card-desc">{{ produit.description|slice(0, 100) }}...</p>
-                            <div class="card-meta">
-                                <span><i class="fas fa-weight-hanging"></i> {{ produit.poids ?? '—' }} g</span>
-                                <span><i class="fas fa-box"></i> Stock : {{ produit.stock ?? 0 }}</span>
-                                <span><i class="fas fa-star"></i> 4.9/5</span>
-                            </div>
-                            <div class="card-price">
-                                {{ produit.prix|number_format(0, ',', ' ') }} TND
-                            </div>
-                            {% if produit.disponibilite %}
-                            <a href="{{ path('app_panier_add', {id: produit.id}) }}"
-                               class="btn-commander">
-                                <i class="fas fa-cart-plus me-2"></i> Ajouter au panier
-                            </a>
-                            {% else %}
-                            <button class="btn-commander btn-commander-disabled" disabled>
-                                <i class="fas fa-times-circle me-2"></i> Indisponible
-                            </button>
-                            {% endif %}
+                            <div class="card-price">{{ produit.prix }} TND</div>
+                            <a href="{{ path('app_panier_ajouter', {id: produit.idPR}) }}" class="btn-commander">Ajouter au panier</a>
                         </div>
-                    </div>
-                </div>
-            {% else %}
-                <div class="col-12">
-                    <div class="empty-state">
-                        <i class="fas fa-store-slash"></i>
-                        <p>Aucun produit disponible pour le moment.</p>
                     </div>
                 </div>
             {% endfor %}
         </div>
-
     </div>
 </section>
-
-<!-- ── MODAL CONFIRMATION SUPPRESSION ── -->
-
 {% endblock %}
 
 {% block javascripts %}
-{{ parent() }}
 <script>
-    /* ── Filtre + Tri ── */
-    function applyFiltersAndSort() {
-        const search = document.getElementById('searchInput').value.toLowerCase();
-        const price  = document.getElementById('priceFilter').value;
-        const dispo  = document.getElementById('dispoFilter').value;
-        const tri    = document.getElementById('triFilter').value;
+    let activeCat = 'all';
 
-        const grid  = document.getElementById('produitsGrid');
+    // Gestion de l'ouverture du menu catégorie
+    const selector = document.getElementById('catSelector');
+    selector.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selector.classList.toggle('open');
+    });
+
+    document.querySelectorAll('.custom-option').forEach(option => {
+        option.addEventListener('click', function() {
+            document.querySelector('.custom-option.selected').classList.remove('selected');
+            this.classList.add('selected');
+            selector.querySelector('.custom-select-trigger span').innerHTML = this.innerHTML;
+            activeCat = this.dataset.cat;
+            applyFilters();
+        });
+    });
+
+    function applyFilters() {
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const price = document.getElementById('priceFilter').value;
+        const tri = document.getElementById('triFilter').value;
+        const grid = document.getElementById('produitsGrid');
         const items = Array.from(document.querySelectorAll('.produit-item'));
 
-        // ── 1. Filtrage ──────────────────────────────────────────────────
+        // 1. Filtrage
         items.forEach(item => {
             const titre = item.dataset.titre;
-            const prix  = parseFloat(item.dataset.prix);
-            const d     = item.dataset.dispo;
+            const p = parseFloat(item.dataset.prix);
+            const c = item.dataset.cat;
 
-            let okSearch = titre.includes(search);
-            let okDispo  = dispo === 'all' || d === dispo;
-            let okPrice  = true;
+            let isVisible = titre.includes(search);
+            if (activeCat !== 'all' && c !== activeCat) isVisible = false;
+            if (price === '0-50' && p > 50) isVisible = false;
+            if (price === '50-100' && (p <= 50 || p > 100)) isVisible = false;
+            if (price === '100+' && p <= 100) isVisible = false;
 
-            if      (price === '0-50')    okPrice = prix < 50;
-            else if (price === '50-100')  okPrice = prix >= 50  && prix <= 100;
-            else if (price === '100-200') okPrice = prix >= 100 && prix <= 200;
-            else if (price === '200+')    okPrice = prix > 200;
-
-            item.style.display = (okSearch && okDispo && okPrice) ? '' : 'none';
+            item.style.display = isVisible ? 'block' : 'none';
         });
 
-        // ── 2. Tri des items visibles ────────────────────────────────────
+        // 2. Tri des éléments visibles
         const visibles = items.filter(i => i.style.display !== 'none');
-
+        
         visibles.sort((a, b) => {
-            const prixA  = parseFloat(a.dataset.prix);
-            const prixB  = parseFloat(b.dataset.prix);
-            const nomA   = a.dataset.titre;
-            const nomB   = b.dataset.titre;
-            const stokA  = parseInt(a.dataset.stock);
-            const stokB  = parseInt(b.dataset.stock);
+            const pA = parseFloat(a.dataset.prix), pB = parseFloat(b.dataset.prix);
+            const nA = a.dataset.titre, nB = b.dataset.titre;
 
-            if (tri === 'prix-asc')   return prixA - prixB;
-            if (tri === 'prix-desc')  return prixB - prixA;
-            if (tri === 'nom-asc')    return nomA.localeCompare(nomB);
-            if (tri === 'nom-desc')   return nomB.localeCompare(nomA);
-            if (tri === 'stock-desc') return stokB - stokA;
+            if (tri === 'prix-asc') return pA - pB;
+            if (tri === 'prix-desc') return pB - pA;
+            if (tri === 'nom-asc') return nA.localeCompare(nB);
             return 0;
         });
 
-        // Réinsérer dans le DOM dans le bon ordre
-        visibles.forEach(item => grid.appendChild(item));
+        // Réinjection dans la grille
+        visibles.forEach(i => grid.appendChild(i));
     }
 
-    document.getElementById('filterBtn').addEventListener('click', applyFiltersAndSort);
-    document.getElementById('searchInput').addEventListener('input', applyFiltersAndSort);
-    document.getElementById('priceFilter').addEventListener('change', applyFiltersAndSort);
-    document.getElementById('dispoFilter').addEventListener('change', applyFiltersAndSort);
-    document.getElementById('triFilter').addEventListener('change', applyFiltersAndSort);
+    // Écouteurs
+    document.getElementById('searchInput').addEventListener('input', applyFilters);
+    document.getElementById('priceFilter').addEventListener('change', applyFilters);
+    document.getElementById('triFilter').addEventListener('change', applyFilters);
+
+    window.onclick = () => selector.classList.remove('open');
 </script>
 {% endblock %}

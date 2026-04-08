@@ -1,6 +1,6 @@
 <?php
 namespace App\Controller\Admin;
-
+use Symfony\Component\HttpFoundation\Request;
 use App\Entity\Commande;
 use App\Repository\CommandeRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -71,4 +71,27 @@ class AdminCommandeController extends AbstractController
             ]
         );
     }
+    // ── Modifier une commande ───────────────────────────────────────────
+#[Route('/{id}/modifier', name: 'admin_commande_edit', methods: ['GET', 'POST'])]
+public function edit(Commande $commande, Request $request, EntityManagerInterface $em): Response
+{
+    // Si le formulaire est soumis (cas du formulaire HTML que tu as fourni)
+    if ($request->isMethod('POST')) {
+        $commande->setQuantite((int)$request->request->get('quantite'));
+        $commande->setTotal((float)$request->request->get('total'));
+        $commande->setStatut($request->request->get('statut'));
+        $commande->setAdresseLiv($request->request->get('adresse'));
+        $commande->setCodePostal($request->request->get('cp'));
+        $commande->setModePaiement($request->request->get('paiement'));
+
+        $em->flush();
+        $this->addFlash('success', 'La commande #' . $commande->getId() . ' a été mise à jour.');
+        return $this->redirectToRoute('admin_commande_index');
+    }
+
+    return $this->render('admin/commande/form.html.twig', [
+        'commande' => $commande,
+        'action'   => 'Modifier'
+    ]);
+}
 }
