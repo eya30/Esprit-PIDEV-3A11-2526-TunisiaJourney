@@ -1,0 +1,340 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Nouveau programme{% endblock %}
+{% block page_title %}Ajouter un programme{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="form-card">
+            <h5 class="form-title">Créer un nouveau programme</h5>
+            <p class="form-subtitle">Remplissez les informations ci-dessous</p>
+            
+            <form method="post" enctype="multipart/form-data">
+                {% if errors is defined and errors|length > 0 %}
+                    <div class="error-box">
+                        <strong>Veuillez corriger les éléments suivants :</strong>
+                        <ul>
+                            {% for error in errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label class="form-label">Nom du programme</label>
+                    <div class="input-group-custom">
+                        <i class="fas fa-tag"></i>
+                        <input type="text" name="nom" class="form-control" value="{{ nom|default('') }}" placeholder="Ex: Découverte de Sidi Bou Said">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <div class="input-group-custom">
+                        <i class="fas fa-align-left"></i>
+                        <textarea name="description" class="form-control" rows="5" placeholder="Décrivez le programme...">{{ description|default('') }}</textarea>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Date de début</label>
+                            <div class="input-group-custom">
+                                <i class="fas fa-calendar-alt"></i>
+                                <input type="text" name="dateDebut" class="form-control" value="{{ dateDebut|default('') }}" placeholder="YYYY-MM-DD">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Date de fin</label>
+                            <div class="input-group-custom">
+                                <i class="fas fa-calendar-alt"></i>
+                                <input type="text" name="dateFin" class="form-control" value="{{ dateFin|default('') }}" placeholder="YYYY-MM-DD">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Lieu</label>
+                            <div class="input-group-custom">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <input type="text" name="lieu" class="form-control" value="{{ lieu|default('') }}" placeholder="Ex: Sidi Bou Said">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Hôtel</label>
+                            <div class="input-group-custom">
+                                <i class="fas fa-hotel"></i>
+                                <input type="text" name="hotel" class="form-control" value="{{ hotel|default('') }}" placeholder="Ex: Dar Said">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Activités associées</label>
+                    <div class="input-group-custom">
+                        <i class="fas fa-running"></i>
+                            <input type="text" name="activiteAssociee" class="form-control" value="{{ activiteAssociee|default('') }}" placeholder="Ex: Visite guidée, dégustation...">
+                    <label class="form-label">Voyage associé</label>
+                    <div class="input-group-custom">
+                        <i class="fas fa-suitcase"></i>
+                        <select name="idV" class="form-control">
+                            <option value="">Sélectionner un voyage</option>
+                            {% for voyage in voyages %}
+                                <option value="{{ voyage.idV }}" {% if idV|default('') == voyage.idV %}selected{% endif %}>
+                                    {{ voyage.nom }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Image</label>
+                    <div class="upload-area" id="uploadArea">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Cliquez ou glissez une image ici</p>
+                        <small>JPG, PNG, JPEG (max. 2MB)</small>
+                        <input type="file" name="image" id="imageInput" accept="image/*" style="display: none;">
+                    </div>
+                    <div id="imagePreview" class="image-preview-container"></div>
+                </div>
+                
+                <div class="form-actions">
+                    <a href="{{ path('admin_programme_index') }}" class="btn btn-outline">
+                        <i class="fas fa-arrow-left me-2"></i> Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i> Créer le programme
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-card {
+        background: white;
+        border-radius: 24px;
+        padding: 32px;
+        border: 1px solid #F0E8DD;
+    }
+    
+    .form-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #2C1810;
+        margin-bottom: 8px;
+    }
+    
+    .form-subtitle {
+        font-size: 0.85rem;
+        color: #93032E;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #F0E8DD;
+    }
+    
+    .input-group-custom {
+        display: flex;
+        align-items: center;
+        background: #FEF9F0;
+        border: 1px solid #E8DFD1;
+        border-radius: 12px;
+        transition: all 0.2s;
+    }
+    
+    .input-group-custom:focus-within {
+        border-color: #93032E;
+        box-shadow: 0 0 0 3px rgba(147,3,46,0.05);
+        background: white;
+    }
+    
+    .input-group-custom i {
+        padding: 12px 0 12px 16px;
+        color: #C49A6C;
+        font-size: 1rem;
+    }
+    
+    .input-group-custom .form-control {
+        border: none;
+        background: transparent;
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #2C1810;
+        margin-bottom: 8px;
+        display: block;
+    }
+    
+    .upload-area {
+        background: #FEF9F0;
+        border: 2px dashed #E8DFD1;
+        border-radius: 16px;
+        padding: 24px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .upload-area:hover {
+        border-color: #93032E;
+        background: #FFF5F0;
+    }
+    
+    .upload-area i {
+        font-size: 1.8rem;
+        color: #C49A6C;
+        margin-bottom: 8px;
+    }
+    
+    .upload-area p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #4A3B2F;
+    }
+    
+    .upload-area small {
+        font-size: 0.7rem;
+        color: #9CA3AF;
+    }
+    
+    .image-preview-container {
+        margin-top: 16px;
+        text-align: center;
+    }
+    
+    .image-preview {
+        max-width: 200px;
+        max-height: 150px;
+        border-radius: 12px;
+        border: 1px solid #E8DFD1;
+    }
+
+    .error-box {
+        background: #F8D7DA;
+        border: 1px solid #F5C2C7;
+        color: #842029;
+        border-radius: 16px;
+        padding: 18px 20px;
+        margin-bottom: 20px;
+    }
+
+    .error-box ul {
+        margin: 8px 0 0;
+        padding-left: 18px;
+    }
+    
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 32px;
+        padding-top: 24px;
+        border-top: 1px solid #F0E8DD;
+    }
+    
+    .btn-primary {
+        background: #93032E;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 40px;
+        font-size: 13px;
+        font-weight: 600;
+        color: white;
+        transition: all 0.2s;
+    }
+    
+    .btn-primary:hover {
+        background: #6B0221;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(147,3,46,0.3);
+    }
+    
+    .btn-outline {
+        background: transparent;
+        border: 1.5px solid #E8DFD1;
+        padding: 10px 24px;
+        border-radius: 40px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #4A3B2F;
+        transition: all 0.2s;
+    }
+    
+    .btn-outline:hover {
+        border-color: #93032E;
+        color: #93032E;
+        background: #FFF9F0;
+    }
+</style>
+
+<script>
+    const uploadArea = document.getElementById('uploadArea');
+    const imageInput = document.getElementById('imageInput');
+    const imagePreview = document.getElementById('imagePreview');
+    
+    uploadArea.addEventListener('click', () => {
+        imageInput.click();
+    });
+    
+    imageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.innerHTML = '<img src="' + e.target.result + '" class="image-preview">';
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    // Drag and drop
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#93032E';
+        uploadArea.style.background = '#FFF5F0';
+    });
+    
+    uploadArea.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#E8DFD1';
+        uploadArea.style.background = '#FEF9F0';
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.innerHTML = '<img src="' + e.target.result + '" class="image-preview">';
+            }
+            reader.readAsDataURL(file);
+            imageInput.files = e.dataTransfer.files;
+        }
+        uploadArea.style.borderColor = '#E8DFD1';
+        uploadArea.style.background = '#FEF9F0';
+    });
+</script>
+{% endblock %}

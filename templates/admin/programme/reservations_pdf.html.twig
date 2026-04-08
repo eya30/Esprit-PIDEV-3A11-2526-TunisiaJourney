@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Réservations - {{ programme.nom }} | PiDev Voyage</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #F5F1E8 0%, #EDE4D5 100%);
+            color: #2C1810;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .report-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 32px;
+            overflow: hidden;
+            box-shadow: 0 40px 80px rgba(147, 3, 46, 0.12), 0 0 1px rgba(0, 0, 0, 0.03);
+        }
+
+        /* ===== HEADER MAGNIFIQUE ===== */
+        .report-header {
+            background: linear-gradient(135deg, #93032E 0%, #C49A6C 50%, #6B0221 100%);
+            padding: 60px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .report-header::before {
+            content: '';
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .report-header::after {
+            content: '';
+            position: absolute;
+            bottom: -80px;
+            left: -80px;
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .logo-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .company-info h1 {
+            color: white;
+            font-family: 'Playfair Display', serif;
+            font-size: 48px;
+            margin: 0;
+            font-weight: 900;
+            letter-spacing: -1px;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .company-info p {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 16px;
+            margin-top: 8px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .report-subtitle {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .report-subtitle h2 {
+            color: white;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .report-subtitle p {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* ===== PROGRAMME INFO CARD ===== */
+        .programme-card {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 24px;
+            padding: 32px;
+            margin-top: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 3;
+        }
+
+        .programme-card h3 {
+            color: #93032E;
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .programme-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .detail-item {
+            text-align: center;
+            padding: 16px;
+            background: white;
+            border-radius: 16px;
+            border-top: 3px solid #C49A6C;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: #6C757D;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .detail-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #93032E;
+        }
+
+        /* ===== STATS CARDS ===== */
+        .stats-section {
+            padding: 50px 40px;
+            background: linear-gradient(180deg, #FFFFFF 0%, #FEF9F0 100%);
+            border-bottom: 1px solid rgba(147, 3, 46, 0.08);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 24px;
+            padding: 32px 24px;
+            text-align: center;
+            border: 1px solid rgba(147, 3, 46, 0.08);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 48px rgba(147, 3, 46, 0.15);
+            border-color: rgba(147, 3, 46, 0.2);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #93032E, #C49A6C);
+        }
+
+        .stat-icon {
+            font-size: 40px;
+            margin-bottom: 14px;
+            display: block;
+        }
+
+        .stat-number {
+            font-size: 42px;
+            font-weight: 900;
+            color: #93032E;
+            margin-bottom: 10px;
+            font-family: 'Playfair Display', serif;
+            line-height: 1.1;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #6C757D;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+        }
+
+        /* ===== TABLE SECTION ===== */
+        .table-section {
+            padding: 50px 40px;
+            background: white;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(147, 3, 46, 0.1);
+        }
+
+        .section-header h3 {
+            color: #93032E;
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            font-weight: 800;
+            margin: 0;
+        }
+
+        .record-count {
+            background: linear-gradient(135deg, #93032E, #C49A6C);
+            color: white;
+            padding: 8px 18px;
+            border-radius: 24px;
+            font-size: 13px;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(147, 3, 46, 0.2);
+        }
+
+        /* ===== TABLE STYLES ===== */
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 16px;
+            border: 1px solid rgba(147, 3, 46, 0.08);
+        }
+
+        .reservations-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .reservations-table thead tr {
+            background: linear-gradient(90deg, #FEF9F0 0%, #F5F0E8 100%);
+        }
+
+        .reservations-table th {
+            color: #93032E;
+            padding: 18px 14px;
+            text-align: left;
+            font-weight: 750;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 2px solid rgba(147, 3, 46, 0.15);
+        }
+
+        .reservations-table td {
+            padding: 16px 14px;
+            border-bottom: 1px solid rgba(147, 3, 46, 0.06);
+            color: #3A3030;
+        }
+
+        .reservations-table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .reservations-table tbody tr:hover {
+            background: rgba(147, 3, 46, 0.03);
+        }
+
+        .reservations-table tbody tr:hover td {
+            color: #93032E;
+        }
+
+        .client-cell {
+            font-weight: 700;
+            color: #2C1810;
+        }
+
+        .price-cell {
+            font-weight: 800;
+            color: #93032E;
+            font-size: 14px;
+        }
+
+        .id-cell {
+            font-weight: 700;
+            color: #93032E;
+        }
+
+        /* ===== BADGES STATUS ===== */
+        .badge-paid {
+            background: linear-gradient(135deg, #D1F4E9, #C3E6D7);
+            color: #047857;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 800;
+            display: inline-block;
+            border: 1px solid rgba(4, 120, 87, 0.2);
+            box-shadow: 0 2px 8px rgba(4, 120, 87, 0.1);
+        }
+
+        .badge-pending {
+            background: linear-gradient(135deg, #FEF3DD, #FDD8A5);
+            color: #92400E;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 800;
+            display: inline-block;
+            border: 1px solid rgba(146, 64, 14, 0.2);
+            box-shadow: 0 2px 8px rgba(146, 64, 14, 0.1);
+        }
+
+        /* ===== FOOTER PRESTIGIEUX ===== */
+        .report-footer {
+            background: linear-gradient(135deg, #93032E 0%, #C49A6C 50%, #6B0221 100%);
+            padding: 50px 40px;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .report-footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: -100px;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .footer-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .report-footer p {
+            margin: 8px 0;
+            font-size: 13px;
+            opacity: 0.95;
+            font-weight: 500;
+        }
+
+        .footer-signature {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 12px;
+            opacity: 0.85;
+            font-style: italic;
+        }
+
+        /* ===== PRINT STYLES ===== */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .report-container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+
+            .stat-card:hover {
+                transform: none;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+            }
+
+            .reservations-table tbody tr:hover {
+                background: white;
+            }
+
+            .reservations-table tbody tr:hover td {
+                color: #3A3030;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .programme-details {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .report-header { padding: 40px 24px; }
+            .stats-section { padding: 32px 24px; }
+            .table-section { padding: 32px 24px; }
+            .report-footer { padding: 32px 24px; }
+            .stats-grid { gap: 16px; }
+            .company-info h1 { font-size: 32px; }
+            .reservations-table { font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        
+        <!-- ===== HEADER MAGNIFIQUE ===== -->
+        <div class="report-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo-icon">✈️</div>
+                    <div class="company-info">
+                        <h1>PiDev Voyage</h1>
+                        <p>Excellence en Voyages & Réservations</p>
+                    </div>
+                </div>
+
+                <div class="report-subtitle">
+                    <h2>🎯 Réservations par Programme</h2>
+                    <p>Détail complet des participants et montants • Généré le {{ "now"|date("d/m/Y \\à H:i") }}</p>
+                </div>
+
+                <!-- Programme Card -->
+                <div class="programme-card">
+                    <h3>{{ programme.nom }}</h3>
+                    <div class="programme-details">
+                        <div class="detail-item">
+                            <div class="detail-label">📍 Lieu</div>
+                            <div class="detail-value">{{ programme.lieu }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">📅 Dates</div>
+                            <div class="detail-value">{{ programme.dateDebut|date("d/m/Y") }} - {{ programme.dateFin|date("d/m/Y") }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">💵 Prix/Pers.</div>
+                            <div class="detail-value">{{ (programme.prixPar|default(0))|number_format(2, ',', ' ') }} DT</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== STATISTIQUES PROGRAMME ===== -->
+        <div class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-icon">📋</span>
+                    <div class="stat-number">{{ reservations|length }}</div>
+                    <div class="stat-label">Réservations</div>
+                </div>
+
+                <div class="stat-card">
+                    <span class="stat-icon">✅</span>
+                    <div class="stat-number">{{ reservations|selectattr('statutPaiement', 'equalto', 'payé')|length }}</div>
+                    <div class="stat-label">Confirmées</div>
+                </div>
+
+                <div class="stat-card">
+                    <span class="stat-icon">💰</span>
+                    <div class="stat-number">{{ (reservations|sum(attribute='prixProg'))|number_format(0) }}</div>
+                    <div class="stat-label">Revenus Totaux</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== TABLE DÉTAILLÉE ===== -->
+        <div class="table-section">
+            <div class="section-header">
+                <h3>📊 Liste des Participants</h3>
+                <span class="record-count">{{ reservations|length }} enregistrement(s)</span>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="reservations-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nom</th>
+                            <th>Prénom</th>
+                            <th>Email</th>
+                            <th>Téléphone</th>
+                            <th>Pers.</th>
+                            <th>Montant</th>
+                            <th>Date Rés.</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reservation in reservations %}
+                        <tr>
+                            <td class="id-cell">#{{ reservation.idRP }}</td>
+                            <td class="client-cell">{{ reservation.nom }}</td>
+                            <td>{{ reservation.prenom }}</td>
+                            <td style="font-size: 12px;">{{ reservation.email|slice(0, 28) }}</td>
+                            <td>{{ reservation.telephone|default('-') }}</td>
+                            <td style="text-align: center; font-weight: 700;">{{ reservation.nbre }}</td>
+                            <td class="price-cell">{{ reservation.prixProg|number_format(2, ',', ' ') }} DT</td>
+                            <td>{{ reservation.dateProgramme ? reservation.dateProgramme|date('d/m/Y') : '-' }}</td>
+                            <td>
+                                {% if reservation.statutPaiement == 'payé' %}
+                                    <span class="badge-paid">✓ Payé</span>
+                                {% else %}
+                                    <span class="badge-pending">⏳ Attente</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ===== FOOTER ÉLÉGANT ===== -->
+        <div class="report-footer">
+            <div class="footer-content">
+                <p style="font-size: 16px; font-weight: 700;">✨ Programme - Rapport Complet ✨</p>
+                <p>{{ programme.nom }} • {{ reservations|length }} Participants</p>
+                <p style="opacity: 0.75;">Document généré automatiquement | Confidentiel</p>
+                <div class="footer-signature">
+                    🌍 Merci de votre confiance • PiDev Voyage ⭐⭐⭐⭐⭐
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

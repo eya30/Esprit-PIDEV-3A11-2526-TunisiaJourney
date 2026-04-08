@@ -17,17 +17,12 @@
         --dark-gray: #2C3E50;
     }
 
-    /* Fond général cream */
-    body {
-        background-color: var(--tunisia-cream) !important;
-    }
-
-    /* Hero Section - version claire */
+    /* Hero Section */
     .hero {
         position: relative;
         height: 95vh;
         min-height: 700px;
-        background-image: linear-gradient(rgba(255,255,255,0.85), rgba(245,202,195,0.7)), url('https://switchmed.eu/wp-content/uploads/2020/04/tunisia-1.jpg');
+        background-image: linear-gradient(rgba(227,27,35,0.2), rgba(245,202,195,0.3)), url('https://switchmed.eu/wp-content/uploads/2020/04/tunisia-1.jpg');
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
@@ -35,7 +30,7 @@
         align-items: center;
         justify-content: center;
         text-align: center;
-        color: var(--dark-gray);
+        color: white;
         overflow: hidden;
     }
 
@@ -46,7 +41,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.1) 100%);
+        background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.3) 100%);
     }
 
     .hero::after {
@@ -56,7 +51,7 @@
         left: 0;
         right: 0;
         height: 150px;
-        background: linear-gradient(to top, var(--tunisia-cream), transparent);
+        background: linear-gradient(to top, var(--tunisia-sand), transparent);
         pointer-events: none;
     }
 
@@ -65,11 +60,11 @@
         z-index: 2;
         max-width: 950px;
         padding: 4rem;
-        background: rgba(255,255,255,0.85);
+        background: rgba(0,0,0,0.3);
         backdrop-filter: blur(12px);
         border-radius: 60px;
-        border: 1px solid rgba(227,27,35,0.2);
-        box-shadow: 0 30px 80px rgba(0,0,0,0.1);
+        border: 1px solid rgba(255,255,255,0.3);
+        box-shadow: 0 30px 80px rgba(0,0,0,0.4);
         animation: fadeInUp 1.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
     }
 
@@ -83,8 +78,8 @@
         font-size: 5rem;
         font-weight: 700;
         margin-bottom: 1.5rem;
-        text-shadow: 2px 2px 8px rgba(0,0,0,0.1);
-        color: var(--tunisia-red);
+        text-shadow: 3px 3px 12px rgba(0,0,0,0.5);
+        color: #F5CAC3;
         letter-spacing: 2px;
         animation: fadeInUp 0.8s ease 0.2s both;
     }
@@ -94,7 +89,7 @@
         margin-bottom: 2.5rem;
         font-weight: 300;
         line-height: 1.8;
-        color: var(--dark-gray);
+        color: rgba(255,255,255,0.95);
         animation: fadeInUp 0.8s ease 0.4s both;
     }
 
@@ -799,6 +794,8 @@
         </div>
     </div>
 </section>
+
+
 
 {% endblock %}
 

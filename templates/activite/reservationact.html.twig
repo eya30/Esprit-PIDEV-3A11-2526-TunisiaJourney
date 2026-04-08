@@ -263,7 +263,8 @@
                                    id="field-nom"
                                    class="field-input"
                                    placeholder="Votre nom"
-                                   autocomplete="off">
+                                   autocomplete="off"
+                                   value="{{ app.user ? app.user.nom : '' }}">
                             <div class="field-error" id="error-nom">
                                 <i class="fas fa-exclamation-circle"></i>
                                 <span></span>
@@ -280,7 +281,8 @@
                                    id="field-prenom"
                                    class="field-input"
                                    placeholder="Votre prénom"
-                                   autocomplete="off">
+                                   autocomplete="off"
+                                   value="{{ app.user ? app.user.prenom : '' }}">
                             <div class="field-error" id="error-prenom">
                                 <i class="fas fa-exclamation-circle"></i>
                                 <span></span>
@@ -315,7 +317,8 @@
                                    id="field-email"
                                    class="field-input"
                                    placeholder="exemple@domaine.com"
-                                   autocomplete="off">
+                                   autocomplete="off"
+                                   value="{{ app.user ? app.user.email : '' }}">
                             <div class="field-error" id="error-email">
                                 <i class="fas fa-exclamation-circle"></i>
                                 <span></span>
@@ -501,4 +504,4 @@
 
 })();
 </script>
-{% endblock %}
+{% endblock %} 

@@ -13,75 +13,56 @@ class AdminDashboardController extends AbstractController
     #[Route('/dashboard', name: 'admin_dashboard')]
     public function index(Connection $connection): Response
     {
-        // Statistiques
-        $evenementsCount = $connection->fetchOne("SELECT COUNT(*) FROM Evenement");
-        $activitesCount = $connection->fetchOne("SELECT COUNT(*) FROM Activite");
-        $reservationsCount = $connection->fetchOne("SELECT COUNT(*) FROM ReservationAct");
+        // ── KPI ──
+        $totalUsers        = $connection->fetchOne("SELECT COUNT(*) FROM utilisateur");
+        $totalEvenements   = $connection->fetchOne("SELECT COUNT(*) FROM Evenement");
+        $totalReservations = $connection->fetchOne("SELECT COUNT(*) FROM reservationprog");
+        $totalRevenue      = $connection->fetchOne("SELECT COALESCE(SUM(prixProg), 0) FROM reservationprog");
 
-        // Nombre d'utilisateurs uniques dans les réservations
-        $usersCount = $connection->fetchOne("SELECT COUNT(DISTINCT id) FROM ReservationAct WHERE id IS NOT NULL");
+        // ── Graphique 1 : CA par programme (barres) ──
+        $caParProgramme = $connection->fetchAllAssociative("
+            SELECT p.nom as label, COALESCE(SUM(r.prixProg), 0) as total
+            FROM programmes p
+            LEFT JOIN reservationprog r ON r.idP = p.idProg
+            GROUP BY p.idProg, p.nom
+            ORDER BY total DESC
+            LIMIT 7
+        ");
 
-        $stats = [
-            'evenements'   => $evenementsCount,
-            'activites'    => $activitesCount,
-            'reservations' => $reservationsCount,
-            'clients'      => $usersCount,
-        ];
+        // ── Graphique 2 : Inscriptions par mois (courbe) ──
+        $inscriptionsParMois = $connection->fetchAllAssociative("
+            SELECT 
+                DATE_FORMAT(date_inscription, '%b %Y') as mois,
+                DATE_FORMAT(date_inscription, '%Y-%m') as mois_sort,
+                COUNT(*) as count
+            FROM utilisateur
+            GROUP BY mois, mois_sort
+            ORDER BY mois_sort ASC
+            LIMIT 12
+        ");
 
-        // Événements populaires (basé sur les réservations via activités)
-        $evenementsPopulaires = $connection->fetchAllAssociative("
-            SELECT e.Titre, COUNT(r.IDRes) as total
+        // ── Graphique 3 : Top événements (pie avec %) ──
+        $topEvenements = $connection->fetchAllAssociative("
+            SELECT e.Titre as label, COUNT(r.IDRes) as count
             FROM Evenement e
             LEFT JOIN Activite a ON a.IDEv = e.IDEv
             LEFT JOIN ReservationAct r ON r.IDAct = a.IDAct
-            GROUP BY e.IDEv
-            ORDER BY total DESC
-            LIMIT 5
+            GROUP BY e.IDEv, e.Titre
+            HAVING count > 0
+            ORDER BY count DESC
+            LIMIT 6
         ");
-
-        // Calculer les pourcentages
-        $max = 0;
-        foreach ($evenementsPopulaires as $ev) {
-            if ($ev['total'] > $max) $max = $ev['total'];
-        }
-
-        $destinations = [];
-        foreach ($evenementsPopulaires as $ev) {
-            $destinations[] = [
-                'nom'         => $ev['Titre'],
-                'pourcentage' => $max > 0 ? round(($ev['total'] / $max) * 100) : 0
-            ];
-        }
-
-        // Derniers événements
-        $derniersEvenements = $connection->fetchAllAssociative(
-            "SELECT * FROM Evenement ORDER BY IDEv DESC LIMIT 5"
-        );
-
-        // Dernières réservations
-        $dernieresReservations = $connection->fetchAllAssociative("
-            SELECT r.*, a.Titre as activite_titre 
-            FROM ReservationAct r 
-            LEFT JOIN Activite a ON r.IDAct = a.IDAct 
-            ORDER BY r.IDRes DESC LIMIT 5
-        ");
-
-        // Données pour le graphique (réservations des 7 derniers jours)
-        $reservationsWeek = [];
-        for ($i = 6; $i >= 0; $i--) {
-            $date = date('Y-m-d', strtotime("-$i days"));
-            $count = $connection->fetchOne(
-                "SELECT COUNT(*) FROM ReservationAct WHERE DATE(DateReservation) = ?", [$date]
-            );
-            $reservationsWeek[] = $count ?: 0;
-        }
 
         return $this->render('admin/dashboard/index.html.twig', [
-            'stats'                    => $stats,
-            'destinations_populaires'  => $destinations,
-            'derniers_evenements'      => $derniersEvenements,
-            'dernieres_reservations'   => $dernieresReservations,
-            'stats_reservations_week'  => json_encode($reservationsWeek),
+            'stats' => [
+                'users'        => $totalUsers,
+                'evenements'   => $totalEvenements,
+                'reservations' => $totalReservations,
+                'revenue'      => number_format($totalRevenue, 0, ',', ' '),
+            ],
+            'ca_par_programme'      => $caParProgramme,
+            'inscriptions_par_mois' => $inscriptionsParMois,
+            'top_evenements'        => $topEvenements,
         ]);
     }
 }

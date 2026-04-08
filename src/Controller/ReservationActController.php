@@ -52,7 +52,11 @@ class ReservationActController extends AbstractController
 
             $old = compact('nom', 'prenom', 'email', 'telephone') + ['nombrePlaces' => $rawPlaces];
 
-            // Construire l'entité et valider avec le Validator Component
+            // Récupérer l'utilisateur connecté
+            $user   = $this->getUser();
+            $userId = $user ? $user->getId() : null;
+
+            // Construire l'entité et valider
             $reservation = new ReservationAct();
             $reservation->setNom($nom);
             $reservation->setPrenom($prenom);
@@ -63,18 +67,15 @@ class ReservationActController extends AbstractController
                 $reservation->setNombrePlaces((int) $rawPlaces);
             }
 
-            // VALIDATION — Symfony Validator Component uniquement
             $violations = $validator->validate($reservation);
 
             foreach ($violations as $violation) {
                 $field = lcfirst($violation->getPropertyPath());
-                // Ne garder que la première erreur par champ
                 if (!isset($errors[$field])) {
                     $errors[$field] = $violation->getMessage();
                 }
             }
 
-            // Validation contextuelle (places disponibles) — pas dans l'entité car dépend du contexte
             if (
                 !isset($errors['nombrePlaces'])
                 && $rawPlaces !== ''
@@ -84,27 +85,25 @@ class ReservationActController extends AbstractController
                 $errors['nombrePlaces'] = 'Seulement ' . $placesDisponibles . ' place(s) disponible(s).';
             }
 
-            // ── Réponse AJAX (fetch depuis le template) ──────────────────────
+            // ── Réponse AJAX ──────────────────────────────────────────────────
             if ($request->headers->get('X-Requested-With') === 'XMLHttpRequest') {
                 if (empty($errors)) {
-                    // Insertion
                     $nombrePlaces = (int) $rawPlaces;
                     $prixTotal    = (float) $activite['Prix'] * $nombrePlaces;
 
                     $connection->executeStatement(
                         "INSERT INTO ReservationAct (id, IDAct, Nom, Prenom, email, telephone, DateReservation, NombrePlaces, Prix)
                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                        ['1', $IDAct, $nom, $prenom, $email, $telephone, date('Y-m-d'), $nombrePlaces, $prixTotal]
+                        [$userId, $IDAct, $nom, $prenom, $email, $telephone, date('Y-m-d'), $nombrePlaces, $prixTotal]
                     );
 
                     return new JsonResponse(['success' => true]);
                 }
 
-                // Erreurs → retourner le tableau pour mise à jour en temps réel
                 return new JsonResponse(['success' => false, 'errors' => $errors]);
             }
 
-            // ── Soumission classique (sans JS) — fallback ────────────────────
+            // ── Soumission classique (fallback sans JS) ───────────────────────
             if (empty($errors)) {
                 $nombrePlaces = (int) $rawPlaces;
                 $prixTotal    = (float) $activite['Prix'] * $nombrePlaces;
@@ -112,7 +111,7 @@ class ReservationActController extends AbstractController
                 $connection->executeStatement(
                     "INSERT INTO ReservationAct (id, IDAct, Nom, Prenom, email, telephone, DateReservation, NombrePlaces, Prix)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    ['1', $IDAct, $nom, $prenom, $email, $telephone, date('Y-m-d'), $nombrePlaces, $prixTotal]
+                    [$userId, $IDAct, $nom, $prenom, $email, $telephone, date('Y-m-d'), $nombrePlaces, $prixTotal]
                 );
 
                 $this->addFlash('success', 'Votre réservation a été enregistrée avec succès !');
