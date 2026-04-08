@@ -1,19 +1,19 @@
 <?php
+
 namespace App\Form;
 
 use App\Entity\Produit;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\{
-    TextType,
-    TextareaType,
-    NumberType,
-    IntegerType,
-    FileType,
-    ChoiceType
-};
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Constraints\File;
 
 class ProduitType extends AbstractType
 {
@@ -21,57 +21,81 @@ class ProduitType extends AbstractType
     {
         $builder
             ->add('titre', TextType::class, [
-                'label' => false,
-                'attr'  => ['placeholder' => 'Ex : Tapis berbère, Poterie de Nabeul...'],
+                'label' => 'Titre du produit',
+                'attr'  => [
+                    'class' => 'form-control',
+                    'placeholder' => 'Ex: Tapis berbère artisanal'
+                ],
+                'required' => true,
             ])
             ->add('description', TextareaType::class, [
-                'label' => false,
+                'label' => 'Description',
                 'attr'  => [
-                    'placeholder' => "Décrivez l'article : matériaux, origine, dimensions...",
-                    'rows'        => 4,
+                    'class' => 'form-control',
+                    'placeholder' => 'Décrivez votre produit...', 
+                    'rows' => 4
                 ],
+                'required' => false,
             ])
-            ->add('prix', NumberType::class, [
-                'label' => false,
-                'attr'  => ['placeholder' => 'Ex : 120'],
+            ->add('categorie', ChoiceType::class, [
+                'label' => 'Catégorie',
+                'choices' => Produit::CATEGORIES,
+                'placeholder' => '-- Choisir une catégorie --',
+                'attr' => ['class' => 'form-select'],
+                'required' => true,
             ])
             ->add('stock', IntegerType::class, [
-                'label' => false,
-                'attr'  => ['placeholder' => 'Ex : 25'],
+                'label' => 'Stock',
+                'attr'  => [
+                    'class' => 'form-control',
+                    'placeholder' => '0', 
+                    'min' => 0
+                ],
+                'required' => true,
             ])
             ->add('poids', IntegerType::class, [
-                'label' => false,
-                'attr'  => ['placeholder' => 'Ex : 350'],
-            ])
-            ->add('disponibilite', ChoiceType::class, [
-                'label'   => false,
-                'choices' => [
-                    'En stock' => 1,
-                    'Rupture'  => 0,
+                'label' => 'Poids (g)',
+                'attr'  => [
+                    'class' => 'form-control',
+                    'placeholder' => '0', 
+                    'min' => 0
                 ],
+                'required' => false,
             ])
-            ->add('image', FileType::class, [
-                'label'       => false,
-                'mapped'      => false,
-                'required'    => false,
+            ->add('prix', NumberType::class, [
+                'label' => 'Prix (TND)',
+                'attr'  => [
+                    'class' => 'form-control',
+                    'placeholder' => '0.00', 
+                    'step' => '0.01'
+                ],
+                'required' => true,
+                'scale' => 2,
+            ])
+            ->add('disponibilite', CheckboxType::class, [
+                'label' => 'Disponible à la vente',
+                'required' => false,
+                'attr' => ['class' => 'form-check-input'],
+                'label_attr' => ['class' => 'form-check-label'],
+            ])
+            ->add('imageFile', FileType::class, [
+                'label' => 'Image du produit',
+                'mapped' => false,
+                'required' => false,
+                'attr' => ['class' => 'form-control'],
                 'constraints' => [
-                    new Assert\File([
-                        'maxSize'          => '2M',
-                        'maxSizeMessage'   => "L'image ne doit pas dépasser 2 Mo.",
-                        'mimeTypes'        => ['image/jpeg', 'image/png', 'image/webp'],
-                        'mimeTypesMessage' => "Seuls les formats JPG, PNG et WEBP sont acceptés.",
-                    ]),
+                    new File([
+                        'maxSize' => '2M',
+                        'mimeTypes' => ['image/jpeg', 'image/png', 'image/webp'],
+                        'mimeTypesMessage' => 'Veuillez uploader une image valide (JPG, PNG, WEBP)',
+                    ])
                 ],
             ])
-        ;
+        ; // <--- Le point-virgule ne doit être qu'ici, à la toute fin !
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefaults([
-            'data_class' => Produit::class,
-            // Désactive la validation HTML5 — tout passe par Symfony
-            'attr' => ['novalidate' => 'novalidate'],
-        ]);
+        $resolver->setDefaults(['data_class' => Produit::class]);
     }
 }

@@ -77,6 +77,11 @@
                     {% endif %}
                 </td>
                 <td>
+                   <div class="d-flex gap-2">
+                {# BOUTON MODIFIER #}
+                <a href="{{ path('admin_commande_edit', {id: commande.id}) }}" class="action-btn edit-btn" title="Modifier">
+                    <i class="fas fa-edit"></i>
+                </a>
                     <form method="post"
                           action="{{ path('admin_commande_delete', {id: commande.id}) }}"
                           onsubmit="return confirm('Supprimer la commande #{{ commande.id }} ?')">

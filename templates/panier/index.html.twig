@@ -110,12 +110,12 @@
                                 <div class="prix-unit">{{ item.produit.prix|number_format(2, ',', ' ') }} TND / unité</div>
                             </div>
                             <div class="qty-control">
-                                <a href="{{ path('app_panier_update', {id: item.produit.id, quantite: item.quantite - 1}) }}" class="qty-btn">−</a>
+                                <a href="{{ path('app_panier_update', {id: item.produit.idPR, quantite: item.quantite - 1}) }}" class="qty-btn">−</a>
                                 <span class="qty-value">{{ item.quantite }}</span>
-                                <a href="{{ path('app_panier_update', {id: item.produit.id, quantite: item.quantite + 1}) }}" class="qty-btn">+</a>
+                                <a href="{{ path('app_panier_update', {id: item.produit.idPR, quantite: item.quantite + 1}) }}" class="qty-btn">+</a>
                             </div>
                             <div class="sous-total">{{ item.sousTotal|number_format(2, ',', ' ') }} TND</div>
-                            <a href="{{ path('app_panier_remove', {id: item.produit.id}) }}" class="btn-remove" title="Retirer">
+                            <a href="{{ path('app_panier_remove', {id: item.produit.idPR}) }}" class="btn-remove" title="Retirer">
                                 <i class="fas fa-trash-alt"></i>
                             </a>
                         </div>

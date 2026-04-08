@@ -28,7 +28,8 @@ class ProduitController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $file = $form->get('image')->getData();
+    // CHANGE CETTE LIGNE :
+        $file = $form->get('imageFile')->getData(); // Utilise 'imageFile'
             if ($file) {
                 $fileName = uniqid().'.'.$file->guessExtension();
                 $file->move($this->getParameter('kernel.project_dir').'/public/uploads/produits', $fileName);

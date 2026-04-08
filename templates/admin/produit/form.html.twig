@@ -9,9 +9,8 @@
         <h5 class="form-title">{{ action }} un produit artisanal</h5>
         <p class="form-subtitle" style="color: #93032E;">Remplissez les informations ci-dessous</p>
 
-        {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+        {{ form_start(form) }}
 
-            <!-- Titre -->
             <div class="form-group">
                 <label class="form-label">Titre du produit</label>
                 <div class="input-group-custom">
@@ -25,7 +24,6 @@
                 {% endif %}
             </div>
 
-            <!-- Description -->
             <div class="form-group">
                 <label class="form-label">Description</label>
                 <div class="input-group-custom">
@@ -39,7 +37,19 @@
                 {% endif %}
             </div>
 
-            <!-- Prix & Stock -->
+            <div class="form-group">
+                <label class="form-label">Catégorie de l'artisanat</label>
+                <div class="input-group-custom">
+                    <i class="fas fa-th-large"></i>
+                    {{ form_widget(form.categorie, {
+                        'attr': {'class': 'form-control form-select'}
+                    }) }}
+                </div>
+                {% if form_errors(form.categorie) %}
+                    <div class="field-error">{{ form_errors(form.categorie) }}</div>
+                {% endif %}
+            </div>
+
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
@@ -71,7 +81,6 @@
                 </div>
             </div>
 
-            <!-- Poids & Disponibilité -->
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
@@ -90,20 +99,16 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label class="form-label">Disponibilité</label>
-                        <div class="input-group-custom">
-                            <i class="fas fa-check-circle"></i>
+                        <div class="form-check mt-2">
                             {{ form_widget(form.disponibilite, {
-                                'attr': {'class': 'form-control', 'style': 'border:none; background:transparent; padding:12px 16px; font-size:14px; box-shadow:none; cursor:pointer;'}
+                                'attr': {'class': 'form-check-input'}
                             }) }}
+                            <label class="form-check-label ms-2">Disponible à la vente</label>
                         </div>
-                        {% if form_errors(form.disponibilite) %}
-                            <div class="field-error">{{ form_errors(form.disponibilite) }}</div>
-                        {% endif %}
                     </div>
                 </div>
             </div>
 
-            <!-- Image -->
             <div class="form-group">
                 <label class="form-label">Image du produit</label>
 
@@ -121,20 +126,23 @@
                     <i class="fas fa-cloud-upload-alt"></i>
                     <p>Cliquez ou glissez une image ici</p>
                     <small>JPG, PNG (max. 2 Mo)</small>
+                    
+                    {# ✅ CORRECTION ICI : form.imageFile au lieu de form.image #}
+                    {{ form_widget(form.imageFile, {
+                        'attr': {
+                            'id': 'imageInput',
+                            'accept': 'image/*',
+                            'style': 'position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer; z-index:10;'
+                        }
+                    }) }}
                 </div>
                 <div id="imagePreview" class="image-preview-container"></div>
 
-                {# Champ caché du formulaire Symfony #}
-                <div style="display:none;" id="fileFieldWrapper">
-                    {{ form_widget(form.image, {'attr': {'id': 'imageInput', 'accept': 'image/*'}}) }}
-                </div>
-
-                {% if form_errors(form.image) %}
-                    <div class="field-error">{{ form_errors(form.image) }}</div>
+                {% if form_errors(form.imageFile) %}
+                    <div class="field-error">{{ form_errors(form.imageFile) }}</div>
                 {% endif %}
             </div>
 
-            <!-- Actions -->
             <div class="form-actions">
                 <a href="{{ path('admin_produit_index') }}" class="btn btn-outline">
                     <i class="fas fa-arrow-left me-2"></i> Annuler
@@ -255,6 +263,8 @@
         text-align: center;
         cursor: pointer;
         transition: all 0.2s;
+        position: relative;
+        overflow: hidden;
     }
 
     .upload-area:hover {
@@ -351,23 +361,29 @@
 
 <script>
     const uploadArea = document.getElementById('uploadArea');
-    const imageInput = document.getElementById('imageInput');
-    const imagePreview = document.getElementById('imagePreview');
+   const imageInput = document.getElementById('imageInput');    
+const imagePreview = document.getElementById('imagePreview');
 
-    uploadArea.addEventListener('click', () => imageInput.click());
+    // L'input transparent couvre toute la zone — pas besoin de click()
+    // Il suffit d'écouter le changement pour afficher la prévisualisation
 
     imageInput.addEventListener('change', function (e) {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = function (e) {
-                imagePreview.innerHTML = '<img src="' + e.target.result + '" class="image-preview">';
-                uploadArea.style.display = 'none';
+                imagePreview.innerHTML =
+                    '<img src="' + e.target.result + '" class="image-preview" style="max-width:200px; max-height:150px; border-radius:12px; border:1px solid #E8DFD1; margin-top:12px;">' +
+                    '<p style="font-size:11px; color:#9CA3AF; margin-top:6px;">' + file.name + '</p>';
+                // Garder la zone visible mais changer son apparence
+                uploadArea.style.borderColor = '#93032E';
+                uploadArea.style.background = '#FFF5F0';
             };
             reader.readAsDataURL(file);
         }
     });
 
+    // Drag & drop
     uploadArea.addEventListener('dragover', (e) => {
         e.preventDefault();
         uploadArea.style.borderColor = '#93032E';
@@ -383,16 +399,21 @@
         e.preventDefault();
         const file = e.dataTransfer.files[0];
         if (file && file.type.startsWith('image/')) {
+            // Transférer les fichiers vers l'input
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            imageInput.files = dt.files;
+
             const reader = new FileReader();
-            reader.onload = function (e) {
-                imagePreview.innerHTML = '<img src="' + e.target.result + '" class="image-preview">';
-                uploadArea.style.display = 'none';
+            reader.onload = function (ev) {
+                imagePreview.innerHTML =
+                    '<img src="' + ev.target.result + '" class="image-preview" style="max-width:200px; max-height:150px; border-radius:12px; border:1px solid #E8DFD1; margin-top:12px;">' +
+                    '<p style="font-size:11px; color:#9CA3AF; margin-top:6px;">' + file.name + '</p>';
+                uploadArea.style.borderColor = '#93032E';
+                uploadArea.style.background = '#FFF5F0';
             };
             reader.readAsDataURL(file);
-            imageInput.files = e.dataTransfer.files;
         }
-        uploadArea.style.borderColor = '#E8DFD1';
-        uploadArea.style.background = '#FEF9F0';
     });
 </script>
 {% endblock %}
