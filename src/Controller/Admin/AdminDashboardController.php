@@ -18,7 +18,7 @@ class AdminDashboardController extends AbstractController
         $activitesCount = $connection->fetchOne("SELECT COUNT(*) FROM Activite");
         $reservationsCount = $connection->fetchOne("SELECT COUNT(*) FROM ReservationAct");
 
-        // Nombre d'utilisateurs uniques dans les réservations
+        // Nombre d'utilisateurs uniques dans les réservations seulement 
         $usersCount = $connection->fetchOne("SELECT COUNT(DISTINCT id) FROM ReservationAct WHERE id IS NOT NULL");
 
         $stats = [
@@ -28,7 +28,7 @@ class AdminDashboardController extends AbstractController
             'clients'      => $usersCount,
         ];
 
-        // Événements populaires (basé sur les réservations via activités)
+        // Événements populaires (basé sur les réservations via activité)
         $evenementsPopulaires = $connection->fetchAllAssociative("
             SELECT e.Titre, COUNT(r.IDRes) as total
             FROM Evenement e
@@ -39,7 +39,7 @@ class AdminDashboardController extends AbstractController
             LIMIT 5
         ");
 
-        // Calculer les pourcentages
+        // Calculer les pourcentages de chacune 
         $max = 0;
         foreach ($evenementsPopulaires as $ev) {
             if ($ev['total'] > $max) $max = $ev['total'];
