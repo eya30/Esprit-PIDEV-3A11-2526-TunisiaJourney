@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    {# ── MÉTADONNÉES ANTI-CACHE (SOLUTION DÉFINITIVE) ── #}
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <title>{% block title %}Administration - TunisiaJourney{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:#F5F7FA; color:#2C1810; }
+        .admin-container { display:flex; min-height:100vh; }
+
+        .sidebar { width:280px; background:#FFF9F0; position:fixed; left:0; top:0; bottom:0; border-right:1px solid #E8DFD1; overflow-y:auto; z-index:1000; display:flex; flex-direction:column; }
+        .sidebar-header { padding:24px; text-align:center; border-bottom:1px solid #E8DFD1; }
+        .sidebar-header img { width:130px; height:130px; object-fit:contain; }
+
+        .nav-menu { list-style:none; padding:16px 12px; flex:1; }
+        .nav-item { margin-bottom:2px; }
+
+        .nav-link { display:flex; align-items:center; gap:12px; padding:11px 14px; color:#4A3B2F; text-decoration:none; border-radius:12px; font-size:0.88rem; font-weight:500; transition:all 0.2s; }
+        .nav-link i.nav-icon { width:20px; font-size:1rem; color:#C49A6C; flex-shrink:0; text-align:center; }
+        .nav-link:hover { background:rgba(147,3,46,0.06); color:#93032E; }
+        .nav-link:hover i.nav-icon { color:#93032E; }
+        .nav-link.active { background:rgba(147,3,46,0.10); color:#93032E; font-weight:700; border-left:3px solid #93032E; padding-left:11px; border-radius:0 12px 12px 0; }
+        .nav-link.active i.nav-icon { color:#93032E; }
+
+        .sidebar-footer { padding:16px 12px 20px; border-top:1px solid #E8DFD1; }
+        .logout-btn { display:flex; align-items:center; gap:12px; padding:11px 14px; background:transparent; color:#93032E; text-decoration:none; border-radius:12px; font-size:0.88rem; font-weight:600; border:1.5px solid #93032E; transition:all 0.2s; }
+        .logout-btn:hover { background:#93032E; color:white; }
+
+        .main-content { flex:1; margin-left:280px; width:calc(100% - 280px); }
+        .top-bar { background:white; padding:18px 28px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #F0E8DD; position:sticky; top:0; z-index:99; }
+        .page-title { font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:700; color:#2C1810; margin:0; }
+        .user-info { display:flex; align-items:center; gap:10px; background:#FFF9F0; padding:8px 16px; border-radius:40px; border:1px solid #F0E8DD; }
+        .user-avatar { width:36px; height:36px; background:#93032E; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:0.85rem; }
+        .content { padding:28px; }
+
+        .toast-message { position:fixed; top:86px; right:20px; z-index:1050; min-width:300px; animation:slideIn 0.4s ease-out; border-radius:12px; }
+        @keyframes slideIn { from { transform:translateX(110%); opacity:0; } to { transform:translateX(0); opacity:1; } }
+
+        .menu-toggle { display:none; background:none; border:none; font-size:20px; cursor:pointer; color:#4A3B2F; }
+        @media (max-width:768px) {
+            .sidebar { transform:translateX(-100%); transition:transform 0.3s ease; }
+            .sidebar.open { transform:translateX(0); }
+            .main-content { margin-left:0; width:100%; }
+            .menu-toggle { display:block; }
+        }
+    </style>
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+<div class="admin-container">
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="{{ asset('images/logo.png') }}" alt="Logo">
+        </div>
+        <ul class="nav-menu">
+            {% set route = app.request.get('_route') %}
+            <li class="nav-item">
+                <a href="{{ path('app_dashboard') }}" class="nav-link {% if route in ['app_dashboard','app_home'] %}active{% endif %}">
+                    <i class="fas fa-chart-line nav-icon"></i> Tableau de bord
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ path('app_accueil') }}" class="nav-link">
+                    <i class="fas fa-home nav-icon"></i> Accueil site
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link"><i class="fas fa-suitcase nav-icon"></i> Voyages</a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link"><i class="fas fa-hotel nav-icon"></i> Hôtels</a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link"><i class="fas fa-calendar-alt nav-icon"></i> Événements</a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link"><i class="fas fa-gift nav-icon"></i> Produits</a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link"><i class="fas fa-users nav-icon"></i> Utilisateurs</a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ path('app_forum_index') }}" class="nav-link {% if route starts with 'app_forum' or route starts with 'app_publication' or route starts with 'app_commentaire' %}active{% endif %}">
+                    <i class="fas fa-comments nav-icon"></i> Forum
+                </a>
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <a href="#" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="top-bar">
+            <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+            <h2 class="page-title">{% block page_title %}Administration{% endblock %}</h2>
+            <div class="user-info">
+                <div class="user-avatar"><i class="fas fa-user"></i></div>
+                <span style="font-size:0.88rem; font-weight:600; color:#4A3B2F;">Admin</span>
+            </div>
+        </div>
+        <div class="content">
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ label }} alert-dismissible fade show toast-message" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+            {% block body %}{% endblock %}
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+    if (menuToggle) menuToggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+
+    setTimeout(() => {
+        document.querySelectorAll('.toast-message').forEach(t => {
+            t.style.transition = 'opacity 0.5s';
+            t.style.opacity = '0';
+            setTimeout(() => t.remove(), 500);
+        });
+    }, 5000);
+    
+    // SOLUTION DÉFINITIVE : Force le rechargement complet après retour arrière
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted) {
+            location.reload();
+        }
+    });
+</script>
+{% block javascripts %}{% endblock %}
+</body>
+</html>

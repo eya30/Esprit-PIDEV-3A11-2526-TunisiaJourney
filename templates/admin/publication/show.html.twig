@@ -1,0 +1,360 @@
+{% extends 'admin/dashboard/base_admin.html.twig' %}
+
+{% block title %}{{ publication.nom }} — Commentaires{% endblock %}
+{% block page_title %}{{ publication.nom }}{% endblock %}
+
+{% block body %}
+
+{# ── FLASH MESSAGES ── #}
+{% for label, messages in app.flashes %}
+    {% for message in messages %}
+        {% if label == 'success' or label == 'error' %}
+        <div style="margin-bottom:14px; padding:12px 18px; border-radius:12px; font-size:0.87rem; font-weight:500; display:flex; align-items:center; gap:10px;
+            {% if label == 'success' %}background:#E0F2E9; color:#047857; border:1px solid #A7F3D0;
+            {% else %}background:#FEF2F2; color:#DC2626; border:1px solid #FECACA;{% endif %}">
+            <i class="fas fa-{% if label == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
+            {{ message }}
+        </div>
+        {% endif %}
+    {% endfor %}
+{% endfor %}
+
+{# ── Récupérer les erreurs de signalement depuis les flashs ── #}
+{% set reportErrors = app.flashes('report_error') %}
+{% set reportCommentId = app.flashes('report_comment_id')|first|default(null) %}
+
+{# ── EN-TÊTE ── #}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-1" style="font-family:'Playfair Display',serif; color:#2C1810;">{{ publication.nom }}</h4>
+        <p class="mb-0" style="font-size:0.85rem; color:#6B7280;">
+            Forum : <strong style="color:#93032E;">{{ publication.forum.nom }}</strong> &nbsp;·&nbsp;
+            <span style="background:#FEF9F0; color:#93032E; border:1px solid #F0E8DD; padding:3px 12px; border-radius:20px; font-size:0.78rem; font-weight:600;">
+                {{ publication.commentaires|length }} commentaires
+            </span>
+        </p>
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <a href="{{ path('app_commentaire_new', {idP: publication.idP}) }}" class="tj-btn-primary">
+            <i class="fas fa-plus me-2"></i> Ajouter commentaire
+        </a>
+        {# ✅ Bouton retour vers les publications du forum (PAS le bouton modifier) #}
+        <a href="{{ path('app_forum_show', {idF: publication.forum.idF}) }}" class="tj-btn-back">
+            <i class="fas fa-arrow-left me-2"></i> Retour publications
+        </a>
+    </div>
+</div>
+
+{# ── DÉTAIL PUBLICATION ── #}
+<div class="tj-table-wrap mb-4" style="padding:1.5rem;">
+    <div style="display:flex; gap:1.5rem; flex-wrap:wrap; align-items:flex-start;">
+        {% if publication.image %}
+            {% if publication.image starts with 'http' %}
+                <img src="{{ publication.image }}"
+                     style="width:140px; height:140px; object-fit:cover; border-radius:16px; border:1px solid #F0E8DD; flex-shrink:0;"
+                     onerror="this.onerror=null; this.style.display='none';">
+            {% else %}
+                <img src="{{ asset('uploads/publications/' ~ publication.image) }}"
+                     style="width:140px; height:140px; object-fit:cover; border-radius:16px; border:1px solid #F0E8DD; flex-shrink:0;"
+                     onerror="this.onerror=null; this.style.display='none';">
+            {% endif %}
+        {% else %}
+            <div style="width:140px; height:140px; background:#FEF9F0; border-radius:16px; border:1px solid #F0E8DD; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <i class="fas fa-image" style="font-size:2rem; color:#E8DFD1;"></i>
+            </div>
+        {% endif %}
+        <div style="flex:1;">
+            <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+                <span class="tj-badge tj-badge-wine"><i class="fas fa-comments me-1"></i>{{ publication.forum.nom }}</span>
+                <span class="tj-badge tj-badge-orange"><i class="fas fa-calendar me-1"></i>{{ publication.dateCreation|date('d/m/Y') }}</span>
+            </div>
+            <p style="color:#4A3B2F; line-height:1.7; font-size:0.9rem; margin:0;">{{ publication.description }}</p>
+        </div>
+    </div>
+</div>
+
+{# ── TABLEAU COMMENTAIRES ── #}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 style="font-family:'Playfair Display',serif; color:#2C1810; margin:0;">
+        <i class="fas fa-comments me-2" style="color:#93032E;"></i>Commentaires ({{ publication.commentaires|length }})
+    </h5>
+</div>
+
+{% if publication.commentaires is empty %}
+    <div class="tj-empty">
+        <i class="fas fa-comment-slash" style="font-size:3rem; color:#E8DFD1; margin-bottom:1rem;"></i>
+        <p style="color:#9CA3AF; margin-bottom:1rem;">Aucun commentaire pour cette publication.</p>
+        <a href="{{ path('app_commentaire_new', {idP: publication.idP}) }}" class="tj-btn-primary">
+            <i class="fas fa-plus me-2"></i>Ajouter un commentaire
+        </a>
+    </div>
+{% else %}
+<div class="tj-table-wrap">
+    <table class="tj-table">
+        <thead>
+            <tr>
+                <th>COMMENTAIRE</th>
+                <th>TAGS</th>
+                <th>DATE</th>
+                <th style="text-align:center;">STATUT</th>
+                {# ✅ Pas de colonne "Modifier" — supprimée définitivement #}
+                <th style="text-align:center;">ACTIONS</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for com in publication.commentaires %}
+            <tr class="{% if com.isCancelled %}row-cancelled{% elseif com.isReported %}row-reported{% endif %}">
+                <td style="max-width:300px;">
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <div style="width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#93032E,#C49A6C); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; flex-shrink:0; font-size:0.85rem;">U</div>
+                        <div>
+                            <div style="font-size:0.87rem; color:#4A3B2F; line-height:1.5;">
+                                {{ com.description|slice(0,100) }}{% if com.description|length > 100 %}…{% endif %}
+                            </div>
+                            {% if com.image %}
+                                <img src="{{ asset('uploads/commentaires/' ~ com.image) }}"
+                                     style="max-height:60px; border-radius:6px; margin-top:6px; border:1px solid #F0E8DD;">
+                            {% endif %}
+                            {% if com.reportReason %}
+                                <div style="margin-top:4px; font-size:0.75rem; color:#B45309; background:#FEF3C7; padding:3px 8px; border-radius:6px;">
+                                    <i class="fas fa-flag me-1"></i>{{ com.reportReason }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    {% if com.tags %}
+                        <div style="display:flex; flex-wrap:wrap; gap:4px;">
+                            {% for tag in com.tags|split(',') %}
+                                <span class="tj-badge tj-badge-wine" style="font-size:0.7rem; padding:2px 8px;">{{ tag|trim }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <span style="color:#D1D5DB; font-size:0.8rem;">—</span>
+                    {% endif %}
+                </td>
+                <td><span class="tj-badge tj-badge-grey">{{ com.dateCreation|date('d/m/Y') }}</span></td>
+                <td style="text-align:center;">
+                    {% if com.isCancelled %}
+                        <span class="tj-badge" style="background:#F3F4F6; color:#6B7280;"><i class="fas fa-ban me-1"></i>Annulé</span>
+                    {% elseif com.isReported %}
+                        <span class="tj-badge" style="background:#FEF3C7; color:#B45309;"><i class="fas fa-flag me-1"></i>Signalé</span>
+                    {% else %}
+                        <span class="tj-badge tj-badge-green"><i class="fas fa-check me-1"></i>Actif</span>
+                    {% endif %}
+                </td>
+                <td style="text-align:center;">
+                    <div class="tj-actions">
+                        {# ✅ Pas de bouton Modifier ici — supprimé définitivement #}
+
+                        {# Annuler (si actif) #}
+                        {% if not com.isCancelled %}
+                            <form method="post" action="{{ path('app_commentaire_cancel', {idC: com.idC}) }}"
+                                  onsubmit="return confirm('Annuler ce commentaire ?')" style="display:inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ com.idC) }}">
+                                <button class="action-btn cancel-btn" title="Annuler">
+                                    <i class="fas fa-ban"></i>
+                                </button>
+                            </form>
+                        {% endif %}
+
+                        {# Désannuler (si annulé) #}
+                        {% if com.isCancelled %}
+                            <form method="post" action="{{ path('app_commentaire_uncancel', {idC: com.idC}) }}"
+                                  onsubmit="return confirm('Désannuler ce commentaire ?')" style="display:inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('uncancel' ~ com.idC) }}">
+                                <button class="action-btn uncancel-btn" title="Désannuler">
+                                    <i class="fas fa-check-circle"></i>
+                                </button>
+                            </form>
+                        {% endif %}
+
+                        {# ✅ Signaler (si actif et non signalé) — avec validation Symfony #}
+                        {% if not com.isReported and not com.isCancelled %}
+                            <button class="action-btn report-btn" title="Signaler"
+                                    onclick="showReportModal({{ com.idC }})">
+                                <i class="fas fa-flag"></i>
+                            </button>
+                        {% endif %}
+
+                        {# Supprimer #}
+                        <form method="post" action="{{ path('app_commentaire_delete', {idC: com.idC}) }}"
+                              onsubmit="return confirm('Supprimer définitivement ce commentaire ?')" style="display:inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ com.idC) }}">
+                            <button class="action-btn delete-btn" title="Supprimer">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{# ══════════════════════════════════════════════════════════════
+   MODAL SIGNALEMENT — validation Symfony côté serveur
+   ══════════════════════════════════════════════════════════════ #}
+<div id="reportModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.45); z-index:1100; align-items:center; justify-content:center;">
+    <div style="background:white; border-radius:20px; width:480px; max-width:92%; box-shadow:0 20px 50px rgba(0,0,0,0.2); overflow:hidden;">
+        <div style="padding:1.2rem 1.5rem; border-bottom:1px solid #F0E8DD; display:flex; justify-content:space-between; align-items:center; background:#FEF9F0;">
+            <h5 style="margin:0; color:#93032E; font-family:'Playfair Display',serif;"><i class="fas fa-flag me-2"></i>Signaler un commentaire</h5>
+            <button onclick="closeReportModal()" style="background:none; border:none; font-size:1.4rem; color:#aaa; cursor:pointer;">&times;</button>
+        </div>
+
+        {# ✅ Affichage des erreurs Symfony retournées via flash #}
+        {% if reportErrors is not empty %}
+        <div style="background:#FEF2F2; border-bottom:1px solid #FECACA; padding:10px 18px; color:#DC2626; font-size:0.83rem;">
+            <i class="fas fa-exclamation-circle me-1"></i>
+            {% for err in reportErrors %}
+                <div>{{ err }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form id="reportForm" method="post" style="padding:1.5rem;">
+            <input type="hidden" name="_token" id="reportToken">
+
+            {# ✅ Motif — obligatoire (validé par Symfony côté serveur) #}
+            <div style="margin-bottom:1rem;">
+                <label style="display:block; font-size:0.85rem; font-weight:600; color:#4A3B2F; margin-bottom:6px;">
+                    Motif du signalement <span style="color:#EF4444;">*</span>
+                </label>
+                <select name="reason" id="reportReason"
+                        style="width:100%; padding:10px 14px; border:1px solid #F0E8DD; border-radius:10px; font-size:0.85rem; background:#FFF9F0; color:#4A3B2F; outline:none;">
+                    <option value="">-- Sélectionnez un motif --</option>
+                    <option value="Langage inapproprié">Langage inapproprié</option>
+                    <option value="Propos injurieux">Propos injurieux</option>
+                    <option value="Discrimination">Discrimination</option>
+                    <option value="Spam ou publicité">Spam ou publicité</option>
+                    <option value="Contenu offensant">Contenu offensant</option>
+                    <option value="Autre">Autre</option>
+                </select>
+                <div id="reasonError" style="display:none; color:#EF4444; font-size:0.78rem; margin-top:4px;">
+                    <i class="fas fa-exclamation-circle me-1"></i>Veuillez sélectionner un motif.
+                </div>
+            </div>
+
+            {# ✅ Description — min 3 caractères si fournie (validé par Symfony) #}
+            <div style="margin-bottom:1.2rem;">
+                <label style="display:block; font-size:0.85rem; font-weight:600; color:#4A3B2F; margin-bottom:6px;">
+                    Description
+                    <span style="font-weight:400; color:#9CA3AF; font-size:0.8rem;">(min. 3 caractères si renseignée)</span>
+                </label>
+                <textarea name="description" id="reportDesc" rows="3"
+                          placeholder="Détaillez le motif (au moins 3 caractères)..."
+                          style="width:100%; padding:10px 14px; border:1px solid #F0E8DD; border-radius:10px; font-size:0.85rem; background:#FFF9F0; color:#4A3B2F; outline:none; resize:vertical; box-sizing:border-box;"></textarea>
+                <div id="descError" style="display:none; color:#EF4444; font-size:0.78rem; margin-top:4px;">
+                    <i class="fas fa-exclamation-circle me-1"></i>La description doit contenir au moins 3 caractères.
+                </div>
+                <div style="font-size:0.73rem; color:#9CA3AF; margin-top:4px;">
+                    Laissez vide ou entrez au moins 3 caractères.
+                </div>
+            </div>
+
+            <div style="display:flex; gap:10px; justify-content:flex-end; border-top:1px solid #F0E8DD; padding-top:1rem;">
+                <button type="button" onclick="closeReportModal()"
+                        style="padding:9px 20px; background:#F5F0E8; border:none; border-radius:10px; font-size:0.85rem; cursor:pointer; color:#4A3B2F; font-weight:500;">
+                    Annuler
+                </button>
+                <button type="button" onclick="submitReport()"
+                        style="padding:9px 22px; background:#93032E; color:white; border:none; border-radius:10px; font-size:0.85rem; font-weight:600; cursor:pointer;">
+                    <i class="fas fa-flag me-1"></i>Signaler
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.tj-btn-primary { background:#93032E; color:white; border:none; padding:9px 18px; border-radius:40px; font-size:0.85rem; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:6px; transition:all 0.2s; }
+.tj-btn-primary:hover { background:#6B0221; color:white; transform:translateY(-2px); box-shadow:0 4px 14px rgba(147,3,46,0.3); }
+.tj-btn-back { background:#F3F4F6; color:#6B7280; border:none; padding:9px 18px; border-radius:40px; font-size:0.85rem; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:6px; transition:all 0.2s; }
+.tj-btn-back:hover { background:#E5E7EB; color:#374151; }
+.tj-empty { background:white; border-radius:20px; border:1px solid #F0E8DD; padding:3rem; text-align:center; }
+.tj-table-wrap { background:white; border-radius:20px; border:1px solid #F0E8DD; overflow:hidden; }
+.tj-table { width:100%; border-collapse:collapse; }
+.tj-table thead tr { background:#FEF9F0; border-bottom:2px solid #F0E8DD; }
+.tj-table th { padding:14px 20px; font-size:0.72rem; font-weight:700; color:#93032E; text-transform:uppercase; letter-spacing:0.6px; }
+.tj-table td { padding:14px 20px; font-size:0.87rem; border-bottom:1px solid #F5F0E8; color:#4A3B2F; vertical-align:middle; }
+.tj-table tr:last-child td { border-bottom:none; }
+.tj-table tbody tr:hover td { background:#FFF9F0; }
+.row-cancelled td { opacity:0.65; background:#F9FAFB !important; }
+.row-reported td { background:#FFFBF0 !important; }
+.tj-badge { padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:600; display:inline-block; }
+.tj-badge-wine { background:#FEF9F0; color:#93032E; border:1px solid #F0E8DD; }
+.tj-badge-orange { background:#FEF3C7; color:#B45309; }
+.tj-badge-green { background:#E0F2E9; color:#047857; }
+.tj-badge-grey { background:#F3F4F6; color:#6B7280; }
+.tj-actions { display:flex; gap:8px; justify-content:center; }
+.action-btn { width:34px; height:34px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; transition:all 0.2s; cursor:pointer; border:none; font-size:0.9rem; text-decoration:none; }
+.cancel-btn { background:#FEF2F2; color:#EF4444; }
+.cancel-btn:hover { background:#EF4444; color:white; transform:translateY(-2px); }
+.uncancel-btn { background:#E0F2E9; color:#047857; }
+.uncancel-btn:hover { background:#047857; color:white; transform:translateY(-2px); }
+.report-btn { background:#FEF3C7; color:#D97706; }
+.report-btn:hover { background:#F59E0B; color:white; transform:translateY(-2px); }
+.delete-btn { background:#FEF2F2; color:#EF4444; }
+.delete-btn:hover { background:#EF4444; color:white; transform:translateY(-2px); }
+</style>
+
+<script>
+// ✅ Ouvrir le modal signalement
+function showReportModal(commentId) {
+    document.getElementById('reportToken').value = '{{ csrf_token("report") }}';
+    document.getElementById('reportForm').action = '/commentaire/' + commentId + '/report';
+    document.getElementById('reportReason').value = '';
+    document.getElementById('reportDesc').value = '';
+    document.getElementById('reasonError').style.display = 'none';
+    document.getElementById('descError').style.display = 'none';
+    document.getElementById('reportModal').style.display = 'flex';
+}
+
+function closeReportModal() {
+    document.getElementById('reportModal').style.display = 'none';
+    document.getElementById('reportForm').reset();
+    document.getElementById('reasonError').style.display = 'none';
+    document.getElementById('descError').style.display = 'none';
+}
+
+// ✅ Pré-validation côté client (pour UX) — la vraie validation reste Symfony
+function submitReport() {
+    const reason = document.getElementById('reportReason').value;
+    const desc   = document.getElementById('reportDesc').value.trim();
+    let valid    = true;
+
+    if (!reason) {
+        document.getElementById('reasonError').style.display = 'block';
+        valid = false;
+    } else {
+        document.getElementById('reasonError').style.display = 'none';
+    }
+
+    if (desc !== '' && desc.length < 3) {
+        document.getElementById('descError').style.display = 'block';
+        valid = false;
+    } else {
+        document.getElementById('descError').style.display = 'none';
+    }
+
+    if (valid) {
+        document.getElementById('reportForm').submit();
+    }
+}
+
+// ✅ Ré-ouvrir automatiquement le modal si erreurs Symfony retournées
+{% if reportErrors is not empty and reportCommentId %}
+window.addEventListener('DOMContentLoaded', function() {
+    showReportModal({{ reportCommentId }});
+});
+{% endif %}
+
+window.addEventListener('click', function(e) {
+    if (e.target === document.getElementById('reportModal')) closeReportModal();
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,310 @@
+{% extends 'admin/dashboard/base_admin.html.twig' %}
+
+{% block title %}Gestion des Forums{% endblock %}
+{% block page_title %}Forums{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-1" style="font-family:'Playfair Display',serif; color:#2C1810;">Gestion des Forums</h4>
+        <p class="mb-0" style="font-size:0.85rem; color:#93032E;">
+            Créez et gérez les forums de discussion &nbsp;
+            <span id="countBadge" style="background:#FEF9F0; color:#93032E; border:1px solid #F0E8DD; padding:3px 12px; border-radius:20px; font-size:0.78rem; font-weight:600;">
+                {{ forums|length }} forums
+            </span>
+        </p>
+    </div>
+    <a href="{{ path('app_forum_new') }}" class="tj-btn-primary">
+        <i class="fas fa-plus me-2"></i> Nouveau Forum
+    </a>
+</div>
+
+{# ── BARRE RECHERCHE + FILTRES + TRI ── #}
+<div class="filters-bar mb-4">
+    {# Recherche par thème #}
+    <div class="search-wrap">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" id="searchTheme" placeholder="Rechercher par thème..."
+               class="search-input" oninput="filterTable()">
+    </div>
+
+    {# Filtre par statut #}
+    <select id="filterStatus" class="filter-select" onchange="filterTable()">
+        <option value="">Tous les statuts</option>
+        <option value="actif">✓ Actif</option>
+        <option value="inactif">✗ Inactif</option>
+    </select>
+
+    {# Tri par date de création (nombre de publications comme proxy) #}
+    <select id="sortOrder" class="filter-select" onchange="sortTable()">
+        <option value="">Trier par publications</option>
+        <option value="asc">↑ Croissant</option>
+        <option value="desc">↓ Décroissant</option>
+    </select>
+
+    {# Bouton reset #}
+    <button class="reset-btn" onclick="resetFilters()">
+        <i class="fas fa-times me-1"></i> Réinitialiser
+    </button>
+</div>
+
+{% if forums is empty %}
+    <div class="tj-empty">
+        <i class="fas fa-comments" style="font-size:3rem; color:#E8DFD1; margin-bottom:1rem;"></i>
+        <p style="color:#9CA3AF; margin-bottom:1rem;">Aucun forum créé.</p>
+        <a href="{{ path('app_forum_new') }}" class="tj-btn-primary"><i class="fas fa-plus me-2"></i>Créer un forum</a>
+    </div>
+{% else %}
+
+{# Message aucun résultat #}
+<div id="noResults" style="display:none;" class="tj-empty">
+    <i class="fas fa-search" style="font-size:2.5rem; color:#E8DFD1; margin-bottom:1rem;"></i>
+    <p style="color:#9CA3AF;">Aucun forum ne correspond à votre recherche.</p>
+</div>
+
+<div class="tj-table-wrap">
+    <table class="tj-table" id="forumsTable">
+        <thead>
+            <tr>
+                <th>NOM</th>
+                <th>
+                    THÈME
+                    <button class="sort-th-btn" onclick="sortByColumn('theme', this)" title="Trier par thème">
+                        <i class="fas fa-sort"></i>
+                    </button>
+                </th>
+                <th style="text-align:center;">STATUT</th>
+                <th style="text-align:center;">
+                    PUBLICATIONS
+                    <button class="sort-th-btn" onclick="sortByColumn('pubs', this)" title="Trier par publications">
+                        <i class="fas fa-sort"></i>
+                    </button>
+                </th>
+                <th style="text-align:center;">ACTIONS</th>
+            </tr>
+        </thead>
+        <tbody id="forumsBody">
+            {% for forum in forums %}
+            <tr data-theme="{{ forum.theme|lower }}"
+                data-status="{{ forum.status }}"
+                data-pubs="{{ forum.publications|length }}"
+                data-nom="{{ forum.nom|lower }}">
+                <td>
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <div style="width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,#93032E,#C49A6C); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                            <i class="fas fa-comments" style="color:#fff; font-size:0.9rem;"></i>
+                        </div>
+                        <span style="font-weight:700; color:#2C1810;">{{ forum.nom }}</span>
+                    </div>
+                </td>
+                <td style="color:#6B7280;">
+                    <span class="tj-badge" style="background:#F0F7FF; color:#1D4ED8; border:1px solid #BFDBFE;">
+                        <i class="fas fa-palette me-1" style="font-size:0.7rem;"></i>{{ forum.theme }}
+                    </span>
+                </td>
+                <td style="text-align:center;">
+                    {% if forum.status == 'actif' %}
+                        <span class="tj-badge tj-badge-green">✓ Actif</span>
+                    {% else %}
+                        <span class="tj-badge tj-badge-grey">✗ Inactif</span>
+                    {% endif %}
+                </td>
+                <td style="text-align:center;">
+                    <span class="tj-badge tj-badge-wine">{{ forum.publications|length }} publications</span>
+                </td>
+                <td style="text-align:center;">
+                    <div class="tj-actions">
+                        <a href="{{ path('app_forum_show', {idF: forum.idF}) }}" class="action-btn view-btn" title="Voir publications">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="{{ path('app_forum_edit', {idF: forum.idF}) }}" class="action-btn edit-btn" title="Modifier">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <form method="post" action="{{ path('app_forum_delete', {idF: forum.idF}) }}"
+                              onsubmit="return confirm('Supprimer ce forum et toutes ses publications ?')" style="display:inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ forum.idF) }}">
+                            <button class="action-btn delete-btn" title="Supprimer">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<style>
+/* ── BOUTONS ── */
+.tj-btn-primary { background:#93032E; color:white; border:none; padding:10px 22px; border-radius:40px; font-size:0.88rem; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:6px; transition:all 0.2s; }
+.tj-btn-primary:hover { background:#6B0221; color:white; transform:translateY(-2px); box-shadow:0 4px 14px rgba(147,3,46,0.3); }
+
+/* ── BARRE FILTRES ── */
+.filters-bar { display:flex; gap:12px; flex-wrap:wrap; align-items:center; background:white; padding:16px 20px; border-radius:16px; border:1px solid #F0E8DD; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+.search-wrap { position:relative; flex:1; min-width:200px; }
+.search-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#C49A6C; font-size:0.9rem; }
+.search-input { width:100%; padding:10px 14px 10px 38px; border:1px solid #E8DFD1; border-radius:10px; font-size:0.87rem; background:#FEF9F0; color:#2C1810; outline:none; transition:all 0.2s; }
+.search-input:focus { border-color:#93032E; background:white; box-shadow:0 0 0 3px rgba(147,3,46,0.06); }
+.filter-select { padding:10px 14px; border:1px solid #E8DFD1; border-radius:10px; font-size:0.87rem; background:#FEF9F0; color:#2C1810; outline:none; cursor:pointer; transition:all 0.2s; }
+.filter-select:focus { border-color:#93032E; }
+.reset-btn { padding:10px 16px; background:#FEF2F2; color:#EF4444; border:1px solid #FECACA; border-radius:10px; font-size:0.85rem; font-weight:600; cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; }
+.reset-btn:hover { background:#EF4444; color:white; }
+
+/* ── TABLEAU ── */
+.tj-empty { background:white; border-radius:20px; border:1px solid #F0E8DD; padding:3rem; text-align:center; }
+.tj-table-wrap { background:white; border-radius:20px; border:1px solid #F0E8DD; overflow:hidden; }
+.tj-table { width:100%; border-collapse:collapse; }
+.tj-table thead tr { background:#FEF9F0; border-bottom:2px solid #F0E8DD; }
+.tj-table th { padding:14px 20px; font-size:0.72rem; font-weight:700; color:#93032E; text-transform:uppercase; letter-spacing:0.6px; }
+.tj-table td { padding:14px 20px; font-size:0.87rem; border-bottom:1px solid #F5F0E8; color:#4A3B2F; vertical-align:middle; }
+.tj-table tr:last-child td { border-bottom:none; }
+.tj-table tbody tr:hover td { background:#FFF9F0; }
+.tj-table tbody tr.hidden-row { display:none; }
+
+/* Bouton tri dans th */
+.sort-th-btn { background:none; border:none; cursor:pointer; color:#C49A6C; font-size:0.75rem; margin-left:4px; padding:2px 4px; border-radius:4px; transition:all 0.2s; }
+.sort-th-btn:hover { color:#93032E; background:rgba(147,3,46,0.08); }
+.sort-th-btn.asc i::before { content:"\f0de"; } /* fa-sort-up */
+.sort-th-btn.desc i::before { content:"\f0dd"; } /* fa-sort-down */
+
+/* ── BADGES ── */
+.tj-badge { padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:600; display:inline-block; }
+.tj-badge-green { background:#E0F2E9; color:#047857; }
+.tj-badge-grey { background:#F3F4F6; color:#6B7280; }
+.tj-badge-wine { background:#FEF9F0; color:#93032E; border:1px solid #F0E8DD; }
+
+/* ── ACTIONS ── */
+.tj-actions { display:flex; gap:8px; justify-content:center; }
+.action-btn { width:34px; height:34px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; transition:all 0.2s; cursor:pointer; border:none; font-size:0.9rem; text-decoration:none; }
+.view-btn { background:#EFF6FF; color:#3B82F6; }
+.view-btn:hover { background:#3B82F6; color:white; transform:translateY(-2px); }
+.edit-btn { background:#FEF3C7; color:#D97706; }
+.edit-btn:hover { background:#F59E0B; color:white; transform:translateY(-2px); }
+.delete-btn { background:#FEF2F2; color:#EF4444; }
+.delete-btn:hover { background:#EF4444; color:white; transform:translateY(-2px); }
+</style>
+
+<script>
+// ── Données des forums depuis Twig ──
+const forumsData = [
+    {% for forum in forums %}
+    {
+        row: {{ loop.index0 }},
+        theme: "{{ forum.theme|lower|e('js') }}",
+        status: "{{ forum.status|e('js') }}",
+        pubs: {{ forum.publications|length }},
+        nom: "{{ forum.nom|lower|e('js') }}"
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
+
+// ── Filtrage (recherche thème + statut) ──
+function filterTable() {
+    const search = document.getElementById('searchTheme').value.toLowerCase().trim();
+    const status = document.getElementById('filterStatus').value;
+    const rows   = document.querySelectorAll('#forumsBody tr');
+    let visible  = 0;
+
+    rows.forEach((row, i) => {
+        const d = forumsData[i];
+        const matchTheme  = search === '' || d.theme.includes(search);
+        const matchStatus = status === '' || d.status === status;
+
+        if (matchTheme && matchStatus) {
+            row.classList.remove('hidden-row');
+            visible++;
+        } else {
+            row.classList.add('hidden-row');
+        }
+    });
+
+    document.getElementById('countBadge').textContent = visible + ' forum' + (visible > 1 ? 's' : '');
+    document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
+    document.querySelector('.tj-table-wrap').style.display = visible === 0 ? 'none' : 'block';
+}
+
+// ── Tri par colonne (thème ou publications) ──
+let sortState = {}; // { colName: 'asc'|'desc' }
+
+function sortByColumn(col, btn) {
+    const current = sortState[col] || 'none';
+    const next    = current === 'asc' ? 'desc' : 'asc';
+    sortState     = {}; // reset autres
+    sortState[col] = next;
+
+    // Mettre à jour icône
+    document.querySelectorAll('.sort-th-btn').forEach(b => {
+        b.classList.remove('asc', 'desc');
+        b.querySelector('i').className = 'fas fa-sort';
+    });
+    btn.classList.add(next);
+    btn.querySelector('i').className = next === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
+
+    // Trier les lignes
+    const tbody = document.getElementById('forumsBody');
+    const rows  = Array.from(tbody.querySelectorAll('tr'));
+
+    rows.sort((a, b) => {
+        const ia = forumsData[getRowIndex(a)];
+        const ib = forumsData[getRowIndex(b)];
+        let va, vb;
+
+        if (col === 'theme') {
+            va = ia.theme; vb = ib.theme;
+            return next === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+        } else if (col === 'pubs') {
+            va = ia.pubs; vb = ib.pubs;
+            return next === 'asc' ? va - vb : vb - va;
+        }
+        return 0;
+    });
+
+    rows.forEach(r => tbody.appendChild(r));
+}
+
+function getRowIndex(row) {
+    return Array.from(document.querySelectorAll('#forumsBody tr')).indexOf(row);
+}
+
+// ── Tri depuis le select (publications) ──
+function sortTable() {
+    const order = document.getElementById('sortOrder').value;
+    if (!order) return;
+
+    const tbody = document.getElementById('forumsBody');
+    const rows  = Array.from(tbody.querySelectorAll('tr'));
+
+    // Réassigner les indices avant tri
+    rows.forEach((r, i) => r.setAttribute('data-index', i));
+
+    rows.sort((a, b) => {
+        const pa = parseInt(a.getAttribute('data-pubs'));
+        const pb = parseInt(b.getAttribute('data-pubs'));
+        return order === 'asc' ? pa - pb : pb - pa;
+    });
+
+    rows.forEach(r => tbody.appendChild(r));
+}
+
+// ── Reset ──
+function resetFilters() {
+    document.getElementById('searchTheme').value  = '';
+    document.getElementById('filterStatus').value = '';
+    document.getElementById('sortOrder').value    = '';
+
+    document.querySelectorAll('#forumsBody tr').forEach(r => r.classList.remove('hidden-row'));
+    document.querySelectorAll('.sort-th-btn').forEach(b => {
+        b.classList.remove('asc', 'desc');
+        b.querySelector('i').className = 'fas fa-sort';
+    });
+    sortState = {};
+
+    const total = forumsData.length;
+    document.getElementById('countBadge').textContent = total + ' forum' + (total > 1 ? 's' : '');
+    document.getElementById('noResults').style.display = 'none';
+    document.querySelector('.tj-table-wrap').style.display = 'block';
+}
+</script>
+{% endblock %}

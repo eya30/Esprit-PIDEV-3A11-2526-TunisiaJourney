@@ -1,0 +1,925 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Forum Voyageurs — TunisiaJourney{% endblock %}
+
+{% block stylesheets %}
+<style>
+:root {
+    --dr:#93032E; --dr2:#6B0221; --or:#FF6B35;
+    --gold:#FFD700; --sand:#FDF5E6; --soft:#F5CAC3;
+    --bg-warm:#FEF9F0; --border:#E8DFD1; --dark:#2C3E50;
+}
+
+/* ── HERO ── */
+.hero{position:relative;min-height:500px;height:50vh;
+    background:linear-gradient(rgba(147,3,46,.25),rgba(245,202,195,.35)),
+               url('https://images.pexels.com/photos/27622071/pexels-photo-27622071.jpeg') center/cover fixed;
+    display:flex;align-items:center;justify-content:center;text-align:center;color:white;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at center,transparent,rgba(0,0,0,.32))}
+.hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:90px;background:linear-gradient(to top,var(--sand),transparent);pointer-events:none}
+.hero-content{position:relative;z-index:2;max-width:820px;padding:2rem;animation:fadeUp 1.2s cubic-bezier(.2,.9,.4,1.1)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(50px)}to{opacity:1;transform:translateY(0)}}
+.hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,5vw,3.6rem);font-weight:700;color:#F5CAC3;letter-spacing:2px;text-shadow:3px 3px 12px rgba(0,0,0,.5);margin-bottom:1rem}
+.hero p{font-size:1.05rem;line-height:1.8;color:rgba(255,255,255,.92);margin-bottom:1.5rem}
+.hero-stats{display:flex;gap:1.2rem;justify-content:center;flex-wrap:wrap}
+.stat-item{background:rgba(255,255,255,.15);backdrop-filter:blur(10px);border-radius:20px;padding:.7rem 1.4rem;text-align:center;border:1px solid rgba(255,255,255,.2)}
+.stat-value{font-size:1.7rem;font-weight:800;color:var(--gold);line-height:1}
+.stat-label{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.8)}
+
+/* ── NAVIGATION TABS ── */
+.nav-tabs-wrap{background:white;border-radius:20px;box-shadow:0 8px 28px rgba(0,0,0,.08);padding:8px;margin-bottom:2.5rem;display:inline-flex;gap:8px;width:100%;}
+.nav-tab{flex:1;padding:14px 20px;border-radius:14px;border:none;background:transparent;cursor:pointer;font-size:.88rem;font-weight:700;color:#9CA3AF;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:9px;}
+.nav-tab.active{background:linear-gradient(135deg,var(--dr),#C49A6C);color:white;box-shadow:0 6px 18px rgba(147,3,46,.3);}
+.nav-tab:not(.active):hover{background:#FEF9F0;color:var(--dr);}
+.tab-count{background:rgba(255,255,255,.3);border-radius:20px;padding:2px 9px;font-size:.72rem;font-weight:800;}
+.nav-tab:not(.active) .tab-count{background:rgba(147,3,46,.1);color:var(--dr);}
+
+/* ── PANEL ── */
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* ── FILTERS ── */
+.filters-bar{background:white;padding:1.4rem 1.8rem;border-radius:20px;box-shadow:0 8px 28px rgba(0,0,0,.08);margin-bottom:2.5rem;display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between}
+.search-wrapper{position:relative;flex:1;min-width:240px}
+.search-icon{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:#C49A6C;pointer-events:none}
+.search-input-pub{width:100%;padding:12px 16px 12px 44px;border:2px solid var(--soft);border-radius:40px;font-size:.9rem;color:var(--dark);background:white;outline:none;transition:all .3s;font-family:inherit}
+.search-input-pub:focus{border-color:var(--dr);box-shadow:0 0 0 3px rgba(147,3,46,.1)}
+.search-results-badge{display:none;background:var(--bg-warm);color:var(--dr);border:1px solid var(--border);padding:5px 14px;border-radius:20px;font-size:.78rem;font-weight:600;white-space:nowrap}
+.view-btns{display:flex;gap:.4rem}
+.vbtn{width:38px;height:38px;border-radius:10px;border:2px solid var(--soft);background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;transition:all .3s}
+.vbtn.active{background:linear-gradient(135deg,var(--dr),var(--soft));border-color:var(--dr);color:white}
+
+/* ── SECTION TITLE ── */
+.section-title{text-align:center;font-family:'Cormorant Garamond',serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;color:var(--dr);margin-bottom:.8rem}
+.section-title::after{content:'✦ ✦ ✦';display:block;color:var(--soft);font-size:1.2rem;margin-top:.6rem;letter-spacing:10px}
+.section-subtitle{text-align:center;color:var(--dark);font-size:.95rem;margin-bottom:2.2rem;font-style:italic;opacity:.8}
+
+/* ── GRID ── */
+.publications-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.publications-grid.list-view{grid-template-columns:1fr}
+.no-results-msg{display:none;grid-column:1/-1;text-align:center;padding:4rem 2rem;color:#aaa}
+
+/* ── CARD VIDEO ── */
+.card-custom{background:white;border-radius:24px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.09);transition:all .4s cubic-bezier(.2,.9,.4,1.1);position:relative}
+.card-custom:hover{transform:translateY(-7px);box-shadow:0 22px 45px rgba(147,3,46,.14)}
+.card-media-link{text-decoration:none;display:block}
+.card-media{position:relative;height:220px;overflow:hidden;cursor:pointer;background:#1a1a1a}
+.card-media img{width:100%;height:100%;object-fit:cover;transition:transform .7s cubic-bezier(.2,.9,.4,1.1);display:block}
+.card-custom:hover .card-media img{transform:scale(1.08)}
+.card-media video{width:100%;height:100%;object-fit:cover;display:block}
+.card-media iframe{width:100%;height:100%;border:none;display:block;pointer-events:none}
+.card-media.has-video:hover iframe{pointer-events:auto}
+.card-media-type{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);color:white;padding:4px 10px;border-radius:20px;font-size:.7rem;font-weight:700;display:flex;align-items:center;gap:5px;z-index:2}
+.card-media-type.video-badge{background:rgba(147,3,46,.85)}
+.video-play-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);opacity:1;transition:opacity .3s;z-index:1;pointer-events:none}
+.card-media.has-video:hover .video-play-overlay{opacity:0}
+.play-btn-circle{width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;font-size:1.4rem;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.card-badge{position:absolute;top:12px;left:12px;background:linear-gradient(135deg,var(--dr),var(--soft));color:white;padding:4px 11px;border-radius:20px;font-weight:600;font-size:.68rem;z-index:2}
+.card-date{position:absolute;bottom:48px;right:12px;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);color:white;padding:4px 10px;border-radius:20px;font-size:.68rem;font-weight:500;z-index:2}
+.card-img-overlay{position:absolute;bottom:0;left:0;right:0;padding:12px;background:linear-gradient(to top,rgba(0,0,0,.7),transparent);display:flex;justify-content:space-between;align-items:center;z-index:2}
+.comment-count{display:flex;align-items:center;gap:5px;color:white;font-size:.78rem;font-weight:600;background:rgba(0,0,0,.5);padding:4px 12px;border-radius:20px;cursor:pointer;transition:all .2s}
+.comment-count:hover{background:var(--dr)}
+
+/* ── CARD IMAGE ── */
+.card-image{background:white;border-radius:20px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.07);transition:all .35s;position:relative;border:2px solid #F0E8DD}
+.card-image:hover{transform:translateY(-4px);box-shadow:0 16px 36px rgba(147,3,46,.12);border-color:#F5CAC3}
+.card-image-media{position:relative;height:180px;overflow:hidden;background:#f0f0f0;cursor:pointer}
+.card-image-media img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease}
+.card-image:hover .card-image-media img{transform:scale(1.05)}
+.card-image-content{padding:1.2rem}
+.card-image-title{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:700;color:var(--dr);margin-bottom:.5rem;line-height:1.3}
+.card-image-desc{color:#6c757d;font-size:.84rem;line-height:1.55;margin-bottom:.8rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-image-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding-top:.7rem;border-top:1px solid #F0E8DD}
+.image-badge-label{background:#E8F0FE;color:#1D4ED8;padding:3px 10px;border-radius:12px;font-size:.68rem;font-weight:600;display:flex;align-items:center;gap:4px}
+
+/* ── CARD CONTENT ── */
+.card-content{padding:1.4rem}
+.card-author{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.author-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--dr),var(--or));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:.95rem}
+.author-name{font-weight:700;color:var(--dark);font-size:.87rem}
+.author-role{font-size:.68rem;color:var(--or)}
+.card-title{font-family:'Cormorant Garamond',serif;font-size:1.25rem;font-weight:700;color:var(--dr);margin-bottom:.7rem;line-height:1.3}
+.card-title mark{background:rgba(227,27,35,.15);color:var(--dr);border-radius:4px;padding:0 2px}
+.card-desc{color:#6c757d;line-height:1.6;margin-bottom:.9rem;font-size:.87rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.card-footer{display:flex;justify-content:space-between;align-items:center;padding-top:.9rem;border-top:1px solid var(--border);gap:8px;flex-wrap:wrap}
+.vote-buttons{display:flex;gap:8px}
+.vote-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;border:1px solid #e0d8ce;background:white;font-size:.78rem;font-weight:500;cursor:pointer;transition:all .3s}
+.vote-btn.liked{background:rgba(147,3,46,.1);border-color:var(--dr);color:var(--dr)}
+.vote-btn.disliked{background:rgba(192,57,43,.1);border-color:#c0392b;color:#c0392b}
+.btn-watch{background:linear-gradient(135deg,#1a73e8,#0d47a1);color:white;border:none;padding:7px 16px;border-radius:25px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .3s;display:flex;align-items:center;gap:5px;text-decoration:none;}
+.btn-watch:hover{transform:translateY(-2px);box-shadow:0 5px 14px rgba(26,115,232,.4);color:white;}
+.btn-comment{background:linear-gradient(135deg,var(--dr),var(--or));color:white;border:none;padding:7px 16px;border-radius:25px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .3s;display:flex;align-items:center;gap:5px}
+.btn-comment:hover{transform:translateY(-2px);box-shadow:0 5px 14px rgba(147,3,46,.3)}
+
+/* ── MODALE ── */
+.comment-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(5px);z-index:10000;align-items:center;justify-content:center}
+.comment-modal.open{display:flex}
+.modal-content{background:white;border-radius:28px;max-width:580px;width:92%;max-height:88vh;overflow-y:auto;animation:slideUp .4s cubic-bezier(.2,.9,.4,1.1);box-shadow:0 28px 56px rgba(0,0,0,.3)}
+@keyframes slideUp{from{opacity:0;transform:translateY(50px)}to{opacity:1;transform:translateY(0)}}
+.modal-header{padding:1.4rem 1.5rem .8rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:white;z-index:5}
+.modal-header h3{font-family:'Cormorant Garamond',serif;font-size:1.45rem;font-weight:700;color:var(--dr);margin:0;display:flex;align-items:center;gap:10px}
+.modal-close{background:var(--bg-warm);border:none;width:38px;height:38px;border-radius:50%;font-size:1.2rem;cursor:pointer;transition:all .2s;color:var(--dark)}
+.modal-close:hover{background:var(--dr);color:white;transform:rotate(90deg)}
+.publication-preview{background:var(--bg-warm);margin:1.1rem 1.5rem;padding:.9rem 1rem;border-radius:14px;border-left:4px solid var(--dr)}
+.publication-preview h4{font-size:.95rem;font-weight:700;color:var(--dr);margin-bottom:.3rem}
+.publication-preview p{font-size:.83rem;color:#666;margin:0}
+.modal-body{padding:0 1.5rem 1.5rem}
+.emoji-strip{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;padding:9px 12px;background:var(--bg-warm);border-radius:40px;border:1px solid var(--border)}
+.emoji-btn{background:white;border:1px solid var(--border);border-radius:40px;font-size:1rem;cursor:pointer;padding:5px 10px;transition:all .2s}
+.emoji-btn:hover{transform:scale(1.15)}
+
+/* ══ BLOC ERREUR SYMFONY ══
+   Affiché uniquement quand le serveur renvoie une erreur.
+   Aucun JS de validation ne le déclenche. */
+.symfony-error {
+    display: none;
+    background: #FEF2F2;
+    border: 1.5px solid #FECACA;
+    border-left: 4px solid #EF4444;
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    font-size: .83rem;
+    font-weight: 600;
+    color: #B91C1C;
+    align-items: center;
+    gap: 8px;
+}
+.symfony-error.visible { display: flex; }
+.symfony-error-tags {
+    display: none;
+    background: #FEF2F2;
+    border: 1.5px solid #FECACA;
+    border-left: 4px solid #EF4444;
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    font-size: .83rem;
+    font-weight: 600;
+    color: #B91C1C;
+    align-items: center;
+    gap: 8px;
+}
+.symfony-error-tags.visible { display: flex; }
+
+/* Textarea et input : bordure rouge uniquement sur retour serveur */
+.comment-textarea {
+    width: 100%;
+    border: 2px solid var(--border);
+    border-radius: 18px;
+    padding: 13px;
+    font-size: .88rem;
+    resize: vertical;
+    font-family: inherit;
+    transition: border-color .3s;
+    background: white;
+    box-sizing: border-box;
+    min-height: 90px;
+}
+.comment-textarea:focus { outline: none; border-color: var(--dr); box-shadow: 0 0 0 3px rgba(147,3,46,.1); }
+.comment-textarea.server-error { border-color: #EF4444; }
+
+.comment-tags-input {
+    width: 100%;
+    border: 2px solid var(--border);
+    border-radius: 40px;
+    padding: 10px 15px;
+    font-size: .83rem;
+    margin-bottom: 8px;
+    transition: border-color .3s;
+    background: white;
+    box-sizing: border-box;
+}
+.comment-tags-input:focus { outline: none; border-color: var(--dr); }
+.comment-tags-input.server-error { border-color: #EF4444; }
+
+.tags-suggestions{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+.tag-suggestion{background:var(--bg-warm);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:.73rem;color:var(--dr);cursor:pointer;transition:all .2s;font-weight:500}
+.tag-suggestion:hover{background:var(--dr);color:white;border-color:var(--dr)}
+.modal-submit{background:linear-gradient(135deg,var(--dr),var(--or));color:white;border:none;padding:13px 26px;border-radius:40px;font-weight:700;font-size:.88rem;cursor:pointer;transition:all .3s;width:100%;display:flex;align-items:center;justify-content:center;gap:9px}
+.modal-submit:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 7px 22px rgba(147,3,46,.4)}
+.modal-submit:disabled{opacity:.65;cursor:not-allowed}
+
+/* ── LISTE COMMENTAIRES ── */
+.comments-section{margin-top:1.3rem;padding-top:1.1rem;border-top:2px solid var(--border)}
+.comments-section-title{font-size:.83rem;font-weight:700;color:var(--dark);margin-bottom:.9rem;display:flex;align-items:center;gap:8px}
+.comments-list-modal{max-height:360px;overflow-y:auto;padding-right:3px}
+.comments-list-modal::-webkit-scrollbar{width:4px}
+.comments-list-modal::-webkit-scrollbar-thumb{background:#C49A6C;border-radius:4px}
+.comment-item{background:var(--bg-warm);border-radius:14px;padding:11px 13px;margin-bottom:9px;border-left:3px solid var(--dr)}
+.comment-item-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--dr),var(--soft));display:flex;align-items:center;justify-content:center;color:white;font-size:.68rem;font-weight:700}
+.comment-item-name{font-weight:600;font-size:.8rem;color:var(--dark)}
+.comment-item-date{font-size:.67rem;color:#aaa;margin-left:5px}
+.comment-item-text{font-size:.84rem;color:#444;line-height:1.55;margin-top:6px}
+.comment-item-tag{padding:2px 7px;border-radius:10px;font-size:.67rem;background:rgba(147,3,46,.1);color:var(--dr)}
+.like-comment-btn{display:flex;align-items:center;gap:4px;background:none;border:none;cursor:pointer;font-size:.8rem;color:#aaa;padding:3px 9px;border-radius:18px;transition:all .2s}
+.like-comment-btn:hover,.like-comment-btn.liked{color:#e74c3c}
+.reply-comment-btn{display:flex;align-items:center;gap:4px;background:none;border:none;cursor:pointer;font-size:.8rem;color:var(--dr);padding:3px 9px;border-radius:18px;transition:all .2s}
+.reply-comment-btn:hover{background:rgba(147,3,46,.08)}
+.reply-textarea{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:9px 12px;font-size:.82rem;resize:none;font-family:inherit;outline:none;background:var(--bg-warm);box-sizing:border-box}
+.reply-textarea:focus{border-color:var(--dr)}
+.reply-submit-btn{background:var(--dr);color:white;border:none;padding:6px 15px;border-radius:18px;font-size:.78rem;font-weight:600;cursor:pointer}
+.reply-submit-btn:hover{background:var(--dr2)}
+.reply-cancel-btn{background:#F5F0E8;color:#4A3B2F;border:none;padding:6px 12px;border-radius:18px;font-size:.78rem;cursor:pointer}
+.replies-list{margin-top:7px;padding-left:12px;border-left:2px solid #F0E8DD}
+.reply-item{background:white;border-radius:10px;padding:9px 11px;margin-bottom:7px;border-left:2px solid #C49A6C}
+.empty-comments-modal{text-align:center;padding:1.8rem;color:#aaa}
+.loading-spinner{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.3);border-radius:50%;border-top-color:white;animation:spin .6s linear infinite;margin-right:5px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast-notification{position:fixed;bottom:22px;right:22px;color:white;padding:11px 22px;border-radius:46px;font-size:.83rem;font-weight:600;z-index:10001;box-shadow:0 7px 24px rgba(0,0,0,.22);max-width:320px;animation:toastIn .3s ease}
+@keyframes toastIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+@media(max-width:1100px){.publications-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){
+    .publications-grid{grid-template-columns:1fr}
+    .filters-bar{flex-direction:column}
+    .hero h1{font-size:2rem}
+    .modal-content{width:96%;margin:.5rem}
+    .nav-tabs-wrap{flex-direction:column}
+}
+</style>
+{% endblock %}
+
+{% block body %}
+
+{% set pubs_video = [] %}
+{% set pubs_image = [] %}
+{% for pub in publications %}
+    {% if pub.video %}
+        {% set pubs_video = pubs_video|merge([pub]) %}
+    {% endif %}
+    {% if pub.image %}
+        {% set pubs_image = pubs_image|merge([pub]) %}
+    {% endif %}
+{% endfor %}
+
+{# ── HERO ── #}
+<section class="hero">
+    <div class="hero-content">
+        <h1>Forum des Voyageurs</h1>
+        <p>Partagez vos expériences en Tunisie, posez vos questions et connectez-vous avec des passionnés.</p>
+        <div class="hero-stats">
+            <div class="stat-item">
+                <div class="stat-value">{{ publications|length }}</div>
+                <div class="stat-label">Publications</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ forums|length }}</div>
+                <div class="stat-label">Forums</div>
+            </div>
+            <div class="stat-item">
+                {% set total_coms = 0 %}
+                {% for pub in publications %}{% set total_coms = total_coms + pub.commentaires|length %}{% endfor %}
+                <div class="stat-value">{{ total_coms }}</div>
+                <div class="stat-label">Commentaires</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ pubs_video|length }}</div>
+                <div class="stat-label">Vidéos</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ pubs_image|length }}</div>
+                <div class="stat-label">Photos</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+
+        <div class="nav-tabs-wrap mb-4">
+            <button class="nav-tab active" id="tab-btn-video" onclick="switchTab('video')">
+                <i class="fas fa-video"></i>
+                Vidéos — Découvrez le voyage avec nous
+                <span class="tab-count">{{ pubs_video|length }}</span>
+            </button>
+            <button class="nav-tab" id="tab-btn-image" onclick="switchTab('image')">
+                <i class="fas fa-image"></i>
+                Photos — Donnez-nous votre avis
+                <span class="tab-count">{{ pubs_image|length }}</span>
+            </button>
+        </div>
+
+        {# ══ PANNEAU 1 — VIDÉOS ══ #}
+        <div class="tab-panel active" id="panel-video">
+            <div class="filters-bar">
+                <div class="search-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="searchVideo" class="search-input-pub"
+                           placeholder="🔍 Rechercher par titre..."
+                           oninput="searchGrid('videoGrid','searchVideo','badgeVideo','noVideo')" autocomplete="off">
+                </div>
+                <span class="search-results-badge" id="badgeVideo"></span>
+                <div class="view-btns">
+                    <button class="vbtn active" id="gridViewVideo" onclick="setView('videoGrid','grid','gridViewVideo','listViewVideo')" title="Grille">⊞</button>
+                    <button class="vbtn"        id="listViewVideo" onclick="setView('videoGrid','list','gridViewVideo','listViewVideo')" title="Liste">≡</button>
+                </div>
+            </div>
+
+            <h2 class="section-title">🎬 Découvrez le voyage avec nous</h2>
+            <p class="section-subtitle">Partagez vos moments forts à travers nos vidéos inspirantes</p>
+
+            <div class="publications-grid" id="videoGrid">
+                {% for pub in pubs_video %}
+                <div class="card-custom" data-id="{{ pub.idP }}" data-title="{{ pub.nom|lower }}">
+                    <a href="{{ path('app_publication_watch', {'idP': pub.idP}) }}" class="card-media-link">
+                        <div class="card-media has-video">
+                            {% if pub.isYoutubeVideo() and pub.youtubeId %}
+                                <iframe src="https://www.youtube.com/embed/{{ pub.youtubeId }}?rel=0&modestbranding=1"
+                                        title="{{ pub.nom }}" allowfullscreen loading="lazy"></iframe>
+                            {% elseif pub.isVimeoVideo() and pub.vimeoId %}
+                                <iframe src="https://player.vimeo.com/video/{{ pub.vimeoId }}?dnt=1"
+                                        title="{{ pub.nom }}" allowfullscreen loading="lazy"></iframe>
+                            {% else %}
+                                {% if pub.image %}
+                                    <img src="{{ pub.image starts with 'http' ? pub.image : asset('uploads/publications/' ~ pub.image) }}"
+                                         alt="{{ pub.nom }}" loading="lazy">
+                                {% else %}
+                                    <video src="{{ pub.video starts with 'http' ? pub.video : asset('uploads/publications/' ~ pub.video) }}"
+                                           preload="metadata" muted playsinline></video>
+                                {% endif %}
+                                <div class="video-play-overlay"><div class="play-btn-circle">▶</div></div>
+                            {% endif %}
+                            <span class="card-badge">{{ pub.forum.nom }}</span>
+                            <span class="card-media-type video-badge"><i class="fas fa-video"></i> Vidéo</span>
+                            <span class="card-date">{{ pub.dateCreation|date('d/m/Y') }}</span>
+                            <div class="card-img-overlay">
+                                <div class="comment-count"
+                                     onclick="event.stopPropagation(); event.preventDefault(); openCommentModal({{ pub.idP }},'{{ pub.nom|e('js') }}','{{ pub.description|slice(0,100)|e('js') }}')">
+                                    <i class="fas fa-comment"></i>
+                                    <span id="commentCount-v-{{ pub.idP }}">{{ pub.commentaires|length }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                    <div class="card-content">
+                        <div class="card-author">
+                            <div class="author-avatar">V</div>
+                            <div>
+                                <div class="author-name">Voyageur TunisiaJourney</div>
+                                <div class="author-role"><i class="fas fa-circle" style="font-size:.35rem;"></i> Membre actif</div>
+                            </div>
+                        </div>
+                        <h3 class="card-title" data-original-title="{{ pub.nom }}">{{ pub.nom }}</h3>
+                        <p class="card-desc">{{ pub.description|slice(0,120)|default('') }}{% if pub.description|length > 120 %}…{% endif %}</p>
+                        <div class="card-footer">
+                            <div class="vote-buttons">
+                                <button class="vote-btn" id="likeBtn-v-{{ pub.idP }}" onclick="vote({{ pub.idP }},'like','v')">
+                                    👍 <span id="likeCount-v-{{ pub.idP }}">0</span>
+                                </button>
+                                <button class="vote-btn" id="dislikeBtn-v-{{ pub.idP }}" onclick="vote({{ pub.idP }},'dislike','v')">
+                                    👎 <span id="dislikeCount-v-{{ pub.idP }}">0</span>
+                                </button>
+                            </div>
+                            <div style="display:flex;gap:8px;">
+                                <a href="{{ path('app_publication_watch', {'idP': pub.idP}) }}" class="btn-watch">
+                                    <i class="fas fa-play"></i> Regarder
+                                </a>
+                                <button class="btn-comment"
+                                        onclick="openCommentModal({{ pub.idP }},'{{ pub.nom|e('js') }}','{{ pub.description|slice(0,100)|e('js') }}')">
+                                    <i class="fas fa-comment"></i> Commenter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div style="grid-column:1/-1;text-align:center;padding:4rem;color:#aaa;">
+                    <i class="fas fa-video" style="font-size:4rem;opacity:.2;margin-bottom:1rem;display:block;"></i>
+                    <h3 style="color:var(--dr);">Aucune vidéo pour le moment</h3>
+                    <p>Soyez le premier à partager une vidéo !</p>
+                </div>
+                {% endfor %}
+                <div class="no-results-msg" id="noVideo">
+                    <i class="fas fa-search" style="font-size:3rem;opacity:.25;display:block;margin-bottom:1rem;"></i>
+                    <h3 style="color:var(--dr);">Aucun résultat</h3>
+                </div>
+            </div>
+        </div>
+
+        {# ══ PANNEAU 2 — PHOTOS ══ #}
+        <div class="tab-panel" id="panel-image">
+            <div class="filters-bar">
+                <div class="search-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="searchImage" class="search-input-pub"
+                           placeholder="🔍 Rechercher par titre..."
+                           oninput="searchGrid('imageGrid','searchImage','badgeImage','noImage')" autocomplete="off">
+                </div>
+                <span class="search-results-badge" id="badgeImage"></span>
+                <div class="view-btns">
+                    <button class="vbtn active" id="gridViewImage" onclick="setView('imageGrid','grid','gridViewImage','listViewImage')" title="Grille">⊞</button>
+                    <button class="vbtn"        id="listViewImage" onclick="setView('imageGrid','list','gridViewImage','listViewImage')" title="Liste">≡</button>
+                </div>
+            </div>
+
+            <h2 class="section-title">📸 Donnez-nous votre avis</h2>
+            <p class="section-subtitle">Découvrez les plus beaux clichés et partagez votre expérience</p>
+
+            <div class="publications-grid" id="imageGrid">
+                {% for pub in pubs_image %}
+                <div class="card-image" data-id="{{ pub.idP }}" data-title="{{ pub.nom|lower }}">
+                    <div class="card-image-media"
+                         onclick="openCommentModal({{ pub.idP }},'{{ pub.nom|e('js') }}','{{ pub.description|slice(0,100)|e('js') }}')">
+                        <img src="{{ pub.image starts with 'http' ? pub.image : asset('uploads/publications/' ~ pub.image) }}"
+                             alt="{{ pub.nom }}" loading="lazy"
+                             onerror="this.onerror=null;this.src='https://via.placeholder.com/400x200?text=Image';">
+                        <span class="card-badge">{{ pub.forum.nom }}</span>
+                        <span style="position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);color:white;padding:4px 10px;border-radius:20px;font-size:.68rem;font-weight:500;">
+                            {{ pub.dateCreation|date('d/m/Y') }}
+                        </span>
+                        {% if pub.video %}
+                        <span style="position:absolute;top:12px;right:12px;background:rgba(147,3,46,.85);color:white;padding:4px 10px;border-radius:20px;font-size:.68rem;font-weight:700;display:flex;align-items:center;gap:4px;z-index:2;">
+                            <i class="fas fa-video"></i> Aussi en vidéo
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="card-image-content">
+                        <div class="card-author" style="margin-bottom:8px;">
+                            <div class="author-avatar" style="width:32px;height:32px;font-size:.8rem;">V</div>
+                            <div>
+                                <div class="author-name" style="font-size:.8rem;">Voyageur TunisiaJourney</div>
+                                <div class="author-role" style="font-size:.65rem;">Membre actif</div>
+                            </div>
+                        </div>
+                        <h3 class="card-image-title" data-original-title="{{ pub.nom }}">{{ pub.nom }}</h3>
+                        <p class="card-image-desc">{{ pub.description|slice(0,100)|default('') }}{% if pub.description|length > 100 %}…{% endif %}</p>
+                        <div class="card-image-footer">
+                            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                                <span class="image-badge-label"><i class="fas fa-image"></i> Photo</span>
+                                {% if pub.video %}
+                                    <a href="{{ path('app_publication_watch', {'idP': pub.idP}) }}" class="btn-watch" style="padding:4px 10px;font-size:.68rem;">
+                                        <i class="fas fa-play"></i> Voir vidéo
+                                    </a>
+                                {% endif %}
+                                <span style="font-size:.72rem;color:#888;">
+                                    <i class="fas fa-comment" style="color:#C49A6C;"></i>
+                                    <span id="commentCount-i-{{ pub.idP }}">{{ pub.commentaires|length }}</span>
+                                </span>
+                            </div>
+                            <div style="display:flex;gap:6px;align-items:center;">
+                                <button class="vote-btn" id="likeBtn-i-{{ pub.idP }}" onclick="vote({{ pub.idP }},'like','i')" style="padding:4px 10px;font-size:.72rem;">
+                                    👍 <span id="likeCount-i-{{ pub.idP }}">0</span>
+                                </button>
+                                <button class="vote-btn" id="dislikeBtn-i-{{ pub.idP }}" onclick="vote({{ pub.idP }},'dislike','i')" style="padding:4px 10px;font-size:.72rem;">
+                                    👎 <span id="dislikeCount-i-{{ pub.idP }}">0</span>
+                                </button>
+                                <button class="btn-comment" style="padding:5px 12px;font-size:.72rem;"
+                                        onclick="openCommentModal({{ pub.idP }},'{{ pub.nom|e('js') }}','{{ pub.description|slice(0,100)|e('js') }}')">
+                                    <i class="fas fa-comment"></i> Commenter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div style="grid-column:1/-1;text-align:center;padding:4rem;color:#aaa;">
+                    <i class="fas fa-image" style="font-size:4rem;opacity:.2;margin-bottom:1rem;display:block;"></i>
+                    <h3 style="color:var(--dr);">Aucune photo pour le moment</h3>
+                    <p>Soyez le premier à partager une photo !</p>
+                </div>
+                {% endfor %}
+                <div class="no-results-msg" id="noImage">
+                    <i class="fas fa-search" style="font-size:3rem;opacity:.25;display:block;margin-bottom:1rem;"></i>
+                    <h3 style="color:var(--dr);">Aucun résultat</h3>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+{# ══════════════════════════════════════
+   MODALE COMMENTAIRE
+   Les erreurs viennent UNIQUEMENT du serveur Symfony (ValidatorInterface).
+   Aucun attribut HTML5 (required, maxlength, pattern) sur les champs.
+══════════════════════════════════════ #}
+<div class="comment-modal" id="commentModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-comment-dots" style="color:var(--dr);"></i> Commenter</h3>
+            <button class="modal-close" onclick="closeCommentModal()">✕</button>
+        </div>
+        <div class="publication-preview" id="publicationPreview">
+            <h4 id="previewTitle">—</h4>
+            <p id="previewDesc">—</p>
+        </div>
+        <div class="modal-body">
+
+            <div style="font-size:.88rem;font-weight:600;color:var(--dark);margin-bottom:.9rem;display:flex;align-items:center;gap:8px;">
+                <i class="fas fa-pen-fancy"></i> Votre avis compte !
+            </div>
+
+            <div class="emoji-strip">
+                {% for emoji in ['😊','😍','🔥','👍','❤️','😂','🌍','✈️','🏖️','🌴','🤩','💯','🙌','😎','🌟','⭐'] %}
+                    <button type="button" class="emoji-btn" onclick="addEmoji('{{ emoji }}')">{{ emoji }}</button>
+                {% endfor %}
+            </div>
+
+            {# ── Message d'erreur Symfony — description ──
+               Visible seulement si le serveur renvoie field='description' #}
+            <div class="symfony-error" id="errorDescription">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="errorDescriptionText"></span>
+            </div>
+
+            {# Pas d'attribut required, maxlength ni pattern #}
+            <textarea class="comment-textarea" id="modalCommentText" rows="4"
+                      placeholder="Partagez votre expérience... (3 à 500 caractères)"></textarea>
+
+            {# ── Message d'erreur Symfony — tags ──
+               Visible seulement si le serveur renvoie field='tags' #}
+            <div class="symfony-error-tags" id="errorTags" style="margin-top:8px;">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="errorTagsText"></span>
+            </div>
+
+            {# Pas d'attribut required ni pattern #}
+            <input type="text" class="comment-tags-input" id="modalCommentTags"
+                   placeholder="🏷️ Tags : voyage, plage, culture...">
+
+            <div class="tags-suggestions">
+                {% for tag in ['voyage','hôtel','plage','culture','restaurant','désert','conseils','astuces'] %}
+                    <span class="tag-suggestion" onclick="addTag('{{ tag }}')">#{{ tag }}</span>
+                {% endfor %}
+            </div>
+
+            <button class="modal-submit" id="modalSubmitBtn" onclick="submitComment()">
+                <i class="fas fa-paper-plane"></i> Publier mon commentaire
+            </button>
+
+            <div class="comments-section">
+                <div class="comments-section-title">
+                    <i class="fas fa-history"></i> Commentaires
+                    <span id="commentsCountBadge" style="background:var(--bg-warm);color:var(--dr);border:1px solid var(--border);padding:2px 9px;border-radius:18px;font-size:.7rem;font-weight:600;"></span>
+                </div>
+                <div class="comments-list-modal" id="modalCommentsList">
+                    <div class="empty-comments-modal"><i class="fas fa-spinner fa-spin" style="font-size:1.8rem;"></i><p>Chargement...</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+'use strict';
+var currentPubId = null;
+var commentLikes = {};
+
+/* ════════════════════════════════════════════════════════
+   Helpers d'affichage des erreurs Symfony
+   Ces fonctions sont appelées UNIQUEMENT après retour serveur.
+   Elles ne font aucune validation côté client.
+════════════════════════════════════════════════════════ */
+function showServerError(field, message) {
+    clearServerErrors();
+    if (field === 'description') {
+        document.getElementById('errorDescriptionText').textContent = message;
+        document.getElementById('errorDescription').classList.add('visible');
+        document.getElementById('modalCommentText').classList.add('server-error');
+        document.getElementById('modalCommentText').focus();
+    } else if (field === 'tags') {
+        document.getElementById('errorTagsText').textContent = message;
+        document.getElementById('errorTags').classList.add('visible');
+        document.getElementById('modalCommentTags').classList.add('server-error');
+        document.getElementById('modalCommentTags').focus();
+    }
+}
+
+function clearServerErrors() {
+    document.getElementById('errorDescription').classList.remove('visible');
+    document.getElementById('errorDescriptionText').textContent = '';
+    document.getElementById('modalCommentText').classList.remove('server-error');
+
+    document.getElementById('errorTags').classList.remove('visible');
+    document.getElementById('errorTagsText').textContent = '';
+    document.getElementById('modalCommentTags').classList.remove('server-error');
+}
+
+/* ── ONGLETS ── */
+function switchTab(tab) {
+    document.getElementById('panel-video').classList.toggle('active', tab === 'video');
+    document.getElementById('panel-image').classList.toggle('active', tab === 'image');
+    document.getElementById('tab-btn-video').classList.toggle('active', tab === 'video');
+    document.getElementById('tab-btn-image').classList.toggle('active', tab === 'image');
+    document.querySelector('.nav-tabs-wrap').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+/* ── VUE GRILLE / LISTE ── */
+function setView(gridId, mode, btnGridId, btnListId) {
+    document.getElementById(gridId).classList.toggle('list-view', mode === 'list');
+    document.getElementById(btnGridId).classList.toggle('active', mode === 'grid');
+    document.getElementById(btnListId).classList.toggle('active', mode === 'list');
+}
+
+/* ── RECHERCHE ── */
+function searchGrid(gridId, inputId, badgeId, noResId) {
+    var q     = document.getElementById(inputId).value.trim().toLowerCase();
+    var cards = document.querySelectorAll('#'+gridId+' [data-title]');
+    var badge = document.getElementById(badgeId);
+    var noRes = document.getElementById(noResId);
+    var vis   = 0;
+    cards.forEach(function(c) {
+        var t = (c.getAttribute('data-title') || '').toLowerCase();
+        var m = q === '' || t.includes(q);
+        c.style.display = m ? '' : 'none';
+        if (m) {
+            vis++;
+            var tEl = c.querySelector('.card-title, .card-image-title');
+            if (tEl) {
+                var orig = tEl.getAttribute('data-original-title') || tEl.textContent;
+                tEl.innerHTML = q
+                    ? esc(orig).replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark>$1</mark>')
+                    : orig;
+            }
+        }
+    });
+    badge.style.display = q ? 'inline-block' : 'none';
+    if (q) badge.textContent = vis + ' résultat' + (vis !== 1 ? 's' : '');
+    noRes.style.display = (vis === 0 && q) ? 'block' : 'none';
+}
+
+/* ── VOTE ── */
+async function vote(pubId, type, prefix) {
+    try {
+        var r    = await fetch('/publication/'+pubId+'/vote', {
+            method: 'POST',
+            headers: {'Content-Type':'application/x-www-form-urlencoded','X-Requested-With':'XMLHttpRequest'},
+            body: 'type='+type
+        });
+        var data = await r.json();
+        if (data.success) {
+            ['v','i'].forEach(function(p) {
+                var lc = document.getElementById('likeCount-'+p+'-'+pubId);
+                var dc = document.getElementById('dislikeCount-'+p+'-'+pubId);
+                var lb = document.getElementById('likeBtn-'+p+'-'+pubId);
+                var db = document.getElementById('dislikeBtn-'+p+'-'+pubId);
+                if (lc) lc.textContent = data.likes;
+                if (dc) dc.textContent = data.dislikes;
+                if (lb) lb.classList.toggle('liked',    data.userVote === 'like');
+                if (db) db.classList.toggle('disliked', data.userVote === 'dislike');
+            });
+            showToast(type === 'like' ? '👍 Like !' : '👎 Dislike !', 'success');
+        }
+    } catch(e) {}
+}
+
+/* ── MODALE ── */
+async function openCommentModal(pubId, title, desc) {
+    currentPubId = pubId;
+    document.getElementById('previewTitle').textContent = title;
+    document.getElementById('previewDesc').textContent  = desc;
+    document.getElementById('modalCommentText').value   = '';
+    document.getElementById('modalCommentTags').value   = '';
+    clearServerErrors();
+    document.getElementById('commentModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    await loadComments(pubId);
+}
+
+function closeCommentModal() {
+    document.getElementById('commentModal').classList.remove('open');
+    document.body.style.overflow = '';
+    currentPubId = null;
+    clearServerErrors();
+}
+
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeCommentModal(); });
+document.getElementById('commentModal').addEventListener('click', function(e) { if (e.target === this) closeCommentModal(); });
+
+/* ════════════════════════════════════════════════════════
+   SOUMETTRE UN COMMENTAIRE
+   Aucune validation JS : on envoie directement au serveur.
+   Si Symfony refuse, on affiche son message dans la modale.
+════════════════════════════════════════════════════════ */
+async function submitComment() {
+    if (!currentPubId) return;
+
+    var text = document.getElementById('modalCommentText').value;
+    var tags = document.getElementById('modalCommentTags').value;
+    var btn  = document.getElementById('modalSubmitBtn');
+    var orig = btn.innerHTML;
+
+    // Effacer les erreurs précédentes avant chaque envoi
+    clearServerErrors();
+
+    btn.innerHTML = '<span class="loading-spinner"></span> Publication...';
+    btn.disabled  = true;
+
+    try {
+        var r = await fetch('/commentaire/api/new/'+currentPubId, {
+            method:  'POST',
+            headers: {
+                'Content-Type':     'application/json',
+                'Accept':           'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ description: text, tags: tags })
+        });
+
+        var data = await r.json();
+
+        if (data.success) {
+            // ── Succès : vider les champs et recharger les commentaires ──
+            document.getElementById('modalCommentText').value = '';
+            document.getElementById('modalCommentTags').value = '';
+            clearServerErrors();
+            await loadComments(currentPubId);
+
+            // Mettre à jour les compteurs dans les deux panneaux
+            var cv = document.getElementById('commentCount-v-'+currentPubId);
+            var ci = document.getElementById('commentCount-i-'+currentPubId);
+            if (cv) cv.textContent = data.total;
+            if (ci) ci.textContent = data.total;
+
+            showToast('✅ Commentaire publié !', 'success');
+        } else {
+            // ── Erreur Symfony : afficher le message dans la modale ──
+            var field   = data.field   || 'description';
+            var message = data.error   || 'Erreur lors de la publication.';
+            showServerError(field, message);
+            showToast('❌ ' + message, 'error');
+        }
+    } catch(e) {
+        showServerError('description', 'Erreur de connexion. Veuillez réessayer.');
+        showToast('❌ Erreur de connexion', 'error');
+    } finally {
+        btn.innerHTML = orig;
+        btn.disabled  = false;
+    }
+}
+
+/* ── CHARGEMENT COMMENTAIRES ── */
+async function loadComments(pubId) {
+    var list  = document.getElementById('modalCommentsList');
+    var badge = document.getElementById('commentsCountBadge');
+    list.innerHTML = '<div class="empty-comments-modal"><i class="fas fa-spinner fa-spin" style="font-size:1.8rem;"></i><p>Chargement...</p></div>';
+    try {
+        var r    = await fetch('/commentaire/publication/'+pubId+'/comments', {
+            headers: {'X-Requested-With':'XMLHttpRequest', 'Accept':'application/json'}
+        });
+        var data = await r.json();
+        if (data.success && data.comments && data.comments.length > 0) {
+            badge.textContent = data.total + ' commentaire' + (data.total > 1 ? 's' : '');
+            list.innerHTML    = data.comments.map(buildCommentHTML).join('');
+        } else {
+            badge.textContent = '0 commentaire';
+            list.innerHTML    = '<div class="empty-comments-modal"><i class="fas fa-comment-dots" style="font-size:1.8rem;opacity:.3;"></i><p>Soyez le premier à commenter !</p></div>';
+        }
+    } catch(e) {
+        list.innerHTML = '<div class="empty-comments-modal" style="color:#EF4444;"><i class="fas fa-exclamation-triangle"></i><p>Erreur de chargement.</p></div>';
+    }
+}
+
+function buildCommentHTML(c) {
+    if (!commentLikes[c.id]) commentLikes[c.id] = {liked:false, count:c.likes||0};
+    var ld   = commentLikes[c.id];
+    var tags = c.tags
+        ? '<div style="display:flex;gap:4px;flex-wrap:wrap;margin:5px 0;">'
+            + c.tags.split(',').map(function(t){ return '<span class="comment-item-tag">#'+esc(t.trim())+'</span>'; }).join('')
+          + '</div>'
+        : '';
+    return '<div class="comment-item" id="cmt-'+c.id+'">'
+        + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'
+            + '<div class="comment-item-avatar">V</div>'
+            + '<span class="comment-item-name">Voyageur</span>'
+            + '<span class="comment-item-date">'+esc(c.date)+'</span>'
+        + '</div>'
+        + '<div class="comment-item-text">'+esc(c.description)+'</div>'
+        + tags
+        + '<div style="display:flex;align-items:center;gap:12px;padding-top:6px;border-top:1px solid #F0E8DD;margin-top:6px;">'
+            + '<button class="like-comment-btn '+(ld.liked?'liked':'')+'" id="lcBtn-'+c.id+'" onclick="likeComment('+c.id+')">'
+                + '<span id="lcHeart-'+c.id+'">'+(ld.liked?'❤️':'🤍')+'</span>'
+                + '<span id="lcCount-'+c.id+'">'+ld.count+'</span>'
+            + '</button>'
+            + '<button class="reply-comment-btn" onclick="toggleReply('+c.id+')">'
+                + '<i class="fas fa-reply" style="font-size:.76rem;"></i> Répondre'
+            + '</button>'
+        + '</div>'
+        + '<div id="replyForm-'+c.id+'" style="display:none;margin-top:8px;padding:10px;background:white;border-radius:10px;border:1px solid var(--border);">'
+            + '<textarea class="reply-textarea" id="replyTxt-'+c.id+'" rows="2" placeholder="Votre réponse..."></textarea>'
+            + '<div style="display:flex;gap:7px;margin-top:7px;justify-content:flex-end;">'
+                + '<button class="reply-cancel-btn" onclick="toggleReply('+c.id+')">Annuler</button>'
+                + '<button class="reply-submit-btn" onclick="submitReply('+c.id+')">'
+                    + '<i class="fas fa-paper-plane"></i> Répondre'
+                + '</button>'
+            + '</div>'
+        + '</div>'
+        + '<div class="replies-list" id="replies-'+c.id+'"></div>'
+    + '</div>';
+}
+
+function likeComment(id) {
+    if (!commentLikes[id]) commentLikes[id] = {liked:false, count:0};
+    var d = commentLikes[id];
+    d.liked = !d.liked;
+    d.count += d.liked ? 1 : -1;
+    var h = document.getElementById('lcHeart-'+id);
+    var c = document.getElementById('lcCount-'+id);
+    var b = document.getElementById('lcBtn-'+id);
+    if (h) h.textContent = d.liked ? '❤️' : '🤍';
+    if (c) c.textContent = d.count;
+    if (b) b.classList.toggle('liked', d.liked);
+    if (h && d.liked) { h.style.transform='scale(1.4)'; setTimeout(function(){h.style.transform='';},180); }
+}
+
+function toggleReply(id) {
+    var f = document.getElementById('replyForm-'+id); if (!f) return;
+    var show = f.style.display === 'none';
+    f.style.display = show ? 'block' : 'none';
+    if (show) { var ta = document.getElementById('replyTxt-'+id); if (ta) ta.focus(); }
+}
+
+async function submitReply(commentId) {
+    var ta   = document.getElementById('replyTxt-'+commentId);
+    var text = ta ? ta.value : '';
+    try {
+        var r    = await fetch('/commentaire/api/new/'+currentPubId, {
+            method: 'POST',
+            headers: {'Content-Type':'application/json','Accept':'application/json','X-Requested-With':'XMLHttpRequest'},
+            body: JSON.stringify({description: text, tags: ''})
+        });
+        var data = await r.json();
+        if (data.success) {
+            var rl = document.getElementById('replies-'+commentId);
+            if (rl) rl.insertAdjacentHTML('beforeend',
+                '<div class="reply-item">'
+                + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">'
+                    + '<div style="width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#C49A6C,#F5CAC3);display:flex;align-items:center;justify-content:center;color:white;font-size:.58rem;font-weight:700;">V</div>'
+                    + '<span style="font-weight:600;font-size:.76rem;">Voyageur</span>'
+                    + '<span style="font-size:.64rem;color:#aaa;margin-left:4px;">'+esc(data.comment.date)+'</span>'
+                + '</div>'
+                + '<div style="font-size:.82rem;color:#555;line-height:1.5;">'+esc(text)+'</div>'
+                + '</div>'
+            );
+            if (ta) ta.value = '';
+            toggleReply(commentId);
+            showToast('💬 Réponse publiée !', 'success');
+        } else {
+            showToast('❌ ' + (data.error || 'Erreur'), 'error');
+        }
+    } catch(e) { showToast('❌ Erreur de connexion', 'error'); }
+}
+
+function addEmoji(e) {
+    var ta  = document.getElementById('modalCommentText');
+    var pos = ta.selectionStart || ta.value.length;
+    ta.value = ta.value.slice(0,pos) + e + ta.value.slice(pos);
+    ta.focus();
+    ta.setSelectionRange(pos+e.length, pos+e.length);
+}
+
+function addTag(tag) {
+    var i = document.getElementById('modalCommentTags');
+    i.value = i.value.trim() ? i.value.trim()+', '+tag : tag;
+    i.focus();
+}
+
+function showToast(msg, type) {
+    var c = {success:'#27ae60', error:'#c0392b', warn:'#e07b39'};
+    var t = document.createElement('div');
+    t.className        = 'toast-notification';
+    t.style.background = c[type] || c.success;
+    t.textContent      = msg;
+    document.body.appendChild(t);
+    setTimeout(function(){
+        t.style.opacity = '0'; t.style.transition = '.3s';
+        setTimeout(function(){ t.remove(); }, 300);
+    }, 3500);
+}
+
+function esc(s) {
+    if (!s) return '';
+    return String(s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var ids = new Set();
+    document.querySelectorAll('[data-id]').forEach(function(card) {
+        if (card.dataset.id) ids.add(card.dataset.id);
+    });
+    ids.forEach(function(id) {
+        fetch('/publication/'+id+'/likes', {headers:{'X-Requested-With':'XMLHttpRequest'}})
+            .then(function(r){ return r.json(); })
+            .then(function(d) {
+                if (d.likes === undefined) return;
+                ['v','i'].forEach(function(p) {
+                    var lc = document.getElementById('likeCount-'+p+'-'+id);
+                    var dc = document.getElementById('dislikeCount-'+p+'-'+id);
+                    var lb = document.getElementById('likeBtn-'+p+'-'+id);
+                    var db = document.getElementById('dislikeBtn-'+p+'-'+id);
+                    if (lc) lc.textContent = d.likes;
+                    if (dc) dc.textContent = d.dislikes;
+                    if (lb) lb.classList.toggle('liked',    d.userVote === 'like');
+                    if (db) db.classList.toggle('disliked', d.userVote === 'dislike');
+                });
+            }).catch(function(){});
+    });
+});
+</script>
+{% endblock %}

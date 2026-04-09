@@ -1,0 +1,528 @@
+{% extends 'admin/dashboard/base_admin.html.twig' %}
+
+{% block title %}Gestion des Commentaires{% endblock %}
+{% block page_title %}Commentaires{% endblock %}
+
+{% block body %}
+
+{# ── FLASH MESSAGES ── #}
+{% for label, messages in app.flashes %}
+    {% for message in messages %}
+        <div style="
+            margin-bottom:14px;
+            padding:12px 18px;
+            border-radius:12px;
+            font-size:0.87rem;
+            font-weight:500;
+            display:flex;
+            align-items:center;
+            gap:10px;
+            {% if label == 'success' %}background:#E0F2E9; color:#047857; border:1px solid #A7F3D0;
+            {% elseif label == 'error' %}background:#FEF2F2; color:#DC2626; border:1px solid #FECACA;
+            {% else %}background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE;{% endif %}
+        ">
+            <i class="fas fa-{% if label == 'success' %}check-circle{% elseif label == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endfor %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-1" style="font-family:'Playfair Display',serif; color:#2C1810;">Tous les Commentaires</h4>
+        <p class="mb-0" style="font-size:0.85rem; color:#93032E;">
+            Gérez l'ensemble des commentaires &nbsp;
+            <span id="countBadge" style="background:#FEF9F0; color:#93032E; border:1px solid #F0E8DD; padding:3px 12px; border-radius:20px; font-size:0.78rem; font-weight:600;">
+                {{ commentaires|length }} commentaire{{ commentaires|length > 1 ? 's' : '' }}
+            </span>
+        </p>
+    </div>
+    <button onclick="showAddModal()" class="tj-btn-primary">
+        <i class="fas fa-plus me-2"></i> Ajouter un commentaire
+    </button>
+</div>
+
+{# ── BARRE RECHERCHE + TRI ── #}
+<div style="display:flex; gap:12px; margin-bottom:18px; align-items:center; flex-wrap:wrap;">
+    <div style="position:relative; flex:1; min-width:220px;">
+        <i class="fas fa-search" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#C49A6C; font-size:0.85rem;"></i>
+        <input id="searchInput" type="text" placeholder="Rechercher par publication..."
+               onkeyup="filterAndSort()"
+               style="width:100%; padding:10px 14px 10px 38px; border:1px solid #F0E8DD; border-radius:12px; font-size:0.85rem; background:#FFF9F0; color:#4A3B2F; outline:none; box-shadow:0 1px 4px rgba(147,3,46,0.06);">
+    </div>
+    <div style="display:flex; gap:8px; align-items:center;">
+        <span style="font-size:0.82rem; color:#9CA3AF; font-weight:500;">Tri date :</span>
+        <button onclick="setSort('asc')" id="btnAsc"
+                style="padding:8px 16px; border-radius:10px; border:1px solid #F0E8DD; background:#FEF9F0; color:#93032E; font-size:0.8rem; font-weight:600; cursor:pointer; transition:all 0.18s;">
+            <i class="fas fa-sort-amount-up-alt me-1"></i>Croissant
+        </button>
+        <button onclick="setSort('desc')" id="btnDesc"
+                style="padding:8px 16px; border-radius:10px; border:1px solid #F0E8DD; background:#FEF9F0; color:#93032E; font-size:0.8rem; font-weight:600; cursor:pointer; transition:all 0.18s;">
+            <i class="fas fa-sort-amount-down me-1"></i>Décroissant
+        </button>
+        <button onclick="setSort('none')" id="btnNone"
+                style="padding:8px 14px; border-radius:10px; border:1px solid #F0E8DD; background:#F3F4F6; color:#6B7280; font-size:0.8rem; cursor:pointer; transition:all 0.18s;" title="Réinitialiser le tri">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+</div>
+
+{% if commentaires is empty %}
+    <div class="tj-empty">
+        <i class="fas fa-comments" style="font-size:3rem; color:#E8DFD1; margin-bottom:1rem;"></i>
+        <p style="color:#9CA3AF;">Aucun commentaire trouvé.</p>
+    </div>
+{% else %}
+<div class="tj-table-wrap">
+    <table class="tj-table" id="mainTable">
+        <thead>
+            <tr>
+                <th>COMMENTAIRE</th>
+                <th>PUBLICATION</th>
+                <th>FORUM</th>
+                <th>DATE</th>
+                <th style="text-align:center;">STATUT</th>
+                <th style="text-align:center;">ACTIONS</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            {% for com in commentaires %}
+            <tr class="{% if com.isCancelled %}row-cancelled{% elseif com.isReported %}row-reported{% endif %}"
+                data-pub="{{ com.publication.nom|lower }}"
+                data-date="{{ com.dateCreation|date('Y-m-d') }}">
+
+                <td style="max-width:260px;">
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <div style="width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#93032E,#C49A6C); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; flex-shrink:0; font-size:0.85rem;">U</div>
+                        <div>
+                            <div style="font-size:0.87rem; color:#4A3B2F; line-height:1.5;">
+                                {{ com.description|slice(0,80) }}{% if com.description|length > 80 %}…{% endif %}
+                            </div>
+                            {% if com.tags %}
+                                <div style="margin-top:4px; display:flex; flex-wrap:wrap; gap:4px;">
+                                    {% for tag in com.tags|split(',') %}
+                                        <span style="background:#FEF9F0; color:#93032E; border:1px solid #F0E8DD; padding:1px 8px; border-radius:20px; font-size:0.7rem;">{{ tag|trim }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {% if com.reportReason %}
+                                <div style="margin-top:4px; font-size:0.75rem; color:#B45309; background:#FEF3C7; padding:3px 8px; border-radius:6px;">
+                                    <i class="fas fa-flag me-1"></i>{{ com.reportReason }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </td>
+
+                <td><span class="tj-badge tj-badge-wine">{{ com.publication.nom|slice(0,25) }}{% if com.publication.nom|length > 25 %}…{% endif %}</span></td>
+                <td style="color:#6B7280; font-size:0.85rem;">{{ com.publication.forum.nom }}</td>
+                <td><span class="tj-badge tj-badge-grey">{{ com.dateCreation|date('d/m/Y') }}</span></td>
+
+                <td style="text-align:center;">
+                    {% if com.isCancelled %}
+                        <span class="tj-badge" style="background:#F3F4F6; color:#6B7280;"><i class="fas fa-ban me-1"></i>Annulé</span>
+                    {% elseif com.isReported %}
+                        <span class="tj-badge" style="background:#FEF3C7; color:#B45309;"><i class="fas fa-flag me-1"></i>Signalé</span>
+                    {% else %}
+                        <span class="tj-badge tj-badge-green"><i class="fas fa-check me-1"></i>Actif</span>
+                    {% endif %}
+                </td>
+
+                <td style="text-align:center;">
+                    <div class="tj-actions">
+                        {# ── ANNULER (si pas annulé) ── #}
+                        {% if not com.isCancelled %}
+                            <form method="post" action="{{ path('app_commentaire_cancel', {idC: com.idC}) }}"
+                                  onsubmit="return confirm('Annuler ce commentaire ?')" style="display:inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ com.idC) }}">
+                                <button class="action-btn cancel-btn" title="Annuler le commentaire">
+                                    <i class="fas fa-ban"></i>
+                                </button>
+                            </form>
+                        {% endif %}
+
+                        {# ── DÉSANNULER (si annulé) ── #}
+                        {% if com.isCancelled %}
+                            <form method="post" action="{{ path('app_commentaire_uncancel', {idC: com.idC}) }}"
+                                  onsubmit="return confirm('Désannuler ce commentaire ?')" style="display:inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('uncancel' ~ com.idC) }}">
+                                <button class="action-btn uncancel-btn" title="Désannuler le commentaire">
+                                    <i class="fas fa-check-circle"></i>
+                                </button>
+                            </form>
+                        {% endif %}
+
+                        {# ── SIGNALER (si actif et non signalé) ── #}
+                        {% if not com.isReported and not com.isCancelled %}
+                            <button class="action-btn report-btn" title="Signaler" onclick="showReportModal({{ com.idC }})">
+                                <i class="fas fa-flag"></i>
+                            </button>
+                        {% endif %}
+
+                        {# ── DÉSIGNALER (si signalé) ── #}
+                        {% if com.isReported %}
+                            <form method="post" action="{{ path('app_commentaire_unreport', {idC: com.idC}) }}"
+                                  onsubmit="return confirm('Désignaler ce commentaire ?')" style="display:inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('unreport' ~ com.idC) }}">
+                                <button class="action-btn unreport-btn" title="Désignaler">
+                                    <i class="fas fa-flag-checkered"></i>
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div id="noResult" style="display:none; padding:2rem; text-align:center; color:#9CA3AF; font-size:0.9rem;">
+        <i class="fas fa-search me-2"></i>Aucun commentaire trouvé pour cette publication.
+    </div>
+</div>
+{% endif %}
+
+{# ══════════════════════════════════════════════════════════════
+   MODAL : AJOUTER UN COMMENTAIRE
+   ══════════════════════════════════════════════════════════════ #}
+<div id="addModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1100; align-items:center; justify-content:center;">
+    <div style="background:white; border-radius:20px; width:540px; max-width:94%; box-shadow:0 24px 60px rgba(0,0,0,0.22); overflow:hidden; max-height:94vh; overflow-y:auto;">
+
+        <div style="padding:1.2rem 1.5rem; border-bottom:1px solid #F0E8DD; display:flex; justify-content:space-between; align-items:center; background:#FEF9F0; position:sticky; top:0; z-index:2;">
+            <h5 style="margin:0; color:#93032E; font-family:'Playfair Display',serif; font-size:1.05rem;">
+                <i class="fas fa-comment-alt me-2"></i>Ajouter un commentaire
+            </h5>
+            <button onclick="closeAddModal()" style="background:none; border:none; font-size:1.5rem; color:#aaa; cursor:pointer; line-height:1; padding:0 4px;">&times;</button>
+        </div>
+
+        <form id="addForm" method="POST" style="padding:1.5rem;">
+            {# Publication #}
+            <div style="margin-bottom:1.1rem;">
+                <label style="display:block; font-size:0.85rem; font-weight:700; color:#4A3B2F; margin-bottom:6px;">
+                    Publication <span style="color:#EF4444;">*</span>
+                </label>
+                <select id="pubSelect" name="publication_id" required onchange="updateFormAction()"
+                        style="width:100%; padding:10px 14px; border:1.5px solid #F0E8DD; border-radius:10px; font-size:0.85rem; background:#FFF9F0; color:#4A3B2F; outline:none; transition:border-color 0.2s;">
+                    <option value="">-- Sélectionnez une publication --</option>
+                    {% for pub in publications %}
+                        <option value="{{ pub.idP }}">{{ pub.nom }} ({{ pub.forum.nom }})</option>
+                    {% endfor %}
+                </select>
+                <div id="pubError" style="display:none; color:#EF4444; font-size:0.78rem; margin-top:5px;">
+                    <i class="fas fa-exclamation-circle me-1"></i>Veuillez sélectionner une publication.
+                </div>
+            </div>
+
+            {# Commentaire #}
+            <div style="margin-bottom:0.7rem;">
+                <label style="display:block; font-size:0.85rem; font-weight:700; color:#4A3B2F; margin-bottom:6px;">
+                    Commentaire <span style="color:#EF4444;">*</span>
+                </label>
+                <textarea id="descInput" name="description" rows="4" required
+                          placeholder="Commencez par une lettre, minimum 3 caractères..."
+                          oninput="validateDesc(this)"
+                          style="width:100%; padding:10px 14px; border:1.5px solid #F0E8DD; border-radius:10px; font-size:0.85rem; background:#FFF9F0; color:#4A3B2F; outline:none; resize:vertical; transition:border-color 0.2s; box-sizing:border-box;"></textarea>
+                <div id="descError" style="display:none; color:#EF4444; font-size:0.78rem; margin-top:5px;">
+                    <i class="fas fa-exclamation-circle me-1"></i><span id="descErrorMsg"></span>
+                </div>
+                <div style="font-size:0.73rem; color:#9CA3AF; margin-top:4px;">
+                    Doit commencer par une lettre et contenir au moins 3 caractères.
+                </div>
+            </div>
+
+            {# Emojis #}
+            <div style="margin-bottom:1.1rem;">
+                <label style="display:block; font-size:0.82rem; font-weight:600; color:#4A3B2F; margin-bottom:7px;">
+                    <i class="fas fa-smile me-1" style="color:#C49A6C;"></i>Insérer un emoji
+                </label>
+                <div style="background:#FFF9F0; border:1px solid #F0E8DD; border-radius:12px; padding:10px; display:flex; flex-wrap:wrap; gap:5px;">
+                    {% set emojis = ['😊','😂','❤️','👍','🔥','🎉','😍','🤔','👏','😢','🙏','✨','😎','🤩','💯','🥰','😅','🤣','😭','💪','🌟','🎊','😃','🤝','👌','💬','🌍','🏖️','🍕','☕','🧳','✈️','🗺️','🌺','⭐','🎶','🤗','😤','🥳','🌈'] %}
+                    {% for emoji in emojis %}
+                        <button type="button"
+                                onclick="insertEmoji('{{ emoji }}')"
+                                title="{{ emoji }}"
+                                style="background:white; border:1px solid #F0E8DD; border-radius:8px; padding:5px 7px; font-size:1.05rem; cursor:pointer; transition:all 0.15s; line-height:1; min-width:36px;"
+                                onmouseover="this.style.background='#FEF9F0'; this.style.transform='scale(1.22)'; this.style.borderColor='#C49A6C';"
+                                onmouseout="this.style.background='white'; this.style.transform='scale(1)'; this.style.borderColor='#F0E8DD';">
+                            {{ emoji }}
+                        </button>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {# Tags #}
+            <div style="margin-bottom:1.3rem;">
+                <label style="display:block; font-size:0.85rem; font-weight:700; color:#4A3B2F; margin-bottom:6px;">
+                    Tags <span style="font-weight:400; color:#9CA3AF; font-size:0.8rem;">(optionnel, séparés par virgule)</span>
+                </label>
+                <input type="text" name="tags" id="tagsInput"
+                       placeholder="ex: voyage, tunisie, conseil"
+                       style="width:100%; padding:10px 14px; border:1.5px solid #F0E8DD; border-radius:10px; font-size:0.85rem; background:#FFF9F0; color:#4A3B2F; outline:none; box-sizing:border-box;">
+            </div>
+
+            {# Boutons #}
+            <div style="display:flex; gap:10px; justify-content:flex-end; border-top:1px solid #F0E8DD; padding-top:1rem;">
+                <button type="button" onclick="closeAddModal()"
+                        style="padding:9px 22px; background:#F5F0E8; border:none; border-radius:10px; font-size:0.85rem; cursor:pointer; color:#4A3B2F; font-weight:600;">
+                    Annuler
+                </button>
+                <button type="button" onclick="submitAddForm()"
+                        style="padding:9px 24px; background:#93032E; color:white; border:none; border-radius:10px; font-size:0.85rem; font-weight:700; cursor:pointer; transition:background 0.2s;">
+                    <i class="fas fa-paper-plane me-1"></i>Publier le commentaire
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# ══════════════════════════════════════════════════════════════
+   MODAL : SIGNALER UN COMMENTAIRE
+   ══════════════════════════════════════════════════════════════ #}
+<div id="reportModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1100; align-items:center; justify-content:center;">
+    <div style="background:white; border-radius:20px; width:460px; max-width:92%; box-shadow:0 20px 50px rgba(0,0,0,0.2); overflow:hidden;">
+        <div style="padding:1.2rem 1.5rem; border-bottom:1px solid #F0E8DD; display:flex; justify-content:space-between; align-items:center; background:#FEF9F0;">
+            <h5 style="margin:0; color:#93032E; font-family:'Playfair Display',serif;">
+                <i class="fas fa-flag me-2"></i>Signaler un commentaire
+            </h5>
+            <button onclick="closeReportModal()" style="background:none; border:none; font-size:1.4rem; color:#aaa; cursor:pointer; line-height:1;">&times;</button>
+        </div>
+        <form id="reportForm" method="post" style="padding:1.5rem;">
+            <input type="hidden" name="_token" id="reportToken">
+            <div style="margin-bottom:1rem;">
+                <label style="display:block; font-size:0.85rem; font-weight:600; color:#4A3B2F; margin-bottom:6px;">Motif du signalement</label>
+                <select name="reason" required style="width:100%; padding:10px 14px; border:1px solid #F0E8DD; border-radius:10px; font-size:0.85rem; background:#FFF9F0; color:#4A3B2F; outline:none;">
+                    <option value="">-- Sélectionnez un motif --</option>
+                    <option value="Langage inapproprié">Langage inapproprié</option>
+                    <option value="Propos injurieux">Propos injurieux</option>
+                    <option value="Discrimination">Discrimination</option>
+                    <option value="Spam ou publicité">Spam ou publicité</option>
+                    <option value="Contenu offensant">Contenu offensant</option>
+                    <option value="Autre">Autre</option>
+                </select>
+            </div>
+            <div style="margin-bottom:1.2rem;">
+                <label style="display:block; font-size:0.85rem; font-weight:600; color:#4A3B2F; margin-bottom:6px;">Description (optionnelle)</label>
+                <textarea name="description" rows="3" placeholder="Détaillez le motif..."
+                          style="width:100%; padding:10px 14px; border:1px solid #F0E8DD; border-radius:10px; font-size:0.85rem; background:#FFF9F0; color:#4A3B2F; outline:none; resize:vertical;"></textarea>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; border-top:1px solid #F0E8DD; padding-top:1rem;">
+                <button type="button" onclick="closeReportModal()"
+                        style="padding:9px 20px; background:#F5F0E8; border:none; border-radius:10px; font-size:0.85rem; cursor:pointer; color:#4A3B2F; font-weight:500;">
+                    Annuler
+                </button>
+                <button type="submit"
+                        style="padding:9px 22px; background:#93032E; color:white; border:none; border-radius:10px; font-size:0.85rem; font-weight:600; cursor:pointer;">
+                    <i class="fas fa-flag me-1"></i>Signaler
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.tj-btn-primary {
+    background:#93032E; color:white; border:none; padding:10px 22px;
+    border-radius:40px; font-size:0.88rem; font-weight:600; text-decoration:none;
+    display:inline-flex; align-items:center; transition:all 0.2s; cursor:pointer;
+}
+.tj-btn-primary:hover { background:#6B0221; color:white; transform:translateY(-2px); box-shadow:0 4px 14px rgba(147,3,46,0.3); }
+.tj-empty { background:white; border-radius:20px; border:1px solid #F0E8DD; padding:3rem; text-align:center; }
+.tj-table-wrap { background:white; border-radius:20px; border:1px solid #F0E8DD; overflow-x:auto; }
+.tj-table { width:100%; border-collapse:collapse; min-width:800px; }
+.tj-table thead tr { background:#FEF9F0; border-bottom:2px solid #F0E8DD; }
+.tj-table th { padding:14px 20px; font-size:0.72rem; font-weight:700; color:#93032E; text-transform:uppercase; letter-spacing:0.6px; }
+.tj-table td { padding:14px 20px; font-size:0.87rem; border-bottom:1px solid #F5F0E8; color:#4A3B2F; vertical-align:middle; }
+.tj-table tr:last-child td { border-bottom:none; }
+.tj-table tbody tr:hover td { background:#FFF9F0; }
+.row-cancelled td { opacity:0.6; background:#F9FAFB !important; }
+.row-reported td { background:#FFFBF0 !important; }
+.tj-badge { padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:600; display:inline-block; }
+.tj-badge-wine  { background:#FEF9F0; color:#93032E; border:1px solid #F0E8DD; }
+.tj-badge-grey  { background:#F3F4F6; color:#6B7280; }
+.tj-badge-green { background:#E0F2E9; color:#047857; }
+.tj-actions { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+.action-btn {
+    width:34px; height:34px; border-radius:8px; display:inline-flex;
+    align-items:center; justify-content:center; transition:all 0.2s;
+    cursor:pointer; border:none; font-size:0.9rem; text-decoration:none;
+}
+.cancel-btn   { background:#FEF2F2; color:#EF4444; }
+.cancel-btn:hover   { background:#EF4444;  color:white; transform:translateY(-2px); }
+.uncancel-btn { background:#E0F2E9; color:#047857; }
+.uncancel-btn:hover { background:#047857;  color:white; transform:translateY(-2px); }
+.report-btn   { background:#FEF3C7; color:#D97706; }
+.report-btn:hover   { background:#F59E0B;  color:white; transform:translateY(-2px); }
+.unreport-btn { background:#E0F2E9; color:#047857; }
+.unreport-btn:hover { background:#047857;  color:white; transform:translateY(-2px); }
+.sort-active  { background:#93032E !important; color:white !important; border-color:#93032E !important; }
+</style>
+
+<script>
+let currentSort = 'none';
+let currentPublicationId = null;
+
+/* ── MODAL AJOUTER ─────────────────────────────── */
+function showAddModal() {
+    document.getElementById('addModal').style.display = 'flex';
+    document.getElementById('addForm').reset();
+    document.getElementById('pubError').style.display = 'none';
+    document.getElementById('descError').style.display = 'none';
+    currentPublicationId = null;
+}
+
+function closeAddModal() {
+    document.getElementById('addModal').style.display = 'none';
+    document.getElementById('addForm').reset();
+    document.getElementById('pubError').style.display = 'none';
+    document.getElementById('descError').style.display = 'none';
+    currentPublicationId = null;
+}
+
+/* Met à jour l'action du formulaire */
+function updateFormAction() {
+    const select = document.getElementById('pubSelect');
+    const idP = select.value;
+    const form = document.getElementById('addForm');
+    
+    if (idP) {
+        form.action = '/commentaire/new/' + idP;
+        document.getElementById('pubError').style.display = 'none';
+    } else {
+        form.action = '';
+    }
+}
+
+/* Validation du champ description */
+function validateDesc(textarea) {
+    const val = textarea.value;
+    const errDiv = document.getElementById('descError');
+    const errMsg = document.getElementById('descErrorMsg');
+
+    if (!val || val.length === 0) {
+        errDiv.style.display = 'none';
+        return false;
+    }
+    if (!/^[a-zA-ZÀ-ÿ\u0600-\u06FF]/u.test(val)) {
+        errMsg.textContent = 'Le commentaire doit commencer par une lettre.';
+        errDiv.style.display = 'block';
+        return false;
+    }
+    if (val.trim().length < 3) {
+        errMsg.textContent = 'Le commentaire doit contenir au minimum 3 caractères.';
+        errDiv.style.display = 'block';
+        return false;
+    }
+    errDiv.style.display = 'none';
+    return true;
+}
+
+/* Soumission avec validation */
+function submitAddForm() {
+    const select = document.getElementById('pubSelect');
+    const descVal = document.getElementById('descInput').value.trim();
+    let valid = true;
+
+    // Vérifier publication
+    if (!select.value) {
+        document.getElementById('pubError').style.display = 'block';
+        select.focus();
+        valid = false;
+    } else {
+        document.getElementById('pubError').style.display = 'none';
+        updateFormAction();
+    }
+
+    // Vérifier description
+    if (!descVal) {
+        document.getElementById('descErrorMsg').textContent = 'Le commentaire est obligatoire.';
+        document.getElementById('descError').style.display = 'block';
+        if (valid) document.getElementById('descInput').focus();
+        valid = false;
+    } else if (!validateDesc(document.getElementById('descInput'))) {
+        if (valid) document.getElementById('descInput').focus();
+        valid = false;
+    }
+
+    if (valid) {
+        document.getElementById('addForm').submit();
+    }
+}
+
+/* Insertion emoji */
+function insertEmoji(emoji) {
+    const ta = document.getElementById('descInput');
+    const s = ta.selectionStart;
+    const e = ta.selectionEnd;
+    ta.value = ta.value.substring(0, s) + emoji + ta.value.substring(e);
+    ta.selectionStart = ta.selectionEnd = s + emoji.length;
+    ta.focus();
+    validateDesc(ta);
+}
+
+/* ── MODAL SIGNALEMENT ─────────────────────────── */
+function showReportModal(commentId) {
+    document.getElementById('reportToken').value = '{{ csrf_token("report") }}';
+    document.getElementById('reportForm').action = '/commentaire/' + commentId + '/report';
+    document.getElementById('reportModal').style.display = 'flex';
+}
+
+function closeReportModal() {
+    document.getElementById('reportModal').style.display = 'none';
+    document.getElementById('reportForm').reset();
+}
+
+/* ── RECHERCHE PAR PUBLICATION ─────────────────── */
+function filterAndSort() {
+    const search = document.getElementById('searchInput').value.toLowerCase().trim();
+    const tbody = document.getElementById('tableBody');
+    if (!tbody) return;
+
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+    let visible = rows.filter(row => {
+        const pub = (row.getAttribute('data-pub') || '').toLowerCase();
+        const match = search === '' || pub.includes(search);
+        row.style.display = match ? '' : 'none';
+        return match;
+    });
+
+    // Tri date
+    if (currentSort !== 'none') {
+        visible.sort((a, b) => {
+            const da = a.getAttribute('data-date') || '';
+            const db = b.getAttribute('data-date') || '';
+            return currentSort === 'asc' ? da.localeCompare(db) : db.localeCompare(da);
+        });
+        visible.forEach(r => tbody.appendChild(r));
+    }
+
+    // Compteur
+    document.getElementById('countBadge').textContent =
+        visible.length + ' commentaire' + (visible.length > 1 ? 's' : '');
+
+    // Message vide
+    const noResult = document.getElementById('noResult');
+    if (noResult) noResult.style.display = visible.length === 0 ? 'block' : 'none';
+}
+
+/* ── TRI PAR DATE ──────────────────────────────── */
+function setSort(dir) {
+    currentSort = dir;
+    document.getElementById('btnAsc').classList.toggle('sort-active', dir === 'asc');
+    document.getElementById('btnDesc').classList.toggle('sort-active', dir === 'desc');
+    document.getElementById('btnNone').style.background = dir === 'none' ? '#F3F4F6' : '#FEF9F0';
+    filterAndSort();
+}
+
+/* ── FERMER MODALS EN CLIQUANT DEHORS ──────────── */
+window.addEventListener('click', e => {
+    if (e.target === document.getElementById('addModal')) closeAddModal();
+    if (e.target === document.getElementById('reportModal')) closeReportModal();
+});
+
+/* ── INITIALISATION ───────────────────────────── */
+document.addEventListener('DOMContentLoaded', function() {
+    filterAndSort();
+});
+</script>
+
+{% endblock %}

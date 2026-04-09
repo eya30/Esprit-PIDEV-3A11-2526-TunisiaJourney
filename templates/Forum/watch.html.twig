@@ -1,0 +1,434 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ publication.nom }} — TunisiaJourney{% endblock %}
+
+{% block stylesheets %}
+<style>
+:root {
+    --dr:#93032E; --dr2:#6B0221; --or:#FF6B35;
+    --gold:#FFD700; --sand:#FDF5E6; --soft:#F5CAC3;
+    --bg-warm:#FEF9F0; --border:#E8DFD1; --dark:#2C3E50;
+}
+
+/* ── PAGE VIDEO (style forum) ── */
+.video-page { background:var(--bg-warm); min-height:100vh; }
+.video-container { max-width:1200px; margin:0 auto; padding:2rem; }
+
+/* ── BOUTONS DE NAVIGATION ── */
+.nav-buttons { display:flex; gap:12px; margin-bottom:1.5rem; flex-wrap:wrap; }
+.btn-nav-video { background:linear-gradient(135deg,var(--dr),var(--soft)); color:white; border:none; padding:10px 24px; border-radius:40px; font-size:.85rem; font-weight:600; cursor:pointer; transition:all .3s; text-decoration:none; display:inline-flex; align-items:center; gap:8px; }
+.btn-nav-video:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(147,3,46,.3); color:white; }
+.btn-nav-image { background:white; border:2px solid var(--border); color:var(--dr); padding:10px 24px; border-radius:40px; font-size:.85rem; font-weight:600; cursor:pointer; transition:all .3s; text-decoration:none; display:inline-flex; align-items:center; gap:8px; }
+.btn-nav-image:hover { background:var(--dr); color:white; border-color:var(--dr); transform:translateY(-2px); }
+
+/* ── PLAYER VIDEO ── */
+.video-player-wrapper { background:#000; border-radius:24px; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,.2); margin-bottom:2rem; }
+.video-player { width:100%; aspect-ratio:16/9; background:#000; }
+.video-player iframe { width:100%; height:100%; border:none; }
+.video-player video { width:100%; height:100%; object-fit:contain; background:#000; }
+
+/* ── INFOS VIDEO ── */
+.video-info { background:white; border-radius:20px; padding:1.5rem; margin-bottom:1.5rem; border:1px solid var(--border); }
+.video-title { font-family:'Cormorant Garamond',serif; font-size:1.8rem; font-weight:700; color:var(--dr); margin-bottom:.5rem; }
+.video-meta { display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--border); }
+.video-forum-badge { background:linear-gradient(135deg,var(--dr),var(--soft)); color:white; padding:4px 12px; border-radius:20px; font-size:.75rem; font-weight:600; }
+.video-date { color:#888; font-size:.8rem; display:flex; align-items:center; gap:5px; }
+.video-description { color:#555; line-height:1.7; font-size:.95rem; margin-bottom:1rem; }
+
+/* ── VOTE & ACTIONS ── */
+.video-actions { display:flex; gap:1rem; align-items:center; flex-wrap:wrap; padding-top:.5rem; }
+.vote-buttons { display:flex; gap:10px; }
+.vote-btn { display:flex; align-items:center; gap:6px; padding:8px 18px; border-radius:30px; border:1.5px solid var(--border); background:white; font-size:.85rem; font-weight:600; cursor:pointer; transition:all .3s; }
+.vote-btn.liked { background:rgba(147,3,46,.1); border-color:var(--dr); color:var(--dr); }
+.vote-btn.disliked { background:rgba(192,57,43,.1); border-color:#c0392b; color:#c0392b; }
+.vote-btn:hover { transform:translateY(-2px); }
+
+/* ── SECTION COMMENTAIRES ── */
+.comments-section { background:white; border-radius:20px; padding:1.5rem; border:1px solid var(--border); }
+.comments-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem; }
+.comments-header h3 { font-family:'Cormorant Garamond',serif; font-size:1.4rem; color:var(--dr); margin:0; display:flex; align-items:center; gap:10px; }
+.comments-count { background:var(--bg-warm); padding:4px 12px; border-radius:20px; font-size:.75rem; font-weight:600; color:var(--dr); }
+
+/* ── FORMULAIRE COMMENTAIRE ── */
+.comment-form { background:var(--bg-warm); border-radius:16px; padding:1.2rem; margin-bottom:1.5rem; border:1px solid var(--border); }
+.emoji-strip { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+.emoji-btn { background:white; border:1px solid var(--border); border-radius:30px; font-size:.9rem; cursor:pointer; padding:5px 10px; transition:all .2s; }
+.emoji-btn:hover { transform:scale(1.1); background:var(--dr); color:white; }
+.comment-textarea { width:100%; border:2px solid var(--border); border-radius:14px; padding:12px; font-size:.88rem; resize:vertical; font-family:inherit; transition:all .3s; margin-bottom:10px; }
+.comment-textarea:focus { outline:none; border-color:var(--dr); box-shadow:0 0 0 3px rgba(147,3,46,.1); }
+.comment-tags-input { width:100%; border:2px solid var(--border); border-radius:30px; padding:10px 15px; font-size:.83rem; margin-bottom:10px; transition:all .3s; }
+.comment-tags-input:focus { outline:none; border-color:var(--dr); }
+.tags-suggestions { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+.tag-suggestion { background:white; border:1px solid var(--border); border-radius:20px; padding:4px 12px; font-size:.7rem; color:var(--dr); cursor:pointer; transition:all .2s; }
+.tag-suggestion:hover { background:var(--dr); color:white; }
+.submit-comment-btn { background:linear-gradient(135deg,var(--dr),var(--or)); color:white; border:none; padding:12px 24px; border-radius:40px; font-size:.85rem; font-weight:700; cursor:pointer; transition:all .3s; width:100%; }
+.submit-comment-btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 6px 20px rgba(147,3,46,.4); }
+.submit-comment-btn:disabled { opacity:.6; cursor:not-allowed; }
+
+/* ── LISTE COMMENTAIRES ── */
+.comments-list { max-height:500px; overflow-y:auto; }
+.comment-item { background:var(--bg-warm); border-radius:14px; padding:12px 15px; margin-bottom:10px; border-left:3px solid var(--dr); }
+.comment-header { display:flex; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap; }
+.comment-avatar { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--dr),var(--soft)); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:.75rem; }
+.comment-author { font-weight:700; color:var(--dark); font-size:.85rem; }
+.comment-date { font-size:.68rem; color:#aaa; }
+.comment-text { color:#555; font-size:.85rem; line-height:1.55; margin-bottom:8px; }
+.comment-tags { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:8px; }
+.comment-tag { background:rgba(147,3,46,.1); color:var(--dr); padding:2px 8px; border-radius:12px; font-size:.65rem; font-weight:600; }
+.comment-actions { display:flex; gap:12px; padding-top:6px; border-top:1px solid var(--border); }
+.like-comment-btn { background:none; border:none; cursor:pointer; font-size:.75rem; color:#aaa; display:flex; align-items:center; gap:4px; transition:all .2s; }
+.like-comment-btn:hover, .like-comment-btn.liked { color:#e74c3c; }
+.reply-comment-btn { background:none; border:none; cursor:pointer; font-size:.75rem; color:var(--dr); display:flex; align-items:center; gap:4px; transition:all .2s; }
+.reply-comment-btn:hover { background:rgba(147,3,46,.08); border-radius:15px; }
+.reply-textarea { width:100%; border:1.5px solid var(--border); border-radius:10px; padding:8px 12px; font-size:.8rem; resize:none; margin-top:8px; }
+.reply-submit { background:var(--dr); color:white; border:none; padding:6px 14px; border-radius:20px; font-size:.72rem; cursor:pointer; margin-top:6px; }
+.reply-cancel { background:#F5F0E8; color:#4A3B2F; border:none; padding:6px 12px; border-radius:20px; font-size:.72rem; cursor:pointer; margin-top:6px; }
+.replies-list { margin-top:8px; padding-left:15px; border-left:2px solid var(--border); }
+.reply-item { background:white; border-radius:10px; padding:8px 12px; margin-bottom:6px; border-left:2px solid #C49A6C; }
+.empty-comments { text-align:center; padding:2rem; color:#aaa; }
+
+.loading-spinner { display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,.3); border-radius:50%; border-top-color:white; animation:spin .6s linear infinite; margin-right:6px; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+.toast-notification { position:fixed; bottom:20px; right:20px; color:white; padding:10px 20px; border-radius:40px; font-size:.8rem; font-weight:600; z-index:10001; animation:toastIn .3s ease; }
+@keyframes toastIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+@media (max-width:768px) {
+    .video-container { padding:1rem; }
+    .video-title { font-size:1.3rem; }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="video-page">
+    <div class="video-container">
+        
+        {# ── BOUTONS DE NAVIGATION ── #}
+        <div class="nav-buttons">
+            <a href="{{ path('app_forum_public') }}#videos" class="btn-nav-video">
+                <i class="fas fa-video"></i> Vidéos
+            </a>
+            <a href="{{ path('app_forum_public') }}#photos" class="btn-nav-image">
+                <i class="fas fa-image"></i> Photos
+            </a>
+        </div>
+
+        {# ── PLAYER VIDÉO ── #}
+        <div class="video-player-wrapper">
+            <div class="video-player">
+                {% if publication.isYoutubeVideo() and publication.youtubeId %}
+                    <iframe src="https://www.youtube.com/embed/{{ publication.youtubeId }}?autoplay=1&rel=0&modestbranding=1" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen></iframe>
+                {% elseif publication.isVimeoVideo() and publication.vimeoId %}
+                    <iframe src="https://player.vimeo.com/video/{{ publication.vimeoId }}?autoplay=1&dnt=1" 
+                            allow="autoplay; fullscreen" allowfullscreen></iframe>
+                {% else %}
+                    <video src="{{ publication.video starts with 'http' ? publication.video : asset('uploads/publications/' ~ publication.video) }}" 
+                           controls autoplay></video>
+                {% endif %}
+            </div>
+        </div>
+
+        {# ── INFOS VIDÉO ── #}
+        <div class="video-info">
+            <h1 class="video-title">{{ publication.nom }}</h1>
+            <div class="video-meta">
+                <span class="video-forum-badge"><i class="fas fa-comments"></i> {{ publication.forum.nom }}</span>
+                <span class="video-date"><i class="fas fa-calendar"></i> {{ publication.dateCreation|date('d/m/Y') }}</span>
+                <span class="video-date"><i class="fas fa-eye"></i> {{ publication.vues|default(0) }} vues</span>
+            </div>
+            <p class="video-description">{{ publication.description|default('Aucune description.') }}</p>
+            <div class="video-actions">
+                <div class="vote-buttons">
+                    <button class="vote-btn" id="likeBtn" onclick="vote('like')">
+                        👍 <span id="likeCount">{{ likes|default(0) }}</span>
+                    </button>
+                    <button class="vote-btn" id="dislikeBtn" onclick="vote('dislike')">
+                        👎 <span id="dislikeCount">{{ dislikes|default(0) }}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {# ── SECTION COMMENTAIRES ── #}
+        <div class="comments-section">
+            <div class="comments-header">
+                <h3><i class="fas fa-comment-dots"></i> Commentaires</h3>
+                <span class="comments-count" id="commentsCount">{{ publication.commentaires|length }} commentaire(s)</span>
+            </div>
+
+            <div class="comment-form">
+                <div class="emoji-strip">
+                    {% for emoji in ['😊','😍','🔥','👍','❤️','😂','🌍','✈️','🏖️','🌴','🤩','💯','🙌','😎','🌟','⭐'] %}
+                        <button type="button" class="emoji-btn" onclick="addEmoji('{{ emoji }}')">{{ emoji }}</button>
+                    {% endfor %}
+                </div>
+                <textarea id="commentText" class="comment-textarea" rows="3" placeholder="Partagez votre avis sur cette vidéo... (min. 3 caractères)"></textarea>
+                <input type="text" id="commentTags" class="comment-tags-input" placeholder="🏷️ Tags : voyage, plage, culture...">
+                <div class="tags-suggestions">
+                    {% for tag in ['voyage','hôtel','plage','culture','restaurant','désert','conseils','astuces'] %}
+                        <span class="tag-suggestion" onclick="addTag('{{ tag }}')">#{{ tag }}</span>
+                    {% endfor %}
+                </div>
+                <button id="submitCommentBtn" class="submit-comment-btn" onclick="submitComment()">
+                    <i class="fas fa-paper-plane"></i> Publier mon commentaire
+                </button>
+            </div>
+
+            <div id="commentsList" class="comments-list">
+                {% for comment in publication.commentaires %}
+                    <div class="comment-item" id="comment-{{ comment.idC }}">
+                        <div class="comment-header">
+                            <div class="comment-avatar">V</div>
+                            <span class="comment-author">Voyageur TunisiaJourney</span>
+                            <span class="comment-date">{{ comment.dateCreation|date('d/m/Y H:i') }}</span>
+                        </div>
+                        <div class="comment-text">{{ comment.description }}</div>
+                        {% if comment.tags %}
+                            <div class="comment-tags">
+                                {% for tag in comment.tags|split(',') %}
+                                    <span class="comment-tag">#{{ tag|trim }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="comment-actions">
+                            <button class="like-comment-btn" id="likeCommentBtn-{{ comment.idC }}" onclick="likeComment({{ comment.idC }})">
+                                <span id="likeHeart-{{ comment.idC }}">🤍</span> <span id="likeCommentCount-{{ comment.idC }}">{{ comment.likes|default(0) }}</span>
+                            </button>
+                            <button class="reply-comment-btn" onclick="toggleReply({{ comment.idC }})">
+                                <i class="fas fa-reply"></i> Répondre
+                            </button>
+                        </div>
+                        <div id="replyForm-{{ comment.idC }}" style="display:none;">
+                            <textarea id="replyText-{{ comment.idC }}" class="reply-textarea" rows="2" placeholder="Votre réponse..."></textarea>
+                            <div>
+                                <button class="reply-cancel" onclick="toggleReply({{ comment.idC }})">Annuler</button>
+                                <button class="reply-submit" onclick="submitReply({{ comment.idC }})">Répondre</button>
+                            </div>
+                        </div>
+                        <div id="replies-{{ comment.idC }}" class="replies-list"></div>
+                    </div>
+                {% else %}
+                    <div class="empty-comments">
+                        <i class="fas fa-comment-slash" style="font-size:2rem; opacity:.3; margin-bottom:.5rem; display:block;"></i>
+                        <p>Soyez le premier à commenter cette vidéo !</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+const publicationId = {{ publication.idP }};
+let commentLikes = {};
+
+document.querySelectorAll('[id^="likeCommentCount-"]').forEach(el => {
+    const id = el.id.replace('likeCommentCount-', '');
+    commentLikes[id] = { liked: false, count: parseInt(el.textContent) || 0 };
+});
+
+async function vote(type) {
+    try {
+        const response = await fetch('/publication/' + publicationId + '/vote', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+            body: 'type=' + type
+        });
+        const data = await response.json();
+        if (data.success) {
+            document.getElementById('likeCount').textContent = data.likes;
+            document.getElementById('dislikeCount').textContent = data.dislikes;
+            document.getElementById('likeBtn').classList.toggle('liked', data.userVote === 'like');
+            document.getElementById('dislikeBtn').classList.toggle('disliked', data.userVote === 'dislike');
+            showToast(type === 'like' ? '👍 Like ajouté !' : '👎 Dislike ajouté !', 'success');
+        }
+    } catch(e) { console.error(e); }
+}
+
+async function submitComment() {
+    const text = document.getElementById('commentText').value.trim();
+    const tags = document.getElementById('commentTags').value.trim();
+    const btn = document.getElementById('submitCommentBtn');
+    
+    if (text.length < 3) {
+        showToast('⚠️ Le commentaire doit contenir au moins 3 caractères', 'error');
+        return;
+    }
+    
+    btn.innerHTML = '<span class="loading-spinner"></span> Publication...';
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch('/commentaire/api/new/' + publicationId, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ description: text, tags: tags })
+        });
+        const data = await response.json();
+        if (data.success) {
+            document.getElementById('commentText').value = '';
+            document.getElementById('commentTags').value = '';
+            await loadComments();
+            document.getElementById('commentsCount').textContent = data.total + ' commentaire(s)';
+            showToast('✅ Commentaire publié !', 'success');
+        } else {
+            showToast('❌ ' + (data.error || 'Erreur'), 'error');
+        }
+    } catch(e) {
+        showToast('❌ Erreur de connexion', 'error');
+    } finally {
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Publier mon commentaire';
+        btn.disabled = false;
+    }
+}
+
+async function loadComments() {
+    try {
+        const response = await fetch('/commentaire/publication/' + publicationId + '/comments', {
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+        });
+        const data = await response.json();
+        if (data.success && data.comments) {
+            const commentsList = document.getElementById('commentsList');
+            commentsList.innerHTML = data.comments.map(buildCommentHTML).join('');
+            data.comments.forEach(c => {
+                commentLikes[c.id] = { liked: false, count: c.likes || 0 };
+            });
+        }
+    } catch(e) { console.error(e); }
+}
+
+function buildCommentHTML(c) {
+    const ld = commentLikes[c.id] || { liked: false, count: 0 };
+    const tags = c.tags ? '<div class="comment-tags">' + c.tags.split(',').map(t => '<span class="comment-tag">#' + escapeHtml(t.trim()) + '</span>').join('') + '</div>' : '';
+    return `<div class="comment-item" id="comment-${c.id}">
+        <div class="comment-header">
+            <div class="comment-avatar">V</div>
+            <span class="comment-author">Voyageur TunisiaJourney</span>
+            <span class="comment-date">${c.date}</span>
+        </div>
+        <div class="comment-text">${escapeHtml(c.description)}</div>
+        ${tags}
+        <div class="comment-actions">
+            <button class="like-comment-btn" id="likeCommentBtn-${c.id}" onclick="likeComment(${c.id})">
+                <span id="likeHeart-${c.id}">${ld.liked ? '❤️' : '🤍'}</span> <span id="likeCommentCount-${c.id}">${ld.count}</span>
+            </button>
+            <button class="reply-comment-btn" onclick="toggleReply(${c.id})">
+                <i class="fas fa-reply"></i> Répondre
+            </button>
+        </div>
+        <div id="replyForm-${c.id}" style="display:none;">
+            <textarea id="replyText-${c.id}" class="reply-textarea" rows="2" placeholder="Votre réponse..."></textarea>
+            <div>
+                <button class="reply-cancel" onclick="toggleReply(${c.id})">Annuler</button>
+                <button class="reply-submit" onclick="submitReply(${c.id})">Répondre</button>
+            </div>
+        </div>
+        <div id="replies-${c.id}" class="replies-list"></div>
+    </div>`;
+}
+
+function likeComment(id) {
+    if (!commentLikes[id]) commentLikes[id] = { liked: false, count: 0 };
+    const d = commentLikes[id];
+    d.liked = !d.liked;
+    d.count += d.liked ? 1 : -1;
+    
+    const heart = document.getElementById('likeHeart-' + id);
+    const count = document.getElementById('likeCommentCount-' + id);
+    const btn = document.getElementById('likeCommentBtn-' + id);
+    
+    if (heart) heart.textContent = d.liked ? '❤️' : '🤍';
+    if (count) count.textContent = d.count;
+    if (btn) btn.classList.toggle('liked', d.liked);
+}
+
+function toggleReply(id) {
+    const form = document.getElementById('replyForm-' + id);
+    if (form) form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+
+async function submitReply(commentId) {
+    const text = document.getElementById('replyText-' + commentId).value.trim();
+    if (text.length < 2) {
+        showToast('⚠️ La réponse doit contenir au moins 2 caractères', 'error');
+        return;
+    }
+    try {
+        const response = await fetch('/commentaire/api/new/' + publicationId, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ description: text, tags: '' })
+        });
+        const data = await response.json();
+        if (data.success) {
+            const repliesDiv = document.getElementById('replies-' + commentId);
+            const replyHtml = `<div class="reply-item">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
+                    <div style="width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#C49A6C,#F5CAC3);display:flex;align-items:center;justify-content:center;color:white;font-size:.58rem;">V</div>
+                    <span style="font-weight:600;font-size:.76rem;">Voyageur</span>
+                    <span style="font-size:.64rem;color:#aaa;">${data.comment.date}</span>
+                </div>
+                <div style="font-size:.82rem;color:#555;">${escapeHtml(text)}</div>
+            </div>`;
+            if (repliesDiv) repliesDiv.insertAdjacentHTML('beforeend', replyHtml);
+            document.getElementById('replyText-' + commentId).value = '';
+            toggleReply(commentId);
+            showToast('💬 Réponse publiée !', 'success');
+        }
+    } catch(e) { showToast('❌ Erreur', 'error'); }
+}
+
+function addEmoji(emoji) {
+    const ta = document.getElementById('commentText');
+    const pos = ta.selectionStart || ta.value.length;
+    ta.value = ta.value.slice(0, pos) + emoji + ta.value.slice(pos);
+    ta.focus();
+    ta.setSelectionRange(pos + emoji.length, pos + emoji.length);
+}
+
+function addTag(tag) {
+    const input = document.getElementById('commentTags');
+    input.value = input.value.trim() ? input.value.trim() + ', ' + tag : tag;
+    input.focus();
+}
+
+function showToast(msg, type) {
+    const colors = { success: '#27ae60', error: '#c0392b', warn: '#e07b39' };
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.style.background = colors[type] || colors.success;
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const response = await fetch('/publication/' + publicationId + '/likes', {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await response.json();
+        if (data.likes !== undefined) {
+            document.getElementById('likeCount').textContent = data.likes;
+            document.getElementById('dislikeCount').textContent = data.dislikes;
+            document.getElementById('likeBtn').classList.toggle('liked', data.userVote === 'like');
+            document.getElementById('dislikeBtn').classList.toggle('disliked', data.userVote === 'dislike');
+        }
+    } catch(e) {}
+});
+</script>
+{% endblock %}

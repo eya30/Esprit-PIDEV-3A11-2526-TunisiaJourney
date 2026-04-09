@@ -1,0 +1,441 @@
+{% extends 'admin/dashboard/base_admin.html.twig' %}
+
+{% block title %}Nouvelle Publication{% endblock %}
+{% block page_title %}Créer une nouvelle publication{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="form-card">
+            <h5 class="form-title">Créer une publication</h5>
+            <p class="form-subtitle">Ajoutez une nouvelle publication au forum</p>
+
+            {% set hasErrors = (errors.nom is defined) or (errors.forum is defined) or (errors.media is defined) %}
+            {% if hasErrors %}
+                <div class="alert-errors">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Veuillez corriger les erreurs :</strong>
+                    <ul style="margin:8px 0 0 20px;">
+                        {% if errors.nom is defined %}<li>{{ errors.nom }}</li>{% endif %}
+                        {% if errors.forum is defined %}<li>{{ errors.forum }}</li>{% endif %}
+                        {% if errors.media is defined %}<li>{{ errors.media }}</li>{% endif %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'id': 'pub-form'}}) }}
+
+                {# ── TITRE ── #}
+                <div class="form-group">
+                    <label class="form-label">Titre <span class="required">*</span></label>
+                    <div class="input-group-custom {% if errors.nom is defined %}input-error{% endif %}">
+                        <i class="fas fa-heading"></i>
+                        {{ form_widget(form.nom, {'attr': {'class': 'form-control', 'placeholder': 'Commence par une lettre, min. 3 caractères...'}}) }}
+                    </div>
+                    {% if errors.nom is defined %}
+                        <div class="error-block"><i class="fas fa-exclamation-circle"></i><div>{{ errors.nom }}</div></div>
+                    {% endif %}
+                    <div class="field-hint">Min. 3 caractères · Commence par une lettre · Sans symboles spéciaux</div>
+                </div>
+
+                {# ── DESCRIPTION ── #}
+                <div class="form-group">
+                    <label class="form-label">Description <span class="optional">(optionnel)</span></label>
+                    <div class="input-group-custom textarea-wrap">
+                        <i class="fas fa-align-left" style="align-self:flex-start;padding-top:14px;"></i>
+                        {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': '4', 'placeholder': 'Contenu de la publication...'}}) }}
+                    </div>
+                </div>
+
+                {# ══════════════════════════════════════════════
+                   IMAGE (indépendante de la vidéo)
+                ══════════════════════════════════════════════ #}
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-image me-2" style="color:#3B82F6;"></i>Image
+                        <span class="optional">(optionnel)</span>
+                    </label>
+
+                    {% if errors.media is defined and errors.media %}
+                        <div class="error-block"><i class="fas fa-exclamation-circle"></i><div>{{ errors.media }}</div></div>
+                    {% endif %}
+
+                    <div class="source-tabs">
+                        <button type="button" id="img-tab-upload" onclick="switchSource('image','upload')" class="source-tab active">
+                            <i class="fas fa-upload me-1"></i> Fichier
+                        </button>
+                        <button type="button" id="img-tab-url" onclick="switchSource('image','url')" class="source-tab">
+                            <i class="fas fa-link me-1"></i> URL
+                        </button>
+                    </div>
+
+                    <div id="img-upload-panel">
+                        <input type="file" id="imgFileInput" name="publication_image_file"
+                               accept="image/jpeg,image/png,image/gif,image/webp"
+                               style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;"
+                               onchange="onFileChosen(this,'image')">
+                        <label for="imgFileInput" class="dropzone-label" id="dropzone-img">
+                            <div id="img-upload-ph">
+                                <div class="upload-icon">🖼️</div>
+                                <div class="upload-text">Cliquez ou glissez une image</div>
+                                <div class="upload-hint-text">JPG, PNG, GIF, WebP — Max 5 Mo</div>
+                            </div>
+                            <div id="img-upload-preview" style="display:none;">
+                                <img id="img-preview-thumb" src="" class="upload-preview-img">
+                                <div id="img-preview-name" class="upload-preview-name"></div>
+                            </div>
+                        </label>
+                        <div id="img-upload-actions" style="display:none;margin-top:8px;">
+                            <button type="button" onclick="clearFile('image')" class="btn-remove">
+                                <i class="fas fa-trash-alt me-1"></i>Supprimer
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="img-url-panel" style="display:none;">
+                        <div class="url-input-group">
+                            <input type="text" id="imgUrlInput" class="url-input" placeholder="https://exemple.com/image.jpg">
+                            <button type="button" onclick="applyImageUrl()" class="btn-apply">
+                                <i class="fas fa-check me-1"></i>Appliquer
+                            </button>
+                        </div>
+                        <div id="img-url-preview" class="url-preview" style="display:none;">
+                            <img id="img-url-thumb" src="" class="url-preview-img">
+                            <div class="url-preview-info">
+                                <div class="url-preview-status">✅ Image valide</div>
+                                <div id="img-url-link" class="url-preview-link"></div>
+                                <button type="button" onclick="clearImageUrl()" class="btn-remove-small">
+                                    <i class="fas fa-times me-1"></i>Supprimer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="imageUrlHidden" name="image_url" value="">
+                </div>
+
+                {# ══════════════════════════════════════════════
+                   VIDÉO (indépendante de l'image)
+                ══════════════════════════════════════════════ #}
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-video me-2" style="color:#93032E;"></i>Vidéo
+                        <span class="optional">(optionnel)</span>
+                    </label>
+
+                    <div class="source-tabs">
+                        <button type="button" id="vid-tab-upload" onclick="switchSource('video','upload')" class="source-tab active">
+                            <i class="fas fa-upload me-1"></i> Fichier
+                        </button>
+                        <button type="button" id="vid-tab-url" onclick="switchSource('video','url')" class="source-tab">
+                            <i class="fas fa-link me-1"></i> URL / YouTube / Vimeo
+                        </button>
+                    </div>
+
+                    <div id="vid-upload-panel">
+                        <input type="file" id="videoFileInput" name="publication_video_file"
+                               accept="video/mp4,video/webm,video/ogg,video/avi,video/quicktime"
+                               style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;"
+                               onchange="onFileChosen(this,'video')">
+                        <label for="videoFileInput" class="dropzone-label dropzone-video" id="dropzone-vid">
+                            <div id="vid-upload-ph">
+                                <div class="upload-icon">🎬</div>
+                                <div class="upload-text">Cliquez ou glissez une vidéo</div>
+                                <div class="upload-hint-text">MP4, WebM, OGG, AVI, MOV — Max 50 Mo</div>
+                            </div>
+                            <div id="vid-upload-preview" style="display:none;">
+                                <video id="vid-preview-thumb" class="upload-preview-video" controls muted></video>
+                                <div id="vid-preview-name" class="upload-preview-name"></div>
+                            </div>
+                        </label>
+                        <div id="vid-upload-actions" style="display:none;margin-top:8px;">
+                            <button type="button" onclick="clearFile('video')" class="btn-remove">
+                                <i class="fas fa-trash-alt me-1"></i>Supprimer
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="vid-url-panel" style="display:none;">
+                        <div class="url-input-group">
+                            <input type="text" id="vidUrlInput" class="url-input"
+                                   placeholder="https://youtube.com/watch?v=... ou lien MP4">
+                            <button type="button" onclick="applyVideoUrl()" class="btn-apply">
+                                <i class="fas fa-check me-1"></i>Appliquer
+                            </button>
+                        </div>
+                        <div class="field-hint mt-1" style="margin-bottom:10px;">
+                            <i class="fab fa-youtube me-1" style="color:#FF0000;"></i>YouTube &nbsp;·&nbsp;
+                            <i class="fab fa-vimeo me-1" style="color:#1AB7EA;"></i>Vimeo &nbsp;·&nbsp;
+                            <i class="fas fa-link me-1"></i>Lien MP4 direct
+                        </div>
+                        <div id="vid-url-preview" class="vid-url-preview" style="display:none;">
+                            <div id="vid-url-embed-container"></div>
+                            <div class="url-preview-info" style="margin-top:8px;">
+                                <div class="url-preview-status">✅ Vidéo valide</div>
+                                <div id="vid-url-link" class="url-preview-link"></div>
+                                <button type="button" onclick="clearVideoUrl()" class="btn-remove-small">
+                                    <i class="fas fa-times me-1"></i>Supprimer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="videoUrlHidden" name="video_url" value="">
+                </div>
+
+                {# ── FORUM ── #}
+                <div class="form-group">
+                    <label class="form-label">Forum <span class="required">*</span></label>
+                    <div class="input-group-custom {% if errors.forum is defined %}input-error{% endif %}">
+                        <i class="fas fa-comments"></i>
+                        {{ form_widget(form.forum, {'attr': {'class': 'form-control custom-select'}}) }}
+                        <i class="fas fa-chevron-down select-arrow"></i>
+                    </div>
+                    {% if errors.forum is defined %}
+                        <div class="error-block"><i class="fas fa-exclamation-circle"></i><div>{{ errors.forum }}</div></div>
+                    {% endif %}
+                </div>
+
+                <div class="form-actions">
+                    <a href="{{ path('app_publication_index') }}" class="btn-outline-action">
+                        <i class="fas fa-arrow-left me-2"></i>Annuler
+                    </a>
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-save me-2"></i>Publier
+                    </button>
+                </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+
+    {# ── APERÇU DOUBLE ── #}
+    <div class="col-md-4">
+        <div class="preview-card">
+            <h5 class="preview-title"><i class="fas fa-eye me-2"></i>Aperçu Image</h5>
+            <div class="preview-box" id="previewImgBox">
+                <img id="previewImg" src="" style="display:none;max-width:100%;max-height:150px;border-radius:10px;object-fit:cover;">
+                <div id="previewImgPH" style="text-align:center;">
+                    <div style="font-size:40px;opacity:.2;">🖼️</div>
+                    <div style="color:#ccc;font-size:.75rem;">Aucune image</div>
+                </div>
+            </div>
+        </div>
+        <div class="preview-card" style="margin-top:16px;">
+            <h5 class="preview-title"><i class="fas fa-video me-2"></i>Aperçu Vidéo</h5>
+            <div class="preview-box" id="previewVidBox">
+                <video id="previewVid" style="display:none;max-width:100%;max-height:150px;border-radius:10px;" controls muted></video>
+                <div id="previewVidEmbed" style="display:none;width:100%;"></div>
+                <div id="previewVidPH" style="text-align:center;">
+                    <div style="font-size:40px;opacity:.2;">🎬</div>
+                    <div style="color:#ccc;font-size:.75rem;">Aucune vidéo</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-card{background:white;border-radius:24px;padding:32px;border:1px solid #F0E8DD;box-shadow:0 4px 12px rgba(0,0,0,.05)}
+.form-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:#2C1810;margin-bottom:8px}
+.form-subtitle{font-size:.85rem;color:#93032E;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid #F0E8DD}
+.alert-errors{background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:12px 16px;margin-bottom:20px;color:#DC2626;font-size:.85rem}
+.form-group{margin-bottom:24px}
+.form-label{font-size:.85rem;font-weight:700;color:#2C1810;margin-bottom:8px;display:block}
+.required{color:#EF4444}.optional{font-weight:400;color:#9CA3AF;font-size:.8rem}
+.field-hint{font-size:.73rem;color:#9CA3AF}.mt-1{margin-top:4px}.mb-2{margin-bottom:8px}
+.error-block{display:flex;align-items:flex-start;gap:8px;background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:10px 14px;margin-top:6px;color:#DC2626;font-size:.82rem;font-weight:500}
+.input-group-custom{display:flex;align-items:center;background:#FEF9F0;border:1.5px solid #E8DFD1;border-radius:12px;transition:all .2s;overflow:hidden;position:relative}
+.input-group-custom:focus-within{border-color:#93032E;box-shadow:0 0 0 3px rgba(147,3,46,.07);background:white}
+.input-group-custom.input-error{border-color:#EF4444!important;background:#FFF5F5}
+.input-group-custom>i:first-child{padding:12px 0 12px 14px;color:#C49A6C;font-size:.95rem;flex-shrink:0}
+.input-group-custom .form-control{border:none;background:transparent;padding:12px 14px;font-size:.87rem;width:100%}
+.input-group-custom .form-control:focus{outline:none;box-shadow:none}
+.textarea-wrap{align-items:flex-start}
+.select-arrow{position:absolute;right:14px;color:#C49A6C;font-size:.7rem;pointer-events:none}
+.custom-select{appearance:none;-webkit-appearance:none;padding-right:36px!important;cursor:pointer}
+.source-tabs{display:flex;gap:8px;margin-bottom:12px}
+.source-tab{flex:1;padding:9px;border-radius:10px;border:1.5px solid #E8DFD1;background:#F9F9F9;color:#6B7280;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.source-tab.active{background:#93032E;border-color:#93032E;color:white}
+.dropzone-label{display:block;border:2px dashed #E8DFD1;border-radius:14px;padding:24px 20px;background:#FEF9F0;text-align:center;cursor:pointer;transition:all .2s}
+.dropzone-label:hover{border-color:#93032E;background:#FFF5F0}
+.dropzone-video{background:#FFF5F0;border-color:#F5CAC3}
+.upload-icon{font-size:36px;margin-bottom:8px;opacity:.5}
+.upload-text{font-size:.85rem;font-weight:600;color:#2C1810;margin-bottom:3px}
+.upload-hint-text{font-size:.72rem;color:#9CA3AF}
+.upload-preview-img{max-height:120px;max-width:100%;border-radius:8px;object-fit:cover}
+.upload-preview-video{max-height:120px;max-width:100%;border-radius:8px}
+.upload-preview-name{font-size:.72rem;color:#666;margin-top:6px}
+.url-input-group{display:flex;gap:10px;align-items:center}
+.url-input{flex:1;padding:11px 14px;border:1.5px solid #E8DFD1;border-radius:12px;font-size:.85rem;outline:none;background:#FEF9F0;transition:all .2s}
+.url-input:focus{border-color:#93032E;background:white}
+.btn-apply{padding:11px 18px;background:#93032E;color:white;border:none;border-radius:12px;font-size:.83rem;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn-apply:hover{background:#6B0221}
+.url-preview{margin-top:12px;padding:12px;background:#FEF9F0;border-radius:12px;display:flex;align-items:center;gap:12px;border:1px solid #F0E8DD}
+.url-preview-img{width:70px;height:52px;object-fit:cover;border-radius:8px;border:1px solid #E8DFD1;flex-shrink:0}
+.url-preview-info{flex:1}
+.url-preview-status{font-size:.8rem;font-weight:700;color:#047857;margin-bottom:3px}
+.url-preview-link{font-size:.7rem;color:#888;word-break:break-all;margin-bottom:5px}
+.vid-url-preview{margin-top:12px;padding:14px;background:#FFF5F0;border-radius:12px;border:1px solid #F5CAC3}
+.btn-remove{background:#FDE8E8;color:#c0392b;border:none;border-radius:8px;padding:7px 14px;font-size:.78rem;font-weight:600;cursor:pointer}
+.btn-remove:hover{background:#c0392b;color:white}
+.btn-remove-small{background:#FDE8E8;color:#c0392b;border:none;border-radius:6px;padding:3px 10px;font-size:.72rem;font-weight:600;cursor:pointer}
+.form-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:28px;padding-top:22px;border-top:1px solid #F0E8DD}
+.btn-submit{background:#93032E;border:none;padding:11px 26px;border-radius:40px;font-size:.88rem;font-weight:600;color:white;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center}
+.btn-submit:hover{background:#6B0221;transform:translateY(-2px);box-shadow:0 4px 14px rgba(147,3,46,.3)}
+.btn-outline-action{background:transparent;border:1.5px solid #E8DFD1;padding:11px 22px;border-radius:40px;font-size:.88rem;font-weight:500;color:#4A3B2F;text-decoration:none;display:inline-flex;align-items:center;transition:all .2s}
+.btn-outline-action:hover{border-color:#93032E;color:#93032E;background:#FFF9F0}
+.preview-card{background:white;border-radius:20px;padding:20px;border:1px solid #F0E8DD;box-shadow:0 4px 12px rgba(0,0,0,.04)}
+.preview-title{font-size:.95rem;font-weight:700;color:#2C1810;margin-bottom:14px;display:flex;align-items:center}
+.preview-box{background:#FEF9F0;border:2px dashed #E8DFD1;border-radius:14px;padding:18px;min-height:140px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+</style>
+
+<script>
+// ── SOURCE IMAGE ──────────────────────────────────────────
+function switchSource(type, source) {
+    var isUpload = source === 'upload';
+    var pfx = type === 'image' ? 'img' : 'vid';
+    document.getElementById(pfx+'-upload-panel').style.display = isUpload ? 'block' : 'none';
+    document.getElementById(pfx+'-url-panel').style.display    = isUpload ? 'none'  : 'block';
+    document.getElementById(pfx+'-tab-upload').classList.toggle('active', isUpload);
+    document.getElementById(pfx+'-tab-url').classList.toggle('active', !isUpload);
+    if (isUpload) { if (type==='image') clearImageUrl(); else clearVideoUrl(); }
+    else          { clearFile(type); }
+}
+
+// ── FICHIER ────────────────────────────────────────────────
+function onFileChosen(input, type) {
+    if (input.files && input.files[0]) processFile(input.files[0], type);
+}
+
+function processFile(file, type) {
+    var isImage = type === 'image';
+    var maxMb   = isImage ? 5 : 50;
+    if (file.size > maxMb * 1024 * 1024) { alert('Fichier trop grand ! Max '+maxMb+' Mo.'); clearFile(type); return; }
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        if (isImage) {
+            document.getElementById('img-preview-thumb').src = e.target.result;
+            document.getElementById('img-preview-name').textContent = '📁 '+file.name;
+            document.getElementById('img-upload-ph').style.display = 'none';
+            document.getElementById('img-upload-preview').style.display = 'block';
+            document.getElementById('img-upload-actions').style.display = 'block';
+            document.getElementById('imageUrlHidden').value = '';
+            // Aperçu
+            document.getElementById('previewImg').src = e.target.result;
+            document.getElementById('previewImg').style.display = 'block';
+            document.getElementById('previewImgPH').style.display = 'none';
+        } else {
+            document.getElementById('vid-preview-thumb').src = e.target.result;
+            document.getElementById('vid-preview-name').textContent = '🎬 '+file.name;
+            document.getElementById('vid-upload-ph').style.display = 'none';
+            document.getElementById('vid-upload-preview').style.display = 'block';
+            document.getElementById('vid-upload-actions').style.display = 'block';
+            document.getElementById('videoUrlHidden').value = '';
+            // Aperçu
+            document.getElementById('previewVid').src = e.target.result;
+            document.getElementById('previewVid').style.display = 'block';
+            document.getElementById('previewVidPH').style.display = 'none';
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+function clearFile(type) {
+    if (type === 'image') {
+        var fi = document.getElementById('imgFileInput'); if(fi) fi.value='';
+        document.getElementById('img-upload-ph').style.display = 'block';
+        document.getElementById('img-upload-preview').style.display = 'none';
+        document.getElementById('img-upload-actions').style.display = 'none';
+        document.getElementById('previewImg').style.display = 'none';
+        document.getElementById('previewImg').src = '';
+        document.getElementById('previewImgPH').style.display = 'block';
+    } else {
+        var fv = document.getElementById('videoFileInput'); if(fv) fv.value='';
+        document.getElementById('vid-upload-ph').style.display = 'block';
+        document.getElementById('vid-upload-preview').style.display = 'none';
+        document.getElementById('vid-upload-actions').style.display = 'none';
+        var pv = document.getElementById('vid-preview-thumb'); if(pv) pv.src='';
+        document.getElementById('previewVid').style.display = 'none';
+        document.getElementById('previewVidPH').style.display = 'block';
+    }
+}
+
+// ── URL IMAGE ──────────────────────────────────────────────
+function applyImageUrl() {
+    var url = document.getElementById('imgUrlInput').value.trim();
+    if (!url) { alert('Entrez une URL.'); return; }
+    var img = new Image();
+    img.onload = function() {
+        document.getElementById('img-url-thumb').src = url;
+        document.getElementById('img-url-link').textContent = url.slice(0,50);
+        document.getElementById('img-url-preview').style.display = 'flex';
+        document.getElementById('imageUrlHidden').value = url;
+        var fi = document.getElementById('imgFileInput'); if(fi) fi.value='';
+        document.getElementById('previewImg').src = url;
+        document.getElementById('previewImg').style.display = 'block';
+        document.getElementById('previewImgPH').style.display = 'none';
+    };
+    img.onerror = function() { alert('❌ URL image invalide.'); };
+    img.src = url;
+}
+
+function clearImageUrl() {
+    var i = document.getElementById('imgUrlInput'); if(i) i.value='';
+    document.getElementById('img-url-preview').style.display = 'none';
+    document.getElementById('imageUrlHidden').value = '';
+    document.getElementById('previewImg').style.display = 'none';
+    document.getElementById('previewImgPH').style.display = 'block';
+}
+
+// ── URL VIDÉO ──────────────────────────────────────────────
+function applyVideoUrl() {
+    var url = document.getElementById('vidUrlInput').value.trim();
+    if (!url) { alert('Entrez une URL.'); return; }
+    var html = buildVideoEmbed(url);
+    if (!html) { alert('❌ URL vidéo non reconnue.'); return; }
+    document.getElementById('vid-url-embed-container').innerHTML = html;
+    document.getElementById('vid-url-link').textContent = url.slice(0,50);
+    document.getElementById('vid-url-preview').style.display = 'block';
+    document.getElementById('videoUrlHidden').value = url;
+    var fv = document.getElementById('videoFileInput'); if(fv) fv.value='';
+    document.getElementById('previewVidEmbed').innerHTML = buildVideoEmbed(url) || '';
+    document.getElementById('previewVidEmbed').style.display = 'block';
+    document.getElementById('previewVidPH').style.display = 'none';
+}
+
+function clearVideoUrl() {
+    var v = document.getElementById('vidUrlInput'); if(v) v.value='';
+    document.getElementById('vid-url-preview').style.display = 'none';
+    document.getElementById('vid-url-embed-container').innerHTML = '';
+    document.getElementById('videoUrlHidden').value = '';
+    document.getElementById('previewVidEmbed').style.display = 'none';
+    document.getElementById('previewVidEmbed').innerHTML = '';
+    document.getElementById('previewVidPH').style.display = 'block';
+}
+
+function buildVideoEmbed(url) {
+    var yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    if (yt) return '<iframe width="100%" height="160" src="https://www.youtube.com/embed/'+yt[1]+'" frameborder="0" allowfullscreen style="border-radius:8px;"></iframe>';
+    var vm = url.match(/vimeo\.com\/(\d+)/);
+    if (vm) return '<iframe width="100%" height="160" src="https://player.vimeo.com/video/'+vm[1]+'" frameborder="0" allowfullscreen style="border-radius:8px;"></iframe>';
+    if (/\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url)) return '<video src="'+url+'" controls style="width:100%;max-height:160px;border-radius:8px;"></video>';
+    return null;
+}
+
+// ── DRAG & DROP ────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+    setupDz('dropzone-img','imgFileInput','image');
+    setupDz('dropzone-vid','videoFileInput','video');
+});
+function setupDz(dzId, inputId, type) {
+    var dz=document.getElementById(dzId); var fi=document.getElementById(inputId);
+    if(!dz||!fi) return;
+    ['dragenter','dragover'].forEach(function(ev){ dz.addEventListener(ev,function(e){e.preventDefault();dz.style.borderColor='#93032E';}); });
+    dz.addEventListener('dragleave',function(){dz.style.borderColor='';});
+    dz.addEventListener('drop',function(e){
+        e.preventDefault();dz.style.borderColor='';
+        var f=e.dataTransfer&&e.dataTransfer.files[0];
+        if(f){try{var dt=new DataTransfer();dt.items.add(f);fi.files=dt.files;}catch(x){}processFile(f,type);}
+    });
+}
+</script>
+{% endblock %}
