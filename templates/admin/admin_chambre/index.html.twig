@@ -1,0 +1,280 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Gestion des Chambres{% endblock %}
+{% block page_title %}Chambres{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted" style="color: #93032E !important;">Gérez l'ensemble des chambres</p>
+    </div>
+    <a href="{{ path('admin_chambre_new') }}" class="btn-primary-custom">
+        <i class="fas fa-plus me-2"></i> Nouvelle chambre
+    </a>
+</div>
+
+<div class="admin-table">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Image</th>
+                <th>Numéro</th>
+                <th>Type</th>
+                <th>Prix/Nuit</th>
+                <th>Capacité</th>
+                <th>Hôtel</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for chambre in chambres %}
+            <tr>
+                <td>
+                    {% if chambre.image %}
+                        <img src="{{ asset('uploads/chambres/' ~ chambre.image) }}" class="chambre-image">
+                    {% else %}
+                        <div class="image-placeholder">
+                            <i class="fas fa-bed"></i>
+                        </div>
+                    {% endif %}
+                </td>
+                <td class="fw-bold">{{ chambre.num }}</td>
+                <td>{{ chambre.type }}</td>
+                <td class="price">{{ chambre.prix_nuit }} €</td>
+                <td>{{ chambre.capacite_max }} pers</td>
+                <td>{{ chambre.hotel_nom }}</td>
+                <td>
+                    {% if chambre.status == 'disponible' %}
+                        <span class="badge-disponible">Disponible</span>
+                    {% elseif chambre.status == 'indisponible' %}
+                        <span class="badge-indisponible">Indisponible</span>
+                    {% else %}
+                        <span class="badge-maintenance">Maintenance</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <a href="{{ path('admin_chambre_reservations', {'id': chambre.idCh}) }}" class="action-btn reservations" title="Réservations">
+                            <i class="fas fa-calendar-alt"></i>
+                        </a>
+                        <a href="{{ path('admin_chambre_edit', {'id': chambre.idCh}) }}" class="action-btn edit" title="Modifier">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <form method="post" action="{{ path('admin_chambre_delete', {'id': chambre.idCh}) }}" onsubmit="return confirm('Supprimer cette chambre ?')">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_chambre_' ~ chambre.idCh) }}">
+                            <button type="submit" class="action-btn delete" title="Supprimer">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" class="text-center py-5">
+                    <i class="fas fa-bed fa-3x mb-3" style="color: #ddd;"></i>
+                    <p class="text-muted">Aucune chambre trouvée</p>
+                    <a href="{{ path('admin_chambre_new') }}" class="btn-primary-custom mt-2">Créer une chambre</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+    /* Bouton principal */
+    .btn-primary-custom {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: linear-gradient(135deg, #93032E, #6B0221);
+        border: none;
+        padding: 10px 24px;
+        border-radius: 50px;
+        font-size: 13px;
+        font-weight: 600;
+        color: white;
+        text-decoration: none;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(147,3,46,0.2);
+    }
+    
+    .btn-primary-custom:hover {
+        background: linear-gradient(135deg, #6B0221, #4A0116);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(147,3,46,0.3);
+        color: white;
+    }
+    
+    /* Image chambre */
+    .chambre-image {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 1px solid #f0e8dd;
+        transition: transform 0.3s;
+    }
+    
+    .chambre-image:hover {
+        transform: scale(1.05);
+    }
+    
+    .image-placeholder {
+        width: 50px;
+        height: 50px;
+        background: #fef9f0;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #c49a6c;
+        font-size: 1.2rem;
+        border: 1px solid #f0e8dd;
+    }
+    
+    /* Prix */
+    .price {
+        font-weight: 700;
+        color: #93032E;
+    }
+    
+    /* Badges status */
+    .badge-disponible {
+        background: #d1fae5;
+        color: #059669;
+        padding: 5px 12px;
+        border-radius: 50px;
+        font-size: 11px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    
+    .badge-indisponible {
+        background: #fee2e2;
+        color: #dc2626;
+        padding: 5px 12px;
+        border-radius: 50px;
+        font-size: 11px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    
+    .badge-maintenance {
+        background: #fef3c7;
+        color: #d97706;
+        padding: 5px 12px;
+        border-radius: 50px;
+        font-size: 11px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    
+    /* Boutons d'action */
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+        cursor: pointer;
+        border: none;
+        font-size: 0.9rem;
+        text-decoration: none;
+    }
+    
+    .action-btn.reservations {
+        background: #eff6ff;
+        color: #3b82f6;
+    }
+    
+    .action-btn.reservations:hover {
+        background: #3b82f6;
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+    }
+    
+    .action-btn.edit {
+        background: #fef3c7;
+        color: #d97706;
+    }
+    
+    .action-btn.edit:hover {
+        background: #d97706;
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(217,119,6,0.3);
+    }
+    
+    .action-btn.delete {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+    
+    .action-btn.delete:hover {
+        background: #dc2626;
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(220,38,38,0.3);
+    }
+    
+    /* Table */
+    .admin-table {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #f0e8dd;
+        overflow-x: auto;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    
+    .admin-table th {
+        background: #fef9f0;
+        padding: 14px 16px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #93032E;
+        text-transform: uppercase;
+        border-bottom: 1px solid #f0e8dd;
+    }
+    
+    .admin-table td {
+        padding: 14px 16px;
+        font-size: 13px;
+        border-bottom: 1px solid #f5f0e8;
+        vertical-align: middle;
+    }
+    
+    .admin-table tr:hover td {
+        background: #fff9f0;
+    }
+    
+    .fw-bold {
+        font-weight: 700;
+        color: #2c1810;
+    }
+    
+    @media (max-width: 768px) {
+        .admin-table {
+            overflow-x: auto;
+        }
+        .action-buttons {
+            gap: 5px;
+        }
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            font-size: 0.8rem;
+        }
+    }
+</style>
+{% endblock %}
