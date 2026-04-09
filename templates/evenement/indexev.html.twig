@@ -1,0 +1,842 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TunisiaJourney - Découvrez les événements en Tunisie{% endblock %}
+
+{% block stylesheets %}
+<style>
+    :root {
+        --bleu-nuit:    #1B3A4B;
+        --or-ambre:     #C17817;
+        --bordeaux:     #7D2E3E;
+        --vert-sauge:   #3D6B4F;
+        --cream:        #FEF9F0;
+        --gray-soft:    #F7F4F0;
+        --gray-text:    #6B7280;
+        --dark:         #1A1A2E;
+        --white:        #FFFFFF;
+    }
+
+    .evenements-page * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    .evenements-page {
+        background-color: var(--cream);
+        font-family: 'Poppins', sans-serif;
+        color: var(--dark);
+     }
+
+    /* ════════════════════════════════
+       HERO
+    ════════════════════════════════ */
+    .hero {
+        position: relative;
+        height: 72vh;
+        min-height: 520px;
+        background-image:
+            linear-gradient(160deg, rgba(27,58,75,0.75) 0%, rgba(125,46,62,0.60) 100%),
+            url('https://switchmed.eu/wp-content/uploads/2020/04/tunisia-1.jpg');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        overflow: hidden;
+    }
+
+    .hero::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 140px;
+        background: linear-gradient(to top, var(--cream), transparent);
+        pointer-events: none;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 780px;
+        padding: 3.5rem 4rem;
+        background: rgba(255,255,255,0.10);
+        backdrop-filter: blur(22px);
+        -webkit-backdrop-filter: blur(22px);
+        border-radius: 40px;
+        border: 1px solid rgba(255,255,255,0.22);
+        box-shadow: 0 32px 80px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.28);
+        animation: fadeInUp 1s cubic-bezier(0.16,1,0.3,1) forwards;
+        margin: 0 1.5rem;
+    }
+
+    @keyframes fadeInUp {
+        from { opacity:0; transform:translateY(40px); }
+        to   { opacity:1; transform:translateY(0); }
+    }
+
+    .hero h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 4.2rem;
+        font-weight: 700;
+        color: #FFFFFF !important;
+        letter-spacing: 3px;
+        margin-bottom: 1rem;
+        text-shadow: 0 2px 20px rgba(0,0,0,0.25);
+        line-height: 1.1;
+    }
+
+    .hero-divider {
+        width: 60px;
+        height: 3px;
+        background: linear-gradient(90deg, var(--or-ambre), #e8a832);
+        border-radius: 3px;
+        margin: 0 auto 1.2rem;
+    }
+
+    .hero p {
+        font-size: 1.15rem;
+        font-weight: 300;
+        line-height: 1.9;
+        color: rgba(255,255,255,0.88) !important;
+        margin-bottom: 0;
+        letter-spacing: 0.3px;
+    }
+
+    /* ════════════════════════════════
+       SEARCH + SORT BAR
+    ════════════════════════════════ */
+    .search-sort-bar {
+        background: var(--white);
+        padding: 1.4rem 2rem;
+        border-radius: 20px;
+        box-shadow: 0 8px 28px rgba(27,58,75,0.10);
+        border: 1px solid rgba(27,58,75,0.08);
+        margin-bottom: 2.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        flex-wrap: wrap;
+    }
+
+    .search-field-wrapper {
+        position: relative;
+        flex: 0 0 60%;
+        max-width: 60%;
+        min-width: 260px;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--or-ambre);
+        font-size: 1rem;
+        pointer-events: none;
+        transition: color 0.3s;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 13px 50px 13px 50px;
+        border: 2px solid var(--or-ambre);
+        border-radius: 50px;
+        background: var(--gray-soft);
+        font-size: 0.97rem;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 400;
+        color: var(--dark);
+        outline: none;
+        transition: all 0.3s ease;
+    }
+
+    .search-input::placeholder { color: #A8A8B0; font-weight: 400; }
+
+    .search-input:focus {
+        border-color: var(--or-ambre);
+        background: var(--white);
+        box-shadow: 0 0 0 4px rgba(193,120,23,0.10);
+    }
+
+    .search-clear-btn {
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(193,120,23,0.10);
+        border: none;
+        color: var(--or-ambre);
+        font-size: 0.78rem;
+        cursor: pointer;
+        border-radius: 50%;
+        transition: all 0.2s;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+    }
+
+    .search-clear-btn:hover { background: var(--or-ambre); color: white; }
+    .search-clear-btn.visible { display: flex; }
+
+    /* Sort dropdown */
+    .sort-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        margin-left: auto;
+    }
+
+    .sort-toggle-btn {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 13px 26px;
+        border: none;
+        border-radius: 50px;
+        background: linear-gradient(135deg, var(--bleu-nuit) 0%, #2A5570 100%);
+        color: white;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        height: 50px;
+        user-select: none;
+        font-family: 'Poppins', sans-serif;
+        box-shadow: 0 4px 14px rgba(27,58,75,0.28);
+        letter-spacing: 0.3px;
+    }
+
+    .sort-toggle-btn:hover,
+    .sort-toggle-btn.open {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 22px rgba(27,58,75,0.38);
+    }
+
+    .sort-chevron {
+        transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+        font-size: 0.78rem;
+    }
+
+    .sort-toggle-btn.open .sort-chevron { transform: rotate(180deg); }
+
+    .sort-dropdown-menu {
+        display: none;
+        position: absolute;
+        top: calc(100% + 12px);
+        right: 0;
+        background: var(--white);
+        border-radius: 18px;
+        box-shadow: 0 20px 50px rgba(27,58,75,0.18);
+        min-width: 255px;
+        z-index: 9999;
+        overflow: hidden;
+        padding: 8px 0;
+        border: 1px solid rgba(27,58,75,0.08);
+    }
+
+    .sort-dropdown-menu.open {
+        display: block;
+        animation: dropFade 0.2s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    @keyframes dropFade {
+        from { opacity:0; transform:translateY(-8px) scale(0.97); }
+        to   { opacity:1; transform:translateY(0) scale(1); }
+    }
+
+    .sort-option {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 13px 22px;
+        font-size: 0.93rem;
+        color: var(--bleu-nuit);
+        cursor: pointer;
+        transition: all 0.18s;
+        font-weight: 500;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .sort-option:hover { background: var(--gray-soft); }
+
+    .sort-option.active {
+        background: rgba(27,58,75,0.07);
+        color: var(--bleu-nuit);
+        font-weight: 700;
+    }
+
+    .sort-option i {
+        width: 20px;
+        text-align: center;
+        color: var(--or-ambre);
+        font-size: 0.95rem;
+        flex-shrink: 0;
+    }
+
+    /* Message aucun résultat */
+    .no-results-msg {
+        display: none;
+        width: 100%;
+        text-align: center;
+        padding: 5rem 2rem;
+        color: var(--gray-text);
+    }
+
+    .no-results-icon {
+        width: 80px; height: 80px;
+        background: var(--gray-soft);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 1.5rem;
+    }
+
+    .no-results-icon i { font-size: 2rem; color: rgba(125,46,62,0.35); }
+    .no-results-msg p { font-size: 1.05rem; font-weight: 500; }
+    .no-results-msg strong { color: var(--bordeaux); }
+
+    /* ════════════════════════════════
+       CARDS GRID
+    ════════════════════════════════ */
+    #evenementsGrid {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 0 -14px;
+    }
+
+    .evenement-item {
+        display: flex;
+        padding: 0 14px;
+        margin-bottom: 28px;
+        width: 33.333%;
+    }
+
+    .card-custom {
+        background: var(--white);
+        border-radius: 22px;
+        overflow: hidden;
+        box-shadow: 0 2px 12px rgba(27,58,75,0.08);
+        transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+        border: 1px solid rgba(27,58,75,0.07) !important;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        position: relative;
+    }
+
+    .card-custom:hover {
+        transform: translateY(-7px);
+        box-shadow: 0 22px 52px rgba(27,58,75,0.16);
+        border-color: rgba(27,58,75,0.13) !important;
+    }
+
+    .card-custom::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--bordeaux) 0%, var(--or-ambre) 50%, var(--vert-sauge) 100%);
+        opacity: 0;
+        transition: opacity 0.4s ease;
+        z-index: 3;
+        border-radius: 22px 22px 0 0;
+    }
+
+    .card-custom:hover::before { opacity: 1; }
+
+    .card-img {
+        height: 230px !important;
+        min-height: 230px !important;
+        max-height: 230px !important;
+        overflow: hidden;
+        position: relative;
+        flex-shrink: 0;
+    }
+
+    .card-img img {
+        width: 100%; height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    .card-custom:hover .card-img img { transform: scale(1.06); }
+
+    .card-img::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 55%;
+        background: linear-gradient(to top, rgba(27,58,75,0.52), transparent);
+        pointer-events: none;
+    }
+
+    .capacity-badge {
+        position: absolute;
+        bottom: 14px; left: 14px;
+        background: var(--or-ambre) !important;
+        color: white !important;
+        padding: 5px 13px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        z-index: 2;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.22);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        letter-spacing: 0.2px;
+    }
+
+    .capacity-badge i { font-size: 0.75rem; }
+
+    .card-content {
+        padding: 1.6rem 1.8rem 1.8rem;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        gap: 0.7rem;
+    }
+
+    .card-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: var(--bleu-nuit) !important;
+        line-height: 1.25;
+        letter-spacing: 0.2px;
+        transition: color 0.25s;
+    }
+
+    .card-custom:hover .card-title { color: var(--bordeaux) !important; }
+
+    .card-location {
+        color: var(--gray-text);
+        font-size: 0.9rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .card-location i { color: var(--or-ambre); font-size: 0.85rem; flex-shrink: 0; }
+
+    .card-desc {
+        color: var(--gray-text);
+        line-height: 1.65;
+        font-size: 0.88rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        flex-grow: 1;
+    }
+
+    .card-separator {
+        height: 1px;
+        background: linear-gradient(90deg, rgba(27,58,75,0.10), transparent);
+        border: none;
+        margin: 0;
+    }
+
+    .card-date {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.88rem;
+        color: var(--bleu-nuit);
+        font-weight: 600;
+        flex-wrap: wrap;
+    }
+
+    .card-date i { color: var(--or-ambre); font-size: 0.83rem; }
+    .card-date .date-arrow { color: rgba(27,58,75,0.30); font-size: 0.75rem; }
+
+    .card-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.88rem;
+        color: var(--gray-text);
+        font-weight: 500;
+    }
+
+    .card-meta i {
+        color: var(--bleu-nuit);
+        font-size: 0.85rem;
+        width: 16px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 0.75rem;
+    }
+
+    /* ════════════════════════════════
+       BOUTONS — SCOPÉS sur .card-custom
+       pour ne pas polluer les autres pages
+    ════════════════════════════════ */
+    .card-custom .btn-details,
+    .card-custom .btn-activites {
+        flex: 1 !important;
+        height: 46px !important;
+        padding: 0 16px !important;
+        margin: 0 !important;
+        border-radius: 50px !important;
+        font-weight: 600 !important;
+        text-decoration: none !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        font-size: 0.9rem !important;
+        cursor: pointer !important;
+        transition: all 0.3s cubic-bezier(0.16,1,0.3,1) !important;
+        border: none !important;
+        line-height: 1 !important;
+        white-space: nowrap !important;
+    }
+
+    .card-custom .btn-details i,
+    .card-custom .btn-activites i {
+        font-size: 0.88rem !important;
+        flex-shrink: 0 !important;
+        line-height: 1 !important;
+    }
+
+    .card-custom .btn-details {
+        background: #9f1c36 !important;
+        color: white !important;
+    }
+
+    .card-custom .btn-details:hover {
+        background: #9f1c36 !important;
+        color: white !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 18px rgba(159,28,54,0.38) !important;
+    }
+
+    .card-custom .btn-activites {
+        background: #556f5f !important;
+        color: white !important;
+    }
+
+    .card-custom .btn-activites:hover {
+        background: #556f5f !important;
+        color: white !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 18px rgba(85,111,95,0.38) !important;
+    }
+
+    /* ── Pagination ── */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 0.6rem;
+        margin-top: 3rem;
+        margin-bottom: 2rem;
+    }
+
+    .pagination a,
+    .pagination span {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px; height: 44px;
+        border-radius: 50%;
+        background: var(--white);
+        color: var(--bleu-nuit);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(27,58,75,0.10);
+        border: 1px solid rgba(27,58,75,0.08);
+    }
+
+    .pagination a:hover,
+    .pagination span.active {
+        background: linear-gradient(135deg, var(--bleu-nuit), #2A5570);
+        color: white;
+        border-color: transparent;
+        box-shadow: 0 4px 14px rgba(27,58,75,0.30);
+        transform: translateY(-1px);
+    }
+
+    /* ── Container scopé ── */
+    .evenements-page .container {
+        max-width: 1560px !important;
+        width: 95% !important;
+        margin: 0 auto !important;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 1100px) { .evenement-item { width: 50%; } }
+
+    @media (max-width: 768px) {
+        .hero h1 { font-size: 2.6rem; }
+        .hero p  { font-size: 1rem; }
+        .hero-content { padding: 2.5rem 2rem; }
+        .evenement-item { width: 100%; }
+        .card-img { height: 210px !important; min-height: 210px !important; }
+        .search-sort-bar { flex-direction: column; align-items: stretch; gap: 0.9rem; }
+        .search-field-wrapper { flex: 1 1 auto; max-width: 100%; min-width: unset; }
+        .sort-wrapper { width: 100%; margin-left: 0; }
+        .sort-toggle-btn { width: 100%; justify-content: center; }
+        .sort-dropdown-menu { right: auto; left: 0; width: 100%; }
+    }
+
+    @media (max-width: 480px) {
+        .hero h1 { font-size: 2rem; }
+        .card-content { padding: 1.3rem 1.5rem 1.5rem; }
+        .card-title { font-size: 1.35rem; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="evenements-page">
+
+<section class="hero">
+    <div class="hero-content">
+        <h1>Nos Événements en Tunisie</h1>
+        <div class="hero-divider"></div>
+        <p>Découvrez nos événements exclusifs, conçus pour vous faire vivre la magie de la Tunisie.</p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+
+        {# ══ Barre recherche + tri ══ #}
+        <div class="search-sort-bar">
+            <div class="search-field-wrapper">
+                <i class="fas fa-search search-icon"></i>
+                <input
+                    type="text"
+                    id="searchInput"
+                    class="search-input"
+                    placeholder="Rechercher par titre, lieu, organisateur, date, capacité…"
+                    autocomplete="off"
+                >
+                <button class="search-clear-btn" id="searchClearBtn" type="button" title="Effacer">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="sort-wrapper">
+                <button class="sort-toggle-btn" id="sortToggleBtn" type="button">
+                    <i class="fas fa-sliders-h"></i>
+                    <span id="sortLabel">Trier par</span>
+                    <i class="fas fa-chevron-down sort-chevron"></i>
+                </button>
+
+                <div class="sort-dropdown-menu" id="sortDropdownMenu">
+                    <div class="sort-option active" data-value="date_asc">
+                        <i class="fas fa-calendar-day"></i> Date (croissant)
+                    </div>
+                    <div class="sort-option" data-value="capacity_asc">
+                        <i class="fas fa-users"></i> Capacité
+                    </div>
+                    <div class="sort-option" data-value="name_asc">
+                        <i class="fas fa-sort-alpha-down"></i> Titre (A-Z)
+                    </div>
+                    <div class="sort-option" data-value="organizer_asc">
+                        <i class="fas fa-user-tie"></i> Organisateur (A-Z)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Message aucun résultat #}
+        <div class="no-results-msg" id="noResultsMsg">
+            <div class="no-results-icon"><i class="fas fa-search"></i></div>
+            <p>Aucun événement trouvé pour <strong id="noResultsTerm"></strong></p>
+        </div>
+
+        {# Grille — rendue au chargement, mise à jour par AJAX #}
+        <div id="evenementsGrid">
+            {% for evenement in evenements %}
+                {% set placesRestantes = evenement.CapaciteMax - (evenement.ReservationsCount ?? 0) %}
+                <div class="evenement-item">
+                    <div class="card-custom">
+                        <div class="card-img">
+                            <img src="{{ evenement.Image
+                                ? asset('uploads/evenements/' ~ evenement.Image|split('/')|last)
+                                : 'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=800' }}"
+                                 alt="{{ evenement.Titre }}">
+                            <span class="capacity-badge">
+                                <i class="fas fa-users"></i>
+                                {{ placesRestantes }}/{{ evenement.CapaciteMax }} places
+                            </span>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">{{ evenement.Titre }}</h3>
+                            <p class="card-location">
+                                <i class="fas fa-map-marker-alt"></i> {{ evenement.Lieu }}
+                            </p>
+                            <p class="card-desc">{{ evenement.Description|slice(0,200) }}…</p>
+                            <hr class="card-separator">
+                            <div class="card-date">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span>{{ evenement.DateDebut|date('d/m/Y') }}</span>
+                                <i class="fas fa-long-arrow-alt-right date-arrow"></i>
+                                <i class="fas fa-calendar-check"></i>
+                                <span>{{ evenement.DateFin|date('d/m/Y') }}</span>
+                            </div>
+                            {% if evenement.Organisateur %}
+                                <div class="card-meta">
+                                    <i class="fas fa-user-tie"></i>
+                                    <span>{{ evenement.Organisateur|slice(0,22) }}</span>
+                                </div>
+                            {% endif %}
+                            <div class="button-group">
+                                <a href="{{ path('app_evenement_show', {'IDEv': evenement.IDEv}) }}" class="btn-details">
+                                    <i class="fas fa-info-circle"></i> Détails
+                                </a>
+                                <a href="{{ path('app_evenement_activites', {'IDEv': evenement.IDEv}) }}" class="btn-activites">
+                                    <i class="fas fa-tasks"></i> Activités
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div style="width:100%;text-align:center;padding:4rem 2rem;color:#6B7280;">
+                    <p>Aucun événement disponible.</p>
+                </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</section>
+
+</div>{# fin .evenements-page #}
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const searchInput      = document.getElementById('searchInput');
+    const searchClearBtn   = document.getElementById('searchClearBtn');
+    const noResultsMsg     = document.getElementById('noResultsMsg');
+    const noResultsTerm    = document.getElementById('noResultsTerm');
+    const sortToggleBtn    = document.getElementById('sortToggleBtn');
+    const sortDropdownMenu = document.getElementById('sortDropdownMenu');
+    const sortLabel        = document.getElementById('sortLabel');
+    const grid             = document.getElementById('evenementsGrid');
+
+    const searchUrl = '{{ path("app_evenement_search") }}';
+
+    let currentSort   = 'date_asc';
+    let searchTimeout = null;
+
+    function buildCard(c) {
+        const orga = c.organisateur
+            ? `<div class="card-meta"><i class="fas fa-user-tie"></i><span>${c.organisateur}</span></div>`
+            : '';
+
+        return `
+        <div class="evenement-item">
+            <div class="card-custom">
+                <div class="card-img">
+                    <img src="${c.image}" alt="${c.titre}" loading="lazy">
+                    <span class="capacity-badge">
+                        <i class="fas fa-users"></i>
+                        ${c.placesRestantes}/${c.capacite} places
+                    </span>
+                </div>
+                <div class="card-content">
+                    <h3 class="card-title">${c.titre}</h3>
+                    <p class="card-location"><i class="fas fa-map-marker-alt"></i> ${c.lieu}</p>
+                    <p class="card-desc">${c.description}…</p>
+                    <hr class="card-separator">
+                    <div class="card-date">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>${c.dateDebut}</span>
+                        <i class="fas fa-long-arrow-alt-right date-arrow"></i>
+                        <i class="fas fa-calendar-check"></i>
+                        <span>${c.dateFin}</span>
+                    </div>
+                    ${orga}
+                    <div class="button-group">
+                        <a href="${c.urlDetails}" class="btn-details">
+                            <i class="fas fa-info-circle"></i> Détails
+                        </a>
+                        <a href="${c.urlActivites}" class="btn-activites">
+                            <i class="fas fa-tasks"></i> Activités
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    }
+
+    function fetchAndRender(search, sort) {
+        const params = new URLSearchParams({ search: search, sort: sort });
+
+        fetch(searchUrl + '?' + params.toString(), {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.count === 0 && search !== '') {
+                grid.innerHTML = '';
+                noResultsMsg.style.display = 'block';
+                noResultsTerm.textContent  = '"' + search + '"';
+            } else {
+                noResultsMsg.style.display = 'none';
+                grid.innerHTML = data.cards.map(buildCard).join('');
+            }
+        })
+        .catch(function () {});
+    }
+
+    searchInput.addEventListener('input', function () {
+        const term = this.value.trim();
+        searchClearBtn.classList.toggle('visible', term.length > 0);
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(function () {
+            fetchAndRender(term, currentSort);
+        }, 300);
+    });
+
+    searchClearBtn.addEventListener('click', function () {
+        searchInput.value = '';
+        searchClearBtn.classList.remove('visible');
+        clearTimeout(searchTimeout);
+        fetchAndRender('', currentSort);
+        searchInput.focus();
+    });
+
+    sortToggleBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const open = sortDropdownMenu.classList.toggle('open');
+        sortToggleBtn.classList.toggle('open', open);
+    });
+
+    document.addEventListener('click', function () {
+        sortDropdownMenu.classList.remove('open');
+        sortToggleBtn.classList.remove('open');
+    });
+
+    document.querySelectorAll('.sort-option').forEach(function (opt) {
+        opt.addEventListener('click', function (e) {
+            e.stopPropagation();
+            document.querySelectorAll('.sort-option').forEach(function (o) { o.classList.remove('active'); });
+            opt.classList.add('active');
+            currentSort = opt.dataset.value;
+            sortLabel.textContent = opt.textContent.trim();
+            sortDropdownMenu.classList.remove('open');
+            sortToggleBtn.classList.remove('open');
+            fetchAndRender(searchInput.value.trim(), currentSort);
+        });
+    });
+});
+</script>
+{% endblock %}

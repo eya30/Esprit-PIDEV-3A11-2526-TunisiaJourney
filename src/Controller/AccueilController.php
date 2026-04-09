@@ -17,4 +17,6 @@ class AccueilController extends AbstractController
             'voyages' => $voyages,
         ]);
     }
+
+    
 }

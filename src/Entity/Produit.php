@@ -35,19 +35,20 @@ class Produit
     #[ORM\Column(name: 'Prix', type: 'float', nullable: true)]
     private ?float $prix = null;
 
-    #[ORM\Column(name: 'user_id', type: 'integer')]
-    private int $userId;
-
-    // ✅ Categorie — simple champ VARCHAR, pas de table séparée
     #[ORM\Column(name: 'Categorie', type: 'string', length: 50, nullable: true)]
     private ?string $categorie = null;
+
+    // ✅ Relation ManyToOne vers User
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
+    private ?User $user = null;
 
     public const CATEGORIES = [
         'Artisanat'   => 'Artisanat',
         'Alimentaire' => 'Alimentaire',
         'Bijoux'      => 'Bijoux',
-        'Vêtements'   => 'Vêtements',
-        'Décoration'  => 'Décoration',
+        'Vetements'   => 'Vêtements',
+        'Decoration'  => 'Décoration',
     ];
 
     public function getIdPR(): ?int { return $this->idPR; }
@@ -65,8 +66,10 @@ class Produit
     public function setImage(?string $image): static { $this->image = $image; return $this; }
     public function getPrix(): ?float { return $this->prix; }
     public function setPrix(?float $prix): static { $this->prix = $prix; return $this; }
-    public function getUserId(): int { return $this->userId; }
-    public function setUserId(int $userId): static { $this->userId = $userId; return $this; }
     public function getCategorie(): ?string { return $this->categorie; }
     public function setCategorie(?string $categorie): static { $this->categorie = $categorie; return $this; }
+    public function getUser(): ?User { return $this->user; }
+    public function setUser(?User $user): static { $this->user = $user; return $this; }
+    // Raccourci pour compatibilité
+    public function getUserId(): ?int { return $this->user?->getId(); }
 }

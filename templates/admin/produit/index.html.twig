@@ -16,20 +16,47 @@
         <i class="fas fa-shopping-bag me-2"></i> Gérer les commandes
     </a>
 </div>
+ {# ══ Barre de Recherche et Filtres ══ #}
+<div class="search-container mb-4">
+    <form action="{{ path('admin_produit_index') }}" method="get" class="d-flex align-items-center">
+        <div class="input-group" style="background: white; border-radius: 40px; border: 1px solid #F0E8DD; padding: 5px 15px;">
+            <span class="text-muted"><i class="fas fa-search"></i></span>
+            <input type="text" name="q" value="{{ lastSearch }}" 
+                   class="form-control border-0 shadow-none" 
+                   placeholder="Rechercher par titre, catégorie ou description..."
+                   style="font-size: 14px;">
+            {# On garde les paramètres de tri actuels quand on recherche #}
+            <input type="hidden" name="sort" value="{{ currentSort }}">
+            <input type="hidden" name="direction" value="{{ currentDirection }}">
+        </div>
+    </form>
+</div>
 
 <div class="admin-table">
     <table class="table">
         <thead>
-            <tr>
-                <th style="width: 100px">IMAGE</th>
-                <th style="width: 160px">TITRE</th>
-                <th>DESCRIPTION</th>
-                <th style="width: 110px">CATÉGORIE</th>
-                <th style="width: 70px">STOCK</th>
-                <th style="width: 70px">POIDS</th>
-                <th style="width: 100px">PRIX</th>
-                <th style="width: 110px">DISPO</th>
-                <th style="width: 130px">ACTIONS</th>
+    <tr>
+        <th>IMAGE</th>
+        <th>
+            <a href="{{ path('admin_produit_index', {q: lastSearch, sort: 'titre', direction: (currentSort == 'titre' and currentDirection == 'ASC') ? 'DESC' : 'ASC'}) }}" class="sort-link">
+                TITRE <i class="fas fa-sort{{ currentSort == 'titre' ? (currentDirection == 'ASC' ? '-up' : '-down') : '' }} ms-1"></i>
+            </a>
+        </th>
+        <th>DESCRIPTION</th>
+        <th>
+            <a href="{{ path('admin_produit_index', {q: lastSearch, sort: 'categorie', direction: (currentSort == 'categorie' and currentDirection == 'ASC') ? 'DESC' : 'ASC'}) }}" class="sort-link">
+                CATÉGORIE <i class="fas fa-sort{{ currentSort == 'categorie' ? (currentDirection == 'ASC' ? '-up' : '-down') : '' }} ms-1"></i>
+            </a>
+        </th>
+        <th>
+            <a href="{{ path('admin_produit_index', {q: lastSearch, sort: 'stock', direction: (currentSort == 'stock' and currentDirection == 'ASC') ? 'DESC' : 'ASC'}) }}" class="sort-link">
+                STOCK <i class="fas fa-sort{{ currentSort == 'stock' ? (currentDirection == 'ASC' ? '-up' : '-down') : '' }} ms-1"></i>
+            </a>
+        </th>
+        <th>PRIX</th>
+        <th>ACTIONS</th>
+    </tr>
+</thead>
             </tr>
         </thead>
         <tbody>

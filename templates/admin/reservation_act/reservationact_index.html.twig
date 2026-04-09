@@ -1,0 +1,324 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Gestion des réservations d'activités{% endblock %}
+{% block page_title %}Réservations d'activités{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-1" style="font-family: 'Playfair Display', serif;">Liste des réservations d'activités</h4>
+        <p class="text-muted small" style="color: #93032E !important;">Gérez l'ensemble des réservations des activités</p>
+    </div>
+</div>
+
+<div class="admin-table">
+    <table class="table">
+        <thead>
+            <tr>
+                <th style="width: 180px">Activité</th>
+                <th style="width: 180px">Client</th>
+                <th style="width: 80px">Nb places</th>
+                <th style="width: 100px">Prix total</th>
+                <th style="width: 120px">Date réservation</th>
+                <th style="width: 80px">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reservation in reservations %}
+            <tr>
+                <td class="activite-name">
+                    <strong>{{ reservation.activite_titre }}</strong><br>
+                    <small class="text-muted">Événement: {{ reservation.evenement_titre }}</small>
+                </td>
+                <td class="client-name">
+                    <strong>{{ reservation.prenom }} {{ reservation.nom }}</strong><br>
+                    <small class="text-muted">User ID: {{ reservation.userId }}</small>
+                </td>
+                <td class="client-nbre">{{ reservation.nombrePlaces }} pers</td>
+                <td class="reservation-price">{{ reservation.prix|number_format(2, ',', ' ') }} DT</td>
+                <td class="reservation-date">{{ reservation.dateReservation|date('d/m/Y') }}</td>
+                <tr>
+                    <div class="action-buttons">
+                        <form method="post" action="{{ path('admin_reservationact_delete', {'id': reservation.IDRes}) }}" style="display: inline-block;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_reservationact_' ~ reservation.IDRes) }}">
+                            <button type="submit" class="action-btn delete-btn" onclick="return confirm('Supprimer cette réservation ?')" title="Supprimer">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="text-center py-5">
+                    <i class="fas fa-ticket-alt fa-3x mb-3" style="color: #E8DFD1;"></i>
+                    <p class="text-muted mb-0">Aucune réservation d'activité trouvée</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+{% if reservations is defined and reservations|length > 0 and total_pages is defined and total_pages > 1 %}
+<div class="pagination-wrapper">
+    <div class="pagination-info">
+        Affichage de <strong>{{ reservations|length }}</strong> réservation(s)
+    </div>
+    <nav class="pagination-nav">
+        <ul class="pagination">
+            <li class="page-item {% if current_page == 1 %}disabled{% endif %}">
+                <a class="page-link" href="{{ path('admin_reservationact_index', {page: current_page - 1}) }}" {% if current_page == 1 %}tabindex="-1" aria-disabled="true"{% endif %}>
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
+            {% for i in 1..total_pages %}
+                <li class="page-item {% if i == current_page %}active{% endif %}">
+                    <a class="page-link" href="{{ path('admin_reservationact_index', {page: i}) }}">{{ i }}</a>
+                </li>
+            {% endfor %}
+            <li class="page-item {% if current_page == total_pages %}disabled{% endif %}">
+                <a class="page-link" href="{{ path('admin_reservationact_index', {page: current_page + 1}) }}" {% if current_page == total_pages %}tabindex="-1" aria-disabled="true"{% endif %}>
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+{% endif %}
+
+<style>
+    .admin-table {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #F0E8DD;
+        overflow-x: auto;
+        overflow-y: visible;
+    }
+    
+    .admin-table .table {
+        margin-bottom: 0;
+        min-width: 800px;
+    }
+    
+    .admin-table th {
+        background: #FEF9F0;
+        padding: 14px 20px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #93032E;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #F0E8DD;
+        white-space: nowrap;
+    }
+    
+    .admin-table td {
+        padding: 14px 20px;
+        font-size: 13px;
+        border-bottom: 1px solid #F5F0E8;
+        color: #4A3B2F;
+        vertical-align: middle;
+        background: white;
+    }
+    
+    .admin-table tr:hover td {
+        background: #FFF9F0;
+    }
+    
+    .activite-name {
+        font-weight: 600;
+        color: #2C1810;
+        font-size: 0.9rem;
+    }
+    
+    .activite-name small {
+        font-size: 0.7rem;
+        color: #93032E;
+    }
+    
+    .client-name strong {
+        color: #2C1810;
+    }
+    
+    .client-name small {
+        font-size: 0.7rem;
+        color: #9CA3AF;
+    }
+    
+    .client-nbre {
+        white-space: nowrap;
+    }
+    
+    .reservation-price {
+        font-weight: 700;
+        color: #93032E;
+        font-size: 0.95rem;
+        white-space: nowrap;
+    }
+    
+    .reservation-date {
+        white-space: nowrap;
+        color: #9CA3AF;
+        font-size: 0.85rem;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        font-size: 0.9rem;
+        text-decoration: none;
+    }
+    
+    .delete-btn {
+        background: #FEF2F2;
+        color: #EF4444;
+    }
+    
+    .delete-btn:hover {
+        background: #EF4444;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    /* Pagination Styles */
+    .pagination-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 24px;
+        padding: 16px 0;
+    }
+    
+    .pagination-info {
+        font-size: 0.85rem;
+        color: #9CA3AF;
+    }
+    
+    .pagination-info strong {
+        color: #93032E;
+        font-weight: 600;
+    }
+    
+    .pagination-nav {
+        margin: 0;
+    }
+    
+    .pagination {
+        margin: 0;
+        gap: 6px;
+        padding-left: 0;
+    }
+    
+    .page-item {
+        list-style: none;
+    }
+    
+    .page-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: white;
+        border: 1px solid #E8DFD1;
+        color: #4A3B2F;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+    
+    .page-link:hover {
+        background: #FFF9F0;
+        border-color: #93032E;
+        color: #93032E;
+    }
+    
+    .page-item.active .page-link {
+        background: #93032E;
+        border-color: #93032E;
+        color: white;
+    }
+    
+    .page-item.disabled .page-link {
+        background: #FEF9F0;
+        border-color: #F0E8DD;
+        color: #E8DFD1;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+    
+    .text-center {
+        text-align: center;
+    }
+    
+    .py-5 {
+        padding-top: 3rem;
+        padding-bottom: 3rem;
+    }
+    
+    .mb-0 {
+        margin-bottom: 0;
+    }
+    
+    .mb-1 {
+        margin-bottom: 0.25rem;
+    }
+    
+    .mb-3 {
+        margin-bottom: 1rem;
+    }
+    
+    .mb-4 {
+        margin-bottom: 1.5rem;
+    }
+    
+    .me-1 {
+        margin-right: 0.25rem;
+    }
+    
+    .d-flex {
+        display: flex;
+    }
+    
+    .justify-content-between {
+        justify-content: space-between;
+    }
+    
+    .align-items-center {
+        align-items: center;
+    }
+    
+    .small {
+        font-size: 0.875rem;
+    }
+    
+    @media (max-width: 768px) {
+        .pagination-wrapper {
+            flex-direction: column;
+            gap: 16px;
+            align-items: center;
+        }
+        
+        .admin-table {
+            overflow-x: auto;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,26 +1,34 @@
 <?php
+
 namespace App\Controller;
 
 use App\Entity\Commande;
 use App\Entity\CommandeProduit;
-use App\Entity\Produit;
 use App\Form\CommandeType;
 use App\Repository\CommandeRepository;
 use App\Repository\ProduitRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\{Request, Response};
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/panier')]
 class PanierController extends AbstractController
 {
+    // ✅ Clé unique par user — "panier_3", "panier_7", etc.
+    private function getKey(): string
+    {
+        $user = $this->getUser();
+        return $user ? 'panier_' . $user->getId() : 'panier_guest';
+    }
+
     // ── Afficher le panier ──────────────────────────────────────────────────
     #[Route('/', name: 'app_panier_index')]
     public function index(SessionInterface $session, ProduitRepository $repo): Response
     {
-        $panier = $session->get('panier', []);
+        $panier = $session->get($this->getKey(), []);
         [$items, $total] = $this->buildItems($panier, $repo);
 
         return $this->render('panier/index.html.twig', [
@@ -30,15 +38,24 @@ class PanierController extends AbstractController
     }
 
     // ── Ajouter au panier ───────────────────────────────────────────────────
+    // ✅ SessionInterface au lieu de RequestStack — même instance partout
     #[Route('/ajouter/{id}', name: 'app_panier_add')]
-    public function add(Produit $produit, SessionInterface $session): Response
+    public function add(int $id, SessionInterface $session, ProduitRepository $repo): Response
     {
-        $panier = $session->get('panier', []);
-        $id     = $produit->getId();
-        $panier[$id] = ($panier[$id] ?? 0) + 1;
-        $session->set('panier', $panier);
+        $this->denyAccessUnlessGranted('ROLE_USER');
 
-        $this->addFlash('success', '« ' . $produit->getTitre() . ' » ajouté au panier !');
+        $produit = $repo->find($id);
+        if (!$produit) {
+            $this->addFlash('danger', 'Produit introuvable.');
+           return $this->redirectToRoute('app_produit_index');
+        }
+
+        $key         = $this->getKey();
+        $panier      = $session->get($key, []);
+        $panier[$id] = ($panier[$id] ?? 0) + 1;
+        $session->set($key, $panier);
+
+        $this->addFlash('success', '« ' . $produit->getTitre() . ' » ajouté au panier.');
         return $this->redirectToRoute('app_produit_index');
     }
 
@@ -46,13 +63,13 @@ class PanierController extends AbstractController
     #[Route('/modifier/{id}/{quantite}', name: 'app_panier_update')]
     public function update(int $id, int $quantite, SessionInterface $session): Response
     {
-        $panier = $session->get('panier', []);
-        if ($quantite <= 0) {
-            unset($panier[$id]);
-        } else {
-            $panier[$id] = $quantite;
-        }
-        $session->set('panier', $panier);
+        $key    = $this->getKey();
+        $panier = $session->get($key, []);
+
+        if ($quantite <= 0) unset($panier[$id]);
+        else $panier[$id] = $quantite;
+
+        $session->set($key, $panier);
         return $this->redirectToRoute('app_panier_index');
     }
 
@@ -60,9 +77,11 @@ class PanierController extends AbstractController
     #[Route('/supprimer/{id}', name: 'app_panier_remove')]
     public function remove(int $id, SessionInterface $session): Response
     {
-        $panier = $session->get('panier', []);
+        $key    = $this->getKey();
+        $panier = $session->get($key, []);
         unset($panier[$id]);
-        $session->set('panier', $panier);
+        $session->set($key, $panier);
+
         $this->addFlash('success', 'Article retiré du panier.');
         return $this->redirectToRoute('app_panier_index');
     }
@@ -71,7 +90,7 @@ class PanierController extends AbstractController
     #[Route('/vider', name: 'app_panier_clear')]
     public function clear(SessionInterface $session): Response
     {
-        $session->set('panier', []);
+        $session->remove($this->getKey());
         $this->addFlash('success', 'Panier vidé.');
         return $this->redirectToRoute('app_panier_index');
     }
@@ -84,8 +103,13 @@ class PanierController extends AbstractController
         ProduitRepository $repo,
         EntityManagerInterface $em
     ): Response {
-        $panier = $session->get('panier', []);
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $key  = $this->getKey();
+
+        $panier = $session->get($key, []);
         if (empty($panier)) {
             $this->addFlash('error', 'Votre panier est vide.');
             return $this->redirectToRoute('app_panier_index');
@@ -97,35 +121,32 @@ class PanierController extends AbstractController
         $commande->setDateC(new \DateTime());
         $commande->setStatut('En attente');
         $commande->setTotal($total);
-        // Quantite globale = somme des quantités
         $commande->setQuantite(array_sum($panier));
+        $commande->setUser($user);
 
         $form = $this->createForm(CommandeType::class, $commande);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Recalcul total côté serveur
-            [, $totalServeur] = $this->buildItems($panier, $repo);
-            $commande->setTotal($totalServeur);
-
             $em->persist($commande);
 
-            // Créer les lignes commande_produit
             foreach ($panier as $idProduit => $quantite) {
                 $produit = $repo->find($idProduit);
                 if ($produit) {
                     $ligne = new CommandeProduit();
                     $ligne->setCommande($commande);
                     $ligne->setProduit($produit);
-                    $ligne->setQuantite($quantite);
+                    $ligne->setQuantite((int) $quantite);
                     $em->persist($ligne);
                 }
             }
 
             $em->flush();
-            $session->set('panier', []);
 
-            $this->addFlash('success', 'Commande passée avec succès ! Merci pour votre achat. 🎉');
+            // ✅ Vider uniquement le panier de ce user
+            $session->remove($key);
+
+            $this->addFlash('success', 'Commande passée avec succès ! 🎉');
             return $this->redirectToRoute('app_commande_index');
         }
 
@@ -136,12 +157,17 @@ class PanierController extends AbstractController
         ]);
     }
 
-    // ── Liste des commandes ─────────────────────────────────────────────────
+    // ── Liste des commandes du user connecté ────────────────────────────────
     #[Route('/commandes', name: 'app_commande_index')]
     public function commandes(CommandeRepository $repo): Response
     {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
+        $user         = $this->getUser();
+        $mesCommandes = $repo->findBy(['user' => $user], ['id' => 'DESC']);
+
         return $this->render('panier/commandes.html.twig', [
-            'commandes' => $repo->findAll(),
+            'commandes' => $mesCommandes,
         ]);
     }
 
@@ -155,7 +181,7 @@ class PanierController extends AbstractController
         return $this->redirectToRoute('app_commande_index');
     }
 
-    // ── Helper : construire les items depuis la session ─────────────────────
+    // ── Helper ──────────────────────────────────────────────────────────────
     private function buildItems(array $panier, ProduitRepository $repo): array
     {
         $items = [];

@@ -1,0 +1,662 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Programmes - {{ voyage.nom }}{% endblock %}
+
+{% block stylesheets %}
+<style>
+    :root {
+        --tunisia-red: #E31B23;
+        --tunisia-blue: #0054A6;
+        --tunisia-orange: #F39C12;
+        --tunisia-sand: #FDF5E6;
+        --dark-gray: #2C3E50;
+        --light-gray: #F8F9FA;
+    }
+
+    .back-arrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--tunisia-red);
+        text-decoration: none;
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    .back-arrow:hover {
+        transform: translateX(-5px);
+        color: var(--tunisia-orange);
+    }
+
+    .page-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--tunisia-red);
+        margin-bottom: 2rem;
+        position: relative;
+        display: inline-block;
+    }
+    .page-title:after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        width: 60px;
+        height: 3px;
+        background: var(--tunisia-orange);
+        border-radius: 2px;
+    }
+
+    .programmes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 30px;
+        margin-top: 20px;
+    }
+
+    .programme-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        position: relative;
+    }
+    .programme-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(227,27,35,0.15);
+    }
+
+    .programme-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(227,27,35,0.9);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        z-index: 1;
+    }
+
+    .programme-img {
+        height: 220px;
+        overflow: hidden;
+        position: relative;
+    }
+    .programme-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .programme-card:hover .programme-img img {
+        transform: scale(1.08);
+    }
+
+    .programme-content {
+        padding: 1.5rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .programme-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--tunisia-blue);
+        margin-bottom: 0.75rem;
+        line-height: 1.3;
+    }
+
+    .programme-info {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    .info-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: var(--light-gray);
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
+    .info-item i { color: var(--tunisia-red); width: 14px; margin-right: 4px; }
+
+    .programme-desc {
+        color: #6c757d;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+        font-size: 0.85rem;
+        flex: 1;
+    }
+
+    .programme-dates {
+        font-size: 0.75rem;
+        color: #9CA3AF;
+        margin-bottom: 1rem;
+        padding: 8px 0;
+        border-top: 1px solid #E8DFD1;
+        border-bottom: 1px solid #E8DFD1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .dates-label { font-weight: 600; color: var(--tunisia-blue); }
+
+    .btn-group { display: flex; gap: 10px; margin-top: auto; }
+
+    .btn-details {
+        flex: 1;
+        background: transparent;
+        border: 2px solid var(--tunisia-red);
+        color: var(--tunisia-red);
+        padding: 8px 0;
+        border-radius: 25px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        transition: all 0.3s ease;
+        font-size: 0.85rem;
+        cursor: pointer;
+    }
+    .btn-details:hover {
+        background: var(--tunisia-red);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-reserve {
+        flex: 1;
+        background: linear-gradient(135deg, var(--tunisia-blue) 0%, #00408a 100%);
+        color: white;
+        border: none;
+        padding: 8px 0;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+    .btn-reserve:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,84,166,0.3);
+    }
+
+    /* Modal */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(4px);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    .modal.active {
+        display: flex;
+        animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .modal-content {
+        background: white;
+        border-radius: 24px;
+        padding: 2rem;
+        max-width: 500px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp {
+        from { transform: translateY(30px); opacity: 0; }
+        to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #F0E8DD;
+    }
+    .modal-header h3 {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--tunisia-blue);
+        margin: 0;
+        font-family: 'Cormorant Garamond', serif;
+    }
+    .close-modal {
+        background: none;
+        border: none;
+        font-size: 1.8rem;
+        cursor: pointer;
+        color: #9CA3AF;
+        transition: all 0.2s;
+        line-height: 1;
+    }
+    .close-modal:hover { color: var(--tunisia-red); transform: rotate(90deg); }
+
+    .form-group { margin-bottom: 1.2rem; }
+    .form-group label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--dark-gray);
+        margin-bottom: 0.4rem;
+    }
+    .form-group label .required { color: var(--tunisia-red); margin-left: 3px; }
+    .form-group input {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1.5px solid #E8DFD1;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+        box-sizing: border-box;
+    }
+    .form-group input:focus {
+        outline: none;
+        border-color: var(--tunisia-blue);
+        box-shadow: 0 0 0 3px rgba(0,84,166,0.1);
+    }
+    .form-group input.error {
+        border-color: #EF4444;
+        background: #FEF2F2;
+    }
+
+    .error-message {
+        color: #EF4444;
+        font-size: 0.7rem;
+        margin-top: 0.3rem;
+        display: none;
+    }
+    .error-message.show { display: block; }
+
+    .btn-submit {
+        width: 100%;
+        background: linear-gradient(135deg, var(--tunisia-blue) 0%, #00408a 100%);
+        color: white;
+        border: none;
+        padding: 14px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 0.5rem;
+    }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,84,166,0.4); }
+    .btn-submit:disabled { background: #9CA3AF; cursor: not-allowed; transform: none; }
+
+    .toast {
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        padding: 14px 20px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        z-index: 1100;
+        animation: slideInRight 0.3s ease, fadeOut 0.3s ease 3.7s forwards;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    .toast.success { background: linear-gradient(135deg, #10B981, #059669); color: white; }
+    .toast.error   { background: linear-gradient(135deg, #EF4444, #DC2626); color: white; }
+    @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem;
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+    .empty-state i { font-size: 4rem; color: var(--tunisia-sand); margin-bottom: 1rem; }
+    .empty-state h3 { color: var(--dark-gray); margin-bottom: 0.5rem; }
+    .empty-state p  { color: #6c757d; }
+
+    @media (max-width: 768px) {
+        .page-title { font-size: 1.8rem; }
+        .programmes-grid { grid-template-columns: 1fr; gap: 20px; }
+        .programme-img { height: 200px; }
+        .programme-content { padding: 1.2rem; }
+        .modal-content { padding: 1.5rem; }
+    }
+    @media (min-width: 1400px) {
+        .programmes-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <a href="{{ path('app_voyage_index') }}" class="back-arrow">
+        <i class="fas fa-arrow-left"></i> Retour aux voyages
+    </a>
+
+    <h1 class="page-title">{{ voyage.nom }}</h1>
+
+    <div class="programmes-grid">
+        {% for programme in programmes %}
+            <div class="programme-card">
+                <div class="programme-badge">
+                    <i class="fas fa-tag"></i> {{ programme.activiteAssociee ?? 'Programme' }}
+                </div>
+                <div class="programme-img">
+                    {% if programme.image is defined and programme.image and programme.image != 'NULL' %}
+                        <img src="{{ asset('uploads/programmes/' ~ programme.image|replace({' ': '%20'})) }}"
+                             alt="{{ programme.nom }}" loading="lazy">
+                    {% else %}
+                        <img src="https://images.pexels.com/photos/1618750/pexels-photo-1618750.jpeg?auto=compress&cs=tinysrgb&w=800"
+                             alt="{{ programme.nom }}" loading="lazy">
+                    {% endif %}
+                </div>
+                <div class="programme-content">
+                    <h3 class="programme-title">{{ programme.nom }}</h3>
+                    <div class="programme-info">
+                        <span class="info-item"><i class="fas fa-map-marker-alt"></i> {{ programme.lieu }}</span>
+                        <span class="info-item"><i class="fas fa-hotel"></i> {{ programme.hotel }}</span>
+                    </div>
+                    <p class="programme-desc">
+                        {% set desc = programme.description ?? '' %}
+                        {% if desc|length > 120 %}{{ desc|slice(0,120) }}...{% else %}{{ desc }}{% endif %}
+                    </p>
+                    <div class="programme-dates">
+                        <span>
+                            <i class="far fa-calendar-alt"></i>
+                            <span class="dates-label">Du</span> {{ programme.dateDebut|date('d/m/Y') }}
+                        </span>
+                        <span><span class="dates-label">au</span> {{ programme.dateFin|date('d/m/Y') }}</span>
+                    </div>
+                    <div class="btn-group">
+                        <a href="{{ path('app_programme_show', {'idProg': programme.idProg}) }}" class="btn-details">
+                            <i class="fas fa-info-circle"></i> Détails
+                        </a>
+                        <button class="btn-reserve"
+                                onclick="openReservationModal('{{ programme.idProg }}', '{{ programme.nom|escape('js') }}')">
+                            <i class="fas fa-calendar-check"></i> Réserver
+                        </button>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-calendar-alt"></i>
+                <h3>Aucun programme disponible</h3>
+                <p>Aucun programme n'est proposé pour ce voyage pour le moment.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+{# ================================================================
+   MODAL DE RÉSERVATION
+   ✅ L'action est construite par Twig (fiable) — pas par JS
+   ================================================================ #}
+<div id="reservationModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle"><i class="fas fa-ticket-alt"></i> Réserver un programme</h3>
+            <button class="close-modal" onclick="closeReservationModal()">&times;</button>
+        </div>
+
+        <form id="reservationForm" method="post" novalidate>
+            <input type="hidden" name="source" value="voyage_programmes">
+            <input type="hidden" name="voyageId" value="{{ voyage.idV }}">
+            <input type="hidden" name="idProg" id="programmeIdInput" value="">
+
+            <div class="form-group">
+                <label>Nom <span class="required">*</span></label>
+                <input type="text" name="nom" id="nom"
+                       placeholder="Votre nom"
+                       value="">
+                <div class="error-message" id="nomError">Le nom est requis (2-50 caractères)</div>
+            </div>
+
+            <div class="form-group">
+                <label>Prénom <span class="required">*</span></label>
+                <input type="text" name="prenom" id="prenom"
+                       placeholder="Votre prénom"
+                       value="">
+                <div class="error-message" id="prenomError">Le prénom est requis (2-50 caractères)</div>
+            </div>
+
+            <div class="form-group">
+                <label>Téléphone <span class="required">*</span></label>
+                <input type="tel" name="telephone" id="telephone"
+                       placeholder="12345678"
+                       value=""
+                       pattern="[0-9]{8}">
+                <div class="error-message" id="telephoneError">8 chiffres exactement</div>
+            </div>
+
+            <div class="form-group">
+                <label>Email <span class="required">*</span></label>
+                <input type="email" name="email" id="email"
+                       placeholder="exemple@email.com"
+                       value="">
+                <div class="error-message" id="emailError">Email valide requis</div>
+            </div>
+
+            <div class="form-group">
+                <label>Nombre de personnes <span class="required">*</span></label>
+                <input type="number" name="nbre" id="nbre"
+                       value="1"
+                       min="1" max="20">
+                <div class="error-message" id="nbreError">Entre 1 et 20 personnes</div>
+            </div>
+
+            {# Erreurs Symfony après soumission #}
+            {% if errors is defined and errors|length > 0 %}
+                <div class="form-errors-block"
+                     style="background:#fee;border:1px solid #f88;border-radius:8px;padding:12px;margin-bottom:16px;">
+                    <div style="color:#c33;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px;">
+                        <i class="fas fa-exclamation-triangle"></i> Erreurs détectées :
+                    </div>
+                    <ul style="margin:0;padding-left:24px;">
+                        {% for error in errors %}
+                            <li style="color:#c33;font-size:13px;margin-bottom:4px;">{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <button type="submit" class="btn-submit" id="submitBtn">
+                <i class="fas fa-check-circle"></i> Confirmer la réservation
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+// ----------------------------------------------------------------
+// Ouvrir le modal (clic sur bouton Réserver)
+// ----------------------------------------------------------------
+function openReservationModal(programmeId, programmeName) {
+    const form    = document.getElementById('reservationForm');
+    const modal   = document.getElementById('reservationModal');
+    const title   = document.getElementById('modalTitle');
+    const idInput = document.getElementById('programmeIdInput');
+
+    // ✅ Mettre à jour l'action avec le bon idProg
+    const baseUrl = "{{ path('app_reservation_new', {'idProg': '__PROG_ID__'}) }}";
+    form.action = baseUrl.replace('__PROG_ID__', programmeId);
+
+    // Mettre à jour l'input hidden
+    idInput.value = programmeId;
+
+    // Titre du modal
+    const shortName = programmeName.length > 30
+        ? programmeName.substring(0, 30) + '…'
+        : programmeName;
+    title.innerHTML = '<i class="fas fa-ticket-alt"></i> Réserver : ' + shortName;
+
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+// ----------------------------------------------------------------
+// Fermer le modal
+// ----------------------------------------------------------------
+function closeReservationModal() {
+    document.getElementById('reservationModal').classList.remove('active');
+    document.body.style.overflow = '';
+    clearErrors();
+}
+
+function clearErrors() {
+    document.querySelectorAll('.error-message').forEach(function(e) { e.classList.remove('show'); });
+    document.querySelectorAll('.form-group input').forEach(function(i) { i.classList.remove('error'); });
+}
+
+// ----------------------------------------------------------------
+// Validation front-end
+// ----------------------------------------------------------------
+function validateForm() {
+    var isValid  = true;
+    var nomRegex = /^[a-zA-ZÀ-ÿ\s-]{2,50}$/;
+
+    // Nom
+    var nom = document.getElementById('nom');
+    if (!nom.value.trim() || !nomRegex.test(nom.value.trim())) {
+        showFieldError('nomError', nom, true); isValid = false;
+    } else { showFieldError('nomError', nom, false); }
+
+    // Prénom
+    var prenom = document.getElementById('prenom');
+    if (!prenom.value.trim() || !nomRegex.test(prenom.value.trim())) {
+        showFieldError('prenomError', prenom, true); isValid = false;
+    } else { showFieldError('prenomError', prenom, false); }
+
+    // Téléphone — exactement 8 chiffres
+    var telephone = document.getElementById('telephone');
+    if (!/^[0-9]{8}$/.test(telephone.value.trim())) {
+        showFieldError('telephoneError', telephone, true); isValid = false;
+    } else { showFieldError('telephoneError', telephone, false); }
+
+    // Email
+    var email = document.getElementById('email');
+    if (!/^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/.test(email.value.trim())) {
+        showFieldError('emailError', email, true); isValid = false;
+    } else { showFieldError('emailError', email, false); }
+
+    // Nbre
+    var nbre    = document.getElementById('nbre');
+    var nbreVal = parseInt(nbre.value, 10);
+    if (isNaN(nbreVal) || nbreVal < 1 || nbreVal > 20) {
+        showFieldError('nbreError', nbre, true); isValid = false;
+    } else { showFieldError('nbreError', nbre, false); }
+
+    return isValid;
+}
+
+function showFieldError(errorId, input, show) {
+    var el = document.getElementById(errorId);
+    if (el)    el.classList.toggle('show', show);
+    if (input) input.classList.toggle('error', show);
+}
+
+// Validation en temps réel
+['nom', 'prenom', 'telephone', 'email', 'nbre'].forEach(function(field) {
+    var input = document.getElementById(field);
+    if (input) {
+        input.addEventListener('input', function() {
+            if (this.classList.contains('error')) validateForm();
+        });
+    }
+});
+
+// Soumission
+document.getElementById('reservationForm').addEventListener('submit', function(e) {
+    var form = document.getElementById('reservationForm');
+
+    // ✅ Sécurité : s'assurer que l'action est définie
+    if (!form.action || form.action.endsWith('#') || form.action.endsWith('/')) {
+        e.preventDefault();
+        showToast('Programme non sélectionné, veuillez réessayer.', 'error');
+        return;
+    }
+
+    if (!validateForm()) {
+        e.preventDefault();
+        showToast('Veuillez remplir tous les champs correctement.', 'error');
+    } else {
+        var btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours...';
+    }
+});
+
+// ----------------------------------------------------------------
+// Toast
+// ----------------------------------------------------------------
+function showToast(message, type) {
+    var existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+    var toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    var icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+    toast.innerHTML = '<i class="fas ' + icon + '"></i><span>' + message + '</span>';
+    document.body.appendChild(toast);
+    setTimeout(function() { if (toast && toast.parentNode) toast.remove(); }, 4000);
+}
+
+// Fermer en cliquant en dehors
+window.addEventListener('click', function(event) {
+    var modal = document.getElementById('reservationModal');
+    if (event.target === modal) closeReservationModal();
+});
+
+// ----------------------------------------------------------------
+// Flash messages Symfony
+// ----------------------------------------------------------------
+{% for message in app.flashes('success') %}
+    document.addEventListener('DOMContentLoaded', function() {
+        showToast('{{ message|escape('js') }}', 'success');
+    });
+{% endfor %}
+{% for message in app.flashes('error') %}
+    document.addEventListener('DOMContentLoaded', function() {
+        showToast('{{ message|escape('js') }}', 'error');
+    });
+{% endfor %}
+
+// ----------------------------------------------------------------
+// ✅ Rouvrir le modal automatiquement après erreurs Symfony
+// ----------------------------------------------------------------
+{% if errors is defined and errors|length > 0 and formData is defined and formData.idProg is defined %}
+    document.addEventListener('DOMContentLoaded', function() {
+        // L'action est déjà construite par Twig — on ouvre juste le modal
+        document.getElementById('reservationModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+        setTimeout(function() {
+            var errorBlock = document.querySelector('.form-errors-block');
+            if (errorBlock) errorBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 300);
+        showToast('Veuillez corriger les erreurs ci-dessous.', 'error');
+    });
+{% endif %}
+</script>
+{% endblock %}
