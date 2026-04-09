@@ -4,11 +4,13 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
-    parameters:
+    uploads_directory: '%kernel.project_dir%/public/uploads/evenements'
+    uploads_activites_directory: '%kernel.project_dir%/public/uploads/activites'
     voyages_images_directory: '%kernel.project_dir%/public/uploads/voyages'
     programmes_images_directory: '%kernel.project_dir%/public/uploads/programmes'
-    uploads_directory: '%kernel.project_dir%/public/uploads/voyages'
+    uploads_voyages_directory: '%kernel.project_dir%/public/uploads/voyages'
     uploads_programmes_directory: '%kernel.project_dir%/public/uploads/programmes'
+    imgbb_api_key: '%env(IMGBB_API_KEY)%'
 
 services:
     # default configuration for services in *this* file
@@ -25,5 +27,10 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+    # ✅ Service Gemini uniquement
+    App\Service\GeminiAIService:
+        arguments:
+            $apiKey: '%env(GEMINI_API_KEY)%'
+            $connection: '@doctrine.dbal.default_connection'
+
+   

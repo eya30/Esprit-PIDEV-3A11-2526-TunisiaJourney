@@ -1,0 +1,226 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ activite.titre }} - TunisiaJourney{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .activite-container {
+        display: flex;
+        gap: 0;
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        border: 1px solid #F0E8DD;
+        box-shadow: 0 4px 24px rgba(38,70,83,0.08);
+        min-height: 680px;
+        margin-bottom: 5rem;
+    }
+
+    .activite-image {
+        flex: 1.1;
+        min-width: 0;
+        background: #FEF9F0;
+        position: relative;
+        display: flex;
+        align-items: stretch;
+    }
+
+    .activite-image img {
+        width: 88%;
+        height: 82%;
+        object-fit: cover;
+        display: block;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 18px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    }
+
+    .activite-image-placeholder {
+        width: 88%;
+        height: 82%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #E8DFD1;
+        font-size: 3rem;
+        background: #F0E8DD;
+        border-radius: 18px;
+    }
+
+    .activite-info {
+        flex: 1.2;
+        padding: 3.5rem 3rem 3rem 3rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .activite-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.6rem;
+        font-weight: 800;
+        color: #264653;
+        margin-bottom: 2rem;
+        line-height: 1.2;
+        letter-spacing: -0.5px;
+    }
+
+    .activite-description {
+        color: #111111;
+        line-height: 1.85;
+        font-size: 1.05rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .activite-infos {
+        background: #F8F4F0;
+        border-radius: 16px;
+        padding: 1.4rem 1.8rem;
+        margin-bottom: 2.2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .info-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #E8DFD1;
+        gap: 1rem;
+    }
+
+    .info-row:last-child { border-bottom: none; }
+
+    .info-label {
+        font-weight: 600;
+        color: #7D2E3E;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 180px;
+    }
+
+    .info-label i {
+        color: #7D2E3E;
+        width: 18px;
+        text-align: center;
+        font-size: 1rem;
+    }
+
+    .info-value {
+        color: #1a1a1a;
+        font-weight: 500;
+        font-size: 1rem;
+        text-align: right;
+    }
+
+    /* Bouton réserver — lien vers page dédiée */
+    .btn-reserve {
+        background: #264653;
+        color: white;
+        border: none;
+        padding: 13px 32px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        align-self: flex-start;
+        letter-spacing: 0.2px;
+        box-shadow: 0 4px 14px rgba(38,70,83,0.25);
+        text-decoration: none;
+    }
+
+    .btn-reserve:hover {
+        background: #1a3340;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(38,70,83,0.35);
+    }
+
+    @media (max-width: 768px) {
+        .activite-container { flex-direction: column; }
+        .activite-image     { min-height: 320px; }
+        .activite-info      { padding: 1.5rem; }
+        .activite-title     { font-size: 1.7rem; }
+        .info-row           { flex-direction: column; align-items: flex-start; gap: 3px; }
+        .info-value         { text-align: left; }
+        .info-label         { min-width: unset; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+
+    <div class="activite-container">
+
+        {# ── Image ── #}
+        <div class="activite-image">
+            {% if activite.image and activite.image != 'NULL' and activite.image != '' %}
+                <img src="{{ asset('uploads/activites/' ~ activite.image|replace({' ': '%20'})) }}" alt="{{ activite.titre }}">
+            {% else %}
+                <div class="activite-image-placeholder">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+            {% endif %}
+        </div>
+
+        {# ── Infos ── #}
+        <div class="activite-info">
+
+            <h1 class="activite-title">{{ activite.titre }}</h1>
+
+            <div class="activite-description">
+                {{ activite.description }}
+            </div>
+
+            <div class="activite-infos">
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-icons"></i> Type</span>
+                    <span class="info-value">{{ activite.typeActivite }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-clock"></i> Heure début</span>
+                    <span class="info-value">{{ activite.heureDebut }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-hourglass-half"></i> Durée</span>
+                    <span class="info-value">{{ activite.duree }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-chalkboard-teacher"></i> Animateur</span>
+                    <span class="info-value">{{ activite.nomAnimateur }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-users"></i> Capacité</span>
+                    <span class="info-value">{{ activite.capaciteM }} personnes</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-tag"></i> Prix</span>
+                    <span class="info-value">{{ activite.prix|number_format(2, ',', ' ') }} TND / personne</span>
+                </div>
+            </div>
+
+            {# Lien vers la page de réservation dédiée #}
+            <a href="{{ path('app_reservationact_new', {'IDAct': activite.IDAct}) }}" class="btn-reserve">
+                Réserver Cette Activité <i class="fas fa-arrow-right"></i>
+            </a>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

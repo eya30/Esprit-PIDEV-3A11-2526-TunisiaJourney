@@ -129,7 +129,7 @@
                         <div class="card-content">
                             <h3 class="card-title">{{ produit.titre }}</h3>
                             <div class="card-price">{{ produit.prix }} TND</div>
-                            <a href="{{ path('app_panier_ajouter', {id: produit.idPR}) }}" class="btn-commander">Ajouter au panier</a>
+                            <a href="{{path('app_panier_add', {id: produit.idPR}) }}" class="btn-commander">Ajouter au panier</a>
                         </div>
                     </div>
                 </div>

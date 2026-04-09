@@ -11,15 +11,31 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/admin/produit')]
-class AdminProduitController extends AbstractController
+class AdminProduitController extends AbstractController{
+
+#[Route('', name: 'admin_produit_index')]
+public function index(ProduitRepository $repo, Request $request): Response
 {
-    #[Route('/', name: 'admin_produit_index')]
-    public function index(ProduitRepository $repo): Response
-    {
-        return $this->render('admin/produit/index.html.twig', [
-            'produits' => $repo->findAll(),
-        ]);
-    }
+    $searchTerm = $request->query->get('q', '');
+    $sortBy = $request->query->get('sort', 'idPR');
+    $direction = $request->query->get('direction', 'ASC'); // On ajoute la direction
+
+    // Sécurité : on ne trie que sur les champs existants
+    $allowedSorts = ['idPR', 'titre', 'prix', 'stock', 'categorie'];
+    if (!in_array($sortBy, $allowedSorts)) $sortBy = 'idPR';
+    
+    $direction = strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC';
+
+    // On récupère les résultats
+    $produits = $repo->findBySearchAndSort($searchTerm, $sortBy, $direction);
+
+    return $this->render('admin/produit/index.html.twig', [
+        'produits' => $produits,
+        'lastSearch' => $searchTerm,
+        'currentSort' => $sortBy,
+        'currentDirection' => $direction
+    ]);
+}
 
     #[Route('/nouveau', name: 'admin_produit_new')]
     public function new(Request $request, EntityManagerInterface $em): Response
@@ -99,4 +115,5 @@ class AdminProduitController extends AbstractController
         $file->move($uploadDir, $fileName);
         $produit->setImage($fileName);
     }
-}
+}   
+
