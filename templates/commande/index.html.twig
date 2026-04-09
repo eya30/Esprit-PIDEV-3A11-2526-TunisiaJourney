@@ -1,0 +1,351 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Commandes - TunisiaJourney{% endblock %}
+
+{% block stylesheets %}
+<style>
+    :root {
+        --tunisia-red: #E31B23;
+        --tunisia-orange: #FF6B35;
+        --tunisia-sand: #FDF5E6;
+        --tunisia-soft: #F5CAC3;
+        --dark-gray: #2C3E50;
+    }
+
+    /* Hero */
+    .hero {
+        position: relative;
+        height: 38vh;
+        min-height: 260px;
+        background-image: linear-gradient(rgba(227,27,35,0.22), rgba(245,202,195,0.32)),
+            url('https://switchmed.eu/wp-content/uploads/2020/04/tunisia-1.jpg');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: white;
+        overflow: hidden;
+    }
+
+    .hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.28) 100%);
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 700px;
+        padding: 2.5rem;
+        animation: fadeInUp 1s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(40px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 0.8rem;
+        text-shadow: 3px 3px 12px rgba(0,0,0,0.5);
+        color: #F5CAC3;
+        letter-spacing: 2px;
+    }
+
+    .hero p {
+        font-size: 1.05rem;
+        font-weight: 300;
+        line-height: 1.7;
+        color: rgba(255,255,255,0.92);
+    }
+
+    /* Section title */
+    .section-title {
+        text-align: center;
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.4rem;
+        font-weight: 700;
+        color: var(--tunisia-red);
+        margin-bottom: 0.5rem;
+    }
+
+    .section-title:after {
+        content: '✦ ✦ ✦';
+        display: block;
+        color: #F5CAC3;
+        font-size: 1.1rem;
+        margin-top: 0.6rem;
+        letter-spacing: 12px;
+    }
+
+    .section-subtitle {
+        text-align: center;
+        color: var(--dark-gray);
+        font-size: 0.95rem;
+        margin-bottom: 2.5rem;
+        font-style: italic;
+        opacity: 0.75;
+    }
+
+    /* Table card */
+    .table-card {
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+
+    .table-card table {
+        margin-bottom: 0;
+    }
+
+    .table-card thead th {
+        background: #FEF9F0;
+        padding: 16px 20px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--tunisia-red);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        border-bottom: 2px solid #F5CAC3;
+        white-space: nowrap;
+    }
+
+    .table-card tbody td {
+        padding: 16px 20px;
+        font-size: 0.9rem;
+        border-bottom: 1px solid #FDF5E6;
+        color: var(--dark-gray);
+        vertical-align: middle;
+    }
+
+    .table-card tbody tr:hover td {
+        background: #FFF9F0;
+    }
+
+    .table-card tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Badges statut */
+    .badge-statut {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .statut-attente   { background: #FEF3C7; color: #D97706; }
+    .statut-confirmee { background: #D1FAE5; color: #065F46; }
+    .statut-expediee  { background: #DBEAFE; color: #1D4ED8; }
+    .statut-livree    { background: #F3F4F6; color: #374151; }
+    .statut-annulee   { background: #FEE2E2; color: #991B1B; }
+
+    /* Boutons action */
+    .action-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        cursor: pointer;
+        border: none;
+        font-size: 0.85rem;
+        text-decoration: none;
+    }
+
+    .btn-edit-cmd {
+        background: #EFF6FF;
+        color: #3B82F6;
+    }
+
+    .btn-edit-cmd:hover {
+        background: #3B82F6;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-delete-cmd {
+        background: #FEF2F2;
+        color: #EF4444;
+    }
+
+    .btn-delete-cmd:hover {
+        background: #EF4444;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    /* Bouton retour boutique */
+    .btn-back-shop {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: transparent;
+        border: 2px solid var(--tunisia-red);
+        color: var(--tunisia-red);
+        padding: 10px 24px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        font-family: 'Montserrat', sans-serif;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-back-shop:hover {
+        background: var(--tunisia-red);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    /* Prix total */
+    .prix-total {
+        font-weight: 800;
+        color: var(--tunisia-red);
+    }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #9CA3AF;
+    }
+
+    .empty-state i {
+        font-size: 3.5rem;
+        color: #F5CAC3;
+        margin-bottom: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .hero h1 { font-size: 2.1rem; }
+        .table-card { overflow-x: auto; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>Mes Commandes</h1>
+        <p>Suivez et gérez vos commandes de produits artisanaux tunisiens.</p>
+    </div>
+</section>
+
+<!-- LISTE -->
+<section class="py-5" style="background: var(--tunisia-sand);">
+    <div class="container">
+
+        <h2 class="section-title">Historique des Commandes</h2>
+        <p class="section-subtitle">Retrouvez toutes vos commandes passées</p>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="{{ path('app_produit_index') }}" class="btn-back-shop">
+                <i class="fas fa-arrow-left"></i> Retour à la boutique
+            </a>
+            <span style="color:#6c757d; font-size:0.9rem;">
+                <i class="fas fa-box me-1" style="color:var(--tunisia-orange);"></i>
+                {{ commandes|length }} commande(s)
+            </span>
+        </div>
+
+        <div class="table-card">
+            <table class="table table-borderless">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Date</th>
+                        <th>Quantité</th>
+                        <th>Adresse de livraison</th>
+                        <th>Code postal</th>
+                        <th>Mode de paiement</th>
+                        <th>Total</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for commande in commandes %}
+                        <tr>
+                            <td><strong>#{{ commande.id }}</strong></td>
+                            <td>{{ commande.dateC|date('d/m/Y') }}</td>
+                            <td>
+                                <span style="background:#FEF9F0; padding:4px 12px; border-radius:20px; font-weight:600; color:var(--tunisia-red);">
+                                    {{ commande.quantite }} unité(s)
+                                </span>
+                            </td>
+                            <td>{{ commande.adresseLiv ?? '—' }}</td>
+                            <td>{{ commande.codePostal ?? '—' }}</td>
+                            <td>
+                                <i class="fas fa-credit-card me-1" style="color:var(--tunisia-orange);"></i>
+                                {{ commande.modePaiement ?? '—' }}
+                            </td>
+                            <td class="prix-total">{{ commande.total|number_format(2, ',', ' ') }} TND</td>
+                            <td>
+                                {% set statut = commande.statut|default('En attente') %}
+                                {% if statut == 'En attente' %}
+                                    <span class="badge-statut statut-attente"><i class="fas fa-clock"></i> {{ statut }}</span>
+                                {% elseif statut == 'Confirmée' %}
+                                    <span class="badge-statut statut-confirmee"><i class="fas fa-check"></i> {{ statut }}</span>
+                                {% elseif statut == 'Expédiée' %}
+                                    <span class="badge-statut statut-expediee"><i class="fas fa-truck"></i> {{ statut }}</span>
+                                {% elseif statut == 'Livrée' %}
+                                    <span class="badge-statut statut-livree"><i class="fas fa-box"></i> {{ statut }}</span>
+                                {% else %}
+                                    <span class="badge-statut statut-annulee"><i class="fas fa-times"></i> {{ statut }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a href="{{ path('app_commande_edit', {id: commande.id}) }}"
+                                       class="action-btn btn-edit-cmd" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form method="post"
+                                          action="{{ path('app_commande_delete', {id: commande.id}) }}"
+                                          onsubmit="return confirm('Supprimer cette commande ?')">
+                                        <button type="submit" class="action-btn btn-delete-cmd" title="Supprimer">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="9">
+                                <div class="empty-state">
+                                    <i class="fas fa-shopping-bag"></i>
+                                    <p>Aucune commande pour le moment.</p>
+                                    <a href="{{ path('app_produit_index') }}" class="btn-back-shop">
+                                        <i class="fas fa-store me-1"></i> Découvrir la boutique
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

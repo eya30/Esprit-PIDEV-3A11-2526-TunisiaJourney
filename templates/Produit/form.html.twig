@@ -1,0 +1,303 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ produit.idPR ? 'Modifier' : 'Nouveau' }} Produit — TunisiaJourney{% endblock %}
+
+{% block stylesheets %}
+<style>
+    :root {
+        --tunisia-red: #E31B23;
+        --tunisia-orange: #FF6B35;
+        --tunisia-gold: #FFD700;
+        --tunisia-soft: #F5CAC3;
+        --tunisia-sand: #FDF5E6;
+        --dark-gray: #2C3E50;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, var(--tunisia-red) 0%, #C41E3A 50%, var(--tunisia-orange) 100%);
+        padding: 3rem 0 2rem;
+        color: white;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    .page-header h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: var(--tunisia-soft);
+        letter-spacing: 2px;
+        position: relative;
+        z-index: 1;
+    }
+    .page-header p { color: rgba(255,255,255,0.85); font-size: 1rem; position: relative; z-index: 1; }
+    .breadcrumb-custom {
+        display: flex; align-items: center; gap: 8px; justify-content: center;
+        margin-top: 1rem; font-size: 0.88rem; color: rgba(255,255,255,0.7); position: relative; z-index: 1;
+    }
+    .breadcrumb-custom a { color: var(--tunisia-soft); text-decoration: none; }
+
+    .form-card {
+        background: white; border-radius: 28px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.1); overflow: hidden;
+        margin: 3rem auto; max-width: 860px;
+    }
+    .form-card-header {
+        background: linear-gradient(135deg, var(--tunisia-sand), #fff);
+        padding: 2rem 2.5rem 1.5rem;
+        border-bottom: 1px solid rgba(245,202,195,0.4);
+        display: flex; align-items: center; gap: 1rem;
+    }
+    .form-card-header .icon-wrap {
+        width: 56px; height: 56px;
+        background: linear-gradient(135deg, var(--tunisia-red), var(--tunisia-orange));
+        border-radius: 16px; display: flex; align-items: center; justify-content: center;
+        color: white; font-size: 1.4rem; box-shadow: 0 6px 16px rgba(227,27,35,0.35);
+    }
+    .form-card-header h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 700; color: var(--tunisia-red); margin: 0; }
+    .form-card-header p { color: #6c757d; font-size: 0.88rem; margin: 0; }
+    .form-card-body { padding: 2.5rem; }
+
+    .form-section-title {
+        font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 700;
+        color: var(--dark-gray); margin-bottom: 1.5rem; padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--tunisia-soft); display: flex; align-items: center; gap: 8px;
+    }
+    .form-section-title i { color: var(--tunisia-orange); }
+
+    .field-wrap { margin-bottom: 1.5rem; }
+    .field-wrap label { display: block; font-weight: 600; color: var(--dark-gray); margin-bottom: 0.5rem; font-size: 0.88rem; }
+
+    .field-wrap input[type="text"],
+    .field-wrap input[type="number"],
+    .field-wrap textarea,
+    .field-wrap select {
+        width: 100%; padding: 12px 16px;
+        border: 2px solid #e9ecef; border-radius: 14px;
+        font-size: 0.9rem; color: var(--dark-gray);
+        transition: all 0.3s ease; background: #fafafa; box-sizing: border-box;
+    }
+    .field-wrap input[type="text"]:focus,
+    .field-wrap input[type="number"]:focus,
+    .field-wrap textarea:focus,
+    .field-wrap select:focus {
+        outline: none; border-color: var(--tunisia-red);
+        background: white; box-shadow: 0 0 0 4px rgba(227,27,35,0.08);
+    }
+    .field-wrap textarea { resize: vertical; min-height: 100px; }
+    .field-wrap select { appearance: auto; cursor: pointer; }
+
+    /* Badge catégorie */
+    .categorie-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .cat-badge {
+        padding: 6px 16px; border-radius: 20px; font-size: 0.82rem; font-weight: 600;
+        border: 2px solid var(--tunisia-soft); color: var(--dark-gray);
+        cursor: pointer; transition: all 0.2s;
+    }
+    .cat-badge:hover, .cat-badge.active {
+        background: linear-gradient(135deg, var(--tunisia-red), var(--tunisia-orange));
+        color: white; border-color: transparent;
+    }
+
+    .checkbox-wrap {
+        display: flex; align-items: center; gap: 12px;
+        padding: 14px 18px; background: #f8f9fa; border-radius: 14px;
+        border: 2px solid #e9ecef; cursor: pointer; transition: all 0.3s; margin-bottom: 1.5rem;
+    }
+    .checkbox-wrap:hover { border-color: var(--tunisia-soft); background: #fff; }
+    .checkbox-wrap input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--tunisia-red); cursor: pointer; }
+    .checkbox-wrap label { margin: 0; cursor: pointer; font-weight: 500; color: var(--dark-gray); }
+
+    .image-upload-area {
+        border: 2px dashed var(--tunisia-soft); border-radius: 16px;
+        padding: 2rem; text-align: center; background: var(--tunisia-sand);
+        cursor: pointer; transition: all 0.3s; position: relative;
+    }
+    .image-upload-area:hover { border-color: var(--tunisia-red); background: #fff; }
+    .image-upload-area i { font-size: 2.5rem; color: var(--tunisia-soft); margin-bottom: 0.5rem; }
+    .image-upload-area p { color: #6c757d; font-size: 0.85rem; margin: 0; }
+    .image-upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; border: none; padding: 0; }
+    .image-preview { margin-top: 1rem; display: none; text-align: center; }
+    .image-preview img { max-height: 180px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); object-fit: cover; }
+    .current-image { text-align: center; margin-bottom: 1rem; }
+    .current-image img { max-height: 160px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+    .current-image p { font-size: 0.8rem; color: #6c757d; margin-top: 0.5rem; }
+
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    @media (max-width: 600px) { .form-row-2 { grid-template-columns: 1fr; } }
+
+    .form-actions {
+        display: flex; gap: 1rem; justify-content: flex-end;
+        padding-top: 2rem; border-top: 1px solid rgba(245,202,195,0.4);
+        margin-top: 2rem; flex-wrap: wrap;
+    }
+    .btn-submit {
+        background: linear-gradient(135deg, var(--tunisia-red), var(--tunisia-orange));
+        color: white; padding: 12px 32px; border-radius: 30px; border: none;
+        font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: all 0.3s;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(227,27,35,0.4); }
+    .btn-cancel {
+        background: white; color: var(--dark-gray); padding: 12px 28px;
+        border-radius: 30px; border: 2px solid #dee2e6; font-weight: 600;
+        font-size: 0.95rem; text-decoration: none; display: flex; align-items: center;
+        gap: 8px; transition: all 0.3s;
+    }
+    .btn-cancel:hover { border-color: var(--tunisia-red); color: var(--tunisia-red); transform: translateY(-2px); }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <h1>{{ produit.idPR ? '✏️ Modifier le Produit' : '✨ Nouveau Produit' }}</h1>
+    <p>{{ produit.idPR ? 'Mettez à jour les informations de votre produit' : 'Ajoutez un nouveau produit à votre boutique' }}</p>
+    <div class="breadcrumb-custom">
+        <a href="{{ path('app_produit_index') }}"><i class="fas fa-home"></i> Produits</a>
+        <i class="fas fa-chevron-right" style="font-size:0.7rem"></i>
+        <span>{{ produit.idPR ? 'Modifier' : 'Nouveau' }}</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="form-card">
+        <div class="form-card-header">
+            <div class="icon-wrap">
+                <i class="fas fa-{{ produit.idPR ? 'edit' : 'plus' }}"></i>
+            </div>
+            <div>
+                <h2>{{ produit.idPR ? 'Modifier: ' ~ produit.titre : 'Nouveau Produit' }}</h2>
+                <p>Remplissez les informations ci-dessous</p>
+            </div>
+        </div>
+
+        <div class="form-card-body">
+            {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'novalidate': 'novalidate'}}) }}
+
+            <!-- Informations de base -->
+            <div class="form-section-title"><i class="fas fa-tag"></i> Informations Générales</div>
+
+            <div class="field-wrap">
+                {{ form_label(form.titre) }}
+                {{ form_widget(form.titre) }}
+                {{ form_errors(form.titre) }}
+            </div>
+
+            <div class="field-wrap">
+                {{ form_label(form.description) }}
+                {{ form_widget(form.description) }}
+                {{ form_errors(form.description) }}
+            </div>
+
+            <!-- ✅ Catégorie -->
+            <div class="field-wrap">
+                {{ form_label(form.categorie) }}
+                {{ form_widget(form.categorie) }}
+                {{ form_errors(form.categorie) }}
+                <!-- Badges visuels pour sélection rapide -->
+                <div class="categorie-badges" id="catBadges">
+                    {% for label, value in constant('App\\Entity\\Produit::CATEGORIES') %}
+                        <span class="cat-badge {{ produit.categorie == value ? 'active' : '' }}"
+                              data-value="{{ value }}">
+                            {{ label }}
+                        </span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Prix & Stock -->
+            <div class="form-section-title" style="margin-top:2rem"><i class="fas fa-coins"></i> Prix & Stock</div>
+
+            <div class="form-row-2">
+                <div class="field-wrap">
+                    {{ form_label(form.prix) }}
+                    {{ form_widget(form.prix) }}
+                    {{ form_errors(form.prix) }}
+                </div>
+                <div class="field-wrap">
+                    {{ form_label(form.stock) }}
+                    {{ form_widget(form.stock) }}
+                    {{ form_errors(form.stock) }}
+                </div>
+            </div>
+
+            <div class="form-row-2">
+                <div class="field-wrap">
+                    {{ form_label(form.poids) }}
+                    {{ form_widget(form.poids) }}
+                    {{ form_errors(form.poids) }}
+                </div>
+                <div>
+                    <div class="checkbox-wrap" style="margin-top:1.8rem">
+                        {{ form_widget(form.disponibilite) }}
+                        {{ form_label(form.disponibilite) }}
+                    </div>
+                    {{ form_errors(form.disponibilite) }}
+                </div>
+            </div>
+
+            <!-- Image -->
+            <div class="form-section-title" style="margin-top:2rem"><i class="fas fa-image"></i> Image du Produit</div>
+
+            {% if produit.image %}
+                <div class="current-image">
+                    <img src="{{ asset('uploads/produits/' ~ produit.image) }}" alt="{{ produit.titre }}">
+                    <p><i class="fas fa-info-circle"></i> Image actuelle — sélectionnez-en une nouvelle pour la remplacer</p>
+                </div>
+            {% endif %}
+
+            <div class="image-upload-area" id="uploadArea">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p><strong>Glissez une image ici</strong> ou cliquez pour parcourir</p>
+                <p>JPG, PNG, WEBP — max 2 Mo</p>
+                {{ form_widget(form.imageFile, {'attr': {'id': 'imageFileInput', 'accept': 'image/*'}}) }}
+            </div>
+            <div class="image-preview" id="imagePreview">
+                <img id="previewImg" src="" alt="Aperçu">
+            </div>
+            {{ form_errors(form.imageFile) }}
+
+            <div class="form-actions">
+                <a href="{{ path('app_produit_index') }}" class="btn-cancel">
+                    <i class="fas fa-arrow-left"></i> Annuler
+                </a>
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-save"></i>
+                    {{ produit.idPR ? 'Enregistrer les modifications' : 'Créer le produit' }}
+                </button>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    // Aperçu image
+    document.getElementById('imageFileInput')?.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = ev => {
+                document.getElementById('previewImg').src = ev.target.result;
+                document.getElementById('imagePreview').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+            document.querySelector('#uploadArea p').textContent = '✅ ' + file.name;
+        }
+    });
+
+    // Badges catégorie → synchronise le <select>
+    const select = document.querySelector('select[name$="[categorie]"]');
+    document.querySelectorAll('.cat-badge').forEach(badge => {
+        badge.addEventListener('click', () => {
+            const val = badge.getAttribute('data-value');
+            if (select) select.value = val;
+            document.querySelectorAll('.cat-badge').forEach(b => b.classList.remove('active'));
+            badge.classList.add('active');
+        });
+    });
+</script>
+{% endblock %}

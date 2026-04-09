@@ -156,11 +156,31 @@ class AdminChambreController extends AbstractController
 
             if (count($errors) === 0) {
                 $imageName = null;
-                if ($imageFile && $imageFile->isValid()) {
+                if ($imageFile) {
+                    // vérifier les erreurs d'upload
+                    if (!$imageFile->isValid()) {
+                        $errors['image'] = 'Erreur lors de l\'upload de l\'image (vérifier la taille et le dossier temporaire PHP).';
+                    }
+                }
+
+                if (count($errors) === 0 && $imageFile && $imageFile->isValid()) {
                     $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
                     $safeFilename = preg_replace('/[^a-zA-Z0-9]/', '_', $originalFilename);
                     $imageName = $safeFilename . '_' . uniqid() . '.' . $imageFile->guessExtension();
-                    $imageFile->move('public/uploads/chambres', $imageName);
+
+                    // s'assurer que le dossier d'uploads existe
+                    $targetDir = $this->getParameter('uploads_chambres_directory');
+                    if (!is_dir($targetDir)) {
+                        @mkdir($targetDir, 0777, true);
+                    }
+
+                    // déplacer le fichier
+                    try {
+                        $imageFile->move($targetDir, $imageName);
+                    } catch (\Exception $e) {
+                        $errors['image'] = 'Impossible de déplacer le fichier uploadé : ' . $e->getMessage();
+                        $imageName = null;
+                    }
                 }
 
                 $connection->executeStatement(
@@ -305,14 +325,37 @@ class AdminChambreController extends AbstractController
 
             if (count($errors) === 0) {
                 $imageName = $chambre['image'];
-                if ($imageFile && $imageFile->isValid()) {
-                    if ($imageName && file_exists('public/uploads/chambres/' . $imageName)) {
-                        unlink('public/uploads/chambres/' . $imageName);
+                if ($imageFile) {
+                    if (!$imageFile->isValid()) {
+                        $errors['image'] = 'Erreur lors de l\'upload de l\'image (vérifier la taille et le dossier temporaire PHP).';
                     }
+                }
+
+                if (count($errors) === 0 && $imageFile && $imageFile->isValid()) {
+                    $targetDir = $this->getParameter('uploads_chambres_directory');
+
+                    // supprimer l'ancienne image si elle existe
+                    if ($imageName) {
+                        $oldPath = rtrim($targetDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $imageName;
+                        if (file_exists($oldPath)) {
+                            @unlink($oldPath);
+                        }
+                    }
+
                     $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
                     $safeFilename = preg_replace('/[^a-zA-Z0-9]/', '_', $originalFilename);
                     $imageName = $safeFilename . '_' . uniqid() . '.' . $imageFile->guessExtension();
-                    $imageFile->move('public/uploads/chambres', $imageName);
+
+                    if (!is_dir($targetDir)) {
+                        @mkdir($targetDir, 0777, true);
+                    }
+
+                    try {
+                        $imageFile->move($targetDir, $imageName);
+                    } catch (\Exception $e) {
+                        $errors['image'] = 'Impossible de déplacer le fichier uploadé : ' . $e->getMessage();
+                        $imageName = $chambre['image'];
+                    }
                 }
 
                 $connection->executeStatement(
@@ -356,8 +399,12 @@ class AdminChambreController extends AbstractController
     {
         if ($this->isCsrfTokenValid('delete_chambre_' . $id, $request->request->get('_token'))) {
             $chambre = $connection->fetchAssociative("SELECT image FROM chambre WHERE idCh = ?", [$id]);
-            if ($chambre && $chambre['image'] && file_exists('public/uploads/chambres/' . $chambre['image'])) {
-                unlink('public/uploads/chambres/' . $chambre['image']);
+            if ($chambre && $chambre['image']) {
+                $targetDir = $this->getParameter('uploads_chambres_directory');
+                $filePath = rtrim($targetDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $chambre['image'];
+                if (file_exists($filePath)) {
+                    @unlink($filePath);
+                }
             }
             $connection->executeStatement("DELETE FROM chambre WHERE idCh = ?", [$id]);
             $this->addFlash('success', 'Chambre supprimée avec succès !');

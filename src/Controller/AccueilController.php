@@ -12,11 +12,11 @@ class AccueilController extends AbstractController
     #[Route('/', name: 'app_accueil')]
     public function index(Connection $connection): Response
     {
-        // Récupérer les 6 derniers hôtels
-        $hotels = $connection->fetchAllAssociative("SELECT * FROM hotel ORDER BY idH DESC LIMIT 6");
-        
+        $voyages = $connection->fetchAllAssociative("SELECT * FROM voyages ORDER BY idV DESC LIMIT 6");
         return $this->render('accueil/index.html.twig', [
-            'hotels' => $hotels,
+            'voyages' => $voyages,
         ]);
     }
+
+    
 }

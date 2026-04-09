@@ -150,6 +150,9 @@
             font-weight: 600;
             transition: all 0.2s;
             border: 1.5px solid #93032E;
+            width: 100%;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
         }
         
         .logout-btn i {
@@ -545,7 +548,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ path('admin_voyage_index') }}" class="nav-link {% if app.request.get('_route') starts with 'admin_voyage' %}active{% endif %}">
                         <i class="fas fa-suitcase"></i> Voyages
                     </a>
                 </li>
@@ -555,17 +558,17 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ path('admin_evenement_index') }}" class="nav-link {% if app.request.get('_route') starts with 'admin_evenement' %}active{% endif %}">
                         <i class="fas fa-calendar-alt"></i> Événements
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ path('admin_produit_index') }}" class="nav-link {% if app.request.get('_route') starts with 'admin_produit' %}active{% endif %}">
                         <i class="fas fa-gift"></i> Produits
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ path('admin_users_index') }}" class="nav-link {% if app.request.get('_route') starts with 'admin_users' %}active{% endif %}">
                         <i class="fas fa-users"></i> Utilisateurs
                     </a>
                 </li>
@@ -577,9 +580,12 @@
             </ul>
             
             <div class="sidebar-footer">
-                <a href="#" class="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i> Déconnexion
-                </a>
+                <form method="post" action="{{ path('app_logout') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('logout') }}">
+                    <button type="submit" class="logout-btn">
+                        <i class="fas fa-arrow-right-from-bracket"></i> Déconnexion
+                    </button>
+                </form>
             </div>
         </aside>
         

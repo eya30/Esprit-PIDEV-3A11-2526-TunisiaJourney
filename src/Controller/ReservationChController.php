@@ -32,6 +32,8 @@ class ReservationChController extends AbstractController
         }
 
         $data = $request->request->all();
+    // Debug: log incoming reservation POST data (avoid logging sensitive full content in prod)
+    @file_put_contents(__DIR__ . '/../../var/log/reservation_debug.log', sprintf("%s - ENTRY idCh=%s data=%s\n", (new \DateTime())->format('c'), $idCh, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)), FILE_APPEND);
         
         // Récupération des données
         $nom = trim($data['nom'] ?? '');
@@ -76,49 +78,66 @@ class ReservationChController extends AbstractController
         // Validations (Nom, Prénom, Email, Téléphone, Dates, etc.)
         if (empty($nom)) {
             $errors[] = "Le nom est requis.";
+            $errorsNom = "Le nom est requis.";
         } elseif (strlen($nom) < 2) {
             $errors[] = "Le nom doit contenir au moins 2 caractères.";
+            $errorsNom = "Le nom doit contenir au moins 2 caractères.";
         } elseif (strlen($nom) > 50) {
             $errors[] = "Le nom ne peut pas dépasser 50 caractères.";
+            $errorsNom = "Le nom ne peut pas dépasser 50 caractères.";
         } elseif (!preg_match('/^[a-zA-ZÀ-ÿ\s\'-]+$/', $nom)) {
             $errors[] = "Le nom ne doit contenir que des lettres.";
+            $errorsNom = "Le nom ne doit contenir que des lettres.";
         }
 
         if (empty($prenom)) {
             $errors[] = "Le prénom est requis.";
+            $errorsPrenom = "Le prénom est requis.";
         } elseif (strlen($prenom) < 2) {
             $errors[] = "Le prénom doit contenir au moins 2 caractères.";
+            $errorsPrenom = "Le prénom doit contenir au moins 2 caractères.";
         } elseif (strlen($prenom) > 50) {
             $errors[] = "Le prénom ne peut pas dépasser 50 caractères.";
+            $errorsPrenom = "Le prénom ne peut pas dépasser 50 caractères.";
         } elseif (!preg_match('/^[a-zA-ZÀ-ÿ\s\'-]+$/', $prenom)) {
             $errors[] = "Le prénom ne doit contenir que des lettres.";
+            $errorsPrenom = "Le prénom ne doit contenir que des lettres.";
         }
 
         if (empty($email)) {
             $errors[] = "L'email est requis.";
+            $errorsEmail = "L'email est requis.";
         } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors[] = "L'email n'est pas valide.";
+            $errorsEmail = "L'email n'est pas valide.";
         } elseif (strlen($email) > 100) {
             $errors[] = "L'email ne peut pas dépasser 100 caractères.";
+            $errorsEmail = "L'email ne peut pas dépasser 100 caractères.";
         }
 
         if (empty($telephone)) {
             $errors[] = "Le téléphone est requis.";
+            $errorsTelephone = "Le téléphone est requis.";
         } else {
             $telephoneClean = preg_replace('/[^0-9]/', '', $telephone);
             if (strlen($telephoneClean) < 8) {
                 $errors[] = "Le téléphone doit contenir au moins 8 chiffres.";
+                $errorsTelephone = "Le téléphone doit contenir au moins 8 chiffres.";
             } elseif (strlen($telephoneClean) > 15) {
                 $errors[] = "Le téléphone ne peut pas dépasser 15 chiffres.";
+                $errorsTelephone = "Le téléphone ne peut pas dépasser 15 chiffres.";
             } elseif (!preg_match('/^[0-9+\-\s]+$/', $telephone)) {
                 $errors[] = "Le téléphone contient des caractères non autorisés.";
+                $errorsTelephone = "Le téléphone contient des caractères non autorisés.";
             }
         }
 
         if (empty($dateDebut)) {
             $errors[] = "La date de début est requise.";
+            $errorsDateDebut = "La date de début est requise.";
         } elseif (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateDebut)) {
             $errors[] = "La date de début doit être au format AAAA-MM-JJ.";
+            $errorsDateDebut = "La date de début doit être au format AAAA-MM-JJ.";
         } else {
             $dateDebutObj = new \DateTime($dateDebut);
             $today = new \DateTime();
@@ -126,23 +145,28 @@ class ReservationChController extends AbstractController
             
             if ($dateDebutObj < $today) {
                 $errors[] = "La date de début ne peut pas être dans le passé.";
+                $errorsDateDebut = "La date de début ne peut pas être dans le passé.";
             }
             
             $maxDate = new \DateTime('+2 years');
             if ($dateDebutObj > $maxDate) {
                 $errors[] = "La date de début ne peut pas être au-delà de 2 ans.";
+                $errorsDateDebut = "La date de début ne peut pas être au-delà de 2 ans.";
             }
         }
 
         if (empty($dateFin)) {
             $errors[] = "La date de fin est requise.";
+            $errorsDateFin = "La date de fin est requise.";
         } elseif (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateFin)) {
             $errors[] = "La date de fin doit être au format AAAA-MM-JJ.";
+            $errorsDateFin = "La date de fin doit être au format AAAA-MM-JJ.";
         } else {
             $dateFinObj = new \DateTime($dateFin);
             $maxDate = new \DateTime('+2 years');
             if ($dateFinObj > $maxDate) {
                 $errors[] = "La date de fin ne peut pas être au-delà de 2 ans.";
+                $errorsDateFin = "La date de fin ne peut pas être au-delà de 2 ans.";
             }
         }
 
@@ -185,14 +209,19 @@ class ReservationChController extends AbstractController
 
         if (empty($nbPersonnes)) {
             $errors[] = "Le nombre de personnes est requis.";
+            $errorsNbPersonnes = "Le nombre de personnes est requis.";
         } elseif (!is_numeric($nbPersonnes)) {
             $errors[] = "Le nombre de personnes doit être un nombre.";
+            $errorsNbPersonnes = "Le nombre de personnes doit être un nombre.";
         } elseif ($nbPersonnes <= 0) {
             $errors[] = "Le nombre de personnes doit être au moins 1.";
+            $errorsNbPersonnes = "Le nombre de personnes doit être au moins 1.";
         } elseif ($nbPersonnes > $chambre['capacite_max']) {
             $errors[] = "Le nombre de personnes ne peut pas dépasser " . $chambre['capacite_max'] . " personnes.";
+            $errorsNbPersonnes = "Le nombre de personnes ne peut pas dépasser " . $chambre['capacite_max'] . " personnes.";
         } elseif ($nbPersonnes > 10) {
             $errors[] = "Le nombre de personnes ne peut pas dépasser 10.";
+            $errorsNbPersonnes = "Le nombre de personnes ne peut pas dépasser 10.";
         }
 
         if (empty($errors) && !empty($dateDebut) && !empty($dateFin)) {
@@ -212,6 +241,8 @@ class ReservationChController extends AbstractController
         }
 
         if (count($errors) > 0) {
+            // Debug: log validation errors
+            @file_put_contents(__DIR__ . '/../../var/log/reservation_debug.log', sprintf("%s - VALIDATION_ERRORS idCh=%s errors=%s\n", (new \DateTime())->format('c'), $idCh, json_encode($errors, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)), FILE_APPEND);
             return $this->render('chambre/show.html.twig', [
                 'chambre'  => $chambre,
                 'errors'   => $errors,
@@ -246,6 +277,8 @@ class ReservationChController extends AbstractController
         ]);
 
         $this->addFlash('success', '✅ Réservation confirmée ! Merci ' . $nom . ' ' . $prenom . '.');
+    // Debug: log successful insertion
+    @file_put_contents(__DIR__ . '/../../var/log/reservation_debug.log', sprintf("%s - INSERT_SUCCESS idCh=%s user=%s nbNuit=%d prixTotal=%.2f\n", (new \DateTime())->format('c'), $idCh, $idUtilisateur, $nbNuit, $prixTotal), FILE_APPEND);
         return $this->redirectToRoute('app_chambre_show', ['idCh' => $idCh]);
     }
 
@@ -254,21 +287,26 @@ class ReservationChController extends AbstractController
     public function apiGetAll(Connection $connection): Response
     {
         $user = $this->getUser();
-        $idUtilisateur = $user && method_exists($user, 'getId') ? $user->getId() : 1;
-        
-        // Récupérer les réservations de chambres
-    $sqlChambres = "SELECT r.*, c.num as chambre_num, h.nom as hotel_nom 
+        // Ne retourner que les réservations de l'utilisateur connecté
+        if (!$user || !method_exists($user, 'getId')) {
+            return $this->json([]);
+        }
+
+        $idUtilisateur = $user->getId();
+
+        // Récupérer les réservations de chambres pour cet utilisateur
+        $sqlChambres = "SELECT r.*, c.num as chambre_num, h.nom as hotel_nom 
             FROM reservation_chambre r 
             JOIN chambre c ON r.idCh = c.idCh 
             JOIN hotel h ON c.idH = h.idH 
-            WHERE r.idUtilisateur = ? 
+            WHERE r.idUtilisateur = ? AND r.statut != 'annulé' 
             ORDER BY r.idRes DESC";
         $chambres = $connection->fetchAllAssociative($sqlChambres, [$idUtilisateur]);
-        
+
         foreach ($chambres as &$res) {
             $res['type'] = 'chambre';
         }
-        
+
         return $this->json($chambres);
     }
 
@@ -276,10 +314,14 @@ class ReservationChController extends AbstractController
     public function apiGetOne(Connection $connection, $id): Response
     {
         $user = $this->getUser();
-        $idUtilisateur = $user && method_exists($user, 'getId') ? $user->getId() : 1;
+        if (!$user || !method_exists($user, 'getId')) {
+            return $this->json(['error' => 'Non autorisé'], 401);
+        }
 
-    $sql = "SELECT * FROM reservation_chambre WHERE idRes = ? AND idUtilisateur = ?";
-    $reservation = $connection->fetchAssociative($sql, [$id, $idUtilisateur]);
+        $idUtilisateur = $user->getId();
+
+        $sql = "SELECT * FROM reservation_chambre WHERE idRes = ? AND idUtilisateur = ?";
+        $reservation = $connection->fetchAssociative($sql, [$id, $idUtilisateur]);
         
         if (!$reservation) {
             return $this->json(['error' => 'Non trouvé'], 404);
@@ -292,15 +334,20 @@ class ReservationChController extends AbstractController
     public function apiDelete(Connection $connection, $id): Response
     {
         $user = $this->getUser();
-        $idUtilisateur = $user && method_exists($user, 'getId') ? $user->getId() : 1;
+        if (!$user || !method_exists($user, 'getId')) {
+            return $this->json(['error' => 'Non autorisé'], 401);
+        }
 
-    $sql = "DELETE FROM reservation_chambre WHERE idRes = ? AND idUtilisateur = ?";
-    $affected = $connection->executeStatement($sql, [$id, $idUtilisateur]);
-        
+        $idUtilisateur = $user->getId();
+
+        // Au lieu de supprimer, on marque la réservation comme annulée
+        $sql = "UPDATE reservation_chambre SET statut = 'annulé' WHERE idRes = ? AND idUtilisateur = ?";
+        $affected = $connection->executeStatement($sql, [$id, $idUtilisateur]);
+
         if ($affected > 0) {
             return $this->json(['success' => true]);
         }
-        
+
         return $this->json(['error' => 'Non trouvé'], 404);
     }
 
@@ -309,7 +356,11 @@ class ReservationChController extends AbstractController
     {
         $user = $this->getUser();
         $data = json_decode($request->getContent(), true);
-        $idUtilisateur = $user && method_exists($user, 'getId') ? $user->getId() : 1;
+        if (!$user || !method_exists($user, 'getId')) {
+            return $this->json(['error' => 'Non autorisé'], 401);
+        }
+
+        $idUtilisateur = $user->getId();
         
         // Vérifier que la réservation existe
     $checkSql = "SELECT idRes FROM reservation_chambre WHERE idRes = ? AND idUtilisateur = ?";

@@ -326,12 +326,12 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>Date de début <span class="required">*</span></label>
-                    <input type="text" name="dateDebut" placeholder="AAAA-MM-JJ" value="{{ formData.dateDebut ?? '' }}" class="{% if errorsDateDebut is defined %}error-border{% endif %}">
+                    <input id="dateDebut" type="date" name="dateDebut" placeholder="AAAA-MM-JJ" value="{{ formData.dateDebut ?? '' }}" class="{% if errorsDateDebut is defined %}error-border{% endif %}">
                     {% if errorsDateDebut is defined %}<span class="error-message">{{ errorsDateDebut }}</span>{% endif %}
                 </div>
                 <div class="form-group">
                     <label>Date de fin <span class="required">*</span></label>
-                    <input type="text" name="dateFin" placeholder="AAAA-MM-JJ" value="{{ formData.dateFin ?? '' }}" class="{% if errorsDateFin is defined %}error-border{% endif %}">
+                    <input id="dateFin" type="date" name="dateFin" placeholder="AAAA-MM-JJ" value="{{ formData.dateFin ?? '' }}" class="{% if errorsDateFin is defined %}error-border{% endif %}">
                     {% if errorsDateFin is defined %}<span class="error-message">{{ errorsDateFin }}</span>{% endif %}
                 </div>
             </div>
@@ -354,4 +354,47 @@
     </div>
 </div>
 {% endif %}
+    {% block javascripts %}
+        {{ parent() }}
+        <script>
+            (function(){
+                const dateDebut = document.getElementById('dateDebut');
+                const dateFin = document.getElementById('dateFin');
+                if (!dateDebut || !dateFin) return;
+
+                const today = new Date();
+                const pad = (n) => n.toString().padStart(2, '0');
+                const toYMD = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
+                // set minimal selectable date to today
+                dateDebut.min = toYMD(today);
+
+                // set max selectable date to one year from now
+                const max = new Date(); max.setFullYear(max.getFullYear()+1);
+                dateDebut.max = toYMD(max);
+                dateFin.max = toYMD(max);
+
+                // if dateDebut has a value, set dateFin.min accordingly
+                const syncDateFinMin = () => {
+                    if (!dateDebut.value) {
+                        dateFin.min = dateDebut.min;
+                        return;
+                    }
+                    const d = new Date(dateDebut.value);
+                    // ensure dateFin cannot be before dateDebut + 1 day
+                    const minFin = new Date(d);
+                    minFin.setDate(minFin.getDate() + 1);
+                    dateFin.min = toYMD(minFin);
+                    if (dateFin.value && dateFin.value < dateFin.min) {
+                        dateFin.value = dateFin.min;
+                    }
+                };
+
+                // initialize
+                syncDateFinMin();
+
+                dateDebut.addEventListener('change', syncDateFinMin);
+            })();
+        </script>
+    {% endblock %}
 {% endblock %}
