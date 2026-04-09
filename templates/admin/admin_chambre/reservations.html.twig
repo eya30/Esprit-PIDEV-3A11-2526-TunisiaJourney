@@ -1,0 +1,262 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Réservations de la chambre - Chambre n°{{ chambre.num }}{% endblock %}
+{% block page_title %}Réservations : Chambre n°{{ chambre.num }}{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="{{ path('admin_hotel_chambres', {'id': chambre.idH}) }}" class="btn-back">
+            <i class="fas fa-arrow-left me-2"></i> Retour aux chambres
+        </a>
+        <h4 class="mb-1 mt-3">Réservations de la chambre</h4>
+        <p class="text-muted">
+            Hôtel: <strong>{{ chambre.hotel_nom }}</strong> | Type: {{ chambre.type }} | Prix: {{ chambre.prix_nuit }} €/nuit
+        </p>
+    </div>
+    <div class="d-flex gap-3">
+        <a href="{{ path('admin_chambre_reservations', {'id': chambre.idCh, 'sort': 'statut'}) }}" class="btn-elegant">
+            <i class="fas fa-sort"></i>
+            Trier par statut
+        </a>
+        <button id="exportPdfBtn" class="btn-elegant btn-elegant-outline">
+            <i class="fas fa-file-pdf"></i>
+            Exporter PDF
+        </button>
+    </div>
+</div>
+
+<div class="admin-table">
+    <table class="table" id="reservationsTable">
+        <thead>
+            <tr>
+                <th>ID Réservation</th>
+                <th>Client ID</th>
+                <th>Téléphone</th>
+                <th>Pers.</th>
+                <th>Dates</th>
+                <th>Nuits</th>
+                <th>Prix total</th>
+                <th>Statut</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reservation in reservations %}
+            <tr>
+                <td><strong>{{ reservation.idRes }}</strong></td>
+                <td>{{ reservation.idUtilisateur }}</td>
+                <td><i class="fas fa-phone me-1"></i> {{ reservation.telephone }}</td>
+                <td class="text-center">{{ reservation.nbPersonnes }}</td>
+                <td class="date-range">
+                    {{ reservation.dateDebut|date('d/m/Y') }}
+                    <i class="fas fa-arrow-right mx-1"></i>
+                    {{ reservation.dateFin|date('d/m/Y') }}
+                </td>
+                <td class="text-center">{{ reservation.nbNuit }}</td>
+                <td class="price">{{ reservation.prixTotal|number_format(2, ',', ' ') }} €</td>
+                <td>
+                    {% if reservation.statut == 'confirmée' %}
+                        <span class="badge badge-success">Confirmée</span>
+                    {% elseif reservation.statut == 'en_attente' %}
+                        <span class="badge badge-warning">En attente</span>
+                    {% elseif reservation.statut == 'annulée' %}
+                        <span class="badge badge-danger">Annulée</span>
+                    {% else %}
+                        <span class="badge badge-secondary">{{ reservation.statut }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <form method="post" action="{{ path('admin_reservationch_delete', {'id': reservation.idRes}) }}" onsubmit="return confirm('Supprimer cette réservation ?')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_reservationch_' ~ reservation.idRes) }}">
+                        <button type="submit" class="btn-delete" title="Supprimer">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="9" class="text-center py-5">
+                    <i class="fas fa-calendar-check fa-3x mb-3"></i>
+                    <p class="text-muted">Aucune réservation pour cette chambre</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #495057;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+    
+    .btn-back:hover {
+        background: #e9ecef;
+        border-color: #93032E;
+        color: #93032E;
+        transform: translateX(-3px);
+    }
+    
+    .btn-elegant {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 24px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        border: none;
+        cursor: pointer;
+        background: #93032E;
+        color: white;
+        box-shadow: 0 2px 8px rgba(147,3,46,0.2);
+    }
+    
+    .btn-elegant:hover {
+        background: #6B0221;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(147,3,46,0.3);
+        color: white;
+    }
+    
+    .btn-elegant-outline {
+        background: transparent;
+        border: 2px solid #93032E;
+        color: #93032E;
+        box-shadow: none;
+    }
+    
+    .btn-elegant-outline:hover {
+        background: #93032E;
+        color: white;
+    }
+    
+    .btn-delete {
+        background: #fee2e2;
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        color: #dc2626;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .btn-delete:hover {
+        background: #dc2626;
+        color: white;
+        transform: scale(1.05);
+    }
+    
+    .admin-table {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #e9ecef;
+        overflow-x: auto;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .admin-table th {
+        background: #f8f9fa;
+        padding: 14px 16px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #93032E;
+        text-transform: uppercase;
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    .admin-table td {
+        padding: 14px 16px;
+        font-size: 13px;
+        border-bottom: 1px solid #f0f0f0;
+        vertical-align: middle;
+    }
+    
+    .admin-table tr:hover td {
+        background: #fffaf5;
+    }
+    
+    .price {
+        font-weight: 700;
+        color: #93032E;
+    }
+    
+    .date-range {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+        font-size: 12px;
+    }
+    
+    .badge {
+        padding: 5px 12px;
+        border-radius: 50px;
+        font-size: 11px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    
+    .badge-success { background: #d1fae5; color: #059669; }
+    .badge-warning { background: #fef3c7; color: #d97706; }
+    .badge-danger { background: #fee2e2; color: #dc2626; }
+    .badge-secondary { background: #f3f4f6; color: #6b7280; }
+    
+    @media (max-width: 768px) {
+        .admin-table {
+            overflow-x: auto;
+        }
+        .btn-elegant span {
+            display: none;
+        }
+        .btn-elegant i {
+            margin: 0;
+        }
+    }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+    document.getElementById('exportPdfBtn')?.addEventListener('click', function() {
+        const element = document.getElementById('reservationsTable');
+        const titleDiv = document.createElement('div');
+        titleDiv.innerHTML = `
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h1 style="color: #93032E;">TunisiaJourney</h1>
+                <h2>Réservations de la chambre n°{{ chambre.num }}</h2>
+                <p>Hôtel: {{ chambre.hotel_nom }} | Type: {{ chambre.type }} | Prix: {{ chambre.prix_nuit }} €/nuit</p>
+                <p>Généré le ${new Date().toLocaleDateString('fr-FR')}</p>
+                <hr>
+            </div>
+        `;
+        const cloneTable = element.cloneNode(true);
+        const container = document.createElement('div');
+        container.appendChild(titleDiv);
+        container.appendChild(cloneTable);
+        
+        html2pdf().set({
+            margin: [0.5, 0.5, 0.5, 0.5],
+            filename: `reservations_chambre_${new Date().toISOString().slice(0,19)}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+        }).from(container).save();
+    });
+</script>
+{% endblock %}

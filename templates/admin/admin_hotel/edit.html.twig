@@ -1,0 +1,388 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Modifier un hôtel{% endblock %}
+{% block page_title %}Modifier : {{ hotel.nom }}{% endblock %}
+
+{% block body %}
+<div class="form-container">
+    <div class="form-card">
+        <h5 class="form-title">✏️ Modifier l'hôtel</h5>
+        <p class="form-subtitle">Modifiez les informations ci-dessous</p>
+        
+        {% if errors is defined and errors|length > 0 %}
+            <div class="error-box">
+                <strong>Veuillez corriger les éléments suivants :</strong>
+                <ul>
+                    {% for error in errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        
+        <form method="post" enctype="multipart/form-data">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Nom de l'hôtel <span class="required">*</span></label>
+                        <div class="input-group-custom">
+                            <i class="fas fa-hotel"></i>
+                            <input type="text" name="nom" class="form-control" value="{{ nom|default(hotel.nom) }}">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Ville <span class="required">*</span></label>
+                        <div class="input-group-custom">
+                            <i class="fas fa-city"></i>
+                            <input type="text" name="ville" class="form-control" value="{{ ville|default(hotel.ville) }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Adresse <span class="required">*</span></label>
+                <div class="input-group-custom">
+                    <i class="fas fa-location-dot"></i>
+                    <input type="text" name="adresse" class="form-control" value="{{ adresse|default(hotel.adresse) }}">
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label">Étoiles <span class="required">*</span></label>
+                        <div class="input-group-custom">
+                            <i class="fas fa-star"></i>
+                            <select name="etoiles" class="form-control">
+                                <option value="">Sélectionner</option>
+                                <option value="1" {% if etoiles|default(hotel.etoiles) == '1' %}selected{% endif %}>⭐ 1 étoile</option>
+                                <option value="2" {% if etoiles|default(hotel.etoiles) == '2' %}selected{% endif %}>⭐⭐ 2 étoiles</option>
+                                <option value="3" {% if etoiles|default(hotel.etoiles) == '3' %}selected{% endif %}>⭐⭐⭐ 3 étoiles</option>
+                                <option value="4" {% if etoiles|default(hotel.etoiles) == '4' %}selected{% endif %}>⭐⭐⭐⭐ 4 étoiles</option>
+                                <option value="5" {% if etoiles|default(hotel.etoiles) == '5' %}selected{% endif %}>⭐⭐⭐⭐⭐ 5 étoiles</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label">Promotion (%)</label>
+                        <div class="input-group-custom">
+                            <i class="fas fa-tags"></i>
+                            <input type="text" name="promotion" class="form-control" value="{{ promotion|default(hotel.promotion) }}">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label">Status <span class="required">*</span></label>
+                        <div class="input-group-custom">
+                            <i class="fas fa-circle-info"></i>
+                            <select name="status" class="form-control">
+                                <option value="disponible" {% if status|default(hotel.status) == 'disponible' %}selected{% endif %}>✅ Disponible</option>
+                                <option value="indisponible" {% if status|default(hotel.status) == 'indisponible' %}selected{% endif %}>❌ Indisponible</option>
+                                <option value="maintenance" {% if status|default(hotel.status) == 'maintenance' %}selected{% endif %}>🔧 Maintenance</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Description <span class="required">*</span></label>
+                <div class="input-group-custom">
+                    <i class="fas fa-align-left"></i>
+                    <textarea name="description" class="form-control" rows="5">{{ description|default(hotel.description) }}</textarea>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Image actuelle</label>
+                {% if hotel.image %}
+                    <div class="current-image">
+                        <img src="{{ asset('uploads/hotels/' ~ hotel.image) }}" class="current-image-preview">
+                        <p class="image-info">{{ hotel.image }}</p>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-2">Aucune image</p>
+                {% endif %}
+                
+                <label class="form-label mt-3">Changer l'image</label>
+                <div class="upload-area" id="uploadArea">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Cliquez ou glissez une nouvelle image</p>
+                    <small>JPG, PNG, JPEG (max. 2MB)</small>
+                    <input type="file" name="image" id="imageInput" accept="image/*" style="display: none;">
+                </div>
+                <div id="imagePreview" class="image-preview-container"></div>
+            </div>
+            
+            <div class="form-actions">
+                <a href="{{ path('admin_hotel_index') }}" class="btn-elegant-outline">
+                    <i class="fas fa-arrow-left me-2"></i> Annuler
+                </a>
+                <button type="submit" class="btn-elegant">
+                    <i class="fas fa-save me-2"></i> Enregistrer
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .form-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    .form-card {
+        background: white;
+        border-radius: 28px;
+        padding: 36px;
+        border: 1px solid #F0E8DD;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+    }
+    
+    .form-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: #2C1810;
+        margin-bottom: 8px;
+    }
+    
+    .form-subtitle {
+        font-size: 0.85rem;
+        color: #93032E;
+        margin-bottom: 28px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #F0E8DD;
+    }
+    
+    .required {
+        color: #DC2626;
+        font-size: 12px;
+    }
+    
+    .input-group-custom {
+        display: flex;
+        align-items: center;
+        background: #FEF9F0;
+        border: 1px solid #E8DFD1;
+        border-radius: 14px;
+        transition: all 0.3s;
+    }
+    
+    .input-group-custom:focus-within {
+        border-color: #93032E;
+        box-shadow: 0 0 0 3px rgba(147,3,46,0.08);
+        background: white;
+    }
+    
+    .input-group-custom i {
+        padding: 14px 0 14px 18px;
+        color: #C49A6C;
+        font-size: 1rem;
+    }
+    
+    .input-group-custom .form-control {
+        border: none;
+        background: transparent;
+        padding: 14px 18px;
+        font-size: 14px;
+        width: 100%;
+    }
+    
+    .input-group-custom .form-control:focus {
+        outline: none;
+        box-shadow: none;
+    }
+    
+    .form-group {
+        margin-bottom: 24px;
+    }
+    
+    .form-label {
+        font-size: 13px;
+        font-weight: 700;
+        color: #2C1810;
+        margin-bottom: 8px;
+        display: block;
+    }
+    
+    .current-image {
+        text-align: center;
+        padding: 16px;
+        background: #FEF9F0;
+        border-radius: 16px;
+        border: 1px solid #F0E8DD;
+    }
+    
+    .current-image-preview {
+        max-width: 150px;
+        max-height: 100px;
+        border-radius: 12px;
+        border: 1px solid #E8DFD1;
+    }
+    
+    .image-info {
+        font-size: 11px;
+        color: #9CA3AF;
+        margin-top: 8px;
+        margin-bottom: 0;
+    }
+    
+    .upload-area {
+        background: #FEF9F0;
+        border: 2px dashed #E8DFD1;
+        border-radius: 20px;
+        padding: 32px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .upload-area:hover {
+        border-color: #93032E;
+        background: #FFF5F0;
+    }
+    
+    .upload-area i {
+        font-size: 2rem;
+        color: #C49A6C;
+        margin-bottom: 12px;
+    }
+    
+    .upload-area p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #4A3B2F;
+    }
+    
+    .upload-area small {
+        font-size: 0.7rem;
+        color: #9CA3AF;
+    }
+    
+    .image-preview-container {
+        margin-top: 16px;
+        text-align: center;
+    }
+    
+    .image-preview {
+        max-width: 200px;
+        max-height: 150px;
+        border-radius: 16px;
+        border: 1px solid #E8DFD1;
+    }
+    
+    .error-box {
+        background: #FEF2F2;
+        border-left: 4px solid #DC2626;
+        border-radius: 16px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+    }
+    
+    .error-box strong {
+        color: #DC2626;
+        font-size: 13px;
+    }
+    
+    .error-box ul {
+        margin: 8px 0 0;
+        padding-left: 20px;
+        color: #DC2626;
+        font-size: 12px;
+    }
+    
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 16px;
+        margin-top: 32px;
+        padding-top: 24px;
+        border-top: 1px solid #F0E8DD;
+    }
+    
+    .btn-elegant {
+        background: linear-gradient(135deg, #93032E, #6B0221);
+        border: none;
+        padding: 12px 28px;
+        border-radius: 50px;
+        font-size: 13px;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+    }
+    
+    .btn-elegant:hover {
+        background: linear-gradient(135deg, #6B0221, #4A0116);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(147,3,46,0.3);
+    }
+    
+    .btn-elegant-outline {
+        background: transparent;
+        border: 1.5px solid #E8DFD1;
+        padding: 12px 28px;
+        border-radius: 50px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #4A3B2F;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn-elegant-outline:hover {
+        border-color: #93032E;
+        color: #93032E;
+        background: #FFF9F0;
+        transform: translateY(-2px);
+    }
+    
+    @media (max-width: 768px) {
+        .form-card {
+            padding: 24px;
+        }
+        .form-actions {
+            flex-direction: column;
+        }
+        .btn-elegant, .btn-elegant-outline {
+            justify-content: center;
+        }
+    }
+</style>
+
+<script>
+    const uploadArea = document.getElementById('uploadArea');
+    const imageInput = document.getElementById('imageInput');
+    const imagePreview = document.getElementById('imagePreview');
+    
+    uploadArea.addEventListener('click', () => {
+        imageInput.click();
+    });
+    
+    imageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.innerHTML = '<img src="' + e.target.result + '" class="image-preview">';
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+{% endblock %}

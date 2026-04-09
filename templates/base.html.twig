@@ -1,24 +1,958 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        {% block stylesheets %}
-        {% endblock %}
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TunisiaJourney - Découvrez la Tunisie{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Cormorant+Garamond:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --tunisia-red: #E31B23;
+            --tunisia-dark-red: #C41E3A;
+            --tunisia-orange: #FF6B35;
+            --tunisia-gold: #FFCBCC;
+            --tunisia-blue: #0054A6;
+            --tunisia-sand: #FDF5E6;
+            --tunisia-white: #FFFFFF;
+            --tunisia-cream: #FEF9E6;
+            --footer-blue: #4e0915;
+            --dark-gray: #2C3E50;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--dark-gray);
+            background: var(--tunisia-sand) !important;
+            background-color: #FDF5E6 !important;
+        }
+        
+        .container, .main-content, .content, section, .py-5 {
+            background: transparent !important;
+        }
+        
+        h1, h2, h3, h4, .logo-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 800;
+        }
+        
+        .navbar {
+            background: rgba(255,255,255,0.98);
+            padding: 0.8rem 0;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .navbar.scrolled {
+            padding: 0.5rem 0;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+        }
+        
+        .reservation-menu-icon {
+            cursor: pointer;
+            margin-right: 2rem;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 5px;
+        }
+        
+        .reservation-menu-icon .line {
+            width: 25px;
+            height: 3px;
+            background-color: var(--tunisia-red);
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+        
+        .reservation-menu-icon:hover .line {
+            background-color: var(--tunisia-orange);
+        }
+        
+        .reservation-menu-icon:hover {
+            transform: scale(1.05);
+        }
+        
+        .reservations-sidebar {
+            position: fixed;
+            top: 0;
+            left: -450px;
+            width: 450px;
+            height: 100vh;
+            background: white;
+            box-shadow: 5px 0 30px rgba(0,0,0,0.1);
+            z-index: 1050;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+        
+        .reservations-sidebar.open {
+            left: 0;
+        }
+        
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1040;
+            display: none;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+        }
+        
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #F0E8DD;
+        }
+        
+        .sidebar-header h4 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            color: var(--tunisia-red);
+            margin: 0;
+        }
+        
+        .close-sidebar {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #9CA3AF;
+            transition: all 0.2s;
+        }
+        
+        .close-sidebar:hover {
+            color: var(--tunisia-red);
+            transform: rotate(90deg);
+        }
+        
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-brand:hover {
+            transform: scale(1.02);
+        }
+        
+        .navbar-brand .logo-img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+        }
+        
+        .navbar-brand .logo-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--tunisia-red);
+        }
+        
+        .navbar-brand .logo-text span {
+            color: var(--tunisia-orange);
+        }
+        
+        .nav-link {
+            font-weight: 500;
+            color: var(--dark-gray);
+            transition: all 0.3s ease;
+            margin: 0 0.5rem;
+            position: relative;
+            padding-bottom: 5px;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--tunisia-red);
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .nav-link.active::after {
+            width: 100%;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: var(--tunisia-red);
+        }
+        
+        .btn-login {
+            background: transparent;
+            border: 2px solid var(--tunisia-red);
+            color: var(--tunisia-red);
+            padding: 8px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-login:hover {
+            background: var(--tunisia-red);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .btn-register {
+            background: var(--tunisia-red);
+            border: none;
+            color: white;
+            padding: 8px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-register:hover {
+            background: #C41E3A;
+            transform: translateY(-2px);
+            color: white;
+        }
+        
+        .reservation-card {
+            background: #FEF9F0;
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid #F0E8DD;
+            transition: all 0.2s;
+        }
+        
+        .reservation-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border-color: var(--tunisia-red);
+        }
+        
+        .reservation-info {
+            margin-bottom: 0.5rem;
+        }
+        
+        .reservation-name {
+            font-weight: 700;
+            color: var(--tunisia-red);
+            margin-bottom: 0.3rem;
+        }
+        
+        .reservation-details {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        
+        .reservation-details i {
+            width: 20px;
+            color: var(--tunisia-orange);
+        }
+        
+        .badge-success {
+            background-color: #10B981;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+        }
+        
+        .badge-warning {
+            background-color: #F59E0B;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+        }
+        
+        .reservation-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .reservation-actions button {
+            background: none;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.8rem;
+        }
+        
+        .btn-edit-reservation {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+        
+        .btn-edit-reservation:hover {
+            background: #F59E0B;
+            color: white;
+        }
+        
+        .btn-delete-reservation {
+            background: #FEF2F2;
+            color: #EF4444;
+        }
+        
+        .btn-delete-reservation:hover {
+            background: #EF4444;
+            color: white;
+        }
+        
+        .edit-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1100;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .edit-modal.active {
+            display: flex;
+        }
+        
+        .edit-modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 450px;
+            width: 90%;
+        }
+        
+        .edit-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #E8DFD1;
+        }
+        
+        .edit-modal-header h3 {
+            font-size: 1.3rem;
+            color: var(--tunisia-blue);
+            margin: 0;
+        }
+        
+        .close-edit-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #9CA3AF;
+        }
+        
+        .edit-form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .edit-form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 0.3rem;
+        }
+        
+        .edit-form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #E8DFD1;
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .edit-form-group input:focus {
+            outline: none;
+            border-color: var(--tunisia-blue);
+        }
+        
+        .btn-save-edit {
+            width: 100%;
+            background: var(--tunisia-blue);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+        
+        .btn-save-edit:hover {
+            background: #00408a;
+        }
+        
+        .empty-reservations {
+            text-align: center;
+            padding: 2rem;
+            color: #9CA3AF;
+        }
+        
+        .footer {
+            background: #4e0915;
+            color: white;
+            padding: 3rem 0 2rem;
+            margin-top: 3rem;
+        }
+        
+        .footer a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .footer a:hover {
+            color: var(--tunisia-gold);
+            padding-left: 5px;
+        }
+        
+        .social-icons a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 50%;
+            margin: 0 5px;
+            transition: all 0.3s ease;
+            color: white;
+        }
+        
+        .social-icons a:hover {
+            background: var(--tunisia-red);
+            transform: translateY(-3px);
+            color: white;
+        }
+        
+        .footer-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--tunisia-gold);
+        }
+        
+        .footer-separator {
+            background: rgba(255,255,255,0.2);
+            margin: 2rem 0;
+        }
+        
+        .copyright {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.85rem;
+        }
+        
+        .toast-message {
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            z-index: 1050;
+            min-width: 300px;
+            animation: slideInRight 0.5s ease-out;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @media (max-width: 768px) {
+            .navbar-brand .logo-text { font-size: 1.2rem; }
+            .navbar-brand .logo-img { width: 50px; height: 50px; }
+            .reservations-sidebar {
+                width: 100%;
+                left: -100%;
+            }
+        }
+    </style>
+    
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <div class="d-flex align-items-center">
+                <div class="reservation-menu-icon" id="reservationIcon">
+                    <div class="line"></div>
+                    <div class="line"></div>
+                    <div class="line"></div>
+                </div>
+                <a class="navbar-brand" href="{{ path('app_accueil') }}">
+                    <img src="{{ asset('images/logo.png') }}" alt="TunisiaJourney" class="logo-img">
+                    <div class="logo-text">
+                        Tunisia<span>Journey</span>
+                    </div>
+                </a>
+            </div>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if app.request.get('_route') == 'app_accueil' %}active{% endif %}" href="{{ path('app_accueil') }}">Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Voyages</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_hotel_index') }}">Hôtels</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Événements</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Produits</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Forum</a>
+                    </li>
+                </ul>
+                <div>
+                    <a href="#" class="btn-login me-2">Connexion</a>
+                    <a href="#" class="btn-register">Inscription</a>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-        {% block javascripts %}
-            {% block importmap %}{{ importmap('app') }}{% endblock %}
-        {% endblock %}
+    <!-- OVERLAY pour le sidebar -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-        {% set frankenphpHotReload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
-        {% if frankenphpHotReload %}
-        <meta name="frankenphp-hot-reload:url" content="{{ frankenphpHotReload }}">
-        <script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
-        <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
-        {% endif %}
-    </head>
-    <body>
+    <!-- SIDEBAR RÉSERVATIONS - À GAUCHE -->
+    <div class="reservations-sidebar" id="reservationsSidebar">
+        <div class="sidebar-header">
+            <h4><i class="fas fa-ticket-alt me-2"></i> Mes Réservations</h4>
+            <button class="close-sidebar" id="closeSidebarBtn">&times;</button>
+        </div>
+        <div id="reservationsList">
+            <div class="empty-reservations">
+                <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
+                <p>Chargement...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL D'ÉDITION -->
+    <div class="edit-modal" id="editModal">
+        <div class="edit-modal-content">
+            <div class="edit-modal-header">
+                <h3>Modifier la réservation</h3>
+                <button class="close-edit-modal" id="closeEditModal">&times;</button>
+            </div>
+            <form id="editReservationForm">
+                <input type="hidden" id="editReservationId">
+                <input type="hidden" id="editReservationType">
+                <div class="edit-form-group">
+                    <label>Nom</label>
+                    <input type="text" id="editNom" required>
+                </div>
+                <div class="edit-form-group">
+                    <label>Prénom</label>
+                    <input type="text" id="editPrenom" required>
+                </div>
+                <div class="edit-form-group">
+                    <label>Téléphone</label>
+                    <input type="tel" id="editTelephone" required>
+                </div>
+                <div class="edit-form-group">
+                    <label>Email</label>
+                    <input type="email" id="editEmail" required>
+                </div>
+                <div class="edit-form-group">
+                    <label>Nombre de personnes</label>
+                    <input type="number" id="editNbre" min="1" required>
+                </div>
+                <button type="submit" class="btn-save-edit">Enregistrer</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Espace pour la navbar fixe -->
+    <div style="height: 85px;"></div>
+
+    <!-- FLASH MESSAGES -->
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show toast-message" role="alert">
+                <i class="fas fa-{% if label == 'success' %}check-circle{% else %}exclamation-circle{% endif %} me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <!-- MAIN CONTENT -->
+    <main>
         {% block body %}{% endblock %}
-    </body>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <img src="{{ asset('images/logo.png') }}" alt="TunisiaJourney" style="width: 55px; height: 55px; object-fit: contain;">
+                        <h4 class="mb-0" style="font-family: 'Cormorant Garamond', serif; color: var(--tunisia-gold);">TunisiaJourney</h4>
+                    </div>
+                    <p style="color: rgba(255,255,255,0.8); line-height: 1.6;">Votre agence de voyage tunisienne depuis 2010. Découvrez la beauté authentique de la Tunisie avec des professionnels passionnés.</p>
+                    <div class="social-icons mt-3">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-2 mb-4">
+                    <h5 class="footer-title">Explorer</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ path('app_accueil') }}">Accueil</a></li>
+                        <li><a href="#">Voyages</a></li>
+                        <li><a href="{{ path('app_hotel_index') }}">Hôtels</a></li>
+                        <li><a href="#">Événements</a></li>
+                        <li><a href="#">Produits</a></li>
+                        <li><a href="#">Forum</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2 mb-4">
+                    <h5 class="footer-title">Destinations</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#">Carthage</a></li>
+                        <li><a href="#">Sidi Bou Saïd</a></li>
+                        <li><a href="#">Djerba</a></li>
+                        <li><a href="#">Sahara</a></li>
+                        <li><a href="#">Tozeur</a></li>
+                        <li><a href="#">Monastir</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5 class="footer-title">Contactez-nous</h5>
+                    <ul class="list-unstyled" style="color: rgba(255,255,255,0.8);">
+                        <li><i class="fas fa-phone me-2" style="color: var(--tunisia-gold);"></i> +216 71 123 456</li>
+                        <li><i class="fas fa-envelope me-2" style="color: var(--tunisia-gold);"></i> contact@tunisiajourney.tn</li>
+                        <li><i class="fas fa-map-marker-alt me-2" style="color: var(--tunisia-gold);"></i> Tunis, Tunisie</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="footer-separator">
+            <div class="text-center">
+                <small class="copyright">&copy; {{ "now"|date("Y") }} TunisiaJourney - Tous droits réservés | Fait avec <i class="fas fa-heart" style="color: var(--tunisia-red);"></i> en Tunisie</small>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Gestion du sidebar des réservations
+        const reservationIcon = document.getElementById('reservationIcon');
+        const sidebar = document.getElementById('reservationsSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+        
+        function openSidebar() {
+            if (sidebar && overlay) {
+                sidebar.classList.add('open');
+                overlay.classList.add('active');
+                loadReservations();
+            }
+        }
+        
+        function closeSidebar() {
+            if (sidebar && overlay) {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            }
+        }
+        
+        if (reservationIcon) {
+            reservationIcon.addEventListener('click', openSidebar);
+        }
+        if (closeSidebarBtn) {
+            closeSidebarBtn.addEventListener('click', closeSidebar);
+        }
+        if (overlay) {
+            overlay.addEventListener('click', closeSidebar);
+        }
+        
+        // Charger les réservations (voyages + chambres)
+        async function loadReservations() {
+            const container = document.getElementById('reservationsList');
+            if (!container) return;
+            
+                try {
+                const response = await fetch('{{ path('api_reservations_all') }}');
+                const reservations = await response.json();
+                
+                if (reservations.length === 0) {
+                    container.innerHTML = '<div class="empty-reservations"><i class="fas fa-ticket-alt fa-3x mb-2"></i><p>Aucune réservation trouvée</p></div>';
+                    return;
+                }
+                
+                container.innerHTML = reservations.map(res => {
+                if (res.type === 'chambre') {
+                        return `
+                            <div class="reservation-card" data-id="${res.idRes}" data-type="chambre">
+                                <div class="reservation-info">
+                                    <div class="reservation-name">${escapeHtml(res.prenom || '')} ${escapeHtml(res.nom || '')}</div>
+                                    <div class="reservation-sub">Chambre n°${res.chambre_num} - ${res.hotel_nom}</div>
+                                    <div class="reservation-details">
+                                        <div><i class="fas fa-calendar"></i> Du ${res.dateDebut} au ${res.dateFin}</div>
+                                        <div><i class="fas fa-users"></i> ${res.nbPersonnes} personnes</div>
+                                        <div><i class="fas fa-phone"></i> ${escapeHtml(res.telephone || '')}</div>
+                                        <div><i class="fas fa-envelope"></i> ${escapeHtml(res.email || '')}</div>
+                                        <div><i class="fas fa-tag"></i> ${res.prixTotal} €</div>
+                                        <div><span class="${res.statut === 'confirmé' ? 'badge-success' : 'badge-warning'}">${res.statut}</span></div>
+                                    </div>
+                                </div>
+                                    <div class="reservation-actions">
+                                    <button class="btn-edit-reservation" onclick="editReservationChambre(${res.idRes})">
+                                        <i class="fas fa-edit"></i> Modifier
+                                    </button>
+                                    <button class="btn-delete-reservation" onclick="deleteReservationChambre(${res.idRes})">
+                                        <i class="fas fa-trash"></i> Supprimer
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        return `
+                            <div class="reservation-card" data-id="${res.idRP}" data-type="voyage">
+                                <div class="reservation-info">
+                                    <div class="reservation-name">${escapeHtml(res.prenom)} ${escapeHtml(res.nom)}</div>
+                                    <div class="reservation-details">
+                                        <div><i class="fas fa-phone"></i> ${escapeHtml(res.telephone)}</div>
+                                        <div><i class="fas fa-envelope"></i> ${escapeHtml(res.email)}</div>
+                                        <div><i class="fas fa-users"></i> ${res.nbre} personnes</div>
+                                        <div><i class="fas fa-calendar"></i> ${res.dateProgramme}</div>
+                                        <div><i class="fas fa-tag"></i> ${res.prixProg} DT</div>
+                                    </div>
+                                </div>
+                                <div class="reservation-actions">
+                                    <button class="btn-edit-reservation" onclick="editReservation(${res.idRP})">
+                                        <i class="fas fa-edit"></i> Modifier
+                                    </button>
+                                    <button class="btn-delete-reservation" onclick="deleteReservation(${res.idRP})">
+                                        <i class="fas fa-trash"></i> Supprimer
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }).join('');
+            } catch (error) {
+                console.error('Erreur:', error);
+                container.innerHTML = '<div class="empty-reservations"><i class="fas fa-exclamation-circle fa-3x mb-2"></i><p>Erreur de chargement</p></div>';
+            }
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
+        // Éditer une réservation de voyage
+        async function editReservation(id) {
+            try {
+                const response = await fetch(`/api/reservations/${id}`);
+                const res = await response.json();
+                
+                document.getElementById('editReservationId').value = res.idRP;
+                document.getElementById('editReservationType').value = 'voyage';
+                document.getElementById('editNom').value = res.nom;
+                document.getElementById('editPrenom').value = res.prenom;
+                document.getElementById('editTelephone').value = res.telephone;
+                document.getElementById('editEmail').value = res.email;
+                document.getElementById('editNbre').value = res.nbre;
+                
+                document.getElementById('editModal').classList.add('active');
+            } catch (error) {
+                alert('Erreur lors du chargement');
+            }
+        }
+        
+        // Éditer une réservation de chambre
+        async function editReservationChambre(id) {
+            try {
+                const url = '{{ path('api_reservations_chambres_get', {'id': 'ID'}) }}'.replace('ID', id);
+                const response = await fetch(url);
+                const res = await response.json();
+                
+                document.getElementById('editReservationId').value = res.idRes;
+                document.getElementById('editReservationType').value = 'chambre';
+                document.getElementById('editNom').value = res.nom || '';
+                document.getElementById('editPrenom').value = res.prenom || '';
+                document.getElementById('editTelephone').value = res.telephone || '';
+                document.getElementById('editEmail').value = res.email || '';
+                document.getElementById('editNbre').value = res.nbPersonnes || 1;
+                
+                document.getElementById('editModal').classList.add('active');
+            } catch (error) {
+                alert('Erreur lors du chargement');
+            }
+        }
+        
+        // Fermer le modal d'édition
+        const closeEditModal = document.getElementById('closeEditModal');
+        if (closeEditModal) {
+            closeEditModal.addEventListener('click', () => {
+                document.getElementById('editModal').classList.remove('active');
+            });
+        }
+        
+        // Soumettre l'édition
+        const editForm = document.getElementById('editReservationForm');
+        if (editForm) {
+            editForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const id = document.getElementById('editReservationId').value;
+                const type = document.getElementById('editReservationType').value;
+                const data = {
+                    nom: document.getElementById('editNom').value,
+                    prenom: document.getElementById('editPrenom').value,
+                    telephone: document.getElementById('editTelephone').value,
+                    email: document.getElementById('editEmail').value,
+                    nbre: parseInt(document.getElementById('editNbre').value)
+                };
+                
+                const url = type === 'chambre'
+                    ? '{{ path('api_reservations_chambres_put', {'id': 'ID'}) }}'.replace('ID', id)
+                    : '{{ path('api_reservation_update', {'id': 'ID'}) }}'.replace('ID', id);
+                
+                try {
+                    const response = await fetch(url, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    if (response.ok) {
+                        document.getElementById('editModal').classList.remove('active');
+                        loadReservations();
+                        showToast('Réservation modifiée avec succès !');
+                    } else {
+                        alert('Erreur lors de la modification');
+                    }
+                } catch (error) {
+                    alert('Erreur lors de la modification');
+                }
+            });
+        }
+        
+        // Supprimer une réservation de voyage
+        async function deleteReservation(id) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?')) return;
+            
+                try {
+                    const url = '{{ path('api_reservation_delete', {'id': 'ID'}) }}'.replace('ID', id);
+                    const response = await fetch(url, {
+                        method: 'DELETE'
+                    });
+                
+                if (response.ok) {
+                    loadReservations();
+                    showToast('Réservation supprimée avec succès !');
+                } else {
+                    alert('Erreur lors de la suppression');
+                }
+            } catch (error) {
+                alert('Erreur lors de la suppression');
+            }
+        }
+        
+        // Supprimer une réservation de chambre
+        async function deleteReservationChambre(id) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cette réservation de chambre ?')) return;
+            
+                try {
+                const url = '{{ path('api_reservations_chambres_delete', {'id': 'ID'}) }}'.replace('ID', id);
+                const response = await fetch(url, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    loadReservations();
+                    showToast('Réservation de chambre supprimée avec succès !');
+                } else {
+                    alert('Erreur lors de la suppression');
+                }
+            } catch (error) {
+                alert('Erreur lors de la suppression');
+            }
+        }
+        
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'alert alert-success toast-message';
+            toast.innerHTML = `<i class="fas fa-check-circle me-2"></i> ${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        setTimeout(() => {
+            document.querySelectorAll('.toast-message').forEach(toast => {
+                toast.style.transition = 'opacity 0.5s';
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 500);
+            });
+        }, 5000);
+        
+        window.addEventListener('scroll', () => {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+    </script>
+    
+    {% block javascripts %}{% endblock %}
+    {% block importmap %}{{ importmap('app') }}{% endblock %}
+</body>
 </html>
