@@ -17,6 +17,10 @@ framework:
     php_errors:
         log: true
 
+    # AssetMapper désactivé car le composant n'est pas installé
+    asset_mapper:
+        enabled: false
+
 when@test:
     framework:
         test: true

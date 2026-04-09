@@ -13,117 +13,115 @@ class AdminDashboardController extends AbstractController
     #[Route('/dashboard', name: 'admin_dashboard')]
     public function index(Connection $connection): Response
     {
-        // Statistiques pour les hôtels
-        $hotelsCount = $connection->fetchOne("SELECT COUNT(*) FROM hotel");
-        $chambresCount = $connection->fetchOne("SELECT COUNT(*) FROM chambre");
-        $reservationsCount = $connection->fetchOne("SELECT COUNT(*) FROM reservation_chambre");
-        
-        // Nombre d'utilisateurs uniques dans les réservations
-        $usersCount = $connection->fetchOne("SELECT COUNT(DISTINCT idUtilisateur) FROM reservation_chambre WHERE idUtilisateur IS NOT NULL");
-        
-        $stats = [
-            'hotels' => $hotelsCount,
-            'chambres' => $chambresCount,
-            'reservations' => $reservationsCount,
-            'clients' => $usersCount,
-        ];
-        
-        // CHAMBRES les plus réservées (pour le graphique en camembert)
-        $chambresPopulaires = $connection->fetchAllAssociative("
-            SELECT c.num as chambre_num, c.type, c.prix_nuit, h.nom as hotel_nom, COUNT(r.idRes) as total
-            FROM chambre c
-            LEFT JOIN hotel h ON h.idH = c.idH
-            LEFT JOIN reservation_chambre r ON r.idCh = c.idCh
-            GROUP BY c.idCh
+        // ── KPI existants ──
+        $totalUsers        = $connection->fetchOne("SELECT COUNT(*) FROM utilisateur");
+        $totalEvenements   = $connection->fetchOne("SELECT COUNT(*) FROM Evenement");
+        $totalReservations = $connection->fetchOne("SELECT COUNT(*) FROM reservationprog");
+        $totalRevenue      = $connection->fetchOne("SELECT COALESCE(SUM(prixProg), 0) FROM reservationprog");
+
+        // ── KPI produits ──
+        $totalProduits   = $connection->fetchOne("SELECT COUNT(*) FROM produit");
+        $totalCommandes  = $connection->fetchOne("SELECT COUNT(*) FROM commande");
+        $revenueProduits = $connection->fetchOne("SELECT COALESCE(SUM(Total), 0) FROM commande");
+
+        // ── Graphique 1 : CA par programme ──
+        $caParProgramme = $connection->fetchAllAssociative("
+            SELECT p.nom as label, COALESCE(SUM(r.prixProg), 0) as total
+            FROM programmes p
+            LEFT JOIN reservationprog r ON r.idP = p.idProg
+            GROUP BY p.idProg, p.nom
             ORDER BY total DESC
+            LIMIT 7
+        ");
+
+        // ── Graphique 2 : Inscriptions par mois ──
+        $inscriptionsParMois = $connection->fetchAllAssociative("
+            SELECT 
+                DATE_FORMAT(date_inscription, '%b %Y') as mois,
+                DATE_FORMAT(date_inscription, '%Y-%m') as mois_sort,
+                COUNT(*) as count
+            FROM utilisateur
+            GROUP BY mois, mois_sort
+            ORDER BY mois_sort ASC
+            LIMIT 12
+        ");
+
+        // ── Graphique 3 : Top événements ──
+        $topEvenements = $connection->fetchAllAssociative("
+            SELECT e.Titre as label, COUNT(r.IDRes) as count
+            FROM Evenement e
+            LEFT JOIN Activite a ON a.IDEv = e.IDEv
+            LEFT JOIN ReservationAct r ON r.IDAct = a.IDAct
+            GROUP BY e.IDEv, e.Titre
+            HAVING count > 0
+            ORDER BY count DESC
             LIMIT 6
         ");
-        
-        // Préparer les données pour le pie chart
-        $pieLabels = [];
-        $pieData = [];
-        
-        // Couleurs sophistiquées
-        $pieColors = [
-            '#1B2A4A', // Bleu nuit
-            '#E8A3A3', // Rouge pastel
-            '#5B6C3F', // Vert militaire
-            '#D4A13E', // Jaune moutarde
-            '#8B5E3C', // Marron élégant
-            '#4A6B6B', // Vert sauge
-            '#A8554E', // Terre cuite
-            '#7C6E65', // Taupe
-            '#2D6A4F', // Vert forêt
-            '#9C6B3E'  // Ocre
-        ];
-        
-        foreach ($chambresPopulaires as $chambre) {
-            if ($chambre['total'] > 0) {
-                $pieLabels[] = 'Chambre n°' . $chambre['chambre_num'] . ' (' . $chambre['hotel_nom'] . ')';
-                $pieData[] = $chambre['total'];
-            }
-        }
-        
-        // S'il n'y a pas de données, afficher des données fictives
-        if (empty($pieData)) {
-            $pieLabels = ['Aucune réservation'];
-            $pieData = [1];
-        }
-        
-        // Hôtels populaires (basé sur les réservations)
-        $hotelsPopulaires = $connection->fetchAllAssociative("
-            SELECT h.nom, h.ville, COUNT(r.idRes) as total
+
+        // ── Graphique 4 : Top produits les plus commandés ──
+        $topProduits = $connection->fetchAllAssociative("
+            SELECT p.Titre as label, SUM(cp.Quantite) as total_commande
+            FROM produit p
+            INNER JOIN commande_produit cp ON cp.IDPR = p.IDPR
+            GROUP BY p.IDPR, p.Titre
+            ORDER BY total_commande DESC
+            LIMIT 6
+        ");
+
+        // ── Graphique 5 : Commandes par mois ──
+        $commandesParMois = $connection->fetchAllAssociative("
+            SELECT 
+                DATE_FORMAT(DateC, '%b %Y') as mois,
+                DATE_FORMAT(DateC, '%Y-%m') as mois_sort,
+                COUNT(*) as count,
+                COALESCE(SUM(Total), 0) as total
+            FROM commande
+            GROUP BY mois, mois_sort
+            ORDER BY mois_sort ASC
+            LIMIT 12
+        ");
+
+        // ── Graphique 6 : Répartition par catégorie ──
+        $produitsParCategorie = $connection->fetchAllAssociative("
+            SELECT 
+                COALESCE(Categorie, 'Non classé') as label,
+                COUNT(*) as count
+            FROM produit
+            GROUP BY Categorie
+            ORDER BY count DESC
+        ");
+
+        // ========== NOUVEAU GRAPHIQUE : TOP HÔTELS ==========
+        $topHotels = $connection->fetchAllAssociative("
+            SELECT h.nom as label, COUNT(r.idRes) as total_reservations
             FROM hotel h
-            LEFT JOIN chambre c ON c.idH = h.idH
-            LEFT JOIN reservation_chambre r ON r.idCh = c.idCh
-            GROUP BY h.idH
-            ORDER BY total DESC
-            LIMIT 5
+            JOIN chambre c ON c.idH = h.idH
+            JOIN reservation_chambre r ON r.idCh = c.idCh
+            GROUP BY h.idH, h.nom
+            ORDER BY total_reservations DESC
+            LIMIT 6
         ");
-        
-        // Calculer les pourcentages
-        $max = 0;
-        foreach ($hotelsPopulaires as $hotel) {
-            if ($hotel['total'] > $max) $max = $hotel['total'];
-        }
-        
-        $hotelsStats = [];
-        foreach ($hotelsPopulaires as $hotel) {
-            $hotelsStats[] = [
-                'nom' => $hotel['nom'],
-                'pourcentage' => $max > 0 ? round(($hotel['total'] / $max) * 100) : 0
-            ];
-        }
-        
-        // Derniers hôtels ajoutés
-        $derniersHotels = $connection->fetchAllAssociative("SELECT * FROM hotel ORDER BY idH DESC LIMIT 5");
-        
-        // Dernières réservations
-        $dernieresReservations = $connection->fetchAllAssociative("
-            SELECT r.*, c.num as chambre_num, h.nom as hotel_nom 
-            FROM reservation_chambre r 
-            LEFT JOIN chambre c ON r.idCh = c.idCh
-            LEFT JOIN hotel h ON c.idH = h.idH
-            ORDER BY r.idRes DESC LIMIT 5
-        ");
-        
-        // Données pour le graphique (réservations des 7 derniers jours)
-        $reservationsWeek = [];
-        for ($i = 6; $i >= 0; $i--) {
-            $date = date('Y-m-d', strtotime("-$i days"));
-            $count = $connection->fetchOne("SELECT COUNT(*) FROM reservation_chambre WHERE DATE(dateDebut) = ?", [$date]);
-            $reservationsWeek[] = $count ?: 0;
-        }
-        
-        return $this->render('admin/admin_dashboard/index.html.twig', [
-            'stats' => $stats,
-            'hotels_populaires' => $hotelsStats,
-            'derniers_hotels' => $derniersHotels,
-            'dernieres_reservations' => $dernieresReservations,
-            'stats_reservations_week' => json_encode($reservationsWeek),
-            'pie_labels' => json_encode($pieLabels),
-            'pie_data' => json_encode($pieData),
-            'pie_colors' => json_encode($pieColors),
+
+        return $this->render('admin/dashboard/index.html.twig', [
+            'stats' => [
+                'users'        => $totalUsers,
+                'evenements'   => $totalEvenements,
+                'reservations' => $totalReservations,
+                'revenue'      => number_format($totalRevenue, 0, ',', ' '),
+                // ✅ Nouveaux KPI produits
+                'produits'         => $totalProduits,
+                'commandes'        => $totalCommandes,
+                'revenue_produits' => number_format($revenueProduits, 0, ',', ' '),
+            ],
+            'ca_par_programme'       => $caParProgramme,
+            'inscriptions_par_mois'  => $inscriptionsParMois,
+            'top_evenements'         => $topEvenements,
+            // ✅ Nouvelles données produits
+            'top_produits'           => $topProduits,
+            'commandes_par_mois'     => $commandesParMois,
+            'produits_par_categorie' => $produitsParCategorie,
+            // ✅ NOUVEAU : Top hôtels
+            'top_hotels'             => $topHotels,
         ]);
     }
 }

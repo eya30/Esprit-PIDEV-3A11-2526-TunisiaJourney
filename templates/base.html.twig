@@ -26,9 +26,194 @@
             --tunisia-cream: #FEF9E6;
             --footer-blue: #4e0915;
             --dark-gray: #2C3E50;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        body.dark-mode {
+            --tunisia-red: #FF6B6B;
+            --tunisia-dark-red: #FF4757;
+            --tunisia-orange: #FFA502;
+            --tunisia-gold: #FFEAA7;
+            --tunisia-blue: #70A1FF;
+            --tunisia-sand: #1a1a2e;
+            --tunisia-white: #2d2d3f;
+            --tunisia-cream: #25253a;
+            --footer-blue: #0f0f1a;
+            --dark-gray: #e0e0e0;
+            background-color: #1a1a2e;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .navbar {
+            background: rgba(30, 30, 47, 0.98);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+        }
+        
+        body.dark-mode .navbar-brand .logo-text,
+        body.dark-mode .navbar-brand .logo-text span {
+            color: #FF6B6B;
+        }
+        
+        body.dark-mode .nav-link {
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .nav-link:hover,
+        body.dark-mode .nav-link.active {
+            color: #FF6B6B;
+        }
+        
+        body.dark-mode .nav-link::after {
+            background: #FF6B6B;
+        }
+        
+        body.dark-mode .btn-login {
+            border-color: #FF6B6B;
+            color: #FF6B6B;
+        }
+        
+        body.dark-mode .btn-login:hover {
+            background: #FF6B6B;
+            color: #1a1a2e;
+        }
+        
+        body.dark-mode .btn-register {
+            background: #FF6B6B;
+            color: #1a1a2e;
+        }
+        
+        body.dark-mode .btn-register:hover {
+            background: #FF4757;
+        }
+        
+        body.dark-mode .btn-logout {
+            border-color: #FF6B6B;
+            color: #FF6B6B;
+        }
+        
+        body.dark-mode .btn-logout:hover {
+            background: #FF6B6B;
+            color: #1a1a2e;
+        }
+        
+        body.dark-mode .reservations-sidebar {
+            background: #2d2d3f;
+            border-left: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        body.dark-mode .sidebar-header {
+            border-bottom-color: rgba(255,255,255,0.1);
+        }
+        
+        body.dark-mode .reservation-card {
+            background: #25253a;
+            border-color: rgba(255,255,255,0.08);
+        }
+        
+        body.dark-mode .reservation-card:hover {
+            border-color: #FF6B6B;
+        }
+        
+        body.dark-mode .close-sidebar,
+        body.dark-mode .close-edit-modal {
+            color: #aaa;
+        }
+        
+        body.dark-mode .edit-modal-content {
+            background: #2d2d3f;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        body.dark-mode .edit-form-group input {
+            background: #25253a;
+            border-color: rgba(255,255,255,0.1);
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .footer {
+            background: #0f0f1a;
+        }
+        
+        body.dark-mode .profile-modal-panel,
+        body.dark-mode .edit-modal-panel {
+            background: linear-gradient(160deg, #25253a 0%, #1e1e2f 100%);
+        }
+        
+        body.dark-mode .pf-hero,
+        body.dark-mode .pf-card,
+        body.dark-mode .edit-hero,
+        body.dark-mode .edit-card {
+            background: #2d2d3f;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        
+        body.dark-mode .pf-value {
+            background: #25253a;
+            border-color: rgba(255,255,255,0.08);
+        }
+        
+        body.dark-mode .edit-field input {
+            background: #25253a;
+            border-color: rgba(255,255,255,0.1);
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .profile-modal-header,
+        body.dark-mode .edit-modal-header {
+            background: linear-gradient(160deg, #25253a 0%, #1e1e2f 100%);
+            border-bottom-color: rgba(255,255,255,0.1);
+        }
+        
+        .dark-mode-toggle {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            margin-left: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dark-mode-toggle i {
+            font-size: 1.3rem;
+            transition: var(--transition);
+        }
+        
+        .dark-mode-toggle .fa-sun {
+            color: #F59E0B;
+            display: block;
+        }
+        
+        .dark-mode-toggle .fa-moon {
+            color: #C49A6C;
+            display: none;
+        }
+        
+        body.dark-mode .dark-mode-toggle .fa-sun {
+            display: none;
+        }
+        
+        body.dark-mode .dark-mode-toggle .fa-moon {
+            display: block;
+        }
+        
+        .dark-mode-toggle:hover {
+            background: rgba(0,0,0,0.05);
+            transform: scale(1.1);
+        }
+        
+        body.dark-mode .dark-mode-toggle:hover {
+            background: rgba(255,255,255,0.1);
         }
         
         body {
+            transition: background-color 0.3s ease, color 0.3s ease;
             font-family: 'Montserrat', sans-serif;
             color: var(--dark-gray);
             background: var(--tunisia-sand) !important;
@@ -195,17 +380,9 @@
             border-radius: 2px;
         }
         
-        .nav-link:hover::after {
-            width: 100%;
-        }
-        
-        .nav-link.active::after {
-            width: 100%;
-        }
-        
-        .nav-link:hover, .nav-link.active {
-            color: var(--tunisia-red);
-        }
+        .nav-link:hover::after { width: 100%; }
+        .nav-link.active::after { width: 100%; }
+        .nav-link:hover, .nav-link.active { color: var(--tunisia-red); }
         
         .btn-login {
             background: transparent;
@@ -243,6 +420,69 @@
             color: white;
         }
         
+        .btn-logout {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: transparent;
+            color: var(--tunisia-dark-red);
+            border: 2px solid var(--tunisia-dark-red);
+            padding: 7px 18px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            font-family: 'Montserrat', sans-serif;
+            cursor: pointer;
+            transition: all 0.28s ease;
+            letter-spacing: 0.3px;
+        }
+        
+        .btn-logout i { font-size: 0.9rem; transition: transform 0.28s ease; }
+        .btn-logout:hover {
+            background: var(--tunisia-dark-red);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 16px rgba(196,30,58,0.28);
+        }
+        .btn-logout:hover i { transform: translateX(3px); }
+        
+        .profile-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--tunisia-red), var(--tunisia-dark-red));
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: white;
+            letter-spacing: 0.5px;
+            border: 2.5px solid rgba(227,27,35,0.25);
+            box-shadow: 0 3px 12px rgba(227,27,35,0.22);
+            transition: all 0.28s ease;
+            position: relative;
+            flex-shrink: 0;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        .profile-avatar:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 18px rgba(227,27,35,0.38);
+        }
+        
+        .avatar-dot {
+            position: absolute;
+            bottom: 1px;
+            right: 1px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #22C55E;
+            border: 2px solid white;
+        }
+        
         .reservation-card {
             background: #FEF9F0;
             border-radius: 16px;
@@ -258,40 +498,31 @@
             border-color: var(--tunisia-red);
         }
         
-        .reservation-info {
-            margin-bottom: 0.5rem;
-        }
-        
-        .reservation-name {
-            font-weight: 700;
-            color: var(--tunisia-red);
-            margin-bottom: 0.3rem;
-        }
-        
-        .reservation-details {
-            font-size: 0.8rem;
-            color: #6c757d;
-        }
-        
-        .reservation-details i {
-            width: 20px;
-            color: var(--tunisia-orange);
-        }
+        .reservation-info { margin-bottom: 0.5rem; }
+        .reservation-name { font-weight: 700; color: var(--tunisia-red); margin-bottom: 0.3rem; font-size: 1rem; }
+        .reservation-sub { font-size: 0.7rem; color: #93032E; margin-bottom: 0.5rem; font-weight: 500; word-break: break-all; }
+        .reservation-details { font-size: 0.75rem; color: #6c757d; }
+        .reservation-details div { margin-bottom: 0.25rem; }
+        .reservation-details strong { color: #2C1810; }
         
         .badge-success {
-            background-color: #10B981;
-            color: white;
+            background: #D1FAE5;
+            color: #059669;
             padding: 2px 8px;
             border-radius: 12px;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
+            font-weight: 600;
+            display: inline-block;
         }
         
         .badge-warning {
-            background-color: #F59E0B;
-            color: white;
+            background: #FEF3C7;
+            color: #D97706;
             padding: 2px 8px;
             border-radius: 12px;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
+            font-weight: 600;
+            display: inline-block;
         }
         
         .reservation-actions {
@@ -307,28 +538,13 @@
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
         }
         
-        .btn-edit-reservation {
-            background: #FEF3C7;
-            color: #D97706;
-        }
-        
-        .btn-edit-reservation:hover {
-            background: #F59E0B;
-            color: white;
-        }
-        
-        .btn-delete-reservation {
-            background: #FEF2F2;
-            color: #EF4444;
-        }
-        
-        .btn-delete-reservation:hover {
-            background: #EF4444;
-            color: white;
-        }
+        .btn-edit-reservation { background: #FEF3C7; color: #D97706; }
+        .btn-edit-reservation:hover { background: #F59E0B; color: white; }
+        .btn-delete-reservation { background: #FEF2F2; color: #EF4444; }
+        .btn-delete-reservation:hover { background: #EF4444; color: white; }
         
         .edit-modal {
             display: none;
@@ -343,9 +559,7 @@
             justify-content: center;
         }
         
-        .edit-modal.active {
-            display: flex;
-        }
+        .edit-modal.active { display: flex; }
         
         .edit-modal-content {
             background: white;
@@ -364,11 +578,7 @@
             border-bottom: 1px solid #E8DFD1;
         }
         
-        .edit-modal-header h3 {
-            font-size: 1.3rem;
-            color: var(--tunisia-blue);
-            margin: 0;
-        }
+        .edit-modal-header h3 { font-size: 1.3rem; color: var(--tunisia-blue); margin: 0; }
         
         .close-edit-modal {
             background: none;
@@ -378,9 +588,7 @@
             color: #9CA3AF;
         }
         
-        .edit-form-group {
-            margin-bottom: 1rem;
-        }
+        .edit-form-group { margin-bottom: 1rem; }
         
         .edit-form-group label {
             display: block;
@@ -397,10 +605,7 @@
             font-size: 0.9rem;
         }
         
-        .edit-form-group input:focus {
-            outline: none;
-            border-color: var(--tunisia-blue);
-        }
+        .edit-form-group input:focus { outline: none; border-color: var(--tunisia-blue); }
         
         .btn-save-edit {
             width: 100%;
@@ -414,15 +619,400 @@
             margin-top: 1rem;
         }
         
-        .btn-save-edit:hover {
-            background: #00408a;
-        }
+        .btn-save-edit:hover { background: #00408a; }
         
-        .empty-reservations {
-            text-align: center;
-            padding: 2rem;
-            color: #9CA3AF;
+        .empty-reservations { text-align: center; padding: 2rem; color: #9CA3AF; }
+        
+        /* Profile Modal */
+        .profile-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
         }
+        .profile-modal-overlay.active { display: block; }
+        .profile-modal-blur {
+            position: absolute;
+            inset: 0;
+            backdrop-filter: blur(8px);
+            background: rgba(26,46,74,0.35);
+        }
+        .profile-modal-panel {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%) translateX(100%);
+            width: min(520px, 96vw);
+            height: 100vh;
+            background: linear-gradient(160deg, #FDF6EC 0%, #F5EDD8 100%);
+            box-shadow: -12px 0 60px rgba(26,46,74,.18);
+            overflow-y: auto;
+            transition: transform 0.45s cubic-bezier(.76,0,.24,1);
+            padding: 0 0 40px;
+        }
+        .profile-modal-overlay.active .profile-modal-panel {
+            transform: translateY(-50%) translateX(0);
+        }
+        .profile-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 28px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: linear-gradient(160deg, #FDF6EC 0%, #F5EDD8 100%);
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(160,35,31,.1);
+        }
+        .profile-modal-header .modal-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1A2E4A;
+            margin: 0;
+        }
+        .profile-modal-close {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(160,35,31,.1);
+            color: #A0231F;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .2s, transform .2s;
+        }
+        .profile-modal-close:hover { background: #A0231F; color: white; transform: rotate(90deg); }
+        
+        .pf-body { padding: 20px 28px 0; display: flex; flex-direction: column; gap: 16px; }
+        .pf-hero {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            box-shadow: 0 3px 16px rgba(26,46,74,.07);
+        }
+        .pf-avatar-lg {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #C94040, #A0231F);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: white;
+            border: 3px solid rgba(160,35,31,.2);
+            box-shadow: 0 4px 14px rgba(160,35,31,.22);
+            position: relative;
+        }
+        .pf-avatar-lg img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .pf-avatar-cam {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #A0231F;
+            border: 2px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .pf-avatar-cam i { font-size: 9px; color: white; }
+        .pf-hero-info .pf-fullname {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #1A2E4A;
+            margin: 0 0 3px;
+        }
+        .pf-hero-info .pf-mail { font-size: .8rem; color: #A0231F; margin: 0 0 8px; }
+        .pf-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #FDF1F1;
+            color: #A0231F;
+            font-size: .68rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(160,35,31,.18);
+        }
+        .pf-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #22C55E; }
+        .pf-card {
+            background: white;
+            border-radius: 14px;
+            padding: 20px 22px;
+            box-shadow: 0 3px 16px rgba(26,46,74,.06);
+        }
+        .pf-card-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: .95rem;
+            font-weight: 800;
+            color: #1A2E4A;
+            margin: 0 0 14px;
+            padding-bottom: 8px;
+            border-bottom: 1.5px solid #F0E8DD;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .pf-card-title i { color: #A0231F; font-size: .85rem; }
+        .pf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .pf-field { display: flex; flex-direction: column; gap: 3px; }
+        .pf-label { font-size: .65rem; font-weight: 700; color: #A0A0A0; letter-spacing: .6px; text-transform: uppercase; }
+        .pf-value {
+            font-size: .85rem;
+            color: #1A2E4A;
+            font-weight: 500;
+            padding: 9px 12px;
+            background: #FDF6EC;
+            border-radius: 8px;
+            border: 1px solid #EFE5D0;
+        }
+        .pf-value.empty { color: #C0B090; font-style: italic; }
+        .pf-edit-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(90deg, #A0231F, #C0392B);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: .88rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 4px 14px rgba(160,35,31,.28);
+            transition: transform .18s, box-shadow .18s;
+        }
+        .pf-edit-btn:hover { transform: translateY(-2px); box-shadow: 0 7px 20px rgba(160,35,31,.4); color: white; }
+        .pf-edit-btn i { font-size: .85rem; }
+        
+        /* Edit Modal Profil */
+        .edit-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 2500;
+        }
+        .edit-modal-overlay.active { display: block; }
+        .edit-modal-blur {
+            position: absolute;
+            inset: 0;
+            backdrop-filter: blur(8px);
+            background: rgba(26,46,74,0.35);
+            cursor: pointer;
+        }
+        .edit-modal-panel {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%) translateX(100%);
+            width: min(520px, 96vw);
+            height: 100vh;
+            background: linear-gradient(160deg, #FDF6EC 0%, #F5EDD8 100%);
+            box-shadow: -12px 0 60px rgba(26,46,74,.18);
+            overflow-y: auto;
+            transition: transform 0.45s cubic-bezier(.76,0,.24,1);
+            padding: 0 0 40px;
+        }
+        .edit-modal-overlay.active .edit-modal-panel {
+            transform: translateY(-50%) translateX(0);
+        }
+        .edit-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 28px 10px;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: linear-gradient(160deg, #FDF6EC 0%, #F5EDD8 100%);
+            border-bottom: 1px solid rgba(160,35,31,.1);
+        }
+        .edit-modal-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #1A2E4A;
+            margin: 0;
+        }
+        .edit-modal-close {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(160,35,31,.1);
+            color: #A0231F;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .2s, transform .2s;
+        }
+        .edit-modal-close:hover { background: #A0231F; color: white; transform: rotate(90deg); }
+        .edit-body { padding: 20px 28px; display: flex; flex-direction: column; gap: 14px; }
+        .edit-hero {
+            background: white;
+            border-radius: 16px;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 3px 14px rgba(26,46,74,.07);
+        }
+        .edit-av {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #C94040, #A0231F);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: white;
+            border: 3px solid rgba(160,35,31,.2);
+        }
+        .edit-hero-name { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; font-weight: 800; color: #1A2E4A; margin: 0 0 2px; }
+        .edit-hero-sub { font-size: .75rem; color: #A0231F; margin: 0; }
+        .edit-card {
+            background: white;
+            border-radius: 14px;
+            padding: 18px 20px;
+            box-shadow: 0 3px 14px rgba(26,46,74,.06);
+        }
+        .edit-card-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: .95rem;
+            font-weight: 800;
+            color: #1A2E4A;
+            margin: 0 0 14px;
+            padding-bottom: 8px;
+            border-bottom: 1.5px solid #F0E8DD;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .edit-card-title i { color: #A0231F; font-size: .82rem; }
+        .edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .edit-field { display: flex; flex-direction: column; gap: 4px; }
+        .edit-field label { font-size: .65rem; font-weight: 700; color: #A0A0A0; letter-spacing: .5px; text-transform: uppercase; }
+        .edit-field input {
+            width: 100%;
+            padding: 10px 13px;
+            border: 1.5px solid #EFE5D0;
+            border-radius: 9px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: .84rem;
+            color: #1A2E4A;
+            background: #FDF6EC;
+            outline: none;
+            transition: border-color .2s, background .2s;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        .edit-field input:focus { border-color: #A0231F; background: white; box-shadow: 0 0 0 3px rgba(160,35,31,.08); }
+        .edit-field input[type="date"] { cursor: pointer; }
+        .edit-field input.input-error {
+            border-color: #A0231F !important;
+            background: #FDF1F1 !important;
+        }
+        .field-error {
+            color: #A0231F;
+            font-size: .68rem;
+            font-weight: 600;
+            margin-top: 2px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .field-error::before {
+            content: '!';
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            background: #A0231F;
+            color: white;
+            font-size: .6rem;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+        .edit-locked { display: flex; flex-direction: column; gap: 4px; }
+        .edit-locked label { font-size: .65rem; font-weight: 700; color: #A0A0A0; letter-spacing: .5px; text-transform: uppercase; }
+        .edit-locked-val {
+            padding: 10px 13px;
+            background: #F0EEEA;
+            border-radius: 9px;
+            border: 1.5px solid #E0DAD0;
+            font-size: .84rem;
+            color: #999;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .edit-locked-note { font-size: .65rem; color: #bbb; display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+        .edit-actions { display: flex; gap: 10px; }
+        .edit-btn-cancel {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 11px;
+            border: 2px solid #A0231F;
+            border-radius: 50px;
+            background: transparent;
+            color: #A0231F;
+            font-family: 'Montserrat', sans-serif;
+            font-size: .84rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .22s;
+        }
+        .edit-btn-cancel:hover { background: #A0231F; color: white; }
+        .edit-btn-save {
+            flex: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 11px;
+            background: linear-gradient(90deg, #A0231F, #C0392B);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: .84rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(160,35,31,.28);
+            transition: transform .18s, box-shadow .18s;
+        }
+        .edit-btn-save:hover { transform: translateY(-2px); box-shadow: 0 7px 20px rgba(160,35,31,.4); }
         
         .footer {
             background: #4e0915;
@@ -437,10 +1027,7 @@
             transition: all 0.3s ease;
         }
         
-        .footer a:hover {
-            color: var(--tunisia-gold);
-            padding-left: 5px;
-        }
+        .footer a:hover { color: var(--tunisia-gold); padding-left: 5px; }
         
         .social-icons a {
             display: inline-flex;
@@ -455,28 +1042,11 @@
             color: white;
         }
         
-        .social-icons a:hover {
-            background: var(--tunisia-red);
-            transform: translateY(-3px);
-            color: white;
-        }
+        .social-icons a:hover { background: var(--tunisia-red); transform: translateY(-3px); color: white; }
         
-        .footer-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--tunisia-gold);
-        }
-        
-        .footer-separator {
-            background: rgba(255,255,255,0.2);
-            margin: 2rem 0;
-        }
-        
-        .copyright {
-            color: rgba(255,255,255,0.7);
-            font-size: 0.85rem;
-        }
+        .footer-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: var(--tunisia-gold); }
+        .footer-separator { background: rgba(255,255,255,0.2); margin: 2rem 0; }
+        .copyright { color: rgba(255,255,255,0.7); font-size: 0.85rem; }
         
         .toast-message {
             position: fixed;
@@ -496,10 +1066,7 @@
         @media (max-width: 768px) {
             .navbar-brand .logo-text { font-size: 1.2rem; }
             .navbar-brand .logo-img { width: 50px; height: 50px; }
-            .reservations-sidebar {
-                width: 100%;
-                left: -100%;
-            }
+            .reservations-sidebar { width: 100%; left: -100%; }
         }
     </style>
     
@@ -510,16 +1077,14 @@
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
             <div class="d-flex align-items-center">
-                <div class="reservation-menu-icon" id="reservationIcon">
+                <div class="reservation-menu-icon" id="reservationIcon" style="display: none;">
                     <div class="line"></div>
                     <div class="line"></div>
                     <div class="line"></div>
                 </div>
                 <a class="navbar-brand" href="{{ path('app_accueil') }}">
                     <img src="{{ asset('images/logo.png') }}" alt="TunisiaJourney" class="logo-img">
-                    <div class="logo-text">
-                        Tunisia<span>Journey</span>
-                    </div>
+                    <div class="logo-text">Tunisia<span>Journey</span></div>
                 </a>
             </div>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -531,33 +1096,64 @@
                         <a class="nav-link {% if app.request.get('_route') == 'app_accueil' %}active{% endif %}" href="{{ path('app_accueil') }}">Accueil</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Voyages</a>
+                        <a class="nav-link {% if app.request.get('_route') starts with 'app_voyage' %}active{% endif %}" href="{{ path('app_voyage_index') }}">Voyages</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ path('app_hotel_index') }}">Hôtels</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Événements</a>
+                        <a class="nav-link" href="{{ path('app_evenement_index') }}">Événements</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Produits</a>
+                        <a class="nav-link" href="{{ path('app_produit_index') }}">Produits</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">Forum</a>
                     </li>
                 </ul>
-                <div>
-                    <a href="#" class="btn-login me-2">Connexion</a>
-                    <a href="#" class="btn-register">Inscription</a>
+                
+                {% if app.user %}
+                <div class="d-flex align-items-center gap-2 ms-2">
+                    <button class="dark-mode-toggle" id="darkModeToggle" title="Mode sombre/clair">
+                        <i class="fas fa-sun"></i>
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    
+                    <button class="profile-avatar" id="openProfileModal" title="Mon profil"
+                            style="{% if app.user.profileImageUrl %}background:none;padding:0;border:2px solid rgba(227,27,35,0.4);{% endif %}">
+                        {% if app.user.profileImageUrl %}
+                            <img src="{{ app.user.profileImageUrl }}" alt="Photo"
+                                 style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+                        {% else %}
+                            {{ app.user.prenom|slice(0,1)|upper }}{{ app.user.nom|slice(0,1)|upper }}
+                        {% endif %}
+                        <span class="avatar-dot"></span>
+                    </button>
+                    <form method="post" action="{{ path('app_logout') }}" style="display:inline;">
+                        <button class="btn-logout">
+                            <i class="fas fa-arrow-right-from-bracket"></i>
+                            Déconnexion
+                        </button>
+                    </form>
                 </div>
+                {% else %}
+                <div class="d-flex align-items-center gap-2">
+                    <button class="dark-mode-toggle" id="darkModeToggle2" title="Mode sombre/clair">
+                        <i class="fas fa-sun"></i>
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <a href="{{ path('app_login') }}" class="btn-login me-2">Connexion</a>
+                    <a href="{{ path('app_register') }}" class="btn-register">Inscription</a>
+                </div>
+                {% endif %}
             </div>
         </div>
     </nav>
-
-    <!-- OVERLAY pour le sidebar -->
+    
+    <!-- OVERLAY sidebar -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-    <!-- SIDEBAR RÉSERVATIONS - À GAUCHE -->
+    
+    <!-- SIDEBAR RÉSERVATIONS -->
     <div class="reservations-sidebar" id="reservationsSidebar">
         <div class="sidebar-header">
             <h4><i class="fas fa-ticket-alt me-2"></i> Mes Réservations</h4>
@@ -570,8 +1166,8 @@
             </div>
         </div>
     </div>
-
-    <!-- MODAL D'ÉDITION -->
+    
+    <!-- MODAL RÉSERVATION ÉDITION -->
     <div class="edit-modal" id="editModal">
         <div class="edit-modal-content">
             <div class="edit-modal-header">
@@ -583,32 +1179,32 @@
                 <input type="hidden" id="editReservationType">
                 <div class="edit-form-group">
                     <label>Nom</label>
-                    <input type="text" id="editNom" required>
+                    <input type="text" id="editNom">
                 </div>
                 <div class="edit-form-group">
                     <label>Prénom</label>
-                    <input type="text" id="editPrenom" required>
+                    <input type="text" id="editPrenom">
                 </div>
                 <div class="edit-form-group">
                     <label>Téléphone</label>
-                    <input type="tel" id="editTelephone" required>
+                    <input type="tel" id="editTelephone">
                 </div>
                 <div class="edit-form-group">
                     <label>Email</label>
-                    <input type="email" id="editEmail" required>
+                    <input type="email" id="editEmail">
                 </div>
                 <div class="edit-form-group">
                     <label>Nombre de personnes</label>
-                    <input type="number" id="editNbre" min="1" required>
+                    <input type="number" id="editNbre" min="1">
                 </div>
                 <button type="submit" class="btn-save-edit">Enregistrer</button>
             </form>
         </div>
     </div>
-
-    <!-- Espace pour la navbar fixe -->
+    
+    <!-- Espace navbar fixe -->
     <div style="height: 85px;"></div>
-
+    
     <!-- FLASH MESSAGES -->
     {% for label, messages in app.flashes %}
         {% for message in messages %}
@@ -619,12 +1215,12 @@
             </div>
         {% endfor %}
     {% endfor %}
-
+    
     <!-- MAIN CONTENT -->
     <main>
         {% block body %}{% endblock %}
     </main>
-
+    
     <!-- FOOTER -->
     <footer class="footer">
         <div class="container">
@@ -646,10 +1242,10 @@
                     <h5 class="footer-title">Explorer</h5>
                     <ul class="list-unstyled">
                         <li><a href="{{ path('app_accueil') }}">Accueil</a></li>
-                        <li><a href="#">Voyages</a></li>
+                        <li><a href="{{ path('app_voyage_index') }}">Voyages</a></li>
                         <li><a href="{{ path('app_hotel_index') }}">Hôtels</a></li>
-                        <li><a href="#">Événements</a></li>
-                        <li><a href="#">Produits</a></li>
+                        <li><a href="{{ path('app_evenement_index') }}">Événements</a></li>
+                        <li><a href="{{ path('app_produit_index') }}">Produits</a></li>
                         <li><a href="#">Forum</a></li>
                     </ul>
                 </div>
@@ -679,100 +1275,401 @@
             </div>
         </div>
     </footer>
-
-    <!-- Bootstrap JS -->
+    
+    <!-- MODAL PROFIL (lecture) -->
+    {% if app.user %}
+    <div class="profile-modal-overlay" id="profileModal">
+        <div class="profile-modal-blur" id="profileBlur"></div>
+        <div class="profile-modal-panel">
+            <div class="profile-modal-header">
+                <h2 class="modal-title"><i class="fas fa-user-circle me-2" style="color:#A0231F"></i> Mon Profil</h2>
+                <button class="profile-modal-close" id="closeProfileModal">&times;</button>
+            </div>
+            <div class="pf-body">
+                <div class="pf-hero">
+                    <div class="pf-avatar-lg">
+                        {% if app.user.profileImageUrl %}
+                            <img src="{{ app.user.profileImageUrl }}" alt="Photo de profil">
+                        {% else %}
+                            {{ app.user.prenom|slice(0,1)|upper }}{{ app.user.nom|slice(0,1)|upper }}
+                        {% endif %}
+                        <div class="pf-avatar-cam"><i class="fas fa-camera"></i></div>
+                    </div>
+                    <div class="pf-hero-info">
+                        <p class="pf-fullname">{{ app.user.prenom }} {{ app.user.nom }}</p>
+                        <p class="pf-mail">{{ app.user.email }}</p>
+                        <span class="pf-badge"><span class="pf-badge-dot"></span> Compte actif</span>
+                    </div>
+                </div>
+                
+                <div class="pf-card">
+                    <div class="pf-card-title"><i class="fas fa-id-card"></i> Informations personnelles</div>
+                    <div class="pf-grid">
+                        <div class="pf-field">
+                            <span class="pf-label">Nom</span>
+                            <span class="pf-value">{{ app.user.nom }}</span>
+                        </div>
+                        <div class="pf-field">
+                            <span class="pf-label">Prénom</span>
+                            <span class="pf-value">{{ app.user.prenom }}</span>
+                        </div>
+                        <div class="pf-field">
+                            <span class="pf-label">Date de naissance</span>
+                            <span class="pf-value {% if not app.user.dateNaissance %}empty{% endif %}">
+                                {% if app.user.dateNaissance %}{{ app.user.dateNaissance|date('d/m/Y') }}{% else %}Non renseignée{% endif %}
+                            </span>
+                        </div>
+                        <div class="pf-field">
+                            <span class="pf-label">Téléphone</span>
+                            <span class="pf-value {% if not app.user.telephone %}empty{% endif %}">
+                                {% if app.user.telephone %}{{ app.user.telephone }}{% else %}Non renseigné{% endif %}
+                            </span>
+                        </div>
+                        <div class="pf-field" style="grid-column:1/-1">
+                            <span class="pf-label">Adresse</span>
+                            <span class="pf-value {% if not app.user.adresse %}empty{% endif %}">
+                                {% if app.user.adresse %}{{ app.user.adresse }}{% else %}Non renseignée{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="pf-card">
+                    <div class="pf-card-title"><i class="fas fa-envelope"></i> Informations de connexion</div>
+                    <div class="pf-grid">
+                        <div class="pf-field" style="grid-column:1/-1">
+                            <span class="pf-label">Email</span>
+                            <span class="pf-value">{{ app.user.email }}</span>
+                        </div>
+                        <div class="pf-field" style="grid-column:1/-1">
+                            <span class="pf-label">Mot de passe</span>
+                            <span class="pf-value">••••••••••••</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="pf-edit-btn" id="openEditModal">
+                    <i class="fas fa-pen"></i> Modifier le profil
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- MODAL EDIT PROFIL -->
+    {% if app.user %}
+    <div class="edit-modal-overlay {% if app.session.get('_profile_errors') %}active{% endif %}" id="editProfileModal">
+        <div class="edit-modal-blur" id="editModalBlur"></div>
+        <div class="edit-modal-panel">
+            <div class="edit-modal-header">
+                <h2 class="edit-modal-title"><i class="fas fa-pen me-2" style="color:#A0231F"></i> Modifier le profil</h2>
+                <button class="edit-modal-close" id="closeEditModal2">&times;</button>
+            </div>
+            <div class="edit-body">
+                <form id="profileEditForm" method="POST" action="{{ path('app_profile_edit') }}"
+                      enctype="multipart/form-data" novalidate>
+                    <input type="hidden" name="_token" value="{{ csrf_token('profile_edit') }}">
+                    <input type="file" name="photo" id="photoInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
+                    
+                    <div class="edit-hero" style="margin-bottom:14px;">
+                        <div class="edit-av" id="editAvatarPreview" style="overflow:hidden;cursor:pointer;position:relative;" onclick="document.getElementById('photoInput').click()" title="Cliquer pour changer la photo">
+                            {% if app.user.profileImageUrl %}
+                                <img src="{{ app.user.profileImageUrl }}" alt="Photo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                            {% else %}
+                                {{ app.user.prenom|slice(0,1)|upper }}{{ app.user.nom|slice(0,1)|upper }}
+                            {% endif %}
+                            <div style="position:absolute;inset:0;background:rgba(0,0,0,0.35);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;" class="avatar-hover-cam">
+                                <i class="fas fa-camera" style="color:white;font-size:.9rem;"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="edit-hero-name">{{ app.user.prenom }} {{ app.user.nom }}</p>
+                            <p class="edit-hero-sub">Cliquez sur l'avatar pour changer la photo</p>
+                        </div>
+                    </div>
+                    
+                    <div class="edit-card" style="margin-bottom:14px;">
+                        <div class="edit-card-title"><i class="fas fa-id-card"></i> Informations personnelles</div>
+                        <div class="edit-grid">
+                            <div class="edit-field">
+                                <label for="field_nom">Nom</label>
+                                <input type="text" id="field_nom" name="nom" value="{{ app.session.get('_profile_data') ? app.session.get('_profile_data')['nom'] : app.user.nom }}" placeholder="Votre nom" class="{{ app.session.get('_profile_errors') and app.session.get('_profile_errors')['nom'] is defined ? 'input-error' : '' }}">
+                                {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['nom'] is defined %}
+                                    <span class="field-error">{{ app.session.get('_profile_errors')['nom'][0] }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="edit-field">
+                                <label for="field_prenom">Prénom</label>
+                                <input type="text" id="field_prenom" name="prenom" value="{{ app.session.get('_profile_data') ? app.session.get('_profile_data')['prenom'] : app.user.prenom }}" placeholder="Votre prénom" class="{{ app.session.get('_profile_errors') and app.session.get('_profile_errors')['prenom'] is defined ? 'input-error' : '' }}">
+                                {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['prenom'] is defined %}
+                                    <span class="field-error">{{ app.session.get('_profile_errors')['prenom'][0] }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="edit-field">
+                                <label for="field_dob">Date de naissance</label>
+                                <input type="date" id="field_dob" name="dateNaissance" value="{{ app.session.get('_profile_data') and app.session.get('_profile_data')['dateNaissance'] ? app.session.get('_profile_data')['dateNaissance'] : (app.user.dateNaissance ? app.user.dateNaissance|date('Y-m-d') : '') }}" max="{{ "now"|date_modify("-18 years")|date('Y-m-d') }}" class="{{ app.session.get('_profile_errors') and app.session.get('_profile_errors')['dateNaissance'] is defined ? 'input-error' : '' }}">
+                                {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['dateNaissance'] is defined %}
+                                    <span class="field-error">{{ app.session.get('_profile_errors')['dateNaissance'][0] }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="edit-field">
+                                <label for="field_tel">Téléphone</label>
+                                <input type="text" id="field_tel" name="telephone" value="{{ app.session.get('_profile_data') ? app.session.get('_profile_data')['telephone'] : app.user.telephone }}" placeholder="06XXXXXXXX" class="{{ app.session.get('_profile_errors') and app.session.get('_profile_errors')['telephone'] is defined ? 'input-error' : '' }}">
+                                {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['telephone'] is defined %}
+                                    <span class="field-error">{{ app.session.get('_profile_errors')['telephone'][0] }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="edit-field" style="grid-column:1/-1">
+                                <label for="field_adresse">Adresse</label>
+                                <input type="text" id="field_adresse" name="adresse" value="{{ app.session.get('_profile_data') ? app.session.get('_profile_data')['adresse'] : app.user.adresse }}" placeholder="Votre adresse" class="{{ app.session.get('_profile_errors') and app.session.get('_profile_errors')['adresse'] is defined ? 'input-error' : '' }}">
+                                {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['adresse'] is defined %}
+                                    <span class="field-error">{{ app.session.get('_profile_errors')['adresse'][0] }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="edit-card" style="margin-bottom:14px;">
+                        <div class="edit-card-title"><i class="fas fa-shield-alt"></i> Informations de connexion</div>
+                        <div style="display:flex;flex-direction:column;gap:12px;">
+                            <div class="edit-field">
+                                <label for="field_email">Email</label>
+                                <input type="text" id="field_email" name="email" value="{{ app.session.get('_profile_data') ? app.session.get('_profile_data')['email'] : app.user.email }}" class="{{ app.session.get('_profile_errors') and app.session.get('_profile_errors')['email'] is defined ? 'input-error' : '' }}">
+                                {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['email'] is defined %}
+                                    <span class="field-error">{{ app.session.get('_profile_errors')['email'][0] }}</span>
+                                {% endif %}
+                            </div>
+                            <hr style="border-color:#F0E8DD;margin:4px 0;">
+                            <p style="font-size:.72rem;color:#A0A0A0;margin:0;">
+                                <i class="fas fa-key"></i> Changer le mot de passe
+                                <em>(laisser vide pour ne pas modifier)</em>
+                            </p>
+                            <div class="edit-field">
+                                <label for="field_cur_pwd">Mot de passe actuel</label>
+                                <input type="password" id="field_cur_pwd" name="current_password" placeholder="Mot de passe actuel" class="{{ app.session.get('_profile_errors') and app.session.get('_profile_errors')['current_password'] is defined ? 'input-error' : '' }}">
+                                {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['current_password'] is defined %}
+                                    <span class="field-error">{{ app.session.get('_profile_errors')['current_password'][0] }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="edit-grid">
+                                <div class="edit-field">
+                                    <label for="field_new_pwd">Nouveau mot de passe</label>
+                                    <input type="password" id="field_new_pwd" name="new_password" placeholder="Nouveau" class="{{ app.session.get('_profile_errors') and app.session.get('_profile_errors')['new_password'] is defined ? 'input-error' : '' }}">
+                                    {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['new_password'] is defined %}
+                                        <span class="field-error">{{ app.session.get('_profile_errors')['new_password'][0] }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="edit-field">
+                                    <label for="field_confirm_pwd">Confirmer</label>
+                                    <input type="password" id="field_confirm_pwd" name="confirm_password" placeholder="Confirmer" class="{{ app.session.get('_profile_errors') and app.session.get('_profile_errors')['confirm_password'] is defined ? 'input-error' : '' }}">
+                                    {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['confirm_password'] is defined %}
+                                        <span class="field-error">{{ app.session.get('_profile_errors')['confirm_password'][0] }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="edit-actions">
+                    <button type="button" class="edit-btn-cancel" id="cancelEditModal"><i class="fas fa-times"></i> Annuler</button>
+                    <button type="submit" class="edit-btn-save"><i class="fas fa-check"></i> Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // Gestion du sidebar des réservations
+        // ==================== MODE SOMBRE ====================
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            document.body.classList.add('dark-mode');
+        }
+        
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        }
+        
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const darkModeToggle2 = document.getElementById('darkModeToggle2');
+        
+        if (darkModeToggle) darkModeToggle.addEventListener('click', toggleDarkMode);
+        if (darkModeToggle2) darkModeToggle2.addEventListener('click', toggleDarkMode);
+        
+        // ==================== SIDEBAR RÉSERVATIONS ====================
+        const showReservationIcon = ['/voyage/', '/voyage', '/hotel/', '/hotel', '/evenement/', '/evenement'];
+        if (showReservationIcon.some(p => window.location.pathname.startsWith(p))) {
+            const icon = document.getElementById('reservationIcon');
+            if (icon) icon.style.display = 'flex';
+        }
+        
         const reservationIcon = document.getElementById('reservationIcon');
         const sidebar = document.getElementById('reservationsSidebar');
         const overlay = document.getElementById('sidebarOverlay');
         const closeSidebarBtn = document.getElementById('closeSidebarBtn');
         
         function openSidebar() {
-            if (sidebar && overlay) {
-                sidebar.classList.add('open');
-                overlay.classList.add('active');
-                loadReservations();
-            }
+            if (sidebar && overlay) { sidebar.classList.add('open'); overlay.classList.add('active'); loadReservations(); }
         }
-        
         function closeSidebar() {
-            if (sidebar && overlay) {
-                sidebar.classList.remove('open');
-                overlay.classList.remove('active');
-            }
+            if (sidebar && overlay) { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
         }
         
-        if (reservationIcon) {
-            reservationIcon.addEventListener('click', openSidebar);
-        }
-        if (closeSidebarBtn) {
-            closeSidebarBtn.addEventListener('click', closeSidebar);
-        }
-        if (overlay) {
-            overlay.addEventListener('click', closeSidebar);
-        }
+        if (reservationIcon) reservationIcon.addEventListener('click', openSidebar);
+        if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeSidebar);
+        if (overlay) overlay.addEventListener('click', closeSidebar);
         
-        // Charger les réservations (voyages + chambres)
         async function loadReservations() {
             const container = document.getElementById('reservationsList');
             if (!container) return;
             
-                try {
-                const response = await fetch('{{ path('api_reservations_all') }}');
-                const reservations = await response.json();
+            try {
+                const path = window.location.pathname;
+                let reservations = [];
                 
-                if (reservations.length === 0) {
+                // HÔTELS / CHAMBRES : toutes mes réservations de chambres
+                if (path.startsWith('/hotel') || path.startsWith('/chambre')) {
+                    const response = await fetch('/reservation/api/reservations/all');
+                    const data = await response.json();
+                    reservations = data.map(r => ({ ...r, type: 'chambre' }));
+                }
+                // VOYAGES : toutes mes réservations de voyages
+                else if (path.startsWith('/voyage')) {
+                    const response = await fetch('/api/reservations');
+                    const data = await response.json();
+                    reservations = data.map(r => ({ ...r, type: 'voyage' }));
+                }
+                // ÉVÉNEMENTS : toutes mes réservations d'activités
+                else if (path.startsWith('/evenement')) {
+                    const response = await fetch('/api/reservations-act');
+                    const data = await response.json();
+                    reservations = data.map(r => ({ ...r, type: 'activite' }));
+                }
+                // AUTRES PAGES : toutes mes réservations (chambres + voyages)
+                else {
+                    const [respChambres, respVoyages] = await Promise.all([
+                        fetch('/reservation/api/reservations/all'),
+                        fetch('/api/reservations')
+                    ]);
+                    const chambres = (await respChambres.json()).map(c => ({ ...c, type: 'chambre' }));
+                    const voyages = (await respVoyages.json()).map(v => ({ ...v, type: 'voyage' }));
+                    reservations = [...chambres, ...voyages];
+                }
+                
+                if (!reservations || reservations.length === 0) {
                     container.innerHTML = '<div class="empty-reservations"><i class="fas fa-ticket-alt fa-3x mb-2"></i><p>Aucune réservation trouvée</p></div>';
                     return;
                 }
                 
                 container.innerHTML = reservations.map(res => {
-                if (res.type === 'chambre') {
+                    // RÉSERVATIONS DE CHAMBRES
+                    if (res.type === 'chambre') {
+                        const rid = res.idRes || res.id || res.idRP;
+                        const nom = res.nom || '';
+                        const prenom = res.prenom || '';
+                        const email = res.email || '';
+                        const telephone = res.telephone || '';
+                        const chambreNum = res.chambre_num || '-';
+                        const hotelNom = res.hotel_nom || '';
+                        const prixTotal = res.prixTotal || 0;
+                        const nbPersonnes = res.nbPersonnes || 1;
+                        const dateDebut = res.dateDebut || '';
+                        const dateFin = res.dateFin || '';
+                        const nbNuit = res.nbNuit || 0;
+                        const statut = res.statut || 'en_attente';
+                        
                         return `
-                            <div class="reservation-card" data-id="${res.idRes}" data-type="chambre">
+                            <div class="reservation-card" data-id="${rid}" data-type="chambre">
                                 <div class="reservation-info">
-                                    <div class="reservation-name">${escapeHtml(res.prenom || '')} ${escapeHtml(res.nom || '')}</div>
-                                    <div class="reservation-sub">Chambre n°${res.chambre_num} - ${res.hotel_nom}</div>
+                                    <div class="reservation-name">${escapeHtml(nom)} ${escapeHtml(prenom)}</div>
+                                    <div class="reservation-sub">${escapeHtml(email)} | ${escapeHtml(telephone)}</div>
                                     <div class="reservation-details">
-                                        <div><i class="fas fa-calendar"></i> Du ${res.dateDebut} au ${res.dateFin}</div>
-                                        <div><i class="fas fa-users"></i> ${res.nbPersonnes} personnes</div>
-                                        <div><i class="fas fa-phone"></i> ${escapeHtml(res.telephone || '')}</div>
-                                        <div><i class="fas fa-envelope"></i> ${escapeHtml(res.email || '')}</div>
-                                        <div><i class="fas fa-tag"></i> ${res.prixTotal} €</div>
-                                        <div><span class="${res.statut === 'confirmé' ? 'badge-success' : 'badge-warning'}">${res.statut}</span></div>
+                                        <div><strong>🏨 Hôtel :</strong> ${escapeHtml(hotelNom)}</div>
+                                        <div><strong>🛏️ Chambre :</strong> n°${chambreNum}</div>
+                                        <div><strong>👥 Personnes :</strong> ${nbPersonnes}</div>
+                                        <div><strong>📅 Dates :</strong> du ${dateDebut} au ${dateFin}</div>
+                                        <div><strong>🌙 Nuits :</strong> ${nbNuit}</div>
+                                        <div><strong>💰 Prix total :</strong> ${prixTotal} €</div>
+                                        <div><span class="${statut === 'confirmé' ? 'badge-success' : 'badge-warning'}">${statut === 'confirmé' ? '✓ Confirmée' : '⏳ En attente'}</span></div>
                                     </div>
                                 </div>
-                                    <div class="reservation-actions">
-                                    <button class="btn-edit-reservation" onclick="editReservationChambre(${res.idRes})">
+                                <div class="reservation-actions">
+                                    <button class="btn-edit-reservation" onclick="editReservationChambre(${rid})">
                                         <i class="fas fa-edit"></i> Modifier
                                     </button>
-                                    <button class="btn-delete-reservation" onclick="deleteReservationChambre(${res.idRes})">
+                                    <button class="btn-delete-reservation" onclick="deleteReservationChambre(${rid})">
                                         <i class="fas fa-trash"></i> Supprimer
                                     </button>
                                 </div>
                             </div>
                         `;
-                    } else {
+                    }
+                    // RÉSERVATIONS DE VOYAGES (reservationprog)
+                    else if (res.type === 'voyage') {
+                        const rid = res.idRP || res.id;
+                        const nom = res.nom || '';
+                        const prenom = res.prenom || '';
+                        const email = res.email || '';
+                        const telephone = res.telephone || '';
+                        const nbre = res.nbre || 1;
+                        const prixProg = res.prixProg || 0;
+                        const dateProgramme = res.dateProgramme || '';
+                        
                         return `
-                            <div class="reservation-card" data-id="${res.idRP}" data-type="voyage">
+                            <div class="reservation-card" data-id="${rid}" data-type="voyage">
                                 <div class="reservation-info">
-                                    <div class="reservation-name">${escapeHtml(res.prenom)} ${escapeHtml(res.nom)}</div>
+                                    <div class="reservation-name">${escapeHtml(prenom)} ${escapeHtml(nom)}</div>
+                                    <div class="reservation-sub">${escapeHtml(email)} | ${escapeHtml(telephone)}</div>
                                     <div class="reservation-details">
-                                        <div><i class="fas fa-phone"></i> ${escapeHtml(res.telephone)}</div>
-                                        <div><i class="fas fa-envelope"></i> ${escapeHtml(res.email)}</div>
-                                        <div><i class="fas fa-users"></i> ${res.nbre} personnes</div>
-                                        <div><i class="fas fa-calendar"></i> ${res.dateProgramme}</div>
-                                        <div><i class="fas fa-tag"></i> ${res.prixProg} DT</div>
+                                        <div><strong>👥 Personnes :</strong> ${nbre}</div>
+                                        <div><strong>📅 Date :</strong> ${dateProgramme}</div>
+                                        <div><strong>💰 Prix total :</strong> ${prixProg} DT</div>
                                     </div>
                                 </div>
                                 <div class="reservation-actions">
-                                    <button class="btn-edit-reservation" onclick="editReservation(${res.idRP})">
+                                    <button class="btn-edit-reservation" onclick="editReservation(${rid})">
                                         <i class="fas fa-edit"></i> Modifier
                                     </button>
-                                    <button class="btn-delete-reservation" onclick="deleteReservation(${res.idRP})">
+                                    <button class="btn-delete-reservation" onclick="deleteReservation(${rid})">
+                                        <i class="fas fa-trash"></i> Supprimer
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    // RÉSERVATIONS D'ACTIVITÉS (ReservationAct)
+                    else {
+                        const rid = res.IDRes || res.id;
+                        const nom = res.Nom || res.nom || '';
+                        const prenom = res.Prenom || res.prenom || '';
+                        const email = res.email || '';
+                        const telephone = res.telephone || '';
+                        const nbre = res.NombrePlaces || res.nbre || 1;
+                        const prix = res.Prix || 0;
+                        const dateReservation = res.DateReservation || '';
+                        
+                        return `
+                            <div class="reservation-card" data-id="${rid}" data-type="activite">
+                                <div class="reservation-info">
+                                    <div class="reservation-name">${escapeHtml(prenom)} ${escapeHtml(nom)}</div>
+                                    <div class="reservation-sub">${escapeHtml(email)} | ${escapeHtml(telephone)}</div>
+                                    <div class="reservation-details">
+                                        <div><strong>👥 Personnes :</strong> ${nbre}</div>
+                                        <div><strong>📅 Date :</strong> ${dateReservation}</div>
+                                        <div><strong>💰 Prix total :</strong> ${prix} DT</div>
+                                    </div>
+                                </div>
+                                <div class="reservation-actions">
+                                    <button class="btn-edit-reservation" onclick="editReservationAct(${rid})">
+                                        <i class="fas fa-edit"></i> Modifier
+                                    </button>
+                                    <button class="btn-delete-reservation" onclick="deleteReservationAct(${rid})">
                                         <i class="fas fa-trash"></i> Supprimer
                                     </button>
                                 </div>
@@ -788,20 +1685,13 @@
         
         function escapeHtml(str) {
             if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
+            return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
         }
         
-        // Éditer une réservation de voyage
         async function editReservation(id) {
             try {
                 const response = await fetch(`/api/reservations/${id}`);
                 const res = await response.json();
-                
                 document.getElementById('editReservationId').value = res.idRP;
                 document.getElementById('editReservationType').value = 'voyage';
                 document.getElementById('editNom').value = res.nom;
@@ -809,43 +1699,45 @@
                 document.getElementById('editTelephone').value = res.telephone;
                 document.getElementById('editEmail').value = res.email;
                 document.getElementById('editNbre').value = res.nbre;
-                
                 document.getElementById('editModal').classList.add('active');
-            } catch (error) {
-                alert('Erreur lors du chargement');
-            }
+            } catch (error) { alert('Erreur lors du chargement'); }
         }
         
-        // Éditer une réservation de chambre
         async function editReservationChambre(id) {
             try {
-                const url = '{{ path('api_reservations_chambres_get', {'id': 'ID'}) }}'.replace('ID', id);
-                const response = await fetch(url);
+                const response = await fetch(`/reservation/api/reservations/chambres/${id}`);
                 const res = await response.json();
-                
-                document.getElementById('editReservationId').value = res.idRes;
+                document.getElementById('editReservationId').value = res.id;
                 document.getElementById('editReservationType').value = 'chambre';
                 document.getElementById('editNom').value = res.nom || '';
                 document.getElementById('editPrenom').value = res.prenom || '';
                 document.getElementById('editTelephone').value = res.telephone || '';
                 document.getElementById('editEmail').value = res.email || '';
                 document.getElementById('editNbre').value = res.nbPersonnes || 1;
-                
                 document.getElementById('editModal').classList.add('active');
-            } catch (error) {
-                alert('Erreur lors du chargement');
-            }
+            } catch (error) { alert('Erreur lors du chargement'); }
         }
         
-        // Fermer le modal d'édition
+        async function editReservationAct(id) {
+            try {
+                const response = await fetch(`/api/reservations-act/${id}`);
+                const res = await response.json();
+                document.getElementById('editReservationId').value = res.IDRes;
+                document.getElementById('editReservationType').value = 'activite';
+                document.getElementById('editNom').value = res.Nom || '';
+                document.getElementById('editPrenom').value = res.Prenom || '';
+                document.getElementById('editTelephone').value = res.telephone || '';
+                document.getElementById('editEmail').value = res.email || '';
+                document.getElementById('editNbre').value = res.NombrePlaces || 1;
+                document.getElementById('editModal').classList.add('active');
+            } catch (error) { alert('Erreur lors du chargement'); }
+        }
+        
         const closeEditModal = document.getElementById('closeEditModal');
         if (closeEditModal) {
-            closeEditModal.addEventListener('click', () => {
-                document.getElementById('editModal').classList.remove('active');
-            });
+            closeEditModal.addEventListener('click', () => document.getElementById('editModal').classList.remove('active'));
         }
         
-        // Soumettre l'édition
         const editForm = document.getElementById('editReservationForm');
         if (editForm) {
             editForm.addEventListener('submit', async (e) => {
@@ -860,9 +1752,14 @@
                     nbre: parseInt(document.getElementById('editNbre').value)
                 };
                 
-                const url = type === 'chambre'
-                    ? '{{ path('api_reservations_chambres_put', {'id': 'ID'}) }}'.replace('ID', id)
-                    : '{{ path('api_reservation_update', {'id': 'ID'}) }}'.replace('ID', id);
+                let url;
+                if (type === 'chambre') {
+                    url = `/reservation/api/reservations/chambres/${id}`;
+                } else if (type === 'voyage') {
+                    url = `/api/reservations/${id}`;
+                } else {
+                    url = `/api/reservations-act/${id}`;
+                }
                 
                 try {
                     const response = await fetch(url, {
@@ -870,60 +1767,40 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(data)
                     });
-                    
                     if (response.ok) {
                         document.getElementById('editModal').classList.remove('active');
                         loadReservations();
                         showToast('Réservation modifiée avec succès !');
-                    } else {
-                        alert('Erreur lors de la modification');
-                    }
-                } catch (error) {
-                    alert('Erreur lors de la modification');
-                }
+                    } else { alert('Erreur lors de la modification'); }
+                } catch (error) { alert('Erreur lors de la modification'); }
             });
         }
         
-        // Supprimer une réservation de voyage
         async function deleteReservation(id) {
             if (!confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?')) return;
-            
-                try {
-                    const url = '{{ path('api_reservation_delete', {'id': 'ID'}) }}'.replace('ID', id);
-                    const response = await fetch(url, {
-                        method: 'DELETE'
-                    });
-                
-                if (response.ok) {
-                    loadReservations();
-                    showToast('Réservation supprimée avec succès !');
-                } else {
-                    alert('Erreur lors de la suppression');
-                }
-            } catch (error) {
-                alert('Erreur lors de la suppression');
-            }
+            try {
+                const response = await fetch(`/api/reservations/${id}`, { method: 'DELETE' });
+                if (response.ok) { loadReservations(); showToast('Réservation supprimée avec succès !'); }
+                else { alert('Erreur lors de la suppression'); }
+            } catch (error) { alert('Erreur lors de la suppression'); }
         }
         
-        // Supprimer une réservation de chambre
         async function deleteReservationChambre(id) {
             if (!confirm('Êtes-vous sûr de vouloir supprimer cette réservation de chambre ?')) return;
-            
-                try {
-                const url = '{{ path('api_reservations_chambres_delete', {'id': 'ID'}) }}'.replace('ID', id);
-                const response = await fetch(url, {
-                    method: 'DELETE'
-                });
-                
-                if (response.ok) {
-                    loadReservations();
-                    showToast('Réservation de chambre supprimée avec succès !');
-                } else {
-                    alert('Erreur lors de la suppression');
-                }
-            } catch (error) {
-                alert('Erreur lors de la suppression');
-            }
+            try {
+                const response = await fetch(`/reservation/api/reservations/chambres/${id}`, { method: 'DELETE' });
+                if (response.ok) { loadReservations(); showToast('Réservation de chambre supprimée avec succès !'); }
+                else { alert('Erreur lors de la suppression'); }
+            } catch (error) { alert('Erreur lors de la suppression'); }
+        }
+        
+        async function deleteReservationAct(id) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?')) return;
+            try {
+                const response = await fetch(`/api/reservations-act/${id}`, { method: 'DELETE' });
+                if (response.ok) { loadReservations(); showToast('Réservation supprimée avec succès !'); }
+                else { alert('Erreur lors de la suppression'); }
+            } catch (error) { alert('Erreur lors de la suppression'); }
         }
         
         function showToast(message) {
@@ -944,15 +1821,89 @@
         
         window.addEventListener('scroll', () => {
             const navbar = document.querySelector('.navbar');
-            if (window.scrollY > 50) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
-            }
+            if (window.scrollY !== undefined) navbar.classList.toggle('scrolled', window.scrollY > 50);
         });
     </script>
     
+    <script>
+    (function(){
+        const profileModal   = document.getElementById('profileModal');
+        const openProfileBtn = document.getElementById('openProfileModal');
+        const closeProfileBtn= document.getElementById('closeProfileModal');
+        const profileBlur    = document.getElementById('profileBlur');
+        
+        const editModal      = document.getElementById('editProfileModal');
+        const openEditBtn    = document.getElementById('openEditModal');
+        const closeEditBtn   = document.getElementById('closeEditModal2');
+        const cancelEditBtn  = document.getElementById('cancelEditModal');
+        const editBlur       = document.getElementById('editModalBlur');
+        
+        function openProfile() {
+            if (profileModal) { profileModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        }
+        function closeProfile() {
+            if (profileModal) { profileModal.classList.remove('active'); document.body.style.overflow = ''; }
+        }
+        function openEdit() {
+            closeProfile();
+            if (editModal) { editModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        }
+        function closeEdit() {
+            if (editModal) { editModal.classList.remove('active'); document.body.style.overflow = ''; }
+            openProfile();
+        }
+        function closeEditOnly() {
+            if (editModal) { editModal.classList.remove('active'); document.body.style.overflow = ''; }
+        }
+        
+        if (openProfileBtn)  openProfileBtn.addEventListener('click', openProfile);
+        if (closeProfileBtn) closeProfileBtn.addEventListener('click', closeProfile);
+        if (profileBlur)     profileBlur.addEventListener('click', closeProfile);
+        if (openEditBtn)     openEditBtn.addEventListener('click', openEdit);
+        if (closeEditBtn)    closeEditBtn.addEventListener('click', closeEdit);
+        if (cancelEditBtn)   cancelEditBtn.addEventListener('click', closeEdit);
+        if (editBlur)        editBlur.addEventListener('click', closeEditOnly);
+        
+        document.addEventListener('keydown', function(e){
+            if (e.key === 'Escape') { closeProfile(); closeEditOnly(); }
+        });
+        
+        const profileEditForm = document.getElementById('profileEditForm');
+        if (profileEditForm) {
+            profileEditForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const btn = profileEditForm.querySelector('.edit-btn-save');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enregistrement...';
+                btn.disabled = true;
+                profileEditForm.submit();
+            });
+        }
+        
+        const photoInput = document.getElementById('photoInput');
+        if (photoInput) {
+            photoInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const av = document.getElementById('editAvatarPreview');
+                    if (av) av.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        if (new URLSearchParams(window.location.search).get('openProfile') === '1') {
+            openProfile();
+            history.replaceState({}, '', window.location.pathname);
+        }
+        
+        if (editModal && editModal.classList.contains('active')) {
+            document.body.style.overflow = 'hidden';
+        }
+    })();
+    </script>
+    
     {% block javascripts %}{% endblock %}
-    {% block importmap %}{{ importmap('app') }}{% endblock %}
 </body>
 </html>
