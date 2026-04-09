@@ -1,0 +1,278 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ hotel.nom }} - TunisiaJourney{% endblock %}
+
+{% block stylesheets %}
+<style>
+    :root {
+        --tunisia-red: #E31B23;
+        --tunisia-orange: #FF6B35;
+        --dark-gray: #2C3E50;
+    }
+    
+    .back-arrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--tunisia-red);
+        text-decoration: none;
+        font-weight: 500;
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+    }
+    
+    .back-arrow:hover {
+        transform: translateX(-5px);
+        color: var(--tunisia-orange);
+    }
+    
+    .hotel-container {
+        display: flex;
+        gap: 2rem;
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        border: 1px solid #F0E8DD;
+    }
+    
+    .hotel-image {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .hotel-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+    
+    .hotel-info {
+        flex: 1;
+        padding: 2rem;
+    }
+    
+    .hotel-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--tunisia-red);
+        margin-bottom: 0.5rem;
+    }
+    
+    .hotel-location {
+        color: var(--tunisia-orange);
+        font-size: 1rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .hotel-stars {
+        margin: 0.5rem 0;
+    }
+    
+    .hotel-stars i {
+        color: #FFD700;
+        font-size: 1rem;
+        margin-right: 2px;
+    }
+    
+    .hotel-stars i.far {
+        color: #ddd;
+    }
+    
+    .hotel-price {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--tunisia-red);
+        margin: 1rem 0;
+    }
+    
+    .hotel-price small {
+        font-size: 0.9rem;
+        font-weight: 400;
+        color: #6c757d;
+    }
+    
+    .hotel-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin: 1.5rem 0;
+        padding: 1rem 0;
+        border-top: 1px solid #F0E8DD;
+        border-bottom: 1px solid #F0E8DD;
+    }
+    
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .meta-item i {
+        color: var(--tunisia-red);
+        width: 20px;
+    }
+    
+    .promotion-badge {
+        background: linear-gradient(135deg, #E31B23, #FF6B35);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-block;
+        margin-left: 10px;
+    }
+    
+    .hotel-description {
+        color: #4A3B2F;
+        line-height: 1.8;
+        margin: 1.5rem 0;
+    }
+    
+    /* BOUTON PRINCIPAL POUR VOIR LES CHAMBRES */
+    .btn-chambres-principal {
+        display: inline-block;
+        background: linear-gradient(135deg, var(--tunisia-red), var(--tunisia-orange));
+        color: white;
+        padding: 15px 50px;
+        border-radius: 50px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-size: 1.2rem;
+        margin: 2rem 0;
+        text-align: center;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 5px 15px rgba(227,27,35,0.3);
+    }
+    
+    .btn-chambres-principal:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(227,27,35,0.4);
+        color: white;
+    }
+    
+    .btn-chambres-principal i {
+        margin-right: 10px;
+    }
+    
+    .chambres-section {
+        text-align: center;
+        margin-top: 2rem;
+    }
+    
+    @media (max-width: 768px) {
+        .hotel-container {
+            flex-direction: column;
+        }
+        
+        .hotel-image {
+            height: 300px;
+        }
+        
+        .hotel-info {
+            padding: 1.5rem;
+        }
+        
+        .hotel-title {
+            font-size: 1.5rem;
+        }
+        
+        .hotel-price {
+            font-size: 1.3rem;
+        }
+        
+        .hotel-meta {
+            gap: 1rem;
+        }
+        
+        .btn-chambres-principal {
+            padding: 12px 30px;
+            font-size: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <!-- Flèche de retour -->
+    <a href="{{ path('app_hotel_index') }}" class="back-arrow">
+        <i class="fas fa-arrow-left"></i> Retour aux hôtels
+    </a>
+    
+    <div class="hotel-container">
+        <!-- Image à gauche -->
+        <div class="hotel-image">
+            {% if hotel.image %}
+                <img src="{{ asset('uploads/hotels/' ~ hotel.image) }}" alt="{{ hotel.nom }}">
+            {% else %}
+                <img src="https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg?auto=compress&cs=tinysrgb&w=800" alt="{{ hotel.nom }}">
+            {% endif %}
+        </div>
+        
+        <!-- Détails à droite -->
+        <div class="hotel-info">
+            <h1 class="hotel-title">{{ hotel.nom }}
+                {% if hotel.promotion > 0 %}
+                    <span class="promotion-badge">-{{ hotel.promotion }}%</span>
+                {% endif %}
+            </h1>
+            
+            <div class="hotel-location">
+                <i class="fas fa-map-marker-alt"></i> {{ hotel.ville }}, {{ hotel.adresse }}
+            </div>
+            
+            <div class="hotel-stars">
+                {% for i in 1..hotel.etoiles %}
+                    <i class="fas fa-star"></i>
+                {% endfor %}
+                {% for i in hotel.etoiles+1..5 %}
+                    <i class="far fa-star"></i>
+                {% endfor %}
+            </div>
+            
+            <div class="hotel-price">
+                À partir de <span style="font-size: 2rem;">{{ hotel.prix_nuit|default(80)|number_format(0, ',', ' ') }}</span> <small>€ / nuit</small>
+                {% if hotel.promotion > 0 %}
+                    <br><small class="text-muted"><s>Prix normal: {{ (hotel.prix_nuit|default(80) * (1 + hotel.promotion/100))|round|number_format(0, ',', ' ') }} €</s></small>
+                {% endif %}
+            </div>
+            
+            <div class="hotel-meta">
+                <div class="meta-item">
+                    <i class="fas fa-bed"></i>
+                    <span>{{ chambres|length }} chambres disponibles</span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-star"></i>
+                    <span>{{ hotel.etoiles }} étoiles</span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>{{ hotel.ville }}</span>
+                </div>
+            </div>
+            
+            <div class="hotel-description">
+                {{ hotel.description }}
+            </div>
+            
+            <!-- SEULEMENT LE BOUTON POUR VOIR LES CHAMBRES - PAS DE LISTE -->
+            <div class="chambres-section">
+                <a href="{{ path('app_hotel_chambres', {'idH': hotel.idH}) }}" class="btn-chambres-principal">
+                    <i class="fas fa-bed"></i> Voir toutes les chambres
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

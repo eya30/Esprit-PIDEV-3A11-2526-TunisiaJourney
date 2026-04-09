@@ -1,416 +1,429 @@
-{% extends 'admin/dashboard/base_admin.html.twig' %}
+{% extends 'admin/base_admin.html.twig' %}
 
-{% block title %}Tableau de bord Forum{% endblock %}
-{% block page_title %}Tableau de bord Forum{% endblock %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    :root {
+        --bordeaux: #93032E; --bordeaux2: #6B0220; --bordeaux-l: #B5294E;
+        --blue: #1A6B9A; --blue-l: #2E8FC4;
+        --terra: #C4531A; --terra-l: #E07840;
+        --gold: #C9943A; --gold-l: #E8BC6E;
+        --teal: #2A8B7A;
+        --beige: #F4EDE4; --beige2: #E8DDD0; --cream: #FCF9F5;
+        --text-dark: #2A241E; --text-mid: #6B5C52; --text-light: #9B8B7D;
+        --white: #FFFFFF; --border: #E8E0D6;
+        --shadow: 0 2px 12px rgba(0,0,0,0.05);
+        --shadow-lg: 0 8px 30px rgba(0,0,0,0.09);
+    }
+    .dashboard-container { padding: 28px 28px 28px 20px; max-width: 100%; }
+    .dash-header { margin-bottom: 30px; }
+    .dash-header h1 { font-size: 24px; font-weight: 700; color: var(--text-dark); margin: 0; }
+    .dash-header p { color: var(--text-light); margin-top: 5px; font-size: 13px; }
+    .section-label {
+        font-size: 10px; font-weight: 800; color: var(--text-light);
+        text-transform: uppercase; letter-spacing: 1.4px;
+        margin: 28px 0 14px; display: flex; align-items: center; gap: 10px;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* KPI */
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .kpi-card {
+        background: var(--white); border-radius: 16px; padding: 18px 20px;
+        box-shadow: var(--shadow); border: 1px solid var(--border);
+        display: flex; align-items: center; gap: 14px;
+        transition: all .22s ease; position: relative; overflow: hidden;
+    }
+    .kpi-card::after {
+        content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+        background: linear-gradient(90deg, var(--bordeaux), var(--terra));
+        transform: scaleX(0); transform-origin: left; transition: transform .25s ease;
+    }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+    .kpi-card:hover::after { transform: scaleX(1); }
+    .kpi-icon { width: 46px; height: 46px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; background: var(--beige); color: var(--bordeaux); }
+    .kpi-icon.ic-blue  { background: #E8F4FB; color: var(--blue); }
+    .kpi-icon.ic-terra { background: #FBF0EA; color: var(--terra); }
+    .kpi-icon.ic-gold  { background: #FBF5E8; color: var(--gold); }
+    .kpi-icon.ic-bord  { background: var(--bordeaux); color: white; }
+    .kpi-icon.ic-teal  { background: #E8F5F2; color: var(--teal); }
+    .kpi-icon.ic-green { background: #E8F5E9; color: #2E7D32; }
+    .kpi-value { font-size: 24px; font-weight: 800; color: var(--text-dark); line-height: 1.15; }
+    .kpi-value small { font-size: 11px; font-weight: 700; color: var(--bordeaux); margin-left: 3px; }
+    .kpi-label { font-size: 11px; color: var(--text-light); margin-top: 4px; font-weight: 600; }
+
+    /* Charts */
+    .charts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    .chart-card {
+        background: var(--white); border-radius: 18px; padding: 20px 22px 22px;
+        box-shadow: var(--shadow); border: 1px solid var(--border); transition: box-shadow .22s;
+    }
+    .chart-card:hover { box-shadow: var(--shadow-lg); }
+    .chart-card.full-width { grid-column: 1 / -1; }
+    .chart-head {
+        display: flex; align-items: center; gap: 11px;
+        margin-bottom: 18px; padding-bottom: 14px;
+        border-bottom: 1.5px solid var(--beige2);
+    }
+    .chart-head-icon { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; background: var(--beige); color: var(--bordeaux); }
+    .chart-head-icon.ic-teal  { background: #E8F5F2; color: var(--teal); }
+    .chart-head-icon.ic-gold  { background: #FBF5E8; color: var(--gold); }
+    .chart-head h4 { font-size: 13px; font-weight: 700; color: var(--text-dark); margin: 0; }
+    .chart-head span { font-size: 10px; color: var(--text-light); margin-left: auto; font-weight: 600; background: var(--beige); padding: 3px 9px; border-radius: 20px; }
+
+    .chart-container { height: 265px; position: relative; }
+
+    @media (max-width: 1100px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } .charts-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 600px)  { .kpi-grid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
 
 {% block body %}
-<!-- Statistiques -->
-<div class="row g-4 mb-5">
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="stat-number">{{ totalForums|default(0) }}</div>
-                    <div class="stat-label">Forums</div>
-                </div>
-                <div class="stat-icon">
-                    <i class="fas fa-chat-square-dots"></i>
-                </div>
+<div class="dashboard-container">
+
+    <div class="dash-header">
+        <h1>Dashboard</h1>
+        <p>Aperçu global de votre activité — TunisiaJourney</p>
+    </div>
+
+    {# ══ STATISTIQUES DU FORUM ══ #}
+    <div class="section-label">Statistiques du Forum</div>
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-icon ic-gold"><i class="fas fa-chat-square-dots"></i></div>
+            <div class="kpi-info">
+                <div class="kpi-value">{{ totalForums|default(0) }}</div>
+                <div class="kpi-label">Forums</div>
             </div>
-            <div class="stat-trend">
-                {% set evolForums = evolutionForums|default({'trend': 'up', 'percentage': 12}) %}
-                <span class="trend-{{ evolForums.trend }}">
-                    <i class="fas fa-arrow-{{ evolForums.trend == 'up' ? 'up' : 'down' }}"></i>
-                    +{{ evolForums.percentage }}%
-                </span>
-                <span class="trend-text">depuis le mois dernier</span>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon ic-blue"><i class="fas fa-file-alt"></i></div>
+            <div class="kpi-info">
+                <div class="kpi-value">{{ totalPublications|default(0) }}</div>
+                <div class="kpi-label">Publications</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon ic-terra"><i class="fas fa-comments"></i></div>
+            <div class="kpi-info">
+                <div class="kpi-value">{{ totalCommentaires|default(0) }}</div>
+                <div class="kpi-label">Commentaires</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon ic-teal"><i class="fas fa-chart-line"></i></div>
+            <div class="kpi-info">
+                <div class="kpi-value">{{ avgParForum|default(0) }}</div>
+                <div class="kpi-label">Moyenne/forum</div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="stat-number">{{ totalPublications|default(0) }}</div>
-                    <div class="stat-label">Publications</div>
-                </div>
-                <div class="stat-icon">
-                    <i class="fas fa-file-alt"></i>
-                </div>
+
+    {# ══ KPI VOYAGES ══ #}
+    <div class="section-label">Indicateurs voyages</div>
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-icon ic-blue"><i class="fas fa-users"></i></div>
+            <div class="kpi-info">
+                <div class="kpi-value">{{ stats.users|default(0) }}</div>
+                <div class="kpi-label">Utilisateurs inscrits</div>
             </div>
-            <div class="stat-trend">
-                {% set evolPubs = evolutionPublications|default({'trend': 'up', 'percentage': 8}) %}
-                <span class="trend-{{ evolPubs.trend }}">
-                    <i class="fas fa-arrow-{{ evolPubs.trend == 'up' ? 'up' : 'down' }}"></i>
-                    +{{ evolPubs.percentage }}%
-                </span>
-                <span class="trend-text">ce mois</span>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon ic-terra"><i class="fas fa-calendar-alt"></i></div>
+            <div class="kpi-info">
+                <div class="kpi-value">{{ stats.evenements|default(0) }}</div>
+                <div class="kpi-label">Événements organisés</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon ic-gold"><i class="fas fa-ticket-alt"></i></div>
+            <div class="kpi-info">
+                <div class="kpi-value">{{ stats.reservations|default(0) }}</div>
+                <div class="kpi-label">Réservations voyages</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon ic-bord"><i class="fas fa-coins"></i></div>
+            <div class="kpi-info">
+                <div class="kpi-value">{{ stats.revenue|default(0) }}<small>DT</small></div>
+                <div class="kpi-label">CA voyages</div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="stat-number">{{ totalCommentaires|default(0) }}</div>
-                    <div class="stat-label">Commentaires</div>
-                </div>
-                <div class="stat-icon">
-                    <i class="fas fa-comments"></i>
-                </div>
+
+    {# ══ KPI PRODUITS ══ #}
+    <div class="section-label">Boutique & Commandes</div>
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-icon ic-teal"><i class="fas fa-box"></i></div>
+            <div class="kpi-info">
+                <div class="kpi-value">{{ stats.produits|default(0) }}</div>
+                <div class="kpi-label">Produits en catalogue</div>
             </div>
-            <div class="stat-trend">
-                {% set evolComs = evolutionCommentaires|default({'trend': 'up', 'percentage': 15}) %}
-                <span class="trend-{{ evolComs.trend }}">
-                    <i class="fas fa-arrow-{{ evolComs.trend == 'up' ? 'up' : 'down' }}"></i>
-                    +{{ evolComs.percentage }}%
-                </span>
-                <span class="trend-text">interactions</span>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon ic-blue"><i class="fas fa-shopping-bag"></i></div>
+            <div class="kpi-info">
+                <div class="kpi-value">{{ stats.commandes|default(0) }}</div>
+                <div class="kpi-label">Commandes reçues</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon ic-green"><i class="fas fa-cash-register"></i></div>
+            <div class="kpi-info">
+                <div class="kpi-value">{{ stats.revenue_produits|default(0) }}<small>DT</small></div>
+                <div class="kpi-label">CA boutique</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon ic-gold"><i class="fas fa-star"></i></div>
+            <div class="kpi-info">
+               <div class="kpi-value">
+                    {{ top_produits|first ? top_produits|first.label|slice(0,12) : '—' }}
+                </div>
+                <div class="kpi-label">Produit #1 vendu</div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="stat-number">{{ avgParForum|default(0) }}</div>
-                    <div class="stat-label">Moyenne/forum</div>
-                </div>
-                <div class="stat-icon">
-                    <i class="fas fa-chart-line"></i>
-                </div>
+
+    {# ══ ANALYSES DÉTAILLÉES (TOUS LES GRAPHIQUES) ══ #}
+    <div class="section-label">Analyses détaillées</div>
+    <div class="charts-grid">
+        
+        {# Graphique 1 : Évolution publications vs commentaires #}
+        <div class="chart-card">
+            <div class="chart-head">
+                <div class="chart-head-icon ic-teal"><i class="fas fa-chart-line"></i></div>
+                <h4>Évolution publications / commentaires</h4>
+                <span>7 derniers jours</span>
             </div>
-            <div class="stat-trend">
-                <span class="trend-text">publications par forum</span>
+            <div class="chart-container"><canvas id="evolutionChart"></canvas></div>
+        </div>
+
+        {# Graphique 2 : CA par programme #}
+        <div class="chart-card">
+            <div class="chart-head">
+                <div class="chart-head-icon"><i class="fas fa-chart-bar"></i></div>
+                <h4>CA par programme</h4>
+                <span>en DT</span>
             </div>
+            <div class="chart-container"><canvas id="chartCaProgramme"></canvas></div>
+        </div>
+
+        {# Graphique 3 : Inscriptions mensuelles #}
+        <div class="chart-card">
+            <div class="chart-head">
+                <div class="chart-head-icon"><i class="fas fa-chart-line"></i></div>
+                <h4>Inscriptions mensuelles</h4>
+                <span>utilisateurs</span>
+            </div>
+            <div class="chart-container"><canvas id="chartInscriptions"></canvas></div>
+        </div>
+
+        {# Graphique 4 : Top événements #}
+        <div class="chart-card">
+            <div class="chart-head">
+                <div class="chart-head-icon ic-gold"><i class="fas fa-trophy"></i></div>
+                <h4>Top événements</h4>
+                <span>par réservations</span>
+            </div>
+            <div class="chart-container"><canvas id="chartTopEvenements"></canvas></div>
+        </div>
+
+        {# Graphique 5 : Commandes boutique / mois #}
+        <div class="chart-card">
+            <div class="chart-head">
+                <div class="chart-head-icon ic-teal"><i class="fas fa-chart-area"></i></div>
+                <h4>Commandes boutique / mois</h4>
+                <span>commandes</span>
+            </div>
+            <div class="chart-container"><canvas id="chartCommandesMois"></canvas></div>
+        </div>
+
+        {# Graphique 6 : Top Hôtels #}
+        <div class="chart-card">
+            <div class="chart-head">
+                <div class="chart-head-icon ic-blue"><i class="fas fa-hotel"></i></div>
+                <h4>Top Hôtels</h4>
+                <span>par réservations</span>
+            </div>
+            <div class="chart-container"><canvas id="chartTopHotels"></canvas></div>
+        </div>
+
+        {# Graphique 7 : Volume de ventes par produit #}
+        <div class="chart-card">
+            <div class="chart-head">
+                <div class="chart-head-icon ic-terra"><i class="fas fa-boxes"></i></div>
+                <h4>Volume de ventes par produit</h4>
+                <span>unités commandées</span>
+            </div>
+            <div class="chart-container"><canvas id="chartTopProduits"></canvas></div>
         </div>
     </div>
 </div>
-
-<!-- Forum le plus actif -->
-{% if forumPlusActif %}
-<div class="row g-4 mb-5">
-    <div class="col-12">
-        <div class="card-dashboard">
-            <div class="card-header-dashboard">
-                <h5 class="mb-0"><i class="fas fa-trophy me-2"></i> Forum le plus actif</h5>
-            </div>
-            <div class="card-body-dashboard text-center">
-                <i class="fas fa-star" style="color: #f39c12; font-size: 48px;"></i>
-                <h3 style="color: #E31B23; margin: 15px 0;">{{ forumPlusActif.nom }}</h3>
-                <div class="row justify-content-center mt-3">
-                    <div class="col-6">
-                        <div style="font-size: 32px; font-weight: bold; color: #2C3E50;">{{ forumPlusActif.publications }}</div>
-                        <div style="color: #6c757d;">Publications</div>
-                    </div>
-                    <div class="col-6">
-                        <div style="font-size: 32px; font-weight: bold; color: #2C3E50;">{{ forumPlusActif.commentaires }}</div>
-                        <div style="color: #6c757d;">Commentaires</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
-
-<!-- Graphique et Top Forums -->
-<div class="row g-4 mb-5">
-    <div class="col-md-8">
-        <div class="card-dashboard">
-            <div class="card-header-dashboard">
-                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i> Évolution des publications</h5>
-                <select class="chart-select" id="chartPeriod" style="padding: 6px 12px; border: 1px solid #E8DFD1; border-radius: 10px; background: white;">
-                    <option value="week">Cette semaine</option>
-                    <option value="month">Ce mois</option>
-                    <option value="year">Cette année</option>
-                </select>
-            </div>
-            <div class="card-body-dashboard">
-                <canvas id="evolutionChart" height="250"></canvas>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card-dashboard">
-            <div class="card-header-dashboard">
-                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i> Top Forums</h5>
-            </div>
-            <div class="card-body-dashboard">
-                <div class="destination-list">
-                    {# ✅ CORRECTION : on utilise topForumsPublications (tableau trié avec 'nom' et 'count')  #}
-                    {# ✅ CORRECTION : maxPubs calculé UNE SEULE FOIS avant la boucle, guard > 0 anti division par zéro #}
-                    {% set maxPubs = topForumsPublications|length > 0 ? topForumsPublications[0].count : 0 %}
-
-                    {% for forum in topForumsPublications|default([]) %}
-                        <div class="destination-item">
-                            <div class="destination-info">
-                                <i class="fas fa-chat-square-dots"></i>
-                                <span>{{ forum.nom }}</span>
-                            </div>
-                            <div class="destination-percent">{{ forum.count }}</div>
-                        </div>
-                        <div class="progress-bar">
-                            {# ✅ CORRECTION : si maxPubs = 0, percent = 0 (pas de division par zéro) #}
-                            {% set percent = maxPubs > 0 ? (forum.count / maxPubs * 100)|round : 0 %}
-                            <div class="progress-fill" style="width: {{ percent }}%"></div>
-                        </div>
-                    {% else %}
-                        <div class="destination-item">
-                            <div class="destination-info">
-                                <i class="fas fa-chat-square-dots"></i>
-                                <span>Aucun forum</span>
-                            </div>
-                            <div class="destination-percent">0</div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Dernières publications et commentaires -->
-<div class="row g-4">
-    <div class="col-md-7">
-        <div class="card-dashboard">
-            <div class="card-header-dashboard">
-                <h5 class="mb-0"><i class="fas fa-clock me-2"></i> Dernières publications</h5>
-                <a href="{{ path('app_publication_index') }}" class="btn-link">Voir tous <i class="fas fa-arrow-right ms-1"></i></a>
-            </div>
-            <div class="table-responsive">
-                <table class="table admin-table mb-0" style="border: none;">
-                    <thead>
-                        <tr>
-                            <th>Titre</th>
-                            <th>Forum</th>
-                            <th>Commentaires</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for pub in dernieres_publications|default([]) %}
-                        <tr>
-                            <td><strong>{{ pub.nom|slice(0, 40) }}{% if pub.nom|length > 40 %}...{% endif %}</strong></td>
-                            <td>{{ pub.forum.nom }}</td>
-                            <td>{{ pub.commentaires|length }}</td>
-                            <td>{{ pub.dateCreation|date('d/m/Y') }}</td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="4" class="text-center py-4 text-muted">Aucune publication</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-5">
-        <div class="card-dashboard">
-            <div class="card-header-dashboard">
-                <h5 class="mb-0"><i class="fas fa-comments me-2"></i> Derniers commentaires</h5>
-                <a href="{{ path('app_commentaire_index') }}" class="btn-link">Voir tous <i class="fas fa-arrow-right ms-1"></i></a>
-            </div>
-            <div class="table-responsive">
-                <table class="table admin-table mb-0" style="border: none;">
-                    <thead>
-                        <tr>
-                            <th>Commentaire</th>
-                            <th>Publication</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for com in derniers_commentaires|default([]) %}
-                        <tr>
-                            <td>{{ com.description|slice(0, 35) }}{% if com.description|length > 35 %}...{% endif %}</td>
-                            <td>{{ com.publication.nom|slice(0, 20) }}</td>
-                            <td>{{ com.dateCreation|date('d/m/Y') }}</td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="3" class="text-center py-4 text-muted">Aucun commentaire</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-
-<style>
-.stat-card {
-    background: white;
-    border-radius: 24px;
-    padding: 1.5rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-    transition: all 0.3s ease;
-}
-.stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 40px rgba(227,27,35,0.1);
-}
-.stat-number {
-    font-size: 2.5rem;
-    font-weight: 800;
-    color: #E31B23;
-    line-height: 1;
-}
-.stat-label {
-    font-size: 0.85rem;
-    color: #6c757d;
-    margin-top: 0.5rem;
-}
-.stat-icon {
-    width: 48px;
-    height: 48px;
-    background: linear-gradient(135deg, #E31B23, #F5CAC3);
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.3rem;
-}
-.stat-trend {
-    margin-top: 1rem;
-    font-size: 0.75rem;
-}
-.trend-up   { color: #27ae60; font-weight: 600; }
-.trend-down { color: #c0392b; font-weight: 600; }
-.trend-text { color: #aaa; }
-.card-dashboard {
-    background: white;
-    border-radius: 24px;
-    overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-}
-.card-header-dashboard {
-    padding: 1.2rem 1.5rem;
-    border-bottom: 1px solid #f0ece3;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.card-body-dashboard { padding: 1.5rem; }
-.destination-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-.destination-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.9rem;
-}
-.destination-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.destination-info i { color: #E31B23; width: 20px; }
-.destination-percent { font-weight: 700; color: #2C3E50; }
-.progress-bar {
-    height: 6px;
-    background: #f0ece3;
-    border-radius: 3px;
-    overflow: hidden;
-    margin-top: -0.5rem;
-    margin-bottom: 0.8rem;
-}
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #E31B23, #F5CAC3);
-    border-radius: 3px;
-}
-.admin-table { width: 100%; }
-.admin-table th {
-    padding: 12px 15px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #9aa0ac;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    background: #f8f9fb;
-}
-.admin-table td {
-    padding: 12px 15px;
-    font-size: 0.85rem;
-    color: #555;
-    border-bottom: 1px solid #f0ece3;
-}
-.btn-link { color: #E31B23; text-decoration: none; font-size: 0.8rem; }
-</style>
 {% endblock %}
 
 {% block javascripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-    const evolutionData = {
-        week:  {{ evolution_week|default([4, 6, 8, 5, 7, 9, 12])|json_encode|raw }},
-        month: {{ evolution_month|default([15, 18, 22, 25, 28, 30, 35, 38, 42, 45, 48, 52, 55, 58, 62, 65, 68, 72, 75, 78, 82, 85, 88, 92, 95, 98, 102, 105, 108, 112])|json_encode|raw }},
-        year:  {{ evolution_year|default([45, 52, 68, 85, 102, 125, 148, 172, 195, 218, 245, 278])|json_encode|raw }}
-    };
+const C = {
+    bordeaux: '#93032E', blue: '#1A6B9A', terra: '#C4531A',
+    gold: '#C9943A', teal: '#2A8B7A', white: '#FFFFFF',
+    grid: '#F0E8DC', tick: '#7A6A5A',
+};
+const PALETTE = ['#8B2635','#9B6A4A','#6B8F7A','#C4A27A','#4A6B7F','#7A4A3A','#5A7A6A'];
+const tickFont = { size: 11, family: "'Segoe UI', sans-serif" };
 
-    const labels = {
-        week:  ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
-        month: Array.from({length: 30}, (_, i) => i + 1),
-        year:  ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']
-    };
+// ── GRAPHIQUE 1 : ÉVOLUTION PUBLICATIONS vs COMMENTAIRES ──
+const evolutionPublications = {{ evolution_week|default([4, 6, 8, 5, 7, 9, 12])|json_encode|raw }};
+const evolutionCommentaires = {{ evolution_week_comments|default([2, 3, 5, 4, 6, 8, 10])|json_encode|raw }};
 
-    let chart;
-
-    function initChart() {
-        const ctx = document.getElementById('evolutionChart').getContext('2d');
-        chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels.week,
-                datasets: [{
-                    label: 'Publications',
-                    data: evolutionData.week,
-                    borderColor: '#E31B23',
-                    backgroundColor: 'rgba(227,27,35,0.05)',
-                    tension: 0.4,
-                    fill: true,
-                    pointBackgroundColor: '#E31B23',
-                    pointBorderColor: '#fff',
-                    pointRadius: 4,
-                    pointHoverRadius: 6
-                }]
+new Chart(document.getElementById('evolutionChart'), {
+    type: 'line',
+    data: {
+        labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+        datasets: [
+            {
+                label: 'Publications',
+                data: evolutionPublications,
+                borderColor: '#93032E',
+                backgroundColor: 'rgba(147,3,46,0.05)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#93032E',
+                pointBorderColor: '#fff',
+                pointRadius: 3,
+                pointHoverRadius: 5
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: '#F0E8DD' },
-                        title: { display: true, text: 'Nombre de publications' }
-                    },
-                    x: { grid: { display: false } }
-                }
+            {
+                label: 'Commentaires',
+                data: evolutionCommentaires,
+                borderColor: '#C9943A',
+                backgroundColor: 'rgba(201,148,58,0.05)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#C9943A',
+                pointBorderColor: '#fff',
+                pointRadius: 3,
+                pointHoverRadius: 5
             }
-        });
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { 
+            legend: { 
+                position: 'top',
+                labels: { usePointStyle: true, boxWidth: 8, font: { size: 10, family: "'Inter', sans-serif" } }
+            },
+            tooltip: { bodyFont: { size: 11 } }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: { color: '#F0E8DD' },
+                ticks: { color: '#7A6A5A', font: { size: 10 } }
+            },
+            x: { 
+                grid: { display: false },
+                ticks: { color: '#7A6A5A', font: { size: 10 } }
+            }
+        }
     }
+});
 
-    function updateChart(period) {
-        chart.data.labels = labels[period];
-        chart.data.datasets[0].data = evolutionData[period];
-        chart.update();
+// ── GRAPHIQUE 2 : CA par programme ──
+new Chart(document.getElementById('chartCaProgramme'), {
+    type: 'bar',
+    data: {
+        labels: [{% for d in ca_par_programme|default([]) %}'{{ d.label|slice(0,15)|e('js') }}'{% if not loop.last %},{% endif %}{% endfor %}],
+        datasets: [{ data: [{% for d in ca_par_programme|default([]) %}{{ d.total }}{% if not loop.last %},{% endif %}{% endfor %}], backgroundColor: PALETTE, borderRadius: 8, barPercentage: 0.62 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { bodyFont: { size: 11 } } }, scales: { y: { beginAtZero: true, grid: { color: C.grid }, ticks: { color: C.tick, font: { size: 10 } } }, x: { grid: { display: false }, ticks: { color: C.tick, font: { size: 10 }, maxRotation: 25 } } } }
+});
+
+// ── GRAPHIQUE 3 : Inscriptions ──
+new Chart(document.getElementById('chartInscriptions'), {
+    type: 'line',
+    data: {
+        labels: [{% for m in inscriptions_par_mois|default([]) %}'{{ m.mois|e('js') }}'{% if not loop.last %},{% endif %}{% endfor %}],
+        datasets: [{ data: [{% for m in inscriptions_par_mois|default([]) %}{{ m.count }}{% if not loop.last %},{% endif %}{% endfor %}], borderColor: PALETTE[0], backgroundColor: 'rgba(139,38,53,0.08)', borderWidth: 2, pointBackgroundColor: C.white, pointBorderColor: PALETTE[0], pointBorderWidth: 2, pointRadius: 3, tension: 0.42, fill: true }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { bodyFont: { size: 11 } } }, scales: { y: { beginAtZero: true, grid: { color: C.grid }, ticks: { color: C.tick, font: { size: 10 }, stepSize: 1 } }, x: { grid: { display: false }, ticks: { color: C.tick, font: { size: 10 } } } } }
+});
+
+// ── GRAPHIQUE 4 : Top événements pie ──
+new Chart(document.getElementById('chartTopEvenements'), {
+    type: 'pie',
+    data: {
+        labels: [{% for e in top_evenements|default([]) %}'{{ e.label|slice(0,18)|e('js') }}'{% if not loop.last %},{% endif %}{% endfor %}],
+        datasets: [{ data: [{% for e in top_evenements|default([]) %}{{ e.count }}{% if not loop.last %},{% endif %}{% endfor %}], backgroundColor: PALETTE, borderColor: C.white, borderWidth: 2 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 10, font: { size: 10 }, color: C.tick } }, tooltip: { bodyFont: { size: 11 } } } }
+});
+
+// ── GRAPHIQUE 5 : Commandes par mois ──
+new Chart(document.getElementById('chartCommandesMois'), {
+    type: 'line',
+    data: {
+        labels: [{% for m in commandes_par_mois|default([]) %}'{{ m.mois|e('js') }}'{% if not loop.last %},{% endif %}{% endfor %}],
+        datasets: [{ data: [{% for m in commandes_par_mois|default([]) %}{{ m.count }}{% if not loop.last %},{% endif %}{% endfor %}], borderColor: '#2A8B7A', backgroundColor: 'rgba(42,139,122,0.08)', borderWidth: 2, pointBackgroundColor: C.white, pointBorderColor: '#2A8B7A', pointBorderWidth: 2, pointRadius: 3, tension: 0.42, fill: true }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { bodyFont: { size: 11 } } }, scales: { y: { beginAtZero: true, grid: { color: C.grid }, ticks: { color: C.tick, font: { size: 10 }, stepSize: 1 } }, x: { grid: { display: false }, ticks: { color: C.tick, font: { size: 10 } } } } }
+});
+
+// ── GRAPHIQUE 6 : Top hôtels ──
+new Chart(document.getElementById('chartTopHotels'), {
+    type: 'bar',
+    data: {
+        labels: [{% for h in top_hotels|default([]) %}'{{ h.label|slice(0,15)|e('js') }}'{% if not loop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            label: 'Réservations',
+            data: [{% for h in top_hotels|default([]) %}{{ h.total_reservations }}{% if not loop.last %},{% endif %}{% endfor %}],
+            backgroundColor: PALETTE,
+            borderRadius: 8,
+            barPercentage: 0.62
+        }]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { bodyFont: { size: 11 } } },
+        scales: {
+            y: { beginAtZero: true, grid: { color: C.grid }, ticks: { color: C.tick, font: { size: 10 }, stepSize: 1 } },
+            x: { grid: { display: false }, ticks: { color: C.tick, font: { size: 10 }, maxRotation: 25 } }
+        }
     }
+});
 
-    const periodSelect = document.getElementById('chartPeriod');
-    if (periodSelect) {
-        periodSelect.addEventListener('change', function(e) {
-            updateChart(e.target.value);
-        });
+// ── GRAPHIQUE 7 : Top produits barres horizontales ──
+new Chart(document.getElementById('chartTopProduits'), {
+    type: 'bar',
+    data: {
+        labels: [{% for p in top_produits|default([]) %}'{{ p.label|slice(0,15)|e('js') }}'{% if not loop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            label: 'Unités',
+            data: [{% for p in top_produits|default([]) %}{{ p.total_commande }}{% if not loop.last %},{% endif %}{% endfor %}],
+            backgroundColor: PALETTE,
+            borderRadius: 8,
+            barPercentage: 0.55
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { bodyFont: { size: 11 } } },
+        scales: {
+            x: { beginAtZero: true, grid: { color: C.grid }, ticks: { color: C.tick, font: { size: 10 } } },
+            y: { grid: { display: false }, ticks: { color: C.tick, font: { size: 10 } } }
+        }
     }
-
-    initChart();
+});
 </script>
 {% endblock %}

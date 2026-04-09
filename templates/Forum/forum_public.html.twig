@@ -10,21 +10,113 @@
     --bg-warm:#FEF9F0; --border:#E8DFD1; --dark:#2C3E50;
 }
 
-/* ── HERO ── */
-.hero{position:relative;min-height:500px;height:50vh;
-    background:linear-gradient(rgba(147,3,46,.25),rgba(245,202,195,.35)),
-               url('https://images.pexels.com/photos/27622071/pexels-photo-27622071.jpeg') center/cover fixed;
-    display:flex;align-items:center;justify-content:center;text-align:center;color:white;overflow:hidden;}
-.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at center,transparent,rgba(0,0,0,.32))}
-.hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:90px;background:linear-gradient(to top,var(--sand),transparent);pointer-events:none}
-.hero-content{position:relative;z-index:2;max-width:820px;padding:2rem;animation:fadeUp 1.2s cubic-bezier(.2,.9,.4,1.1)}
-@keyframes fadeUp{from{opacity:0;transform:translateY(50px)}to{opacity:1;transform:translateY(0)}}
-.hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,5vw,3.6rem);font-weight:700;color:#F5CAC3;letter-spacing:2px;text-shadow:3px 3px 12px rgba(0,0,0,.5);margin-bottom:1rem}
-.hero p{font-size:1.05rem;line-height:1.8;color:rgba(255,255,255,.92);margin-bottom:1.5rem}
-.hero-stats{display:flex;gap:1.2rem;justify-content:center;flex-wrap:wrap}
-.stat-item{background:rgba(255,255,255,.15);backdrop-filter:blur(10px);border-radius:20px;padding:.7rem 1.4rem;text-align:center;border:1px solid rgba(255,255,255,.2)}
-.stat-value{font-size:1.7rem;font-weight:800;color:var(--gold);line-height:1}
-.stat-label{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.8)}
+/* ══════════════════════════════════════
+   HERO — image en <img> absolu
+   CAUSE DU BUG : background-attachment:fixed
+   + backdrop-filter:blur() sur .stat-item
+   = conflit de contexte de composition
+   → le navigateur ignore le background-image.
+   SOLUTION : <img> positionné en absolu,
+   rendu toujours indépendamment du CSS.
+══════════════════════════════════════ */
+.hero {
+    position: relative;
+    min-height: 500px;
+    height: 50vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+    overflow: hidden;
+}
+
+/* Image de fond — élément HTML, jamais bloqué par le CSS */
+.hero-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    z-index: 0;
+}
+
+/* Dégradé coloré par-dessus l'image */
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(rgba(147,3,46,.25), rgba(245,202,195,.35));
+    z-index: 1;
+}
+
+/* Vignette sombre sur les bords */
+.hero-vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, transparent, rgba(0,0,0,.32));
+    z-index: 2;
+}
+
+/* Fondu bas vers la couleur sable */
+.hero-fade {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 90px;
+    background: linear-gradient(to top, var(--sand), transparent);
+    pointer-events: none;
+    z-index: 3;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 4;
+    max-width: 820px;
+    padding: 2rem;
+    animation: fadeUp 1.2s cubic-bezier(.2,.9,.4,1.1);
+}
+
+@keyframes fadeUp {
+    from { opacity:0; transform:translateY(50px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+
+.hero h1 {
+    font-family:'Cormorant Garamond',serif;
+    font-size:clamp(2rem,5vw,3.6rem);
+    font-weight:700;
+    color:#F5CAC3;
+    letter-spacing:2px;
+    text-shadow:3px 3px 12px rgba(0,0,0,.5);
+    margin-bottom:1rem;
+}
+
+.hero p {
+    font-size:1.05rem;
+    line-height:1.8;
+    color:rgba(255,255,255,.92);
+    margin-bottom:1.5rem;
+}
+
+.hero-stats {
+    display:flex;
+    gap:1.2rem;
+    justify-content:center;
+    flex-wrap:wrap;
+}
+
+.stat-item {
+    background:rgba(255,255,255,.15);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    border-radius:20px;
+    padding:.7rem 1.4rem;
+    text-align:center;
+    border:1px solid rgba(255,255,255,.2);
+}
+
+.stat-value { font-size:1.7rem; font-weight:800; color:var(--gold); line-height:1; }
+.stat-label { font-size:.72rem; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,.8); }
 
 /* ── NAVIGATION TABS ── */
 .nav-tabs-wrap{background:white;border-radius:20px;box-shadow:0 8px 28px rgba(0,0,0,.08);padding:8px;margin-bottom:2.5rem;display:inline-flex;gap:8px;width:100%;}
@@ -128,70 +220,18 @@
 .emoji-btn{background:white;border:1px solid var(--border);border-radius:40px;font-size:1rem;cursor:pointer;padding:5px 10px;transition:all .2s}
 .emoji-btn:hover{transform:scale(1.15)}
 
-/* ══ BLOC ERREUR SYMFONY ══
-   Affiché uniquement quand le serveur renvoie une erreur.
-   Aucun JS de validation ne le déclenche. */
-.symfony-error {
-    display: none;
-    background: #FEF2F2;
-    border: 1.5px solid #FECACA;
-    border-left: 4px solid #EF4444;
-    border-radius: 12px;
-    padding: 10px 14px;
-    margin-bottom: 12px;
-    font-size: .83rem;
-    font-weight: 600;
-    color: #B91C1C;
-    align-items: center;
-    gap: 8px;
-}
-.symfony-error.visible { display: flex; }
-.symfony-error-tags {
-    display: none;
-    background: #FEF2F2;
-    border: 1.5px solid #FECACA;
-    border-left: 4px solid #EF4444;
-    border-radius: 12px;
-    padding: 10px 14px;
-    margin-bottom: 12px;
-    font-size: .83rem;
-    font-weight: 600;
-    color: #B91C1C;
-    align-items: center;
-    gap: 8px;
-}
-.symfony-error-tags.visible { display: flex; }
+.symfony-error{display:none;background:#FEF2F2;border:1.5px solid #FECACA;border-left:4px solid #EF4444;border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:.83rem;font-weight:600;color:#B91C1C;align-items:center;gap:8px}
+.symfony-error.visible{display:flex}
+.symfony-error-tags{display:none;background:#FEF2F2;border:1.5px solid #FECACA;border-left:4px solid #EF4444;border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:.83rem;font-weight:600;color:#B91C1C;align-items:center;gap:8px}
+.symfony-error-tags.visible{display:flex}
 
-/* Textarea et input : bordure rouge uniquement sur retour serveur */
-.comment-textarea {
-    width: 100%;
-    border: 2px solid var(--border);
-    border-radius: 18px;
-    padding: 13px;
-    font-size: .88rem;
-    resize: vertical;
-    font-family: inherit;
-    transition: border-color .3s;
-    background: white;
-    box-sizing: border-box;
-    min-height: 90px;
-}
-.comment-textarea:focus { outline: none; border-color: var(--dr); box-shadow: 0 0 0 3px rgba(147,3,46,.1); }
-.comment-textarea.server-error { border-color: #EF4444; }
+.comment-textarea{width:100%;border:2px solid var(--border);border-radius:18px;padding:13px;font-size:.88rem;resize:vertical;font-family:inherit;transition:border-color .3s;background:white;box-sizing:border-box;min-height:90px}
+.comment-textarea:focus{outline:none;border-color:var(--dr);box-shadow:0 0 0 3px rgba(147,3,46,.1)}
+.comment-textarea.server-error{border-color:#EF4444}
 
-.comment-tags-input {
-    width: 100%;
-    border: 2px solid var(--border);
-    border-radius: 40px;
-    padding: 10px 15px;
-    font-size: .83rem;
-    margin-bottom: 8px;
-    transition: border-color .3s;
-    background: white;
-    box-sizing: border-box;
-}
-.comment-tags-input:focus { outline: none; border-color: var(--dr); }
-.comment-tags-input.server-error { border-color: #EF4444; }
+.comment-tags-input{width:100%;border:2px solid var(--border);border-radius:40px;padding:10px 15px;font-size:.83rem;margin-bottom:8px;transition:border-color .3s;background:white;box-sizing:border-box}
+.comment-tags-input:focus{outline:none;border-color:var(--dr)}
+.comment-tags-input.server-error{border-color:#EF4444}
 
 .tags-suggestions{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
 .tag-suggestion{background:var(--bg-warm);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:.73rem;color:var(--dr);cursor:pointer;transition:all .2s;font-weight:500}
@@ -200,7 +240,6 @@
 .modal-submit:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 7px 22px rgba(147,3,46,.4)}
 .modal-submit:disabled{opacity:.65;cursor:not-allowed}
 
-/* ── LISTE COMMENTAIRES ── */
 .comments-section{margin-top:1.3rem;padding-top:1.1rem;border-top:2px solid var(--border)}
 .comments-section-title{font-size:.83rem;font-weight:700;color:var(--dark);margin-bottom:.9rem;display:flex;align-items:center;gap:8px}
 .comments-list-modal{max-height:360px;overflow-y:auto;padding-right:3px}
@@ -253,8 +292,23 @@
     {% endif %}
 {% endfor %}
 
-{# ── HERO ── #}
+{# ══════════════════════════════════════════════════════
+   HERO — <img> absolu à la place du background CSS fixed
+   Ligne à modifier si vous voulez changer l'image : src="..."
+   sur le tag <img class="hero-bg">  (ligne ~220)
+══════════════════════════════════════════════════════ #}
 <section class="hero">
+    <img
+        class="hero-bg"
+        src="https://images.pexels.com/photos/27622071/pexels-photo-27622071.jpeg"
+        alt="Forum Voyageurs Tunisie"
+        loading="eager"
+        fetchpriority="high"
+    >
+    <div class="hero-overlay"></div>
+    <div class="hero-vignette"></div>
+    <div class="hero-fade"></div>
+
     <div class="hero-content">
         <h1>Forum des Voyageurs</h1>
         <p>Partagez vos expériences en Tunisie, posez vos questions et connectez-vous avec des passionnés.</p>
@@ -490,11 +544,6 @@
     </div>
 </section>
 
-{# ══════════════════════════════════════
-   MODALE COMMENTAIRE
-   Les erreurs viennent UNIQUEMENT du serveur Symfony (ValidatorInterface).
-   Aucun attribut HTML5 (required, maxlength, pattern) sur les champs.
-══════════════════════════════════════ #}
 <div class="comment-modal" id="commentModal">
     <div class="modal-content">
         <div class="modal-header">
@@ -506,49 +555,34 @@
             <p id="previewDesc">—</p>
         </div>
         <div class="modal-body">
-
             <div style="font-size:.88rem;font-weight:600;color:var(--dark);margin-bottom:.9rem;display:flex;align-items:center;gap:8px;">
                 <i class="fas fa-pen-fancy"></i> Votre avis compte !
             </div>
-
             <div class="emoji-strip">
                 {% for emoji in ['😊','😍','🔥','👍','❤️','😂','🌍','✈️','🏖️','🌴','🤩','💯','🙌','😎','🌟','⭐'] %}
                     <button type="button" class="emoji-btn" onclick="addEmoji('{{ emoji }}')">{{ emoji }}</button>
                 {% endfor %}
             </div>
-
-            {# ── Message d'erreur Symfony — description ──
-               Visible seulement si le serveur renvoie field='description' #}
             <div class="symfony-error" id="errorDescription">
                 <i class="fas fa-exclamation-circle"></i>
                 <span id="errorDescriptionText"></span>
             </div>
-
-            {# Pas d'attribut required, maxlength ni pattern #}
             <textarea class="comment-textarea" id="modalCommentText" rows="4"
                       placeholder="Partagez votre expérience... (3 à 500 caractères)"></textarea>
-
-            {# ── Message d'erreur Symfony — tags ──
-               Visible seulement si le serveur renvoie field='tags' #}
             <div class="symfony-error-tags" id="errorTags" style="margin-top:8px;">
                 <i class="fas fa-exclamation-circle"></i>
                 <span id="errorTagsText"></span>
             </div>
-
-            {# Pas d'attribut required ni pattern #}
             <input type="text" class="comment-tags-input" id="modalCommentTags"
                    placeholder="🏷️ Tags : voyage, plage, culture...">
-
             <div class="tags-suggestions">
                 {% for tag in ['voyage','hôtel','plage','culture','restaurant','désert','conseils','astuces'] %}
                     <span class="tag-suggestion" onclick="addTag('{{ tag }}')">#{{ tag }}</span>
                 {% endfor %}
             </div>
-
             <button class="modal-submit" id="modalSubmitBtn" onclick="submitComment()">
                 <i class="fas fa-paper-plane"></i> Publier mon commentaire
             </button>
-
             <div class="comments-section">
                 <div class="comments-section-title">
                     <i class="fas fa-history"></i> Commentaires
@@ -569,11 +603,6 @@
 var currentPubId = null;
 var commentLikes = {};
 
-/* ════════════════════════════════════════════════════════
-   Helpers d'affichage des erreurs Symfony
-   Ces fonctions sont appelées UNIQUEMENT après retour serveur.
-   Elles ne font aucune validation côté client.
-════════════════════════════════════════════════════════ */
 function showServerError(field, message) {
     clearServerErrors();
     if (field === 'description') {
@@ -593,13 +622,11 @@ function clearServerErrors() {
     document.getElementById('errorDescription').classList.remove('visible');
     document.getElementById('errorDescriptionText').textContent = '';
     document.getElementById('modalCommentText').classList.remove('server-error');
-
     document.getElementById('errorTags').classList.remove('visible');
     document.getElementById('errorTagsText').textContent = '';
     document.getElementById('modalCommentTags').classList.remove('server-error');
 }
 
-/* ── ONGLETS ── */
 function switchTab(tab) {
     document.getElementById('panel-video').classList.toggle('active', tab === 'video');
     document.getElementById('panel-image').classList.toggle('active', tab === 'image');
@@ -608,14 +635,12 @@ function switchTab(tab) {
     document.querySelector('.nav-tabs-wrap').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
-/* ── VUE GRILLE / LISTE ── */
 function setView(gridId, mode, btnGridId, btnListId) {
     document.getElementById(gridId).classList.toggle('list-view', mode === 'list');
     document.getElementById(btnGridId).classList.toggle('active', mode === 'grid');
     document.getElementById(btnListId).classList.toggle('active', mode === 'list');
 }
 
-/* ── RECHERCHE ── */
 function searchGrid(gridId, inputId, badgeId, noResId) {
     var q     = document.getElementById(inputId).value.trim().toLowerCase();
     var cards = document.querySelectorAll('#'+gridId+' [data-title]');
@@ -642,7 +667,6 @@ function searchGrid(gridId, inputId, badgeId, noResId) {
     noRes.style.display = (vis === 0 && q) ? 'block' : 'none';
 }
 
-/* ── VOTE ── */
 async function vote(pubId, type, prefix) {
     try {
         var r    = await fetch('/publication/'+pubId+'/vote', {
@@ -667,7 +691,6 @@ async function vote(pubId, type, prefix) {
     } catch(e) {}
 }
 
-/* ── MODALE ── */
 async function openCommentModal(pubId, title, desc) {
     currentPubId = pubId;
     document.getElementById('previewTitle').textContent = title;
@@ -690,58 +713,35 @@ function closeCommentModal() {
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeCommentModal(); });
 document.getElementById('commentModal').addEventListener('click', function(e) { if (e.target === this) closeCommentModal(); });
 
-/* ════════════════════════════════════════════════════════
-   SOUMETTRE UN COMMENTAIRE
-   Aucune validation JS : on envoie directement au serveur.
-   Si Symfony refuse, on affiche son message dans la modale.
-════════════════════════════════════════════════════════ */
 async function submitComment() {
     if (!currentPubId) return;
-
     var text = document.getElementById('modalCommentText').value;
     var tags = document.getElementById('modalCommentTags').value;
     var btn  = document.getElementById('modalSubmitBtn');
     var orig = btn.innerHTML;
-
-    // Effacer les erreurs précédentes avant chaque envoi
     clearServerErrors();
-
     btn.innerHTML = '<span class="loading-spinner"></span> Publication...';
     btn.disabled  = true;
-
     try {
         var r = await fetch('/commentaire/api/new/'+currentPubId, {
             method:  'POST',
-            headers: {
-                'Content-Type':     'application/json',
-                'Accept':           'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
+            headers: {'Content-Type':'application/json','Accept':'application/json','X-Requested-With':'XMLHttpRequest'},
             body: JSON.stringify({ description: text, tags: tags })
         });
-
         var data = await r.json();
-
         if (data.success) {
-            // ── Succès : vider les champs et recharger les commentaires ──
             document.getElementById('modalCommentText').value = '';
             document.getElementById('modalCommentTags').value = '';
             clearServerErrors();
             await loadComments(currentPubId);
-
-            // Mettre à jour les compteurs dans les deux panneaux
             var cv = document.getElementById('commentCount-v-'+currentPubId);
             var ci = document.getElementById('commentCount-i-'+currentPubId);
             if (cv) cv.textContent = data.total;
             if (ci) ci.textContent = data.total;
-
             showToast('✅ Commentaire publié !', 'success');
         } else {
-            // ── Erreur Symfony : afficher le message dans la modale ──
-            var field   = data.field   || 'description';
-            var message = data.error   || 'Erreur lors de la publication.';
-            showServerError(field, message);
-            showToast('❌ ' + message, 'error');
+            showServerError(data.field || 'description', data.error || 'Erreur lors de la publication.');
+            showToast('❌ ' + (data.error || 'Erreur'), 'error');
         }
     } catch(e) {
         showServerError('description', 'Erreur de connexion. Veuillez réessayer.');
@@ -752,7 +752,6 @@ async function submitComment() {
     }
 }
 
-/* ── CHARGEMENT COMMENTAIRES ── */
 async function loadComments(pubId) {
     var list  = document.getElementById('modalCommentsList');
     var badge = document.getElementById('commentsCountBadge');

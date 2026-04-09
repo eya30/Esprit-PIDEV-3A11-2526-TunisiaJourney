@@ -5,8 +5,24 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 
 parameters:
+    # Paramètres pour le forum (publications et commentaires)
     publications_directory: '%kernel.project_dir%/public/uploads/publications'
     commentaires_directory: '%kernel.project_dir%/public/uploads/commentaires'
+    
+    # Paramètres pour les hôtels et chambres
+    uploads_hotels_directory: '%kernel.project_dir%/public/uploads/hotels'
+    uploads_chambres_directory: '%kernel.project_dir%/public/uploads/chambres'
+    
+    # Paramètres pour les voyages et événements
+    uploads_directory: '%kernel.project_dir%/public/uploads/evenements'
+    uploads_activites_directory: '%kernel.project_dir%/public/uploads/activites'
+    voyages_images_directory: '%kernel.project_dir%/public/uploads/voyages'
+    programmes_images_directory: '%kernel.project_dir%/public/uploads/programmes'
+    uploads_voyages_directory: '%kernel.project_dir%/public/uploads/voyages'
+    uploads_programmes_directory: '%kernel.project_dir%/public/uploads/programmes'
+    
+    # Clés API
+    imgbb_api_key: '%env(IMGBB_API_KEY)%'
 
 services:
     # default configuration for services in *this* file
@@ -22,6 +38,12 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+
+    # Service Gemini
+    App\Service\GeminiAIService:
+        arguments:
+            $apiKey: '%env(GEMINI_API_KEY)%'
+            $connection: '@doctrine.dbal.default_connection'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

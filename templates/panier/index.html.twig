@@ -1,0 +1,255 @@
+{% extends 'base.html.twig' %}
+{% block title %}Mon Panier - TunisiaJourney{% endblock %}
+
+{% block stylesheets %}
+<style>
+    :root {
+        --tunisia-red: #E31B23;
+        --tunisia-orange: #FF6B35;
+        --tunisia-sand: #FDF5E6;
+        --tunisia-soft: #F5CAC3;
+        --dark-gray: #2C3E50;
+    }
+
+    /* HERO CORRIGÉ */
+    .hero {
+        position: relative;
+        height: 35vh;
+        min-height: 240px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        overflow: hidden;
+    }
+
+    .hero-bg {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        top: 0;
+        left: 0;
+        z-index: 1;
+    }
+
+    .hero::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            rgba(227,27,35,0.22),
+            rgba(245,202,195,0.32)
+        );
+        z-index: 2;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 3;
+        max-width: 700px;
+        padding: 2rem;
+        color: white;
+        animation: fadeInUp 1s cubic-bezier(0.2,0.9,0.4,1.1);
+    }
+
+    @keyframes fadeInUp {
+        from {opacity:0;transform:translateY(40px)}
+        to {opacity:1;transform:translateY(0)}
+    }
+
+    .hero h1 {
+        font-family:'Cormorant Garamond',serif;
+        font-size:2.8rem;
+        font-weight:700;
+        margin-bottom:0.6rem;
+        text-shadow:3px 3px 12px rgba(0,0,0,0.5);
+        color:#F5CAC3;
+    }
+
+    .hero p {
+        font-size:1rem;
+        color:rgba(255,255,255,0.9);
+    }
+
+    /* TITRES */
+    .section-title {
+        text-align:center;
+        font-size:2.2rem;
+        font-weight:700;
+        color:var(--tunisia-red);
+    }
+
+    .section-subtitle {
+        text-align:center;
+        margin-bottom:2rem;
+        color:#6c757d;
+    }
+
+    /* PANIER */
+    .panier-card {
+        background:white;
+        border-radius:20px;
+        box-shadow:0 10px 30px rgba(0,0,0,0.07);
+        overflow:hidden;
+    }
+
+    .panier-item {
+        display:flex;
+        align-items:center;
+        gap:1rem;
+        padding:1rem;
+        border-bottom:1px solid #eee;
+    }
+
+    .panier-item img {
+        width:80px;
+        height:80px;
+        object-fit:cover;
+        border-radius:10px;
+    }
+
+    .panier-item-info {
+        flex:1;
+    }
+
+    .qty-control {
+        display:flex;
+        align-items:center;
+        gap:5px;
+    }
+
+    .qty-btn {
+        width:30px;
+        height:30px;
+        border-radius:50%;
+        border:1px solid #ccc;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        text-decoration:none;
+    }
+
+    .sous-total {
+        font-weight:bold;
+        color:var(--tunisia-red);
+    }
+
+    .btn-remove {
+        color:red;
+        text-decoration:none;
+    }
+
+    /* RECAP */
+    .recap-card {
+        background:white;
+        padding:1.5rem;
+        border-radius:20px;
+        box-shadow:0 10px 30px rgba(0,0,0,0.07);
+    }
+
+    .recap-total {
+        display:flex;
+        justify-content:space-between;
+        font-weight:bold;
+        margin-top:1rem;
+    }
+
+    .btn-checkout {
+        display:block;
+        width:100%;
+        background:var(--tunisia-red);
+        color:white;
+        text-align:center;
+        padding:12px;
+        border-radius:30px;
+        text-decoration:none;
+        margin-top:1rem;
+    }
+
+    .btn-vider {
+        display:block;
+        text-align:center;
+        margin-top:10px;
+        color:red;
+        text-decoration:none;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+
+<!-- HERO CORRIGÉ -->
+<section class="hero">
+    <img src="https://switchmed.eu/wp-content/uploads/2020/04/tunisia-1.jpg" class="hero-bg">
+
+    <div class="hero-content">
+        <h1>Mon Panier</h1>
+        <p>Vérifiez vos articles avant de passer commande.</p>
+    </div>
+</section>
+
+<section class="py-5" style="background:var(--tunisia-sand);">
+<div class="container">
+
+<h2 class="section-title">Votre Panier</h2>
+<p class="section-subtitle">{{ items|length }} article(s)</p>
+
+{% if items is empty %}
+    <p>Panier vide</p>
+{% else %}
+<div class="row">
+
+<div class="col-lg-8">
+    <div class="panier-card">
+        {% for item in items %}
+        <div class="panier-item">
+            <img src="{{ asset('uploads/produits/' ~ item.produit.image) }}">
+
+            <div class="panier-item-info">
+                <h5>{{ item.produit.titre }}</h5>
+                <small>{{ item.produit.prix }} TND</small>
+            </div>
+
+            <div class="qty-control">
+                <a href="{{ path('app_panier_update', {id: item.produit.idPR, quantite: item.quantite - 1}) }}" class="qty-btn">-</a>
+                <span>{{ item.quantite }}</span>
+                <a href="{{ path('app_panier_update', {id: item.produit.idPR, quantite: item.quantite + 1}) }}" class="qty-btn">+</a>
+            </div>
+
+            <div class="sous-total">
+                {{ item.sousTotal }} TND
+            </div>
+
+            <a href="{{ path('app_panier_remove', {id: item.produit.idPR}) }}" class="btn-remove">X</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="col-lg-4">
+    <div class="recap-card">
+        <h4>Récapitulatif</h4>
+
+        <div class="recap-total">
+            <span>Total</span>
+            <span>{{ total }} TND</span>
+        </div>
+
+        <a href="{{ path('app_panier_checkout') }}" class="btn-checkout">
+            Commander
+        </a>
+
+        <a href="{{ path('app_panier_clear') }}" class="btn-vider">
+            Vider panier
+        </a>
+    </div>
+</div>
+
+</div>
+{% endif %}
+
+</div>
+</section>
+
+{% endblock %}

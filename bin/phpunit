@@ -11,7 +11,13 @@ if (is_file(dirname(__DIR__).'/vendor/phpunit/phpunit/phpunit')) {
     } else {
         define('PHPUNIT_COMPOSER_INSTALL', dirname(__DIR__).'/vendor/autoload.php');
         require PHPUNIT_COMPOSER_INSTALL;
-        PHPUnit\TextUI\Command::main();
+        // Some static analyzers may report the PHPUnit\TextUI\Command class as unknown
+        // even when this branch is only executed for older PHP versions. Guard the
+        // call with class_exists to avoid runtime warnings in edge cases and to
+        // satisfy static analysis tools.
+        if (class_exists('PHPUnit\\TextUI\\Command')) {
+            \PHPUnit\TextUI\Command::main();
+        }
     }
 } else {
     if (!is_file(dirname(__DIR__).'/vendor/symfony/phpunit-bridge/bin/simple-phpunit.php')) {
