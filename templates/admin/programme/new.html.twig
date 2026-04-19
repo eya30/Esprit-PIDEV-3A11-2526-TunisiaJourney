@@ -11,23 +11,15 @@
             <p class="form-subtitle">Remplissez les informations ci-dessous</p>
             
             <form method="post" enctype="multipart/form-data">
-                {% if errors is defined and errors|length > 0 %}
-                    <div class="error-box">
-                        <strong>Veuillez corriger les éléments suivants :</strong>
-                        <ul>
-                            {% for error in errors %}
-                                <li>{{ error }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                {% endif %}
-
                 <div class="form-group">
                     <label class="form-label">Nom du programme</label>
                     <div class="input-group-custom">
                         <i class="fas fa-tag"></i>
                         <input type="text" name="nom" class="form-control" value="{{ nom|default('') }}" placeholder="Ex: Découverte de Sidi Bou Said">
                     </div>
+                    {% if errors.nom is defined %}
+                        <div class="field-error">{{ errors.nom }}</div>
+                    {% endif %}
                 </div>
                 
                 <div class="form-group">
@@ -36,6 +28,9 @@
                         <i class="fas fa-align-left"></i>
                         <textarea name="description" class="form-control" rows="5" placeholder="Décrivez le programme...">{{ description|default('') }}</textarea>
                     </div>
+                    {% if errors.description is defined %}
+                        <div class="field-error">{{ errors.description }}</div>
+                    {% endif %}
                 </div>
                 
                 <div class="row">
@@ -44,8 +39,11 @@
                             <label class="form-label">Date de début</label>
                             <div class="input-group-custom">
                                 <i class="fas fa-calendar-alt"></i>
-                                <input type="text" name="dateDebut" class="form-control" value="{{ dateDebut|default('') }}" placeholder="YYYY-MM-DD">
+                                <input type="date" name="dateDebut" class="form-control" value="{{ dateDebut|default('') }}" placeholder="YYYY-MM-DD">
                             </div>
+                            {% if errors.dateDebut is defined %}
+                                <div class="field-error">{{ errors.dateDebut }}</div>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -53,8 +51,11 @@
                             <label class="form-label">Date de fin</label>
                             <div class="input-group-custom">
                                 <i class="fas fa-calendar-alt"></i>
-                                <input type="text" name="dateFin" class="form-control" value="{{ dateFin|default('') }}" placeholder="YYYY-MM-DD">
+                                <input type="date" name="dateFin" class="form-control" value="{{ dateFin|default('') }}" placeholder="YYYY-MM-DD">
                             </div>
+                            {% if errors.dateFin is defined %}
+                                <div class="field-error">{{ errors.dateFin }}</div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -67,6 +68,9 @@
                                 <i class="fas fa-map-marker-alt"></i>
                                 <input type="text" name="lieu" class="form-control" value="{{ lieu|default('') }}" placeholder="Ex: Sidi Bou Said">
                             </div>
+                            {% if errors.lieu is defined %}
+                                <div class="field-error">{{ errors.lieu }}</div>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -76,6 +80,9 @@
                                 <i class="fas fa-hotel"></i>
                                 <input type="text" name="hotel" class="form-control" value="{{ hotel|default('') }}" placeholder="Ex: Dar Said">
                             </div>
+                            {% if errors.hotel is defined %}
+                                <div class="field-error">{{ errors.hotel }}</div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -84,7 +91,14 @@
                     <label class="form-label">Activités associées</label>
                     <div class="input-group-custom">
                         <i class="fas fa-running"></i>
-                            <input type="text" name="activiteAssociee" class="form-control" value="{{ activiteAssociee|default('') }}" placeholder="Ex: Visite guidée, dégustation...">
+                        <input type="text" name="activiteAssociee" class="form-control" value="{{ activiteAssociee|default('') }}" placeholder="Ex: Visite guidée, dégustation...">
+                    </div>
+                    {% if errors.activiteAssociee is defined %}
+                        <div class="field-error">{{ errors.activiteAssociee }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
                     <label class="form-label">Voyage associé</label>
                     <div class="input-group-custom">
                         <i class="fas fa-suitcase"></i>
@@ -97,6 +111,9 @@
                             {% endfor %}
                         </select>
                     </div>
+                    {% if errors.idV is defined %}
+                        <div class="field-error">{{ errors.idV }}</div>
+                    {% endif %}
                 </div>
                 
                 <div class="form-group">
@@ -108,10 +125,13 @@
                         <input type="file" name="image" id="imageInput" accept="image/*" style="display: none;">
                     </div>
                     <div id="imagePreview" class="image-preview-container"></div>
+                    {% if errors.image is defined %}
+                        <div class="field-error">{{ errors.image }}</div>
+                    {% endif %}
                 </div>
                 
                 <div class="form-actions">
-                    <a href="{{ path('admin_programme_index') }}" class="btn btn-outline">
+                    <a href="{{ path('admin_voyage_programmes', {'id': idV|default(0)}) }}" class="btn btn-outline">
                         <i class="fas fa-arrow-left me-2"></i> Annuler
                     </a>
                     <button type="submit" class="btn btn-primary">
@@ -187,6 +207,13 @@
         display: block;
     }
     
+    .field-error {
+        font-size: 11px;
+        color: #dc3545;
+        margin-top: 6px;
+        margin-left: 4px;
+    }
+    
     .upload-area {
         background: #FEF9F0;
         border: 2px dashed #E8DFD1;
@@ -229,20 +256,6 @@
         max-height: 150px;
         border-radius: 12px;
         border: 1px solid #E8DFD1;
-    }
-
-    .error-box {
-        background: #F8D7DA;
-        border: 1px solid #F5C2C7;
-        color: #842029;
-        border-radius: 16px;
-        padding: 18px 20px;
-        margin-bottom: 20px;
-    }
-
-    .error-box ul {
-        margin: 8px 0 0;
-        padding-left: 18px;
     }
     
     .form-actions {

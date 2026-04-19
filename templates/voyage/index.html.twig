@@ -1,658 +1,905 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}TunisiaJourney - Découvrez la Tunisie{% endblock %}
+{% block title %}TunisiaJourney - Découvrez les voyages en Tunisie{% endblock %}
 
 {% block stylesheets %}
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Poppins:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
     :root {
-        --tunisia-red: #E31B23;
-        --tunisia-dark-red: #C41E3A;
-        --tunisia-orange: #FF6B35;
-        --tunisia-gold: #FFD700;
-        --tunisia-blue: #0054A6;
-        --tunisia-sand: #FDF5E6;
-        --tunisia-white: #FFFFFF;
-        --tunisia-cream: #FEF9E6;
-        --tunisia-soft: #F5CAC3;
-        --dark-gray: #2C3E50;
+        --bleu-nuit:    #1B3A4B;
+        --or-ambre:     #C17817;
+        --or-light:     #E8960E;
+        --bordeaux:     #7D2E3E;
+        --bordeaux-deep:#5E1F2C;
+        --vert-sauge:   #3D6B4F;
+        --vert-deep:    #2A4F38;
+        --cream:        #FEF9F0;
+        --cream-dark:   #F9EDD8;
+        --gray-soft:    #F5F2EE;
+        --gray-text:    #6B7280;
+        --dark:         #1A1A2E;
+        --white:        #FFFFFF;
+        --shadow-sm:    0 2px 12px rgba(27,58,75,0.09);
+        --shadow-md:    0 8px 32px rgba(27,58,75,0.13);
+        --shadow-lg:    0 20px 56px rgba(27,58,75,0.18);
+        --radius-card:  24px;
+        --radius-btn:   50px;
     }
 
-    /* Hero Section - Plus petite et plus claire */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Poppins', sans-serif; background: var(--cream); }
+
+    /* =============================================
+       HERO
+       ============================================= */
     .hero {
         position: relative;
-        height: 55vh;
-        min-height: 400px;
-        background: #000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        color: white;
-        overflow: hidden;
-        border-radius: 0 0 30px 30px;
-        margin-bottom: 2rem;
+        height: 58vh; min-height: 420px;
+        background-image: linear-gradient(155deg, rgba(27,58,75,0.80) 0%, rgba(125,46,62,0.65) 60%, rgba(61,107,79,0.45) 100%), url('https://switchmed.eu/wp-content/uploads/2020/04/tunisia-1.jpg');
+        background-size: cover; background-position: center; background-attachment: fixed;
+        display: flex; align-items: center; justify-content: center; text-align: center; overflow: hidden;
     }
-
-    .hero-bg {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: center 30%;
-        z-index: 1;
-        filter: brightness(0.85) contrast(1.1);
+    .hero::after {
+        content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 120px;
+        background: linear-gradient(to top, var(--cream), transparent); pointer-events: none;
     }
-
-    .hero::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.2) 100%);
-        z-index: 2;
-    }
-
     .hero-content {
-        position: relative;
-        z-index: 3;
-        max-width: 700px;
-        padding: 2rem;
-        animation: fadeInUp 1.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-        background: rgba(0,0,0,0.25);
-        backdrop-filter: blur(8px);
-        border-radius: 40px;
-        border: 1px solid rgba(255,255,255,0.2);
+        position: relative; z-index: 2; max-width: 720px; padding: 2.5rem 3.5rem;
+        background: rgba(255,255,255,0.12); backdrop-filter: blur(28px);
+        border-radius: 44px; border: 1px solid rgba(255,255,255,0.25);
+        box-shadow: 0 32px 80px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.15);
+        animation: fadeInUp 1s ease forwards; margin: 0 1.5rem;
     }
-
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(30px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
+    @keyframes fadeInUp { from { opacity:0; transform:translateY(40px); } to { opacity:1; transform:translateY(0); } }
     .hero h1 {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 3rem;
-        font-weight: 700;
-        margin-bottom: 0.8rem;
-        text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
-        color: #F5CAC3;
+        font-family: 'Cormorant Garamond', serif; font-size: 3.6rem; font-weight: 700;
+        color: #FFFFFF; letter-spacing: 3px; margin-bottom: 1rem;
+        text-shadow: 0 2px 24px rgba(0,0,0,0.3);
+    }
+    .hero-divider {
+        width: 60px; height: 3px;
+        background: linear-gradient(90deg, transparent, var(--or-ambre), #e8a832, transparent);
+        border-radius: 3px; margin: 0 auto 1.2rem;
+    }
+    .hero p { font-size: 1.05rem; font-weight: 300; line-height: 1.75; color: rgba(255,255,255,0.90); letter-spacing: 0.3px; }
+
+    /* =============================================
+       SECTION TITLES
+       ============================================= */
+    .section-title {
+        text-align: center; font-family: 'Cormorant Garamond', serif;
+        font-size: 3rem; font-weight: 700; color: var(--bordeaux); margin-bottom: 0.6rem;
         letter-spacing: 1px;
     }
+    .section-title:after { display: block; color: var(--or-ambre); font-size: 1.2rem; margin-top: 0.6rem; letter-spacing: 10px; }
+    .section-subtitle { text-align: center; color: var(--gray-text); font-size: 1rem; margin-bottom: 3rem; font-style: italic; font-family: 'DM Sans', sans-serif; }
 
-    .hero p {
-        font-size: 1rem;
-        margin-bottom: 1.5rem;
-        font-weight: 300;
-        line-height: 1.6;
-        color: rgba(255,255,255,0.95);
+    /* =============================================
+       WISHLIST
+       ============================================= */
+    .wishlist-icon { cursor: pointer; margin-left: auto; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; background: white; padding: 9px 20px; border-radius: 50px; box-shadow: var(--shadow-sm); border: 1px solid rgba(193,120,23,0.15); width: fit-content; }
+    .wishlist-icon i { font-size: 1.1rem; color: var(--bordeaux); }
+    .wishlist-icon span { font-size: 0.88rem; font-weight: 600; color: var(--dark); font-family: 'DM Sans', sans-serif; }
+    .wishlist-icon:hover { transform: scale(1.03); background: #FFF6EE; border-color: var(--or-ambre); box-shadow: 0 4px 16px rgba(193,120,23,0.2); }
+    .wishlist-count { background: linear-gradient(135deg, #E31B23, #c01018); color: white; font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 50%; margin-left: 4px; }
+    .wishlist-sidebar { position: fixed; top: 0; right: -450px; width: 450px; height: 100vh; background: white; box-shadow: -5px 0 40px rgba(0,0,0,0.12); z-index: 1060; transition: right 0.35s cubic-bezier(0.16,1,0.3,1); overflow-y: auto; padding: 1.5rem; }
+    .wishlist-sidebar.open { right: 0; }
+    .wishlist-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.45); z-index: 1055; display: none; }
+    .wishlist-overlay.active { display: block; }
+    .wishlist-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; margin-bottom: 1.5rem; border-bottom: 2px solid #F0E8DD; }
+    .wishlist-header h4 { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: var(--bordeaux); margin: 0; }
+    .close-wishlist { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #9CA3AF; transition: all 0.2s; }
+    .close-wishlist:hover { color: var(--bordeaux); transform: rotate(90deg); }
+    .wishlist-item { display: flex; gap: 1rem; padding: 1rem; margin-bottom: 1rem; background: #FEF9F0; border-radius: 18px; border: 1px solid #F0E8DD; transition: all 0.2s; position: relative; }
+    .wishlist-item:hover { transform: translateX(-5px); border-color: var(--bordeaux); }
+    .wishlist-item-img { width: 80px; height: 80px; border-radius: 14px; object-fit: cover; }
+    .wishlist-item-info { flex: 1; }
+    .wishlist-item-title { font-weight: 700; color: var(--bordeaux); margin-bottom: 0.3rem; font-family: 'DM Sans', sans-serif; }
+    .wishlist-item-price { color: var(--or-ambre); font-weight: 600; font-size: 0.9rem; }
+    .wishlist-item-remove { position: absolute; top: 5px; right: 10px; background: none; border: none; color: #EF4444; cursor: pointer; font-size: 1.2rem; }
+    .empty-wishlist { text-align: center; padding: 2rem; color: #9CA3AF; }
+
+    /* =============================================
+       SEARCH + SORT BAR
+       ============================================= */
+    .search-sort-bar {
+        background: var(--white); padding: 1.3rem 2rem;
+        border-radius: 24px;
+        box-shadow: var(--shadow-md);
+        border: 1px solid rgba(193,120,23,0.10);
+        margin-bottom: 3rem;
+        display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
     }
-
-    .hero .btn-hero {
-        background: linear-gradient(135deg, #E31B23, #C41E3A);
-        color: white;
-        padding: 10px 28px;
-        border-radius: 40px;
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 0.9rem;
-        transition: all 0.3s ease;
-        display: inline-block;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    }
-
-    .hero .btn-hero:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(227,27,35,0.4);
-        background: linear-gradient(135deg, #C41E3A, #E31B23);
-    }
-
-    /* Section Titles améliorés */
-    .section-title {
-        text-align: center;
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: var(--tunisia-red);
-        margin-bottom: 0.8rem;
-        position: relative;
-    }
-
-    .section-title:after {
-        content: '✦ ✦ ✦';
-        display: block;
-        color: #F5CAC3;
-        font-size: 1.1rem;
-        margin-top: 0.5rem;
-        letter-spacing: 10px;
-    }
-
-    .section-subtitle {
-        text-align: center;
-        color: var(--dark-gray);
-        font-size: 0.95rem;
-        margin-bottom: 2rem;
-        font-style: italic;
-        opacity: 0.8;
-    }
-
-    /* Filters Bar amélioré */
-    .filters-bar {
-        background: white;
-        padding: 1.2rem 1.8rem;
-        border-radius: 50px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        margin-bottom: 2.5rem;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.8rem;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .filter-group {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .filter-group label {
-        font-weight: 500;
-        color: var(--dark-gray);
-        font-size: 0.85rem;
-    }
-
-    .filter-select {
-        padding: 8px 18px;
-        border: 2px solid #F5CAC3;
-        border-radius: 30px;
-        background: white;
-        font-size: 0.85rem;
-        color: var(--dark-gray);
-        cursor: pointer;
-        transition: all 0.3s ease;
-        min-width: 130px;
-    }
-
-    .filter-select:focus {
-        outline: none;
-        border-color: var(--tunisia-red);
-        box-shadow: 0 0 0 3px rgba(227,27,35,0.1);
-    }
-
+    .search-field-wrapper { position: relative; flex: 1; min-width: 260px; }
+    .search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--or-ambre); font-size: 0.95rem; pointer-events: none; }
     .search-input {
-        padding: 8px 18px;
-        border: 2px solid #F5CAC3;
-        border-radius: 30px;
-        background: white;
-        font-size: 0.85rem;
-        width: 220px;
-        transition: all 0.3s ease;
+        width: 100%; padding: 13px 48px;
+        border: 2px solid rgba(193,120,23,0.25);
+        border-radius: 50px;
+        background: var(--gray-soft);
+        font-size: 0.92rem; font-family: 'DM Sans', sans-serif;
+        color: var(--dark); outline: none; transition: all 0.3s ease;
+        letter-spacing: 0.2px;
     }
-
-    .search-input:focus {
-        outline: none;
-        border-color: var(--tunisia-red);
-        box-shadow: 0 0 0 3px rgba(227,27,35,0.1);
-        width: 250px;
+    .search-input:focus { border-color: var(--or-ambre); background: var(--white); box-shadow: 0 0 0 4px rgba(193,120,23,0.10); }
+    .search-input::placeholder { color: #B8AFA8; font-style: italic; }
+    .search-clear-btn { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: rgba(193,120,23,0.10); border: none; color: var(--or-ambre); font-size: 0.75rem; cursor: pointer; border-radius: 50%; width: 24px; height: 24px; display: none; align-items: center; justify-content: center; }
+    .search-clear-btn.visible { display: flex; }
+    .search-clear-btn:hover { background: var(--or-ambre); color: white; }
+    .sort-wrapper { position: relative; }
+    .sort-toggle-btn {
+        display: flex; align-items: center; gap: 10px; padding: 12px 22px;
+        border: none; border-radius: 50px;
+        background: linear-gradient(135deg, var(--bleu-nuit) 0%, #275168 100%);
+        color: white; font-weight: 600; font-size: 0.88rem;
+        cursor: pointer; transition: all 0.3s ease;
+        font-family: 'DM Sans', sans-serif;
+        box-shadow: 0 4px 16px rgba(27,58,75,0.30);
+        letter-spacing: 0.2px;
     }
+    .sort-toggle-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(27,58,75,0.42); }
+    .sort-chevron { transition: transform 0.28s ease; font-size: 0.75rem; }
+    .sort-toggle-btn.open .sort-chevron { transform: rotate(180deg); }
+    .sort-dropdown-menu { display: none; position: absolute; top: calc(100% + 10px); right: 0; background: var(--white); border-radius: 20px; box-shadow: 0 20px 50px rgba(27,58,75,0.18); min-width: 240px; z-index: 9999; overflow: hidden; padding: 8px 0; border: 1px solid rgba(27,58,75,0.08); }
+    .sort-dropdown-menu.open { display: block; animation: dropFade 0.2s ease; }
+    @keyframes dropFade { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+    .sort-option { display: flex; align-items: center; gap: 12px; padding: 12px 22px; font-size: 0.88rem; color: var(--bleu-nuit); cursor: pointer; transition: all 0.18s; font-weight: 500; font-family: 'DM Sans', sans-serif; }
+    .sort-option:hover { background: var(--gray-soft); }
+    .sort-option.active { background: rgba(27,58,75,0.07); font-weight: 700; }
+    .sort-option i { width: 20px; color: var(--or-ambre); }
 
-    .btn-filter {
-        background: linear-gradient(135deg, var(--tunisia-red), #F5CAC3);
-        color: white;
-        padding: 8px 22px;
-        border-radius: 30px;
-        border: none;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 0.85rem;
-    }
+    /* =============================================
+       VOYAGE CARDS — REFONTE COMPLÈTE
+       ============================================= */
+    .voyages-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 32px; margin: 0; padding: 0; }
+    .voyage-item { display: flex; height: 100%; }
 
-    .btn-filter:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(227,27,35,0.4);
-    }
-
-    /* Cards */
     .card-custom {
-        background: white;
-        border-radius: 20px;
+        background: var(--white);
+        border-radius: var(--radius-card);
         overflow: hidden;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-        transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-        margin-bottom: 30px;
-        border: none;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.45s cubic-bezier(0.16,1,0.3,1);
+        border: 1px solid rgba(27,58,75,0.07);
+        display: flex; flex-direction: column; width: 100%; height: 100%;
         position: relative;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
     }
-
     .card-custom:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 20px 40px rgba(227,27,35,0.15);
+        transform: translateY(-9px);
+        box-shadow: var(--shadow-lg);
+        border-color: rgba(193,120,23,0.25);
     }
-
-    .card-img {
-        height: 350px;
-        overflow: hidden;
-        position: relative;
-        flex-shrink: 0;
+    .card-custom::before {
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+        background: linear-gradient(90deg, var(--bordeaux) 0%, var(--or-ambre) 50%, var(--vert-sauge) 100%);
+        opacity: 0; transition: opacity 0.4s ease;
+        border-radius: var(--radius-card) var(--radius-card) 0 0; z-index: 2;
     }
+    .card-custom:hover::before { opacity: 1; }
 
-    .card-badge {
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        background: linear-gradient(135deg, var(--tunisia-red), #F5CAC3);
-        color: white;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-weight: 600;
-        font-size: 0.65rem;
-        z-index: 2;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-
-    .wishlist-star {
-        position: absolute;
-        top: 12px;
-        left: 12px;
-        z-index: 10;
-        cursor: pointer;
-        font-size: 24px;
-        color: #ccc;
-        transition: all 0.3s ease;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-        background: rgba(0,0,0,0.3);
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .wishlist-star:hover {
-        transform: scale(1.1);
-        background: rgba(0,0,0,0.5);
-    }
-
-    .wishlist-star.active {
-        color: #FFD700;
-    }
-
+    /* IMAGE */
+    .card-img { height: 230px; overflow: hidden; position: relative; flex-shrink: 0; }
     .card-img img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.5s ease;
+        width: 100%; height: 100%; object-fit: cover;
+        transition: transform 0.65s cubic-bezier(0.16,1,0.3,1);
+        filter: saturate(1.05);
+    }
+    .card-custom:hover .card-img img { transform: scale(1.07); filter: saturate(1.15); }
+    .card-img::after {
+        content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 60%;
+        background: linear-gradient(to top, rgba(27,58,75,0.6), transparent); pointer-events: none;
     }
 
-    .card-custom:hover .card-img img {
-        transform: scale(1.05);
+    /* BADGE */
+    .card-badge {
+        position: absolute; bottom: 14px; left: 14px;
+        background: linear-gradient(135deg, var(--or-ambre), var(--or-light));
+        color: white; padding: 5px 14px; border-radius: 20px;
+        font-weight: 700; font-size: 0.68rem; z-index: 2;
+        box-shadow: 0 3px 12px rgba(193,120,23,0.45);
+        display: flex; align-items: center; gap: 6px;
+        letter-spacing: 0.5px; text-transform: uppercase;
+        font-family: 'DM Sans', sans-serif;
     }
 
+    /* WISHLIST STAR */
+    .wishlist-star {
+        position: absolute; top: 14px; right: 14px;
+        background: rgba(255,255,255,0.2); backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,0.3);
+        border-radius: 50%; width: 38px; height: 38px;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; z-index: 10; transition: all 0.25s;
+    }
+    .wishlist-star i { font-size: 16px; color: rgba(255,255,255,0.9); text-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+    .wishlist-star.active { background: rgba(255,215,0,0.25); border-color: rgba(255,215,0,0.5); }
+    .wishlist-star.active i { color: #FFD700; }
+    .wishlist-star:hover { transform: scale(1.12); background: rgba(255,255,255,0.3); }
+
+    /* CARD CONTENT */
     .card-content {
-        padding: 1.3rem;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
+        padding: 1.5rem 1.7rem 1.7rem;
+        display: flex; flex-direction: column; flex: 1; gap: 0.6rem;
     }
 
+    /* CARD TITLE */
     .card-title {
         font-family: 'Cormorant Garamond', serif;
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: var(--tunisia-red);
-        margin-bottom: 0.4rem;
+        font-size: 1.45rem; font-weight: 700;
+        color: var(--bleu-nuit); line-height: 1.2;
+        transition: color 0.25s; margin: 0;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        min-height: 58px; letter-spacing: 0.3px;
     }
+    .card-custom:hover .card-title { color: var(--bordeaux); }
 
+    /* LOCATION */
     .card-location {
-        color: var(--tunisia-orange);
-        font-size: 0.8rem;
-        margin-bottom: 0.6rem;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 5px;
+        color: var(--gray-text); font-size: 0.82rem; font-weight: 500;
+        display: flex; align-items: center; gap: 7px;
+        font-family: 'DM Sans', sans-serif;
     }
+    .card-location i { color: var(--or-ambre); font-size: 0.78rem; }
 
+    /* DESCRIPTION */
     .card-desc {
-        color: #6c757d;
-        line-height: 1.5;
-        margin-bottom: 0.8rem;
-        font-size: 0.8rem;
-        flex: 1;
+        color: #7A7066; line-height: 1.6; font-size: 0.84rem;
+        display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+        flex: 1; font-family: 'DM Sans', sans-serif;
     }
 
-    .card-price {
-        font-size: 1.1rem;
-        font-weight: 800;
-        color: var(--tunisia-red);
-        margin-bottom: 0.8rem;
-    }
-
-    .card-price span {
-        font-size: 0.7rem;
-        font-weight: 400;
-        color: #6c757d;
-    }
-
+    /* META */
     .card-meta {
-        display: flex;
-        gap: 0.8rem;
-        margin-bottom: 0.8rem;
-        font-size: 0.7rem;
-        color: #6c757d;
-        flex-wrap: wrap;
+        display: flex; gap: 0.8rem; font-size: 0.74rem; color: var(--gray-text);
+        flex-wrap: wrap; margin-top: auto;
+        font-family: 'DM Sans', sans-serif;
+    }
+    .card-meta span {
+        display: flex; align-items: center; gap: 4px;
+        background: var(--gray-soft); padding: 4px 10px; border-radius: 20px;
+        font-weight: 500;
+    }
+    .card-meta i { color: var(--or-ambre); font-size: 0.68rem; }
+
+    /* DIVIDER */
+    .card-divider {
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(193,120,23,0.2), transparent);
+        margin: 0.2rem 0;
     }
 
-    .card-meta i {
-        color: var(--tunisia-orange);
-        margin-right: 3px;
-        width: 12px;
+    /* PRICE */
+    .card-price {
+        font-size: 1.45rem; font-weight: 800; color: var(--bordeaux);
+        margin: 0.1rem 0;
+        font-family: 'Cormorant Garamond', serif;
+        letter-spacing: 0.5px;
     }
+    .card-price span { font-size: 0.72rem; font-weight: 400; color: var(--gray-text); font-family: 'DM Sans', sans-serif; margin-left: 2px; }
 
-    /* Boutons améliorés */
-    .button-group {
-        display: flex;
-        gap: 10px;
-        margin-top: auto;
-    }
+    /* BUTTONS */
+    .button-group { display: flex; gap: 10px; margin-top: 0.4rem; }
 
     .btn-details {
-        flex: 1;
-        background: transparent;
-        border: 1.5px solid var(--tunisia-red);
-        color: var(--tunisia-red);
-        padding: 8px 0;
-        border-radius: 30px;
-        font-weight: 600;
-        text-decoration: none;
-        display: inline-block;
-        text-align: center;
-        transition: all 0.3s ease;
-        font-size: 0.75rem;
-        position: relative;
-        overflow: hidden;
-        z-index: 1;
+        flex: 1; height: 44px; padding: 0 16px; border-radius: 50px;
+        font-weight: 600; text-decoration: none;
+        display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+        font-size: 0.8rem; cursor: pointer; transition: all 0.3s ease;
+        background: linear-gradient(135deg, var(--bordeaux), var(--bordeaux-deep));
+        color: white; border: none;
+        box-shadow: 0 3px 12px rgba(125,46,62,0.28);
+        letter-spacing: 0.3px; font-family: 'DM Sans', sans-serif;
     }
-
-    .btn-details::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 0%;
-        height: 100%;
-        background: var(--tunisia-red);
-        transition: all 0.3s ease;
-        z-index: -1;
-    }
-
-    .btn-details:hover::before {
-        width: 100%;
-    }
-
     .btn-details:hover {
-        color: white;
-        transform: translateY(-2px);
+        background: linear-gradient(135deg, #9f1c36, var(--bordeaux));
+        transform: translateY(-2px); box-shadow: 0 8px 22px rgba(125,46,62,0.42); color: white;
     }
 
     .btn-programmes {
-        flex: 1;
-        background: linear-gradient(135deg, var(--tunisia-red), var(--tunisia-orange));
-        color: white;
-        border: none;
-        padding: 8px 0;
-        border-radius: 30px;
-        font-weight: 600;
-        text-decoration: none;
-        display: inline-block;
-        text-align: center;
-        transition: all 0.3s ease;
-        font-size: 0.75rem;
+        flex: 1; height: 44px; padding: 0 16px; border-radius: 50px;
+        font-weight: 600; text-decoration: none;
+        display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+        font-size: 0.8rem; cursor: pointer; transition: all 0.3s ease;
+        background: linear-gradient(135deg, var(--vert-sauge), var(--vert-deep));
+        color: white; border: none;
+        box-shadow: 0 3px 12px rgba(61,107,79,0.28);
+        letter-spacing: 0.3px; font-family: 'DM Sans', sans-serif;
     }
-
     .btn-programmes:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(227,27,35,0.3);
+        background: linear-gradient(135deg, #2d5a3e, var(--vert-sauge));
+        transform: translateY(-2px); box-shadow: 0 8px 22px rgba(61,107,79,0.42); color: white;
     }
 
-    /* Pagination */
-    .pagination {
-        display: flex;
-        justify-content: center;
-        gap: 0.5rem;
-        margin-top: 2rem;
-    }
-
+    /* =============================================
+       PAGINATION
+       ============================================= */
+    .pagination { display: flex; justify-content: center; gap: 0.5rem; margin-top: 2.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
     .pagination a, .pagination span {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background: white;
-        color: var(--dark-gray);
-        text-decoration: none;
-        font-weight: 600;
+        display: flex; align-items: center; justify-content: center;
+        min-width: 44px; height: 44px; padding: 0 12px;
+        border-radius: 50%; background: var(--white); color: var(--bleu-nuit);
+        text-decoration: none; font-weight: 600; font-size: 0.9rem;
         transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid rgba(27,58,75,0.08);
+        font-family: 'DM Sans', sans-serif;
     }
-
     .pagination a:hover, .pagination .active {
-        background: linear-gradient(135deg, var(--tunisia-red), #F5CAC3);
-        color: white;
-        transform: translateY(-2px);
+        background: linear-gradient(135deg, var(--bleu-nuit), #275168);
+        color: white; border-color: transparent; transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(27,58,75,0.3);
     }
+    .pagination .disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+    .no-results { text-align: center; padding: 4rem; background: white; border-radius: 20px; border: 1px solid #F0E8DD; width: 100%; }
+    .no-results i { font-size: 3rem; color: #E8DFD1; margin-bottom: 1rem; }
 
-    /* Wishlist Sidebar */
-    .wishlist-sidebar {
-        position: fixed;
-        top: 0;
-        right: -400px;
-        width: 400px;
-        height: 100vh;
-        background: white;
-        box-shadow: -5px 0 30px rgba(0,0,0,0.1);
-        z-index: 1060;
-        transition: right 0.3s ease;
-        overflow-y: auto;
-        padding: 1.5rem;
-    }
-
-    .wishlist-sidebar.open {
-        right: 0;
-    }
-
-    .wishlist-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.5);
-        z-index: 1055;
-        display: none;
-    }
-
-    .wishlist-overlay.active {
-        display: block;
-    }
-
-    .wishlist-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-bottom: 1rem;
-        margin-bottom: 1.5rem;
-        border-bottom: 2px solid #F0E8DD;
-    }
-
-    .wishlist-header h4 {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 1.3rem;
-        color: var(--tunisia-red);
-        margin: 0;
-    }
-
-    .close-wishlist {
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: #9CA3AF;
-        transition: all 0.2s;
-    }
-
-    .close-wishlist:hover {
-        color: var(--tunisia-red);
-        transform: rotate(90deg);
-    }
-
-    .wishlist-item {
-        display: flex;
-        gap: 1rem;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        background: #FEF9F0;
-        border-radius: 16px;
-        border: 1px solid #F0E8DD;
-        transition: all 0.2s;
+    /* =============================================
+       NOTIFICATIONS
+       ============================================= */
+    .notif-wrapper { position: relative; }
+    .notif-btn {
         position: relative;
-    }
-
-    .wishlist-item:hover {
-        transform: translateX(-5px);
-        border-color: var(--tunisia-red);
-    }
-
-    .wishlist-item-img {
-        width: 70px;
-        height: 70px;
-        border-radius: 12px;
-        object-fit: cover;
-    }
-
-    .wishlist-item-info {
-        flex: 1;
-    }
-
-    .wishlist-item-title {
-        font-weight: 700;
-        color: var(--tunisia-red);
-        margin-bottom: 0.3rem;
-        font-size: 0.9rem;
-    }
-
-    .wishlist-item-price {
-        color: var(--tunisia-orange);
-        font-weight: 600;
-        font-size: 0.85rem;
-    }
-
-    .wishlist-item-remove {
-        position: absolute;
-        top: 5px;
-        right: 10px;
-        background: none;
-        border: none;
-        color: #EF4444;
-        cursor: pointer;
-        font-size: 1.1rem;
-    }
-
-    .empty-wishlist {
-        text-align: center;
-        padding: 2rem;
-        color: #9CA3AF;
-    }
-
-    .wishlist-icon {
-        cursor: pointer;
+        display: inline-flex; align-items: center; gap: 8px;
+        background: white; padding: 9px 20px; border-radius: 50px;
+        box-shadow: var(--shadow-sm); border: 1px solid rgba(193,120,23,0.15);
+        cursor: pointer; font-family: 'DM Sans', sans-serif;
+        font-size: 0.88rem; font-weight: 600; color: var(--dark);
         transition: all 0.3s ease;
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: white;
-        padding: 6px 14px;
-        border-radius: 30px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
-
-    .wishlist-icon i {
-        font-size: 1rem;
-        color: var(--tunisia-red);
+    .notif-btn i { color: var(--or-ambre); font-size: 1.05rem; }
+    .notif-btn:hover { transform: scale(1.03); background: #FFF6EE; border-color: var(--or-ambre); box-shadow: 0 4px 16px rgba(193,120,23,0.2); }
+    .notif-badge {
+        position: absolute; top: -5px; right: -5px;
+        background: linear-gradient(135deg, #E31B23, #c01018);
+        color: white; font-size: 0.62rem; font-weight: 800;
+        min-width: 20px; height: 20px; border-radius: 50%;
+        display: none; align-items: center; justify-content: center;
+        border: 2.5px solid white;
+        box-shadow: 0 2px 8px rgba(227,27,35,0.5);
+        animation: notifPop 0.5s cubic-bezier(0.34,1.56,0.64,1);
     }
+    .notif-badge.visible { display: flex; }
+    @keyframes notifPop { from { transform: scale(0) rotate(-15deg); } to { transform: scale(1) rotate(0); } }
 
-    .wishlist-icon span {
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: var(--dark-gray);
+    .notif-dropdown {
+        position: absolute; top: calc(100% + 12px); right: 0;
+        width: 390px; background: white;
+        border-radius: 22px;
+        box-shadow: 0 20px 60px rgba(27,58,75,0.18), 0 4px 16px rgba(0,0,0,0.08);
+        border: 1px solid rgba(193,120,23,0.12);
+        z-index: 9999; overflow: hidden;
+        transform-origin: top right;
+        transform: scale(0.92) translateY(-8px);
+        opacity: 0; pointer-events: none;
+        transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
     }
-
-    .wishlist-icon:hover {
-        transform: scale(1.02);
-        background: #FFF9F0;
+    .notif-dropdown.open { transform: scale(1) translateY(0); opacity: 1; pointer-events: auto; }
+    .notif-dropdown-header {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 1rem 1.2rem 0.8rem;
+        border-bottom: 1px solid #F0E8DD;
+        background: linear-gradient(135deg, #FEF9F0, white);
     }
-
-    .wishlist-count {
-        background: #E31B23;
-        color: white;
-        font-size: 0.65rem;
-        font-weight: 600;
-        padding: 2px 6px;
-        border-radius: 50%;
-        margin-left: 5px;
+    .notif-dropdown-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.15rem; font-weight: 700; color: var(--bordeaux);
+        display: flex; align-items: center; gap: 8px;
     }
-
-    .no-results {
-        text-align: center;
-        padding: 3rem;
-        background: white;
-        border-radius: 20px;
-        border: 1px solid #F0E8DD;
+    .notif-dropdown-title i { font-size: 1rem; }
+    .btn-read-all {
+        background: none; border: 1.5px solid var(--or-ambre);
+        color: var(--or-ambre); border-radius: 20px; padding: 3px 12px;
+        font-size: 0.68rem; font-weight: 700; cursor: pointer;
+        transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+        letter-spacing: 0.05em;
     }
-
-    .no-results i {
-        font-size: 2.5rem;
-        color: #E8DFD1;
-        margin-bottom: 0.8rem;
+    .btn-read-all:hover { background: var(--or-ambre); color: white; }
+    .notif-scroll-area { max-height: 340px; overflow-y: auto; padding: 8px 0; }
+    .notif-scroll-area::-webkit-scrollbar { width: 4px; }
+    .notif-scroll-area::-webkit-scrollbar-track { background: transparent; }
+    .notif-scroll-area::-webkit-scrollbar-thumb { background: #E8DFD1; border-radius: 2px; }
+    .notif-item {
+        display: flex; gap: 12px; padding: 12px 16px;
+        margin: 4px 8px; border-radius: 14px;
+        cursor: pointer; transition: all 0.2s;
+        position: relative; background: transparent;
+        border: 1px solid transparent;
     }
+    .notif-item:hover { background: #FEF9F0; border-color: #F0E8DD; }
+    .notif-item.unread { background: #FFF5F0; border-color: #FDDCCC; }
+    .notif-item.unread::before {
+        content: ''; position: absolute; left: 6px; top: 50%; transform: translateY(-50%);
+        width: 6px; height: 6px; border-radius: 50%; background: var(--bordeaux);
+    }
+    .notif-item-icon { width: 38px; height: 38px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+    .notif-item.type-reduction .notif-item-icon { background: rgba(16,185,129,0.12); color: #10B981; }
+    .notif-item.type-nouveau_voyage .notif-item-icon { background: rgba(193,120,23,0.12); color: var(--or-ambre); }
+    .notif-item-body { flex: 1; min-width: 0; }
+    .notif-item-msg { font-size: 0.82rem; font-weight: 600; color: var(--dark); margin-bottom: 3px; line-height: 1.35; font-family: 'DM Sans', sans-serif; }
+    .notif-item-sub { font-size: 0.72rem; color: var(--bordeaux); font-weight: 500; margin-bottom: 3px; }
+    .notif-item-date { font-size: 0.68rem; color: #9CA3AF; display: flex; align-items: center; gap: 4px; }
+    .notif-dropdown-footer { padding: 10px 16px; border-top: 1px solid #F0E8DD; text-align: center; background: #FAFAF8; }
+    .notif-empty { text-align: center; padding: 2rem 1rem; color: #9CA3AF; }
+    .notif-empty i { font-size: 2rem; margin-bottom: 0.5rem; display: block; color: #E8DFD1; }
+    .notif-empty p { font-size: 0.82rem; }
 
+    /* =============================================
+       TOAST NOTIFICATIONS
+       ============================================= */
+    #toastContainer {
+        position: fixed; bottom: 28px; right: 28px;
+        z-index: 9999; display: flex; flex-direction: column;
+        gap: 10px; align-items: flex-end;
+    }
+    .notif-toast {
+        background: white; border-radius: 18px; padding: 0;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.06);
+        display: flex; align-items: stretch; overflow: hidden;
+        min-width: 310px; max-width: 380px;
+        transform: translateX(120%) scale(0.9);
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+        pointer-events: none;
+    }
+    .notif-toast.show { transform: translateX(0) scale(1); opacity: 1; pointer-events: auto; }
+    .notif-toast.hide { transform: translateX(120%) scale(0.9); opacity: 0; }
+    .notif-toast-accent { width: 5px; flex-shrink: 0; }
+    .notif-toast.type-reduction .notif-toast-accent { background: linear-gradient(180deg, #10B981, #059669); }
+    .notif-toast.type-nouveau_voyage .notif-toast-accent { background: linear-gradient(180deg, var(--or-ambre), #9a5e12); }
+    .notif-toast-inner { display: flex; align-items: center; gap: 12px; padding: 14px 14px 14px 16px; flex: 1; }
+    .notif-toast-icon-wrap { width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+    .notif-toast.type-reduction .notif-toast-icon-wrap { background: rgba(16,185,129,0.1); color: #10B981; }
+    .notif-toast.type-nouveau_voyage .notif-toast-icon-wrap { background: rgba(193,120,23,0.1); color: var(--or-ambre); }
+    .notif-toast-body { flex: 1; }
+    .notif-toast-label { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 3px; }
+    .notif-toast.type-reduction .notif-toast-label { color: #10B981; }
+    .notif-toast.type-nouveau_voyage .notif-toast-label { color: var(--or-ambre); }
+    .notif-toast-title { font-size: 0.82rem; font-weight: 700; color: var(--dark); line-height: 1.3; margin-bottom: 2px; }
+    .notif-toast-sub { font-size: 0.72rem; color: var(--gray-text); }
+    .notif-toast-close { background: none; border: none; color: #C4B9B0; cursor: pointer; font-size: 0.9rem; padding: 4px; align-self: flex-start; margin-top: 2px; transition: color 0.2s; }
+    .notif-toast-close:hover { color: var(--bordeaux); }
+    .notif-toast-progress { position: absolute; bottom: 0; left: 5px; right: 0; height: 3px; background: rgba(0,0,0,0.06); border-radius: 0 0 18px 0; overflow: hidden; }
+    .notif-toast-progress-bar { height: 100%; width: 100%; animation: toastProgress 5s linear forwards; }
+    .notif-toast.type-reduction .notif-toast-progress-bar { background: linear-gradient(90deg, #10B981, #059669); }
+    .notif-toast.type-nouveau_voyage .notif-toast-progress-bar { background: linear-gradient(90deg, var(--or-ambre), #9a5e12); }
+    @keyframes toastProgress { from { width: 100%; } to { width: 0%; } }
+
+    /* =============================================
+       MOOD MODAL
+       ============================================= */
+    .mood-btn {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: linear-gradient(135deg, var(--bordeaux), #a83050);
+        color: white; border: none; padding: 9px 20px;
+        border-radius: 50px; font-size: 0.88rem; font-weight: 600;
+        cursor: pointer; font-family: 'DM Sans', sans-serif;
+        box-shadow: 0 4px 16px rgba(125,46,62,0.32);
+        transition: all 0.3s ease; letter-spacing: 0.2px;
+    }
+    .mood-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(125,46,62,0.45); }
+
+    .mood-modal-overlay {
+        position: fixed; inset: 0;
+        background: rgba(10,8,20,0.70);
+        z-index: 1070; display: none; align-items: center; justify-content: center;
+        backdrop-filter: blur(8px);
+        padding: 1rem;
+    }
+    .mood-modal-overlay.open { display: flex; }
+    .mood-modal {
+        background: #fff; border-radius: 32px;
+        max-width: 580px; width: 100%; max-height: 92vh; overflow-y: auto;
+        box-shadow: 0 40px 100px rgba(0,0,0,0.3), 0 0 0 1px rgba(193,120,23,0.15);
+        animation: moodModalIn 0.45s cubic-bezier(0.16,1,0.3,1);
+        position: relative; overflow: hidden;
+    }
+    @keyframes moodModalIn { from { opacity:0; transform: scale(0.88) translateY(30px); } to { opacity:1; transform: scale(1) translateY(0); } }
+    .mood-modal-band { height: 6px; background: linear-gradient(90deg, var(--bordeaux) 0%, var(--or-ambre) 50%, var(--vert-sauge) 100%); border-radius: 32px 32px 0 0; }
+    .mood-modal-inner { padding: 1.8rem 2rem 2rem; overflow-y: auto; max-height: calc(92vh - 6px); }
+    .mood-modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.8rem; }
+    .mood-modal-title-wrap {}
+    .mood-modal-eyebrow { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.15em; text-transform: uppercase; color: var(--or-ambre); display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+    .mood-modal-eyebrow::before, .mood-modal-eyebrow::after { content: ''; display: block; width: 20px; height: 1px; background: var(--or-ambre); }
+    .mood-modal-title { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 700; color: var(--bordeaux); line-height: 1.15; }
+    .mood-modal-subtitle { font-size: 0.8rem; color: var(--gray-text); margin-top: 6px; line-height: 1.5; font-family: 'DM Sans', sans-serif; }
+    .close-mood { background: #F5F0EC; border: none; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #9CA3AF; font-size: 1rem; transition: all 0.2s; flex-shrink: 0; margin-top: 4px; }
+    .close-mood:hover { background: #F0E0E5; color: var(--bordeaux); transform: rotate(90deg); }
+    .mood-section { margin-bottom: 1.5rem; }
+    .mood-section-label { font-size: 0.7rem; font-weight: 800; color: var(--bleu-nuit); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; font-family: 'DM Sans', sans-serif; }
+    .mood-section-label::after { content: ''; flex: 1; height: 1px; background: #F0E8DD; }
+    .mood-emojis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .mood-emoji-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px 8px; border-radius: 16px; border: 2px solid #F0E8DD; background: var(--gray-soft); cursor: pointer; transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1); font-family: 'DM Sans', sans-serif; font-size: 0.7rem; color: var(--gray-text); gap: 6px; position: relative; overflow: hidden; }
+    .mood-emoji-btn::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(125,46,62,0.05), transparent); opacity: 0; transition: opacity 0.2s; }
+    .mood-emoji-btn span.emoji { font-size: 1.8rem; line-height: 1; filter: grayscale(0.3); transition: filter 0.2s, transform 0.3s; }
+    .mood-emoji-btn:hover { border-color: var(--bordeaux); background: #FFF5F7; transform: translateY(-2px); }
+    .mood-emoji-btn:hover span.emoji { filter: grayscale(0); transform: scale(1.15); }
+    .mood-emoji-btn.selected { border-color: var(--bordeaux); background: linear-gradient(135deg, #FFF0F3, #FEF5F7); color: var(--bordeaux); font-weight: 700; box-shadow: 0 4px 16px rgba(125,46,62,0.18); transform: translateY(-2px); }
+    .mood-emoji-btn.selected::after { opacity: 1; }
+    .mood-emoji-btn.selected span.emoji { filter: grayscale(0); transform: scale(1.1); }
+    .mood-emoji-check { position: absolute; top: 6px; right: 6px; width: 16px; height: 16px; border-radius: 50%; background: var(--bordeaux); color: white; font-size: 0.5rem; display: none; align-items: center; justify-content: center; }
+    .mood-emoji-btn.selected .mood-emoji-check { display: flex; }
+    .pref-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pref-chip { padding: 7px 14px; border-radius: 30px; border: 1.5px solid #E8DFD1; background: var(--gray-soft); font-size: 0.75rem; cursor: pointer; transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1); font-family: 'DM Sans', sans-serif; color: var(--gray-text); font-weight: 500; display: flex; align-items: center; gap: 6px; }
+    .pref-chip:hover { border-color: var(--or-ambre); color: var(--or-ambre); transform: translateY(-1px); }
+    .pref-chip.selected { border-color: var(--or-ambre); background: rgba(193,120,23,0.1); color: #8a5310; font-weight: 700; box-shadow: 0 2px 10px rgba(193,120,23,0.2); transform: translateY(-1px); }
+    .budget-track { position: relative; }
+    .budget-display-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .budget-display { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 700; color: var(--bordeaux); line-height: 1; }
+    .budget-display-sub { font-size: 0.7rem; color: var(--gray-text); font-weight: 500; font-family: 'DM Sans', sans-serif; }
+    .budget-range-labels { display: flex; justify-content: space-between; font-size: 0.68rem; color: #B8AFA8; margin-top: 8px; font-family: 'DM Sans', sans-serif; }
+    .budget-slider { width: 100%; -webkit-appearance: none; height: 6px; border-radius: 3px; background: #F0E8DD; outline: none; background-image: linear-gradient(var(--bordeaux), var(--bordeaux)); background-size: 20% 100%; background-repeat: no-repeat; }
+    .budget-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: white; cursor: pointer; border: 3px solid var(--bordeaux); box-shadow: 0 2px 10px rgba(125,46,62,0.3); transition: transform 0.15s; }
+    .budget-slider::-webkit-slider-thumb:hover { transform: scale(1.15); }
+    .budget-slider::-moz-range-thumb { width: 24px; height: 24px; border-radius: 50%; background: white; cursor: pointer; border: 3px solid var(--bordeaux); box-shadow: 0 2px 10px rgba(125,46,62,0.3); }
+    .saison-btns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .saison-btn { padding: 10px 8px; border-radius: 14px; border: 2px solid #F0E8DD; background: var(--gray-soft); font-size: 0.7rem; cursor: pointer; text-align: center; transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1); font-family: 'DM Sans', sans-serif; color: var(--gray-text); font-weight: 500; }
+    .saison-btn span { display: block; font-size: 1.4rem; margin-bottom: 4px; }
+    .saison-btn:hover { border-color: var(--bleu-nuit); color: var(--bleu-nuit); transform: translateY(-2px); }
+    .saison-btn.selected { border-color: var(--bleu-nuit); background: rgba(27,58,75,0.08); color: var(--bleu-nuit); font-weight: 700; box-shadow: 0 4px 14px rgba(27,58,75,0.15); transform: translateY(-2px); }
+    .btn-recommend { width: 100%; padding: 16px; border-radius: 50px; border: none; background: linear-gradient(135deg, var(--bordeaux) 0%, #a0213c 50%, var(--or-ambre) 100%); background-size: 200% 100%; background-position: left center; color: white; font-size: 1rem; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.4s ease; margin-top: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 8px 24px rgba(125,46,62,0.35); letter-spacing: 0.03em; }
+    .btn-recommend:hover { background-position: right center; transform: translateY(-2px); box-shadow: 0 12px 32px rgba(125,46,62,0.45); }
+    .btn-recommend:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .recommend-result { display: none; margin-top: 1.5rem; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 30px rgba(125,46,62,0.12); animation: resultFadeIn 0.5s ease; }
+    @keyframes resultFadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    .recommend-result-header { background: linear-gradient(135deg, var(--bordeaux), #a0213c); padding: 1rem 1.3rem; display: flex; align-items: center; gap: 10px; }
+    .recommend-result-header-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; color: white; font-size: 1rem; }
+    .recommend-result-label { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-bottom: 2px; }
+    .recommend-result-name { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 700; color: white; }
+    .recommend-result-body { background: #FFF5F0; padding: 1.1rem 1.3rem; }
+    .recommend-result-price { display: inline-flex; align-items: center; gap: 6px; background: rgba(193,120,23,0.12); color: #8a5310; border: 1px solid rgba(193,120,23,0.25); padding: 4px 12px; border-radius: 30px; font-size: 0.8rem; font-weight: 700; margin-bottom: 10px; }
+    .recommend-result-raison { font-size: 0.84rem; color: var(--bleu-nuit); line-height: 1.65; margin-bottom: 14px; padding: 10px 14px; background: white; border-radius: 12px; border-left: 3px solid var(--bordeaux); font-family: 'DM Sans', sans-serif; }
+    .btn-go-voyage { display: inline-flex; align-items: center; gap: 8px; background: var(--bordeaux); color: white; padding: 10px 22px; border-radius: 30px; text-decoration: none; font-size: 0.82rem; font-weight: 700; transition: all 0.2s; box-shadow: 0 4px 14px rgba(125,46,62,0.3); font-family: 'DM Sans', sans-serif; }
+    .btn-go-voyage:hover { background: #9f1c36; color: white; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(125,46,62,0.4); }
+
+    /* =============================================
+       VOICE CALL INTERFACE
+       ============================================= */
+    .call-trigger-btn {
+        position: fixed; bottom: 28px; right: 28px;
+        width: 64px; height: 64px; border-radius: 50%;
+        background: linear-gradient(135deg, var(--bordeaux) 0%, #b5122a 100%);
+        border: none; cursor: pointer;
+        box-shadow: 0 6px 24px rgba(125,46,62,0.45), 0 0 0 0 rgba(125,46,62,0.25);
+        transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        z-index: 1000; display: flex; align-items: center; justify-content: center;
+        animation: floatBtn 3s ease-in-out infinite;
+    }
+    @keyframes floatBtn {
+        0%,100% { transform: translateY(0); box-shadow: 0 6px 24px rgba(125,46,62,0.45), 0 0 0 0 rgba(125,46,62,0.25); }
+        50%      { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(125,46,62,0.5), 0 0 0 8px rgba(125,46,62,0.08); }
+    }
+    .call-trigger-btn:hover { transform: scale(1.12) translateY(-2px); animation: none; box-shadow: 0 10px 32px rgba(125,46,62,0.55); }
+    .call-trigger-btn i { font-size: 26px; color: white; }
+    .call-trigger-tooltip { position: fixed; bottom: 100px; right: 28px; background: rgba(27,27,40,0.92); color: white; font-size: 0.75rem; padding: 6px 14px; border-radius: 20px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; font-family: 'DM Sans', sans-serif; }
+    .call-trigger-btn:hover + .call-trigger-tooltip { opacity: 1; }
+    .call-overlay { position: fixed; inset: 0; background: linear-gradient(145deg, #FFF9F0 0%, #FEF5E8 30%, #FFF0E5 60%, #FEF9F0 100%); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.4s ease; }
+    .call-overlay.visible { display: flex; }
+    .call-overlay.active { opacity: 1; }
+    .call-overlay::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(1px 1px at 20% 30%, rgba(193,120,23,0.15) 0%, transparent 100%), radial-gradient(1px 1px at 80% 20%, rgba(125,46,62,0.12) 0%, transparent 100%), radial-gradient(2px 2px at 35% 15%, rgba(193,120,23,0.08) 0%, transparent 100%), radial-gradient(2px 2px at 65% 85%, rgba(125,46,62,0.1) 0%, transparent 100%); pointer-events: none; }
+    .call-content { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 550px; padding: 2rem; background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); border-radius: 48px; box-shadow: 0 30px 70px rgba(0,0,0,0.12), 0 0 0 1px rgba(193,120,23,0.12); margin: 1.5rem; }
+    .agent-info { text-align: center; margin-bottom: 2rem; }
+    .agent-name { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 700; color: var(--bordeaux); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.4rem; }
+    .agent-status { font-size: 0.8rem; color: var(--or-ambre); letter-spacing: 2px; text-transform: uppercase; font-weight: 600; font-family: 'DM Sans', sans-serif; }
+    .agent-status.speaking { color: #10B981; }
+    .agent-status.listening { color: #3B82F6; }
+    .agent-status.thinking { color: #F59E0B; }
+    .orb-container { position: relative; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; margin-bottom: 2rem; }
+    .orb-ring { position: absolute; border-radius: 50%; border: 1px solid; animation: orbRingPulse 3s ease-in-out infinite; opacity: 0; }
+    .orb-ring:nth-child(1) { width: 200px; height: 200px; border-color: rgba(125,46,62,0.2); animation-delay: 0s; }
+    .orb-ring:nth-child(2) { width: 220px; height: 220px; border-color: rgba(193,120,23,0.15); animation-delay: 0.4s; }
+    .orb-ring:nth-child(3) { width: 240px; height: 240px; border-color: rgba(61,107,79,0.1); animation-delay: 0.8s; }
+    @keyframes orbRingPulse { 0% { opacity:0; transform:scale(0.85); } 40% { opacity:1; } 100% { opacity:0; transform:scale(1.15); } }
+    .orb-sphere { position: relative; width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, rgba(193,120,23,0.8) 0%, rgba(125,46,62,0.6) 40%, rgba(27,58,75,0.5) 70%, rgba(61,107,79,0.4) 100%); box-shadow: 0 0 40px rgba(125,46,62,0.3), 0 0 80px rgba(193,120,23,0.2), inset 0 0 20px rgba(255,255,255,0.3); transition: all 0.3s ease; overflow: hidden; z-index: 1; }
+    .orb-canvas { width: 100%; height: 100%; border-radius: 50%; }
+    .orb-sphere.idle { animation: orbIdle 4s ease-in-out infinite; }
+    @keyframes orbIdle { 0%,100% { box-shadow: 0 0 40px rgba(125,46,62,0.3),0 0 80px rgba(193,120,23,0.2),inset 0 0 20px rgba(255,255,255,0.3); } 50% { box-shadow: 0 0 60px rgba(125,46,62,0.2),0 0 100px rgba(193,120,23,0.15),inset 0 0 25px rgba(255,255,255,0.4); } }
+    .orb-sphere.listening { animation: orbListening 0.8s ease-in-out infinite alternate; background: radial-gradient(circle at 35% 35%, rgba(59,130,246,0.8) 0%, rgba(96,165,250,0.6) 40%, rgba(27,58,75,0.5) 70%, rgba(61,107,79,0.4) 100%); box-shadow: 0 0 50px rgba(59,130,246,0.4),0 0 90px rgba(96,165,250,0.3),inset 0 0 20px rgba(255,255,255,0.4); }
+    @keyframes orbListening { from { transform:scale(1); } to { transform:scale(1.04); } }
+    .orb-sphere.speaking { animation: orbSpeaking 0.3s ease-in-out infinite alternate; background: radial-gradient(circle at 35% 35%, rgba(16,185,129,0.8) 0%, rgba(34,197,94,0.6) 40%, rgba(27,58,75,0.5) 70%, rgba(61,107,79,0.4) 100%); box-shadow: 0 0 50px rgba(16,185,129,0.4),0 0 90px rgba(34,197,94,0.3),inset 0 0 20px rgba(255,255,255,0.4); }
+    @keyframes orbSpeaking { from { transform:scale(1) rotate(0deg); } to { transform:scale(1.03) rotate(0.5deg); } }
+    .orb-sphere.thinking { animation: orbThinking 1.5s ease-in-out infinite; background: radial-gradient(circle at 35% 35%, rgba(245,158,11,0.8) 0%, rgba(251,191,36,0.6) 40%, rgba(27,58,75,0.5) 70%, rgba(61,107,79,0.4) 100%); box-shadow: 0 0 50px rgba(245,158,11,0.4),0 0 90px rgba(251,191,36,0.3),inset 0 0 20px rgba(255,255,255,0.4); }
+    @keyframes orbThinking { 0%,100% { transform:scale(1); } 50% { transform:scale(1.05); } }
+    .call-transcript { width: 100%; min-height: 100px; max-height: 220px; overflow-y: auto; margin-bottom: 1.8rem; padding: 0 0.5rem; background: rgba(255,255,255,0.6); border-radius: 28px; }
+    .transcript-line { font-size: 0.95rem; line-height: 1.5; color: var(--dark); font-weight: 400; transition: all 0.3s ease; margin-bottom: 0.6rem; padding: 0.5rem 1rem; border-radius: 20px; font-family: 'DM Sans', sans-serif; }
+    .transcript-line.user-line { background: rgba(125,46,62,0.08); color: var(--bordeaux); font-weight: 500; text-align: right; }
+    .transcript-line.bot-line { background: rgba(61,107,79,0.06); color: var(--bleu-nuit); text-align: left; }
+    .typing-dots { display: inline-flex; gap: 5px; align-items: center; padding: 0.5rem 0; }
+    .typing-dots span { width: 7px; height: 7px; background: var(--or-ambre); border-radius: 50%; animation: typingBounce 1.2s ease-in-out infinite; }
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typingBounce { 0%,60%,100% { transform:translateY(0); opacity:0.5; } 30% { transform:translateY(-8px); opacity:1; } }
+    .audio-bars { display: flex; align-items: center; gap: 3px; height: 24px; margin-bottom: 1rem; opacity: 0; transition: opacity 0.3s; }
+    .audio-bars.active { opacity: 1; }
+    .audio-bar { width: 3px; border-radius: 2px; background: var(--or-ambre); animation: audioBar 0.6s ease-in-out infinite alternate; }
+    .audio-bar:nth-child(1) { height: 8px; animation-delay: 0s; }
+    .audio-bar:nth-child(2) { height: 16px; animation-delay: 0.1s; }
+    .audio-bar:nth-child(3) { height: 22px; animation-delay: 0.05s; }
+    .audio-bar:nth-child(4) { height: 14px; animation-delay: 0.15s; }
+    .audio-bar:nth-child(5) { height: 20px; animation-delay: 0.08s; }
+    .audio-bar:nth-child(6) { height: 10px; animation-delay: 0.12s; }
+    .audio-bar:nth-child(7) { height: 18px; animation-delay: 0.03s; }
+    @keyframes audioBar { from { transform:scaleY(0.4); opacity:0.5; } to { transform:scaleY(1); opacity:1; } }
+    .call-controls { display: flex; align-items: center; gap: 1.2rem; }
+    .ctrl-btn { width: 52px; height: 52px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1); font-size: 1.1rem; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .ctrl-btn:hover { transform: scale(1.08); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
+    .ctrl-btn:active { transform: scale(0.96); }
+    .ctrl-btn-mute { color: var(--gray-text); border: 1px solid #E8DFD1; }
+    .ctrl-btn-mute.muted { background: rgba(239,68,68,0.1); color: #EF4444; border-color: rgba(239,68,68,0.3); }
+    .ctrl-btn-end { background: linear-gradient(135deg, #DC2626, #B91C1C); color: white; box-shadow: 0 6px 18px rgba(220,38,38,0.35); width: 64px; height: 64px; font-size: 1.3rem; }
+    .ctrl-btn-end:hover { box-shadow: 0 8px 24px rgba(220,38,38,0.5); }
+    .ctrl-btn-keyboard { color: var(--gray-text); border: 1px solid #E8DFD1; }
+    .ctrl-btn-keyboard.active { background: rgba(193,120,23,0.12); color: var(--or-ambre); border-color: rgba(193,120,23,0.3); }
+    .call-text-input { width: 100%; display: none; margin-bottom: 1.5rem; animation: slideUp 0.3s ease; }
+    .call-text-input.visible { display: flex; gap: 12px; }
+    @keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    .call-text-input input { flex: 1; padding: 14px 20px; background: white; border: 2px solid #F0E8DD; border-radius: 40px; color: var(--dark); font-size: 0.9rem; font-family: 'DM Sans', sans-serif; outline: none; transition: all 0.2s; }
+    .call-text-input input::placeholder { color: #C4B9B0; }
+    .call-text-input input:focus { border-color: var(--or-ambre); box-shadow: 0 0 0 3px rgba(193,120,23,0.1); }
+    .call-text-input button { width: 48px; height: 48px; border-radius: 50%; border: none; background: linear-gradient(135deg, var(--bordeaux), #a0213c); color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; transition: all 0.2s; box-shadow: 0 4px 12px rgba(125,46,62,0.3); }
+    .call-text-input button:hover { transform: scale(1.05); box-shadow: 0 6px 18px rgba(125,46,62,0.4); }
+    .call-timer { font-size: 0.75rem; color: var(--gray-text); letter-spacing: 1px; font-family: 'Courier New', monospace; margin-bottom: 0.3rem; }
+    .call-hint { font-size: 0.65rem; color: #C4B9B0; text-align: center; letter-spacing: 1px; margin-top: 1rem; font-family: 'DM Sans', sans-serif; }
+
+    /* =============================================
+       FLIPBOOK
+       ============================================= */
+    .flipbook-trigger-btn {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: linear-gradient(135deg, #8B6914, #C17817);
+        color: white; border: none; padding: 9px 20px;
+        border-radius: 50px; font-size: 0.88rem; font-weight: 600;
+        cursor: pointer; font-family: 'DM Sans', sans-serif;
+        box-shadow: 0 4px 16px rgba(139,105,20,0.35);
+        transition: all 0.3s ease; letter-spacing: 0.2px;
+    }
+    .flipbook-trigger-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(139,105,20,0.5); }
+    .flipbook-trigger-btn i { font-size: 1rem; }
+    .flipbook-overlay { position: fixed; inset: 0; background: rgba(5, 3, 12, 0.88); z-index: 2100; display: none; align-items: center; justify-content: center; backdrop-filter: blur(12px); padding: 1rem; }
+    .flipbook-overlay.open { display: flex; }
+    .flipbook-container { position: relative; width: 100%; max-width: 1000px; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; animation: fbOpen 0.5s cubic-bezier(0.16,1,0.3,1); }
+    @keyframes fbOpen { from { opacity:0; transform: scale(0.85) translateY(40px); } to { opacity:1; transform: scale(1) translateY(0); } }
+    .flipbook-close { position: absolute; top: -14px; right: -14px; width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.2); color: white; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; z-index: 10; backdrop-filter: blur(6px); }
+    .flipbook-close:hover { background: rgba(255,255,255,0.22); transform: rotate(90deg); }
+    .flipbook-sound-btn { position: absolute; top: -14px; left: -14px; width: 42px; height: 42px; border-radius: 50%; background: rgba(193,120,23,0.2); border: 1.5px solid rgba(193,120,23,0.4); color: var(--or-ambre); font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; z-index: 10; }
+    .flipbook-sound-btn:hover { background: rgba(193,120,23,0.35); }
+    .flipbook-sound-btn.muted { color: #6B7280; border-color: rgba(107,114,128,0.3); background: rgba(107,114,128,0.1); }
+    .flipbook-book { width: 100%; max-width: 900px; height: 560px; position: relative; perspective: 2400px; transform-style: preserve-3d; }
+    .fb-page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; border-radius: 4px 16px 16px 4px; overflow: hidden; box-shadow: 8px 8px 40px rgba(0,0,0,0.5), -4px 0 20px rgba(0,0,0,0.3); }
+    .fb-page.active { display: flex; }
+    .fb-page.turning-out { display: flex; animation: pageFlipOut 0.55s cubic-bezier(0.55, 0, 1, 0.45) forwards; transform-origin: left center; }
+    .fb-page.turning-in { display: flex; animation: pageFlipIn 0.55s cubic-bezier(0, 0.55, 0.45, 1) forwards; transform-origin: left center; }
+    .fb-page.turning-out-back { display: flex; animation: pageFlipOutBack 0.55s cubic-bezier(0.55, 0, 1, 0.45) forwards; transform-origin: left center; }
+    .fb-page.turning-in-back { display: flex; animation: pageFlipInBack 0.55s cubic-bezier(0, 0.55, 0.45, 1) forwards; transform-origin: left center; }
+    @keyframes pageFlipOut { 0% { transform: rotateY(0deg); opacity:1; } 100% { transform: rotateY(-90deg); opacity:0; } }
+    @keyframes pageFlipIn { 0% { transform: rotateY(90deg); opacity:0; } 100% { transform: rotateY(0deg); opacity:1; } }
+    @keyframes pageFlipOutBack { 0% { transform: rotateY(0deg); opacity:1; } 100% { transform: rotateY(90deg); opacity:0; } }
+    @keyframes pageFlipInBack { 0% { transform: rotateY(-90deg); opacity:0; } 100% { transform: rotateY(0deg); opacity:1; } }
+    .fb-page-inner { width: 100%; height: 100%; display: flex; position: relative; }
+    .fb-left { flex: 1; padding: 3rem 2.5rem 2.5rem; display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; }
+    .fb-right { flex: 1; position: relative; overflow: hidden; }
+    .fb-right img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
+    .fb-page:hover .fb-right img { transform: scale(1.04); }
+    .fb-right::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to right, rgba(0,0,0,0.15), transparent 30%); }
+    .fb-paper { background-color: #F9F3E8; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); }
+    .fb-spine { width: 6px; background: linear-gradient(180deg, #8B6914 0%, #C17817 40%, #8B6914 70%, #6B4F10 100%); flex-shrink: 0; box-shadow: inset -2px 0 4px rgba(0,0,0,0.2), inset 2px 0 4px rgba(255,200,80,0.1); }
+    .fb-page-num { position: absolute; bottom: 1.2rem; right: 1.5rem; font-size: 0.65rem; color: #9C8060; letter-spacing: 0.1em; font-family: 'Playfair Display', serif; font-style: italic; }
+    .fb-chapter-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: #C17817; font-weight: 700; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 8px; }
+    .fb-chapter-label::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, #C17817, transparent); }
+    .fb-title { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: #3B2010; line-height: 1.2; margin-bottom: 1rem; }
+    .fb-divider { width: 40px; height: 2px; background: linear-gradient(90deg, #C17817, transparent); margin-bottom: 1.2rem; }
+    .fb-text { font-size: 0.9rem; color: #5A3E28; line-height: 1.8; font-family: 'Playfair Display', serif; }
+    .fb-text em { color: #8B6914; font-style: italic; }
+    .fb-quote { margin-top: 1.2rem; padding: 0.8rem 1rem; border-left: 3px solid #C17817; background: rgba(193,120,23,0.06); border-radius: 0 8px 8px 0; font-style: italic; font-size: 0.85rem; color: #7A5C3A; font-family: 'Playfair Display', serif; }
+    .fb-icon { font-size: 2rem; margin-bottom: 0.8rem; display: block; }
+    .fb-caption { position: absolute; bottom: 0; left: 0; right: 0; padding: 0.8rem 1rem; background: linear-gradient(to top, rgba(20,10,5,0.7), transparent); color: rgba(255,255,255,0.85); font-size: 0.7rem; font-family: 'Playfair Display', serif; font-style: italic; text-align: center; z-index: 2; }
+    .fb-cover { background: linear-gradient(145deg, #1a0c05 0%, #2d1608 30%, #1B3A4B 70%, #0f1e2b 100%); flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 3rem; position: relative; overflow: hidden; }
+    .fb-cover::before { content: ''; position: absolute; inset: 0; background-image: url('https://i.pinimg.com/736x/ef/32/20/ef3220c4f1eb3b856cd61f4298df293a.jpg'); background-size: cover; background-position: center; opacity: 0.18; }
+    .fb-cover-content { position: relative; z-index: 1; }
+    .fb-cover-ornament { font-size: 2.5rem; margin-bottom: 1rem; display: block; filter: drop-shadow(0 2px 8px rgba(193,120,23,0.6)); }
+    .fb-cover-subtitle { font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(193,120,23,0.8); margin-bottom: 1rem; font-family: 'Playfair Display', serif; }
+    .fb-cover-title { font-family: 'Playfair Display', serif; font-size: 3rem; font-weight: 700; color: #F9F3E8; line-height: 1.1; margin-bottom: 0.5rem; text-shadow: 0 2px 20px rgba(0,0,0,0.5); }
+    .fb-cover-divider { width: 60px; height: 2px; background: linear-gradient(90deg, transparent, #C17817, transparent); margin: 1rem auto; }
+    .fb-cover-tagline { font-family: 'Playfair Display', serif; font-style: italic; font-size: 0.95rem; color: rgba(249,243,232,0.7); line-height: 1.6; }
+    .fb-cover-year { margin-top: 1.5rem; font-size: 0.65rem; letter-spacing: 0.25em; color: rgba(193,120,23,0.6); text-transform: uppercase; }
+    .fb-toc { background: #F9F3E8; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); width: 100%; height: 100%; display: flex; flex-direction: column; padding: 2.5rem 3rem; justify-content: center; }
+    .fb-toc-title { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: #3B2010; margin-bottom: 0.3rem; }
+    .fb-toc-subtitle { font-size: 0.7rem; color: #9C8060; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1.5rem; font-style: italic; }
+    .fb-toc-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .fb-toc-item { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 8px; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; }
+    .fb-toc-item:hover { background: rgba(193,120,23,0.08); border-color: rgba(193,120,23,0.2); transform: translateX(4px); }
+    .fb-toc-num { font-family: 'Playfair Display', serif; font-size: 0.75rem; color: #C17817; font-weight: 700; min-width: 20px; }
+    .fb-toc-name { font-family: 'Playfair Display', serif; font-size: 0.85rem; color: #5A3E28; flex: 1; }
+    .fb-toc-dots { flex: 1; border-bottom: 1px dotted #C8A97A; margin: 0 8px; margin-bottom: 2px; }
+    .fb-toc-page { font-size: 0.7rem; color: #9C8060; }
+    .fb-toc-emoji { font-size: 1rem; }
+    .flipbook-nav { display: flex; align-items: center; gap: 1.5rem; }
+    .fb-nav-btn { width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.1); border: 1.5px solid rgba(255,255,255,0.18); color: white; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1); backdrop-filter: blur(6px); }
+    .fb-nav-btn:hover { background: rgba(193,120,23,0.25); border-color: rgba(193,120,23,0.4); transform: scale(1.1); }
+    .fb-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+    .fb-page-indicator { font-family: 'Playfair Display', serif; font-style: italic; font-size: 0.85rem; color: rgba(249,243,232,0.6); min-width: 80px; text-align: center; }
+    .fb-food-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; width: 100%; height: 100%; gap: 3px; }
+    .fb-food-item { position: relative; overflow: hidden; }
+    .fb-food-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+    .fb-food-item:hover img { transform: scale(1.08); }
+    .fb-food-label { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(20,10,5,0.75), transparent); color: rgba(249,243,232,0.9); font-size: 0.65rem; padding: 0.4rem 0.6rem; font-family: 'Playfair Display', serif; font-style: italic; text-align: center; }
+
+    /* =============================================
+       CUSTOM TRIP BUILDER
+       ============================================= */
+    .custom-trip-btn {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: linear-gradient(135deg, #3D6B4F, #2d5a3e);
+        color: white; border: none; padding: 8px 18px;
+        border-radius: 30px; font-size: 0.9rem; font-weight: 600;
+        cursor: pointer; font-family: 'Poppins', sans-serif;
+        box-shadow: 0 4px 14px rgba(61,107,79,0.35);
+        transition: all 0.3s ease;
+    }
+    .custom-trip-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(61,107,79,0.5); }
+    .trip-builder-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); z-index: 2200; display: none; align-items: center; justify-content: center; padding: 2rem; }
+    .trip-builder-overlay.open { display: flex; }
+    .trip-builder-container { width: 100%; max-width: 1400px; height: 90vh; background: var(--cream); border-radius: 32px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 30px 60px rgba(0,0,0,0.4); animation: tripBuilderOpen 0.4s cubic-bezier(0.16,1,0.3,1); }
+    @keyframes tripBuilderOpen { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    .trip-builder-header { background: linear-gradient(135deg, var(--bleu-nuit), #2A5570); padding: 1.2rem 2rem; display: flex; justify-content: space-between; align-items: center; color: white; }
+    .trip-builder-header h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; margin: 0; display: flex; align-items: center; gap: 12px; }
+    .trip-builder-header h2 i { color: var(--or-ambre); }
+    .close-trip-builder { background: rgba(255,255,255,0.1); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; cursor: pointer; font-size: 1.2rem; transition: all 0.2s; }
+    .close-trip-builder:hover { background: rgba(255,255,255,0.2); transform: rotate(90deg); }
+    .trip-builder-body { display: flex; flex: 1; overflow: hidden; }
+    .programs-panel { width: 40%; background: var(--gray-soft); border-right: 1px solid #E8DFD1; display: flex; flex-direction: column; overflow: hidden; }
+    .programs-search { padding: 1rem; border-bottom: 1px solid #E8DFD1; }
+    .programs-search input { width: 100%; padding: 12px 16px; border: 2px solid #E8DFD1; border-radius: 30px; font-family: 'Poppins', sans-serif; outline: none; transition: all 0.2s; }
+    .programs-search input:focus { border-color: var(--or-ambre); }
+    .programs-list { flex: 1; overflow-y: auto; padding: 1rem; }
+    .program-card { background: white; border-radius: 16px; padding: 1rem; margin-bottom: 0.8rem; cursor: grab; transition: all 0.2s; border: 1px solid #E8DFD1; display: flex; gap: 12px; }
+    .program-card:active { cursor: grabbing; }
+    .program-card:hover { transform: translateX(4px); border-color: var(--or-ambre); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .program-card.dragging { opacity: 0.4; }
+    .program-img { width: 60px; height: 60px; border-radius: 12px; object-fit: cover; }
+    .program-info { flex: 1; }
+    .program-name { font-weight: 700; color: var(--bordeaux); margin-bottom: 4px; }
+    .program-location { font-size: 0.7rem; color: var(--gray-text); display: flex; align-items: center; gap: 4px; margin-bottom: 6px; }
+    .program-price { font-size: 0.85rem; font-weight: 700; color: var(--or-ambre); }
+    .itinerary-panel { width: 60%; background: white; display: flex; flex-direction: column; overflow: hidden; }
+    .itinerary-header { padding: 1rem 1.5rem; background: #FEF9F0; border-bottom: 1px solid #E8DFD1; display: flex; justify-content: space-between; align-items: center; }
+    .itinerary-header h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; color: var(--bordeaux); margin: 0; }
+    .add-day-btn { background: linear-gradient(135deg, var(--vert-sauge), #2d5a3e); border: none; padding: 8px 16px; border-radius: 30px; color: white; cursor: pointer; font-weight: 600; font-size: 0.8rem; display: flex; align-items: center; gap: 6px; }
+    .add-day-btn:hover { transform: scale(1.02); }
+    .itinerary-days { flex: 1; overflow-y: auto; padding: 1.5rem; }
+    .day-card { background: #FEF9F0; border-radius: 20px; margin-bottom: 1.5rem; border: 1px solid #E8DFD1; overflow: hidden; }
+    .day-header { background: linear-gradient(135deg, var(--bleu-nuit), #2A5570); padding: 0.8rem 1.2rem; display: flex; justify-content: space-between; align-items: center; color: white; }
+    .day-title { font-weight: 700; font-size: 1rem; }
+    .day-title i { margin-right: 8px; color: var(--or-ambre); }
+    .remove-day-btn { background: rgba(255,255,255,0.15); border: none; width: 28px; height: 28px; border-radius: 50%; color: white; cursor: pointer; transition: all 0.2s; }
+    .remove-day-btn:hover { background: rgba(220,38,38,0.8); }
+    .day-programs { padding: 0.8rem; min-height: 80px; }
+    .day-program-item { background: white; border-radius: 12px; padding: 0.8rem; margin-bottom: 0.6rem; display: flex; justify-content: space-between; align-items: center; cursor: grab; border: 1px solid #E8DFD1; transition: all 0.2s; }
+    .day-program-item:active { cursor: grabbing; }
+    .day-program-item:hover { border-color: var(--or-ambre); transform: translateX(4px); }
+    .day-program-info { flex: 1; }
+    .day-program-name { font-weight: 600; color: var(--bordeaux); font-size: 0.85rem; }
+    .day-program-location { font-size: 0.7rem; color: var(--gray-text); }
+    .day-program-price { font-weight: 700; color: var(--or-ambre); font-size: 0.8rem; }
+    .remove-program-btn { background: none; border: none; color: #EF4444; cursor: pointer; font-size: 1rem; padding: 4px; }
+    .empty-day { text-align: center; padding: 1.5rem; color: var(--gray-text); font-size: 0.8rem; border: 2px dashed #E8DFD1; border-radius: 12px; }
+    .transport-info { background: #E8F4FD; padding: 0.6rem 0.8rem; margin: 0.5rem 0.8rem; border-radius: 12px; font-size: 0.7rem; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid var(--or-ambre); }
+    .transport-name i { margin-right: 4px; color: var(--or-ambre); }
+    .transport-price { font-weight: 700; color: var(--bordeaux); }
+    .trip-builder-footer { background: #FEF9F0; border-top: 2px solid #E8DFD1; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+    .price-summary { display: flex; gap: 2rem; }
+    .price-item { text-align: center; }
+    .price-label { font-size: 0.7rem; color: var(--gray-text); text-transform: uppercase; }
+    .price-value { font-size: 1.4rem; font-weight: 800; color: var(--bordeaux); }
+    .total-price { font-size: 1.8rem; font-weight: 800; color: var(--bordeaux); }
+    .save-trip-btn { background: linear-gradient(135deg, var(--bordeaux), #a0213c); border: none; padding: 12px 28px; border-radius: 40px; color: white; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+    .save-trip-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(125,46,62,0.4); }
+    .drop-zone-active { background: rgba(193,120,23,0.1); border: 2px dashed var(--or-ambre); }
+
+    /* =============================================
+       RESPONSIVE
+       ============================================= */
     @media (max-width: 768px) {
         .hero { height: 45vh; min-height: 350px; }
         .hero h1 { font-size: 2rem; }
-        .hero-content { padding: 1.2rem; margin: 0 1rem; }
-        .hero .btn-hero { padding: 8px 20px; font-size: 0.8rem; }
+        .hero-content { padding: 1.5rem 2rem; }
+        .voyages-grid { grid-template-columns: 1fr; }
+        .search-sort-bar { flex-direction: column; align-items: stretch; }
+        .sort-wrapper { width: 100%; }
+        .sort-toggle-btn { width: 100%; justify-content: center; }
         .section-title { font-size: 2rem; }
-        .filters-bar { flex-direction: column; border-radius: 25px; }
-        .search-input { width: 100%; }
         .card-img { height: 200px; }
-        .button-group { flex-direction: column; gap: 6px; }
-        .wishlist-sidebar { width: 100%; right: -100%; }
+        .button-group { flex-direction: column; gap: 8px; }
+        .notif-dropdown { width: calc(100vw - 2rem); right: -10px; }
+        .mood-emojis { grid-template-columns: repeat(2, 1fr); }
+        .saison-btns { grid-template-columns: repeat(2, 1fr); }
+        .mood-modal-inner { padding: 1.4rem; }
+        .mood-modal-title { font-size: 1.6rem; }
+        #toastContainer { right: 12px; bottom: 12px; left: 12px; align-items: stretch; }
+        .notif-toast { min-width: unset; max-width: unset; width: 100%; }
+        .call-content { margin: 1rem; padding: 1.5rem; }
+        .agent-name { font-size: 1.4rem; }
+        .orb-container { width: 160px; height: 160px; }
+        .orb-sphere { width: 110px; height: 110px; }
+        .call-transcript { max-height: 180px; }
+        .ctrl-btn { width: 44px; height: 44px; }
+        .ctrl-btn-end { width: 56px; height: 56px; }
+        .flipbook-book { height: 460px; }
+        .fb-cover-title { font-size: 2.2rem; }
+        .fb-title { font-size: 1.4rem; }
+        .fb-left { padding: 1.5rem 1.2rem; }
+        .fb-toc { padding: 1.5rem; }
+        .fb-toc-dots { display: none; }
+        .trip-builder-body { flex-direction: column; }
+        .programs-panel, .itinerary-panel { width: 100%; }
+        .programs-panel { max-height: 40%; }
+        .price-summary { flex-direction: column; gap: 0.5rem; }
+        .total-price { font-size: 1.2rem; }
     }
 </style>
 {% endblock %}
 
 {% block body %}
-<!-- Hero Section - Plus petite et plus claire -->
 <section class="hero">
-    <img class="hero-bg" src="{{ asset('images/tunisia-hero.jpg') }}" alt="Voyage en Tunisie">
     <div class="hero-content">
         <h1>Nos Voyages en Tunisie</h1>
+        <div class="hero-divider"></div>
         <p>Découvrez nos séjours exclusifs, conçus pour vous faire vivre la magie de la Tunisie.</p>
-        <a href="#voyages" class="btn-hero">Explorer maintenant</a>
     </div>
 </section>
 
-<section id="voyages" class="py-5">
+<section class="py-5">
     <div class="container">
-        <div class="d-flex justify-content-end mb-3">
+        <div class="search-sort-bar">
+            <div class="search-field-wrapper">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" class="search-input" placeholder="Rechercher un voyage..." autocomplete="off">
+                <button class="search-clear-btn" id="searchClearBtn" type="button"><i class="fas fa-times"></i></button>
+            </div>
+
+            <button class="mood-btn" id="moodBtn" type="button">
+                <i class="fas fa-wand-magic-sparkles"></i> Trouver mon voyage
+            </button>
+
+            <button class="flipbook-trigger-btn" id="flipbookTriggerBtn" type="button">
+                <i class="fas fa-book-open"></i> Livre Tunisie
+            </button>
+
+            <div class="sort-wrapper">
+                <button class="sort-toggle-btn" id="sortToggleBtn" type="button">
+                    <i class="fas fa-sliders-h"></i>
+                    <span id="sortLabel">Trier par</span>
+                    <i class="fas fa-chevron-down sort-chevron"></i>
+                </button>
+                <div class="sort-dropdown-menu" id="sortDropdownMenu">
+                    <div class="sort-option active" data-value="name_asc"><i class="fas fa-sort-alpha-down"></i> Nom (A-Z)</div>
+                    <div class="sort-option" data-value="price_asc"><i class="fas fa-arrow-up"></i> Prix (croissant)</div>
+                    <div class="sort-option" data-value="price_desc"><i class="fas fa-arrow-down"></i> Prix (décroissant)</div>
+                    <div class="sort-option" data-value="date_asc"><i class="fas fa-calendar"></i> Date (plus ancien)</div>
+                </div>
+            </div>
+
+            <div class="notif-wrapper" id="notifWrapper">
+                <button class="notif-btn" id="notifBtn" type="button">
+                    <i class="fas fa-bell"></i>
+                    <span>Alertes</span>
+                    <span class="notif-badge" id="notifBadge">0</span>
+                </button>
+                <div class="notif-dropdown" id="notifDropdown">
+                    <div class="notif-dropdown-header">
+                        <div class="notif-dropdown-title">
+                            <i class="fas fa-bell"></i> Notifications
+                        </div>
+                        <button class="btn-read-all" id="btnReadAll">Tout lire</button>
+                    </div>
+                    <div class="notif-scroll-area" id="notifList">
+                        <div class="notif-empty"><i class="fas fa-bell-slash"></i><p>Aucune notification</p></div>
+                    </div>
+                    <div class="notif-dropdown-footer">
+                        <span style="font-size:0.7rem;color:#B8AFA8;">TunisiaJourney · Alertes en temps réel</span>
+                    </div>
+                </div>
+            </div>
+
             <div class="wishlist-icon" id="wishlistIcon">
                 <i class="fas fa-heart"></i>
                 <span>Wishlist</span>
@@ -660,85 +907,47 @@
             </div>
         </div>
 
-        <div class="filters-bar">
-            <div class="filter-group">
-                <i class="fas fa-search text-muted"></i>
-                <input type="text" class="search-input" id="searchInput" placeholder="Rechercher...">
-            </div>
-            <div class="filter-group">
-                <label> Durée</label>
-                <select class="filter-select" id="durationFilter">
-                    <option value="all">Toutes</option>
-                    <option value="3">3 jours</option>
-                    <option value="5">5 jours</option>
-                    <option value="7">7 jours</option>
-                    <option value="10">10 jours+</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Budget</label>
-                <select class="filter-select" id="budgetFilter">
-                    <option value="all">Tous</option>
-                    <option value="budget">Éco (-500 DT)</option>
-                    <option value="medium">Confort (500-1000 DT)</option>
-                    <option value="luxury">Luxe (1000+ DT)</option>
-                </select>
-            </div>
-            <button class="btn-filter" id="filterBtn"><i class="fas fa-filter me-1"></i> Filtrer</button>
-        </div>
-
         <h2 class="section-title">Séjours Disponibles</h2>
         <p class="section-subtitle">Choisissez votre prochaine aventure tunisienne</p>
 
-        <div class="row" id="voyagesGrid">
+        <div class="voyages-grid" id="voyagesGrid">
             {% for voyage in voyages %}
-                <div class="col-md-6 col-lg-4 voyage-item mb-4" data-id="{{ voyage.idV }}" data-name="{{ voyage.nom|lower }}" data-price="{{ voyage.prix }}" data-duree="{{ voyage.duree|default(5) }}" data-image="{{ voyage.image ? asset('uploads/voyages/' ~ voyage.image) : 'https://images.pexels.com/photos/1618750/pexels-photo-1618750.jpeg?auto=compress&cs=tinysrgb&w=800' }}">
-                    <div class="card-custom h-100">
+                <div class="voyage-item"
+                     data-id="{{ voyage.idV }}"
+                     data-name="{{ voyage.nom }}"
+                     data-price="{{ voyage.prix }}"
+                     data-date="{{ voyage.dateCreation|date('Y-m-d') }}"
+                     data-image="{{ voyage.image ? asset('uploads/voyages/' ~ voyage.image) : 'https://images.pexels.com/photos/1618750/pexels-photo-1618750.jpeg?auto=compress&cs=tinysrgb&w=800' }}">
+                    <div class="card-custom">
                         <div class="card-img">
-                            <img src="{{ voyage.image ? asset('uploads/voyages/' ~ voyage.image) : 'https://images.pexels.com/photos/1618750/pexels-photo-1618750.jpeg?auto=compress&cs=tinysrgb&w=800' }}" alt="{{ voyage.nom }}" loading="lazy">
-                            <span class="card-badge">À découvrir</span>
-                            <div class="wishlist-star" data-id="{{ voyage.idV }}">
-                                <i class="far fa-star"></i>
-                            </div>
+                            <img src="{{ voyage.image ? asset('uploads/voyages/' ~ voyage.image) : 'https://i.pinimg.com/1200x/40/79/5a/40795a77f4822edd456542c3719eac93.jpg?auto=compress&cs=tinysrgb&w=800' }}" alt="{{ voyage.nom }}" loading="lazy">
+                            <span class="card-badge"><i class="fas fa-tag"></i> À découvrir</span>
+                            <div class="wishlist-star" data-id="{{ voyage.idV }}"><i class="far fa-star"></i></div>
                         </div>
                         <div class="card-content">
                             <h3 class="card-title">{{ voyage.nom }}</h3>
                             <p class="card-location"><i class="fas fa-map-marker-alt"></i> {{ voyage.lieu|default('Tunisie') }}</p>
-                            <p class="card-desc">{{ voyage.description|slice(0, 90) }}{% if voyage.description|length > 90 %}...{% endif %}</p>
+                            <p class="card-desc">{{ voyage.description|slice(0, 100) }}{% if voyage.description|length > 100 %}...{% endif %}</p>
                             <div class="card-meta">
-                                <span><i class="fas fa-user"></i> {{ voyage.capacite|default('2-8') }}</span>
+                                <span><i class="fas fa-user"></i> {{ voyage.capacite|default('2-8') }} pers</span>
                                 <span><i class="fas fa-clock"></i> {{ voyage.heure|date('H:i') }}</span>
-                                <span><i class="fas fa-calendar-alt"></i> {{ voyage.duree|default(5) }}j</span>
+                                <span><i class="fas fa-calendar-alt"></i> {{ voyage.duree|default(5) }} jours</span>
                             </div>
-                            <div class="card-price">{{ voyage.prix|number_format(0, ',', ' ') }} TND <span>/pers</span></div>
+                            <div class="card-divider"></div>
+                            <div class="card-price">{{ voyage.prix|number_format(0, ',', ' ') }} TND <span>/personne</span></div>
                             <div class="button-group">
-                                <a href="{{ path('app_voyage_show', {'idV': voyage.idV}) }}" class="btn-details">
-                                    <i class="fas fa-info-circle me-1"></i> Détails
-                                </a>
-                                <a href="{{ path('app_voyage_programmes', {'idV': voyage.idV}) }}" class="btn-programmes">
-                                    <i class="fas fa-calendar-alt me-1"></i> Programmes
-                                </a>
+                                <a href="{{ path('app_voyage_show', {'idV': voyage.idV}) }}" class="btn-details"><i class="fas fa-info-circle"></i> Détails</a>
+                                <a href="{{ path('app_voyage_programmes', {'idV': voyage.idV}) }}" class="btn-programmes"><i class="fas fa-calendar-alt"></i> Programmes</a>
                             </div>
                         </div>
                     </div>
                 </div>
             {% else %}
-                <div class="col-12 text-center py-5">
-                    <div class="no-results">
-                        <i class="fas fa-suitcase"></i>
-                        <p class="text-muted mb-0">Aucun voyage trouvé.</p>
-                    </div>
-                </div>
+                <div class="col-12 text-center py-5"><div class="no-results"><i class="fas fa-suitcase"></i><p>Aucun voyage trouvé.</p></div></div>
             {% endfor %}
         </div>
 
-        <div class="pagination">
-            <a href="#"><i class="fas fa-chevron-left"></i></a>
-            <span class="active">1</span>
-            <a href="#">2</a>
-            <a href="#">3</a>
-            <a href="#"><i class="fas fa-chevron-right"></i></a>
-        </div>
+        <div class="pagination" id="paginationContainer"></div>
     </div>
 </section>
 
@@ -757,200 +966,1058 @@
         </div>
     </div>
 </div>
+
+<!-- Toast container -->
+<div id="toastContainer"></div>
+
+<!-- ===================== MOOD MODAL ===================== -->
+<div class="mood-modal-overlay" id="moodModalOverlay">
+    <div class="mood-modal">
+        <div class="mood-modal-band"></div>
+        <div class="mood-modal-inner">
+            <div class="mood-modal-header">
+                <div class="mood-modal-title-wrap">
+                    <div class="mood-modal-eyebrow">Recommandation IA</div>
+                    <div class="mood-modal-title">    Quel voyage vous ressemble ?</div>
+                    <div class="mood-modal-subtitle">Notre intelligence artificielle analyse vos envies<br>et vous propose le séjour parfait parmi nos offres.</div>
+                </div>
+                <button class="close-mood" id="closeMoodBtn"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div class="mood-section">
+                <div class="mood-section-label"><i class="fas fa-face-smile"></i> Votre humeur du moment</div>
+                <div class="mood-emojis">
+                    <button class="mood-emoji-btn" data-value="aventurier">
+                        <div class="mood-emoji-check"><i class="fas fa-check"></i></div>
+                        <span class="emoji">🏔️</span>Aventurier
+                    </button>
+                    <button class="mood-emoji-btn" data-value="zen et détente">
+                        <div class="mood-emoji-check"><i class="fas fa-check"></i></div>
+                        <span class="emoji">😌</span>Zen & Détente
+                    </button>
+                    <button class="mood-emoji-btn" data-value="romantique">
+                        <div class="mood-emoji-check"><i class="fas fa-check"></i></div>
+                        <span class="emoji">💕</span>Romantique
+                    </button>
+                    <button class="mood-emoji-btn" data-value="curieux et culturel">
+                        <div class="mood-emoji-check"><i class="fas fa-check"></i></div>
+                        <span class="emoji">🎭</span>Culturel
+                    </button>
+                    <button class="mood-emoji-btn" data-value="festif">
+                        <div class="mood-emoji-check"><i class="fas fa-check"></i></div>
+                        <span class="emoji">🎉</span>Festif
+                    </button>
+                    <button class="mood-emoji-btn" data-value="famille">
+                        <div class="mood-emoji-check"><i class="fas fa-check"></i></div>
+                        <span class="emoji">👨‍👩‍👧</span>Famille
+                    </button>
+                </div>
+            </div>
+
+            <div class="mood-section">
+                <div class="mood-section-label"><i class="fas fa-map-pin"></i> Vos préférences</div>
+                <div class="pref-chips">
+                    <div class="pref-chip" data-value="plages et mer"><i class="fas fa-umbrella-beach"></i> Plages</div>
+                    <div class="pref-chip" data-value="désert et dunes"><i class="fas fa-sun"></i> Désert</div>
+                    <div class="pref-chip" data-value="culture et histoire"><i class="fas fa-landmark"></i> Culture</div>
+                    <div class="pref-chip" data-value="gastronomie"><i class="fas fa-utensils"></i> Gastronomie</div>
+                    <div class="pref-chip" data-value="nature et forêts"><i class="fas fa-tree"></i> Nature</div>
+                    <div class="pref-chip" data-value="sport et aventure"><i class="fas fa-person-hiking"></i> Sport</div>
+                    <div class="pref-chip" data-value="shopping et médinas"><i class="fas fa-shopping-bag"></i> Shopping</div>
+                    <div class="pref-chip" data-value="détente et spa"><i class="fas fa-spa"></i> Spa</div>
+                </div>
+            </div>
+
+            <div class="mood-section">
+                <div class="mood-section-label"><i class="fas fa-coins"></i> Budget par personne</div>
+                <div class="budget-track">
+                    <div class="budget-display-row">
+                        <div class="budget-display" id="budgetDisplay">500 DT</div>
+                        <div class="budget-display-sub">par personne</div>
+                    </div>
+                    <input type="range" class="budget-slider" id="budgetSlider" min="100" max="2000" step="50" value="500">
+                    <div class="budget-range-labels"><span>100 DT</span><span>2 000 DT</span></div>
+                </div>
+            </div>
+
+            <div class="mood-section">
+                <div class="mood-section-label"><i class="fas fa-cloud-sun"></i> Saison préférée</div>
+                <div class="saison-btns">
+                    <button class="saison-btn" data-value="printemps"><span>🌸</span>Printemps</button>
+                    <button class="saison-btn" data-value="été"><span>☀️</span>Été</button>
+                    <button class="saison-btn" data-value="automne"><span>🍂</span>Automne</button>
+                    <button class="saison-btn" data-value="hiver"><span>❄️</span>Hiver</button>
+                </div>
+            </div>
+
+            <button class="btn-recommend" id="btnRecommend" type="button">
+                <i class="fas fa-wand-magic-sparkles"></i> Trouver mon voyage idéal
+            </button>
+
+            <div class="recommend-result" id="recommendResult">
+                <div class="recommend-result-header">
+                    <div class="recommend-result-header-icon"><i class="fas fa-robot"></i></div>
+                    <div>
+                        <div class="recommend-result-label">Recommandation IA</div>
+                        <div class="recommend-result-name" id="recommendName"></div>
+                    </div>
+                </div>
+                <div class="recommend-result-body">
+                    <div class="recommend-result-price" id="recommendPrice"><i class="fas fa-tag"></i> </div>
+                    <div class="recommend-result-raison" id="recommendRaison"></div>
+                    <a href="#" class="btn-go-voyage" id="recommendLink">
+                        <i class="fas fa-arrow-right"></i> Voir ce voyage
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===================== VOICE CALL BUTTON ===================== -->
+<button class="call-trigger-btn" id="callTriggerBtn" aria-label="Appel avec le guide Tunisie">
+    <i class="fas fa-microphone-alt"></i>
+</button>
+<div class="call-trigger-tooltip">Appeler le guide Tunisie</div>
+
+<!-- ===================== CALL OVERLAY LUMINEUX ===================== -->
+<div class="call-overlay" id="callOverlay">
+    <div class="call-content">
+        <div class="agent-info">
+            <div class="call-timer" id="callTimer">00:00</div>
+            <div class="agent-name">Guide Tunisie</div>
+            <div class="agent-status" id="agentStatus">En attente...</div>
+        </div>
+        <div class="orb-container">
+            <div class="orb-ring"></div>
+            <div class="orb-ring"></div>
+            <div class="orb-ring"></div>
+            <div class="orb-sphere idle" id="orbSphere">
+                <canvas class="orb-canvas" id="orbCanvas"></canvas>
+            </div>
+        </div>
+        <div class="audio-bars" id="audioBars">
+            <div class="audio-bar"></div><div class="audio-bar"></div><div class="audio-bar"></div>
+            <div class="audio-bar"></div><div class="audio-bar"></div><div class="audio-bar"></div>
+            <div class="audio-bar"></div>
+        </div>
+        <div class="call-transcript" id="callTranscript">
+            <div class="transcript-line bot-line">Bonjour ! Appuyez sur le micro et parlez...</div>
+        </div>
+        <div class="call-text-input" id="callTextInput">
+            <input type="text" id="callInputField" placeholder="Écrivez votre message...">
+            <button id="callSendBtn"><i class="fas fa-paper-plane"></i></button>
+        </div>
+        <div class="call-controls">
+            <button class="ctrl-btn ctrl-btn-mute" id="ctrlMute" title="Muet"><i class="fas fa-microphone-slash"></i></button>
+            <button class="ctrl-btn ctrl-btn-end" id="ctrlEnd" title="Raccrocher"><i class="fas fa-phone-slash"></i></button>
+            <button class="ctrl-btn ctrl-btn-keyboard" id="ctrlKeyboard" title="Clavier"><i class="fas fa-keyboard"></i></button>
+        </div>
+        <p class="call-hint">TUNISIAJOURNEY · GUIDE VOCAL IA</p>
+    </div>
+</div>
+
+<!-- ===================== FLIPBOOK OVERLAY ===================== -->
+<div class="flipbook-overlay" id="flipbookOverlay">
+    <div class="flipbook-container">
+        <button class="flipbook-close" id="flipbookClose"><i class="fas fa-times"></i></button>
+        <button class="flipbook-sound-btn" id="flipbookSoundBtn"><i class="fas fa-music"></i></button>
+
+        <div class="flipbook-book" id="flipbookBook">
+
+            <div class="fb-page active" id="fb-page-0">
+                <div class="fb-page-inner fb-cover">
+                    <div class="fb-cover-content">
+                        <span class="fb-cover-ornament">🌙</span>
+                        <div class="fb-cover-subtitle">Édition Voyage · Collection Découverte</div>
+                        <div class="fb-cover-title">Tunisia<br>Journey</div>
+                        <div class="fb-cover-divider"></div>
+                        <div class="fb-cover-tagline">Un voyage à travers les saveurs,<br>les couleurs et l'âme d'un pays unique.</div>
+                        <div class="fb-cover-year">✦ Tunisie · Terre de Mille Visages ✦</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fb-page" id="fb-page-1">
+                <div class="fb-page-inner">
+                    <div class="fb-toc">
+                        <div class="fb-toc-title">Sommaire</div>
+                        <div class="fb-toc-subtitle">Table des matières · فهرس المحتويات</div>
+                        <ul class="fb-toc-list">
+                            <li class="fb-toc-item" onclick="flipbookGoTo(2)"><span class="fb-toc-emoji">✨</span><span class="fb-toc-num">I.</span><span class="fb-toc-name">Introduction</span><span class="fb-toc-dots"></span><span class="fb-toc-page">2</span></li>
+                            <li class="fb-toc-item" onclick="flipbookGoTo(3)"><span class="fb-toc-emoji">🏛️</span><span class="fb-toc-num">II.</span><span class="fb-toc-name">Histoire de la Tunisie</span><span class="fb-toc-dots"></span><span class="fb-toc-page">3</span></li>
+                            <li class="fb-toc-item" onclick="flipbookGoTo(4)"><span class="fb-toc-emoji">🎭</span><span class="fb-toc-num">III.</span><span class="fb-toc-name">Culture & Traditions</span><span class="fb-toc-dots"></span><span class="fb-toc-page">4</span></li>
+                            <li class="fb-toc-item" onclick="flipbookGoTo(5)"><span class="fb-toc-emoji">🍽️</span><span class="fb-toc-num">IV.</span><span class="fb-toc-name">Gastronomie Tunisienne</span><span class="fb-toc-dots"></span><span class="fb-toc-page">5</span></li>
+                            <li class="fb-toc-item" onclick="flipbookGoTo(6)"><span class="fb-toc-emoji">🗺️</span><span class="fb-toc-num">V.</span><span class="fb-toc-name">Destinations Touristiques</span><span class="fb-toc-dots"></span><span class="fb-toc-page">6</span></li>
+                            <li class="fb-toc-item" onclick="flipbookGoTo(7)"><span class="fb-toc-emoji">🏜️</span><span class="fb-toc-num">VI.</span><span class="fb-toc-name">Expérience du Désert</span><span class="fb-toc-dots"></span><span class="fb-toc-page">7</span></li>
+                            <li class="fb-toc-item" onclick="flipbookGoTo(8)"><span class="fb-toc-emoji">🌊</span><span class="fb-toc-num">VII.</span><span class="fb-toc-name">Mer & Plages</span><span class="fb-toc-dots"></span><span class="fb-toc-page">8</span></li>
+                            <li class="fb-toc-item" onclick="flipbookGoTo(9)"><span class="fb-toc-emoji">🧶</span><span class="fb-toc-num">VIII.</span><span class="fb-toc-name">Expériences Locales</span><span class="fb-toc-dots"></span><span class="fb-toc-page">9</span></li>
+                            <li class="fb-toc-item" onclick="flipbookGoTo(10)"><span class="fb-toc-emoji">💡</span><span class="fb-toc-num">IX.</span><span class="fb-toc-name">Conseils de Voyage</span><span class="fb-toc-dots"></span><span class="fb-toc-page">10</span></li>
+                            <li class="fb-toc-item" onclick="flipbookGoTo(11)"><span class="fb-toc-emoji">💛</span><span class="fb-toc-num">X.</span><span class="fb-toc-name">Pourquoi la Tunisie ?</span><span class="fb-toc-dots"></span><span class="fb-toc-page">11</span></li>
+                        </ul>
+                    </div>
+                    <div class="fb-spine"></div>
+                    <div class="fb-right" style="max-width:260px;flex:0 0 260px;">
+                        <img src="https://i.pinimg.com/1200x/40/79/5a/40795a77f4822edd456542c3719eac93.jpg" alt="Médina de Tunis">
+                        <div class="fb-caption">Médina de Tunis · Patrimoine UNESCO</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fb-page" id="fb-page-2">
+                <div class="fb-page-inner">
+                    <div class="fb-left fb-paper">
+                        <div class="fb-chapter-label">Chapitre I</div>
+                        <div class="fb-title">Bienvenue en Tunisie</div>
+                        <div class="fb-divider"></div>
+                        <div class="fb-text">
+                            Il existe des terres qui ne se visitent pas, elles se <em>ressentent</em>. La Tunisie est l'une d'elles. Dès que vous posez le pied sur ce sol ancien, quelque chose change en vous.
+                            <br><br>
+                            Entre le bleu infini de la Méditerranée et l'or brûlant du Sahara, entre les ruelles parfumées des médinas et les ruines silencieuses de Carthage, ce pays vous raconte une histoire qui dure depuis des millénaires.
+                        </div>
+                        <div class="fb-quote">
+                            "La Tunisie, c'est un pays qui entre dans le cœur et n'en repart plus."
+                        </div>
+                        <div class="fb-page-num">— page 2 —</div>
+                    </div>
+                    <div class="fb-spine"></div>
+                    <div class="fb-right">
+                        <img src="https://i.pinimg.com/736x/7c/2b/d0/7c2bd0de408877e20d375ef79a0d5a20.jpg" alt="Sidi Bou Saïd">
+                        <div class="fb-caption">Sidi Bou Saïd · Le village bleu et blanc</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fb-page" id="fb-page-3">
+                <div class="fb-page-inner">
+                    <div class="fb-left fb-paper">
+                        <div class="fb-chapter-label">Chapitre II</div>
+                        <span class="fb-icon">🏛️</span>
+                        <div class="fb-title">Une Histoire<br>Millénaire</div>
+                        <div class="fb-divider"></div>
+                        <div class="fb-text">
+                            Carthage, fondée au IXe siècle avant J.-C., fut l'une des plus grandes puissances de l'Antiquité. Ses ruines dominent encore la baie de Tunis, témoins silencieux d'une gloire passée.
+                            <br><br>
+                            Puis vinrent les Romains, les Byzantins, les Arabes qui apportèrent l'islam et la langue, les Turcs ottomans... Chaque conquête a laissé une couche supplémentaire à cette civilisation unique.
+                        </div>
+                        <div class="fb-quote">
+                            "Carthage doit être détruite"... mais elle vit encore, gravée dans la pierre et dans les âmes.
+                        </div>
+                        <div class="fb-page-num">— page 3 —</div>
+                    </div>
+                    <div class="fb-spine"></div>
+                    <div class="fb-right">
+                        <img src="https://i.pinimg.com/736x/2e/45/a4/2e45a4e4302d9af86eb987f7a69ee265.jpg" alt="Amphithéâtre El Jem">
+                        <div class="fb-caption">Amphithéâtre d'El Jem · 3ème plus grand au monde</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fb-page" id="fb-page-4">
+                <div class="fb-page-inner">
+                    <div class="fb-left fb-paper">
+                        <div class="fb-chapter-label">Chapitre III</div>
+                        <span class="fb-icon">🎭</span>
+                        <div class="fb-title">Culture &<br>Traditions Vivantes</div>
+                        <div class="fb-divider"></div>
+                        <div class="fb-text">
+                            La <em>djebba</em> brodée, le <em>burnous</em> de laine blanche, les <em>fouta</em> multicolores... Les habits tunisiens portent en eux des siècles de savoir-faire. Les femmes arborent des tenues aux couleurs vives lors des fêtes.
+                            <br><br>
+                            La musique malouf, héritée d'Andalousie, résonne dans les vieux cafés. Le mezoued fait danser les corps lors des mariages. La Tunisie vibre et chante, du nord au sud.
+                        </div>
+                        <div class="fb-quote">
+                            Chaque mariage, chaque fête, est une fenêtre ouverte sur l'âme tunisienne.
+                        </div>
+                        <div class="fb-page-num">— page 4 —</div>
+                    </div>
+                    <div class="fb-spine"></div>
+                    <div class="fb-right">
+                        <img src="https://i.pinimg.com/1200x/2e/e0/28/2ee0287f315581b559f891901dff6750.jpg" alt="Artisanat tunisien">
+                        <div class="fb-caption">Artisanat · Tapis et céramiques de Nabeul</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fb-page" id="fb-page-5">
+                <div class="fb-page-inner">
+                    <div class="fb-left fb-paper">
+                        <div class="fb-chapter-label">Chapitre IV</div>
+                        <span class="fb-icon">🍽️</span>
+                        <div class="fb-title">Gastronomie<br>Tunisienne</div>
+                        <div class="fb-divider"></div>
+                        <div class="fb-text">
+                            La cuisine tunisienne est une explosion de saveurs. Le <em>couscous</em> mijote depuis des heures, portant en lui l'amour de la cuisine familiale. Le <em>brik à l'œuf</em> croque sous les dents, révélant une surprise dorée.
+                            <br><br>
+                            La <em>lablabi</em> réchauffe les matins d'hiver. Les <em>makroudh</em> aux dattes et la <em>bambalouni</em> sucrée accompagnent le thé à la menthe, rituel social incontournable.
+                        </div>
+                        <div class="fb-quote">
+                            En Tunisie, manger est un acte d'amour et de partage.
+                        </div>
+                        <div class="fb-page-num">— page 5 —</div>
+                    </div>
+                    <div class="fb-spine"></div>
+                    <div class="fb-right">
+                        <div class="fb-food-grid">
+                            <div class="fb-food-item">
+                                <img src="https://i.pinimg.com/736x/6b/c3/72/6bc37268d1ee5b9a9d2e53b4e685f887.jpg" alt="Couscous">
+                                <div class="fb-food-label">Couscous Royal</div>
+                            </div>
+                            <div class="fb-food-item">
+                                <img src="https://i.pinimg.com/736x/ca/5d/0d/ca5d0d1efbd04e45bb2337f6b362e138.jpg" alt="Brik">
+                                <div class="fb-food-label">Brik à l'œuf</div>
+                            </div>
+                            <div class="fb-food-item">
+                                <img src="https://i.pinimg.com/736x/2e/da/60/2eda60bc07e9202c11012291502e9075.jpg" alt="Pâtisseries">
+                                <div class="fb-food-label">Pâtisseries au miel</div>
+                            </div>
+                            <div class="fb-food-item">
+                                <img src="https://i.pinimg.com/736x/a6/c5/37/a6c53733237aad9be371ba7a7082eaa3.jpg" alt="Thé menthe">
+                                <div class="fb-food-label">Thé à la menthe</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fb-page" id="fb-page-6">
+                <div class="fb-page-inner">
+                    <div class="fb-left fb-paper">
+                        <div class="fb-chapter-label">Chapitre V</div>
+                        <span class="fb-icon">🗺️</span>
+                        <div class="fb-title">Destinations<br>Inoubliables</div>
+                        <div class="fb-divider"></div>
+                        <div class="fb-text">
+                            <em>Tunis</em> — la capitale vibrante, ses souks labyrinthiques, son café maure où le temps s'arrête. <em>Sidi Bou Saïd</em>, le village suspendu entre ciel et mer, peint en bleu et blanc comme un tableau vivant.
+                            <br><br>
+                            <em>Djerba</em>, l'île aux mille palmiers, ses plages de sable fin et sa synagogue de la Ghriba. <em>Hammamet</em> et ses hôtels de luxe face à une mer turquoise sans fin.
+                        </div>
+                        <div class="fb-quote">
+                            Chaque ville tunisienne est un monde à elle seule.
+                        </div>
+                        <div class="fb-page-num">— page 6 —</div>
+                    </div>
+                    <div class="fb-spine"></div>
+                    <div class="fb-right">
+                        <img src="https://i.pinimg.com/736x/c7/94/13/c79413a656a3d627afcb2e9dfdcacf35.jpg" alt="Sidi Bou Said">
+                        <div class="fb-caption">Sidi Bou Saïd · 20 km de Tunis</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fb-page" id="fb-page-7">
+                <div class="fb-page-inner">
+                    <div class="fb-left fb-paper">
+                        <div class="fb-chapter-label">Chapitre VI</div>
+                        <span class="fb-icon">🏜️</span>
+                        <div class="fb-title">L'Âme du<br>Désert</div>
+                        <div class="fb-divider"></div>
+                        <div class="fb-text">
+                            Le Sahara tunisien est une révélation. À <em>Douz</em>, la porte du désert, on monte sur un dromadaire au coucher du soleil et on comprend soudain pourquoi les nomades ont aimé ces étendues infinies.
+                            <br><br>
+                            La nuit dans le désert est un spectacle cosmique. Pas de lumière artificielle, juste des millions d'étoiles qui racontent l'éternité. À <em>Tozeur</em>, les oasis verdoyantes semblent sorties d'un rêve.
+                        </div>
+                        <div class="fb-quote">
+                            Le désert n'est pas vide. Il est plein de silence et de sens.
+                        </div>
+                        <div class="fb-page-num">— page 7 —</div>
+                    </div>
+                    <div class="fb-spine"></div>
+                    <div class="fb-right">
+                        <img src="https://i.pinimg.com/1200x/a4/c4/f4/a4c4f41b463255420d0fc47223a2b9a2.jpg" alt="Sahara">
+                        <div class="fb-caption">Sahara Tunisien · Douz, Porte du Désert</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fb-page" id="fb-page-8">
+                <div class="fb-page-inner">
+                    <div class="fb-left fb-paper">
+                        <div class="fb-chapter-label">Chapitre VII</div>
+                        <span class="fb-icon">🌊</span>
+                        <div class="fb-title">La Méditerranée<br>à vos pieds</div>
+                        <div class="fb-divider"></div>
+                        <div class="fb-text">
+                            La Tunisie possède 1 300 kilomètres de côtes. Des plages de sable blanc qui s'étirent à perte de vue, des eaux d'un bleu translucide où les poissons dansent entre les coraux.
+                            <br><br>
+                            <em>Mahdia</em> et ses plages préservées, <em>Tabarka</em> et ses coraux colorés, <em>La Marsa</em> et sa douceur de vivre... La mer tunisienne est une invitation permanente à ralentir et à respirer.
+                        </div>
+                        <div class="fb-quote">
+                            Ici, la mer n'est pas une frontière. Elle est une promesse.
+                        </div>
+                        <div class="fb-page-num">— page 8 —</div>
+                    </div>
+                    <div class="fb-spine"></div>
+                    <div class="fb-right">
+                        <img src="https://i.pinimg.com/736x/bb/82/0e/bb820e2cc7f1d2fcd25f11708e38df88.jpg" alt="Plage Tunisie">
+                        <div class="fb-caption">Plages Méditerranéennes · Eaux cristallines</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fb-page" id="fb-page-9">
+                <div class="fb-page-inner">
+                    <div class="fb-left fb-paper">
+                        <div class="fb-chapter-label">Chapitre VIII</div>
+                        <span class="fb-icon">🧶</span>
+                        <div class="fb-title">L'Artisanat &<br>les Souks</div>
+                        <div class="fb-divider"></div>
+                        <div class="fb-text">
+                            Perdez-vous dans les souks de Tunis. Les mains d'un artisan façonnent la poterie de <em>Nabeul</em>, tissent les tapis de <em>Kairouan</em>, repoussent le cuivre à <em>Sfax</em>. Chaque objet est une histoire.
+                            <br><br>
+                            Les marchands de <em>jasmin</em> vous tendent leurs guirlandes parfumées. Les boulangers sortent les <em>fatayer</em> chauds du four. L'artisanat tunisien est vivant, chaleureux, humain.
+                        </div>
+                        <div class="fb-quote">
+                            Dans un souk tunisien, on n'achète pas des objets. On achète des souvenirs d'âme.
+                        </div>
+                        <div class="fb-page-num">— page 9 —</div>
+                    </div>
+                    <div class="fb-spine"></div>
+                    <div class="fb-right">
+                        <img src="https://i.pinimg.com/736x/00/39/d9/0039d9fbfbcf4c3cd6765dae140a72a9.jpg" alt="Souk tunisien">
+                        <div class="fb-caption">Souks de la Médina · Tunis</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fb-page" id="fb-page-10">
+                <div class="fb-page-inner">
+                    <div class="fb-left fb-paper">
+                        <div class="fb-chapter-label">Chapitre IX</div>
+                        <span class="fb-icon">💡</span>
+                        <div class="fb-title">Conseils<br>du Voyageur</div>
+                        <div class="fb-divider"></div>
+                        <div class="fb-text">
+                            <em>Meilleure période :</em> Avril-mai et septembre-octobre pour un climat idéal. L'été est chaud mais magnifique pour la plage.
+                            <br><br>
+                            <em>Devise :</em> Le dinar tunisien (TND). Préférez payer en monnaie locale pour de meilleurs tarifs.
+                            <br><br>
+                            <em>Transport :</em> Location de voiture recommandée pour explorer librement. Les louages (taxis collectifs) sont économiques entre villes.
+                            <br><br>
+                            <em>Respect local :</em> Couvrez les épaules dans les lieux de culte. Le ramadan est une période de partage extraordinaire à vivre.
+                        </div>
+                        <div class="fb-page-num">— page 10 —</div>
+                    </div>
+                    <div class="fb-spine"></div>
+                    <div class="fb-right">
+                        <img src="https://i.pinimg.com/736x/e3/36/0a/e3360a913032ec8bf230db70e5dc70e3.jpg" alt="Voyage Tunisie">
+                        <div class="fb-caption">Voyager en Tunisie · Liberté & Découverte</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fb-page" id="fb-page-11">
+                <div class="fb-page-inner">
+                    <div class="fb-left fb-paper">
+                        <div class="fb-chapter-label">Épilogue</div>
+                        <span class="fb-icon">💛</span>
+                        <div class="fb-title">Pourquoi la<br>Tunisie ?</div>
+                        <div class="fb-divider"></div>
+                        <div class="fb-text">
+                            Parce que la Tunisie est un pays qui vous transforme. Vous arrivez touriste et vous repartez avec une partie de cette terre dans le cœur.
+                            <br><br>
+                            Parce qu'en un seul voyage, vous pouvez marcher dans les sables du Sahara le matin et nager dans la Méditerranée le soir. Parce que la chaleur des Tunisiens n'est pas une formule de politesse, c'est un mode de vie.
+                        </div>
+                        <div class="fb-quote">
+                            La Tunisie ne se visite pas. Elle se vit. Et elle vous change, pour toujours.
+                        </div>
+                        <div style="margin-top:1.5rem;text-align:center;font-size:1.5rem;letter-spacing:0.3em;color:#C17817;">✦ ✦ ✦</div>
+                        <div class="fb-page-num">— fin —</div>
+                    </div>
+                    <div class="fb-spine"></div>
+                    <div class="fb-right">
+                        <img src="https://i.pinimg.com/736x/db/3f/23/db3f2316e180d49130409070415ec0db.jpg" alt="Coucher soleil Tunisie">
+                        <div class="fb-caption">Coucher de soleil · La Tunisie</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="flipbook-nav">
+            <button class="fb-nav-btn" id="fbPrev" disabled><i class="fas fa-chevron-left"></i></button>
+            <div class="fb-page-indicator" id="fbIndicator">Couverture</div>
+            <button class="fb-nav-btn" id="fbNext"><i class="fas fa-chevron-right"></i></button>
+        </div>
+
+    </div>
+</div>
+
+<div id="yt-player" style="display:none;"></div>
+
 {% endblock %}
 
 {% block javascripts %}
 <script>
-    // Wishlist
-    let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
-    
-    function saveWishlist() {
-        localStorage.setItem('wishlist', JSON.stringify(wishlist));
-        updateWishlistUI();
-        updateWishlistSidebar();
-        updateWishlistCount();
+// ==================== PAGINATION ====================
+let allItems = [];
+let currentPage = 1;
+const itemsPerPage = 6;
+let currentSort = 'name_asc';
+let currentSearch = '';
+
+const grid = document.getElementById('voyagesGrid');
+const searchInput = document.getElementById('searchInput');
+const searchClearBtn = document.getElementById('searchClearBtn');
+const sortToggleBtn = document.getElementById('sortToggleBtn');
+const sortDropdownMenu = document.getElementById('sortDropdownMenu');
+const sortLabel = document.getElementById('sortLabel');
+const paginationContainer = document.getElementById('paginationContainer');
+
+function initItems() { allItems = Array.from(document.querySelectorAll('.voyage-item')); applyFiltersAndSort(); }
+function filterItems() { const term = currentSearch.toLowerCase(); if (!term) return allItems; return allItems.filter(item => (item.dataset.name?.toLowerCase() || '').includes(term)); }
+function sortItems(items) {
+    const sorted = [...items];
+    switch(currentSort) {
+        case 'name_asc':  sorted.sort((a,b) => (a.dataset.name||'').localeCompare(b.dataset.name||'')); break;
+        case 'price_asc': sorted.sort((a,b) => (parseFloat(a.dataset.price)||0) - (parseFloat(b.dataset.price)||0)); break;
+        case 'price_desc':sorted.sort((a,b) => (parseFloat(b.dataset.price)||0) - (parseFloat(a.dataset.price)||0)); break;
+        case 'date_asc':  sorted.sort((a,b) => (a.dataset.date||'').localeCompare(b.dataset.date||'')); break;
     }
-    
-    function updateWishlistCount() {
-        const count = wishlist.length;
-        const countElement = document.getElementById('wishlistCount');
-        if (countElement) countElement.textContent = count;
-    }
-    
-    function updateWishlistUI() {
-        document.querySelectorAll('.wishlist-star').forEach(star => {
-            const id = parseInt(star.dataset.id);
-            const icon = star.querySelector('i');
-            if (wishlist.includes(id)) {
-                icon.className = 'fas fa-star';
-                star.classList.add('active');
-            } else {
-                icon.className = 'far fa-star';
-                star.classList.remove('active');
-            }
-        });
-        updateWishlistCount();
-    }
-    
-    function updateWishlistSidebar() {
-        const container = document.getElementById('wishlistList');
-        if (!container) return;
-        
-        if (wishlist.length === 0) {
-            container.innerHTML = `
-                <div class="empty-wishlist">
-                    <i class="fas fa-heart fa-3x mb-2"></i>
-                    <p>Votre wishlist est vide</p>
-                    <p class="small">Ajoutez vos voyages préférés avec l'étoile ⭐</p>
-                </div>
-            `;
-            return;
-        }
-        
-        let html = '';
-        wishlist.forEach(id => {
-            const voyageElement = document.querySelector(`.voyage-item[data-id="${id}"]`);
-            if (voyageElement) {
-                const name = voyageElement.querySelector('.card-title')?.textContent || '';
-                const price = voyageElement.querySelector('.card-price')?.textContent || '';
-                const image = voyageElement.dataset.image || '';
-                html += `
-                    <div class="wishlist-item" data-id="${id}">
-                        <img src="${image}" class="wishlist-item-img" alt="${name}">
-                        <div class="wishlist-item-info">
-                            <div class="wishlist-item-title">${name}</div>
-                            <div class="wishlist-item-price">${price}</div>
-                        </div>
-                        <button class="wishlist-item-remove" onclick="removeFromWishlist(${id})">
-                            <i class="fas fa-times-circle"></i>
-                        </button>
-                    </div>
-                `;
-            }
-        });
-        container.innerHTML = html;
-    }
-    
-    function toggleWishlist(id) {
-        const index = wishlist.indexOf(id);
-        if (index === -1) {
-            wishlist.push(id);
-        } else {
-            wishlist.splice(index, 1);
-        }
-        saveWishlist();
-    }
-    
-    function removeFromWishlist(id) {
-        const index = wishlist.indexOf(id);
-        if (index !== -1) {
-            wishlist.splice(index, 1);
-            saveWishlist();
-            updateWishlistUI();
-        }
-    }
-    
-    document.querySelectorAll('.wishlist-star').forEach(star => {
-        star.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const id = parseInt(this.dataset.id);
-            toggleWishlist(id);
+    return sorted;
+}
+function paginateItems(items) { const totalPages = Math.ceil(items.length / itemsPerPage); const start = (currentPage-1)*itemsPerPage; return { items: items.slice(start, start+itemsPerPage), totalPages }; }
+function renderGrid() {
+    const filtered = filterItems(); const sorted = sortItems(filtered); const { items: paginated, totalPages } = paginateItems(sorted);
+    allItems.forEach(i => i.style.display = 'none');
+    paginated.forEach(i => i.style.display = '');
+    const existingMsg = document.getElementById('noResultMsg');
+    if (paginated.length === 0 && filtered.length === 0 && currentSearch) {
+        if (!existingMsg) { const d = document.createElement('div'); d.id = 'noResultMsg'; d.className = 'col-12'; d.innerHTML = `<div class="no-results"><i class="fas fa-search"></i><p>Aucun voyage ne correspond à "${currentSearch}"</p></div>`; grid.appendChild(d); }
+    } else if (existingMsg) existingMsg.remove();
+    renderPagination(totalPages);
+}
+function renderPagination(totalPages) {
+    if (!paginationContainer) return;
+    if (totalPages <= 1) { paginationContainer.innerHTML = ''; return; }
+    let html = `<a href="#" class="pagination-prev ${currentPage===1?'disabled':''}" data-page="${currentPage-1}"><i class="fas fa-chevron-left"></i></a>`;
+    let sp = Math.max(1,currentPage-2), ep = Math.min(totalPages,sp+4);
+    if (sp>1) { html+=`<a href="#" data-page="1">1</a>`; if(sp>2) html+=`<span>...</span>`; }
+    for(let i=sp;i<=ep;i++) html+=`<a href="#" data-page="${i}" class="${i===currentPage?'active':''}">${i}</a>`;
+    if(ep<totalPages) { if(ep<totalPages-1) html+=`<span>...</span>`; html+=`<a href="#" data-page="${totalPages}">${totalPages}</a>`; }
+    html+=`<a href="#" class="pagination-next ${currentPage===totalPages?'disabled':''}" data-page="${currentPage+1}"><i class="fas fa-chevron-right"></i></a>`;
+    paginationContainer.innerHTML = html;
+    paginationContainer.querySelectorAll('a[data-page]').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault(); const page = parseInt(this.dataset.page);
+            if (page && !this.classList.contains('disabled') && page>=1 && page<=totalPages) { currentPage = page; renderGrid(); document.getElementById('voyagesGrid').scrollIntoView({behavior:'smooth',block:'start'}); }
         });
     });
-    
-    updateWishlistUI();
-    updateWishlistSidebar();
-    
-    // Sidebar
-    const wishlistIcon = document.getElementById('wishlistIcon');
-    const wishlistSidebar = document.getElementById('wishlistSidebar');
-    const wishlistOverlay = document.getElementById('wishlistOverlay');
-    const closeWishlistBtn = document.getElementById('closeWishlistBtn');
-    
-    function openWishlist() {
-        if (wishlistSidebar && wishlistOverlay) {
-            wishlistSidebar.classList.add('open');
-            wishlistOverlay.classList.add('active');
-            updateWishlistSidebar();
-        }
+}
+function applyFiltersAndSort() { currentPage = 1; renderGrid(); }
+let searchTimeout;
+searchInput.addEventListener('input', function() { currentSearch=this.value.trim(); searchClearBtn.classList.toggle('visible',currentSearch.length>0); clearTimeout(searchTimeout); searchTimeout=setTimeout(applyFiltersAndSort,300); });
+searchClearBtn.addEventListener('click', function() { searchInput.value=''; currentSearch=''; searchClearBtn.classList.remove('visible'); applyFiltersAndSort(); searchInput.focus(); });
+sortToggleBtn.addEventListener('click', function(e) { e.stopPropagation(); sortDropdownMenu.classList.toggle('open'); sortToggleBtn.classList.toggle('open'); });
+document.addEventListener('click', function(e) {
+    if (!sortToggleBtn.contains(e.target)) { sortDropdownMenu.classList.remove('open'); sortToggleBtn.classList.remove('open'); }
+});
+document.querySelectorAll('.sort-option').forEach(opt => {
+    opt.addEventListener('click', function(e) { e.stopPropagation(); document.querySelectorAll('.sort-option').forEach(o=>o.classList.remove('active')); opt.classList.add('active'); currentSort=opt.dataset.value; sortLabel.textContent=opt.textContent.trim(); sortDropdownMenu.classList.remove('open'); sortToggleBtn.classList.remove('open'); applyFiltersAndSort(); });
+});
+initItems();
+
+// ==================== WISHLIST ====================
+let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+function saveWishlist() { localStorage.setItem('wishlist', JSON.stringify(wishlist)); updateWishlistUI(); updateWishlistSidebar(); }
+function updateWishlistCount() { const c = document.getElementById('wishlistCount'); if(c) c.textContent = wishlist.length; }
+function updateWishlistUI() {
+    document.querySelectorAll('.wishlist-star').forEach(star => {
+        const id = parseInt(star.dataset.id); const icon = star.querySelector('i');
+        if(wishlist.includes(id)) { icon.className='fas fa-star'; star.classList.add('active'); } else { icon.className='far fa-star'; star.classList.remove('active'); }
+    }); updateWishlistCount();
+}
+function updateWishlistSidebar() {
+    const container = document.getElementById('wishlistList'); if(!container) return;
+    if(wishlist.length===0) { container.innerHTML=`<div class="empty-wishlist"><i class="fas fa-heart fa-3x mb-2"></i><p>Votre wishlist est vide</p><p class="small">Ajoutez vos voyages préférés avec l'étoile ⭐</p></div>`; return; }
+    let html='';
+    wishlist.forEach(id => {
+        const el = document.querySelector(`.voyage-item[data-id="${id}"]`);
+        if(el) { const name=el.querySelector('.card-title')?.textContent||''; const price=el.querySelector('.card-price')?.textContent||''; const image=el.dataset.image||'';
+            html+=`<div class="wishlist-item" data-id="${id}"><img src="${image}" class="wishlist-item-img" alt="${name}"><div class="wishlist-item-info"><div class="wishlist-item-title">${name}</div><div class="wishlist-item-price">${price}</div></div><button class="wishlist-item-remove" onclick="removeFromWishlist(${id})"><i class="fas fa-times-circle"></i></button></div>`; }
+    }); container.innerHTML=html;
+}
+function toggleWishlist(id) { const i=wishlist.indexOf(id); if(i===-1)wishlist.push(id); else wishlist.splice(i,1); saveWishlist(); }
+function removeFromWishlist(id) { const i=wishlist.indexOf(id); if(i!==-1){wishlist.splice(i,1); saveWishlist(); updateWishlistUI();} }
+document.querySelectorAll('.wishlist-star').forEach(star => { star.addEventListener('click', function(e) { e.stopPropagation(); toggleWishlist(parseInt(this.dataset.id)); }); });
+updateWishlistUI(); updateWishlistSidebar();
+const wishlistIcon=document.getElementById('wishlistIcon'), wishlistSidebar=document.getElementById('wishlistSidebar'), wishlistOverlay=document.getElementById('wishlistOverlay'), closeWishlistBtn=document.getElementById('closeWishlistBtn');
+function openWishlist() { wishlistSidebar.classList.add('open'); wishlistOverlay.classList.add('active'); updateWishlistSidebar(); }
+function closeWishlist() { wishlistSidebar.classList.remove('open'); wishlistOverlay.classList.remove('active'); }
+wishlistIcon.addEventListener('click', openWishlist);
+closeWishlistBtn.addEventListener('click', closeWishlist);
+wishlistOverlay.addEventListener('click', closeWishlist);
+
+// ==================== NOTIFICATIONS ====================
+const notifBtn       = document.getElementById('notifBtn');
+const notifDropdown  = document.getElementById('notifDropdown');
+const notifBadge     = document.getElementById('notifBadge');
+const notifList      = document.getElementById('notifList');
+const btnReadAll     = document.getElementById('btnReadAll');
+const toastContainer = document.getElementById('toastContainer');
+const notifWrapper   = document.getElementById('notifWrapper');
+
+let shownNotifIds = JSON.parse(sessionStorage.getItem('shownNotifIds') || '[]');
+
+function timeAgo(dateStr) {
+    const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+    if (diff < 60)    return 'À l\'instant';
+    if (diff < 3600)  return `Il y a ${Math.floor(diff/60)} min`;
+    if (diff < 86400) return `Il y a ${Math.floor(diff/3600)} h`;
+    return `Il y a ${Math.floor(diff/86400)} j`;
+}
+
+function renderNotifList(notifications) {
+    if (!notifications.length) {
+        notifList.innerHTML = `<div class="notif-empty"><i class="fas fa-bell-slash"></i><p>Tout est à jour !</p></div>`;
+        return;
     }
-    
-    function closeWishlist() {
-        if (wishlistSidebar && wishlistOverlay) {
-            wishlistSidebar.classList.remove('open');
-            wishlistOverlay.classList.remove('active');
-        }
-    }
-    
-    if (wishlistIcon) wishlistIcon.addEventListener('click', openWishlist);
-    if (closeWishlistBtn) closeWishlistBtn.addEventListener('click', closeWishlist);
-    if (wishlistOverlay) wishlistOverlay.addEventListener('click', closeWishlist);
-    
-    // FILTRAGE
-    const filterBtn = document.getElementById('filterBtn');
-    const searchInput = document.getElementById('searchInput');
-    const durationFilter = document.getElementById('durationFilter');
-    const budgetFilter = document.getElementById('budgetFilter');
-    
-    function applyFilters() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const duration = durationFilter.value;
-        const budget = budgetFilter.value;
-        
-        let visibleCount = 0;
-        
-        document.querySelectorAll('.voyage-item').forEach(item => {
-            const name = item.dataset.name || '';
-            const price = parseInt(item.dataset.price) || 0;
-            const duree = parseInt(item.dataset.duree) || 0;
-            
-            let show = true;
-            
-            if (searchTerm && !name.includes(searchTerm)) show = false;
-            
-            if (show && duration !== 'all') {
-                if (duration === '10') {
-                    if (duree < 10) show = false;
-                } else {
-                    if (duree != duration) show = false;
-                }
+    const icons = { reduction: 'fa-tags', nouveau_voyage: 'fa-plane-departure' };
+    notifList.innerHTML = notifications.map(n => `
+        <div class="notif-item type-${n.type} ${n.lu == 0 ? 'unread' : ''}" data-id="${n.id}" onclick="markNotifRead(${n.id}, this)">
+            <div class="notif-item-icon">
+                <i class="fas ${icons[n.type] || 'fa-bell'}"></i>
+            </div>
+            <div class="notif-item-body">
+                <div class="notif-item-msg">${n.message}</div>
+                ${n.voyage_nom ? `<div class="notif-item-sub"><i class="fas fa-map-marker-alt"></i> ${n.voyage_nom}</div>` : ''}
+                <div class="notif-item-date"><i class="far fa-clock"></i> ${timeAgo(n.date_creation)}</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function showToast(notif) {
+    const icons = { reduction: 'fa-tags', nouveau_voyage: 'fa-plane-departure' };
+    const labels = { reduction: 'Réduction prix', nouveau_voyage: 'Nouveau voyage' };
+    const toast = document.createElement('div');
+    toast.className = `notif-toast type-${notif.type}`;
+    toast.style.position = 'relative';
+    toast.innerHTML = `
+        <div class="notif-toast-accent"></div>
+        <div class="notif-toast-inner">
+            <div class="notif-toast-icon-wrap">
+                <i class="fas ${icons[notif.type] || 'fa-bell'}"></i>
+            </div>
+            <div class="notif-toast-body">
+                <div class="notif-toast-label">${labels[notif.type] || 'Notification'}</div>
+                <div class="notif-toast-title">${notif.message}</div>
+                ${notif.voyage_nom ? `<div class="notif-toast-sub"><i class="fas fa-map-marker-alt"></i> ${notif.voyage_nom}</div>` : ''}
+            </div>
+            <button class="notif-toast-close" onclick="dismissToast(this.closest('.notif-toast'))"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="notif-toast-progress"><div class="notif-toast-progress-bar"></div></div>
+    `;
+    toastContainer.appendChild(toast);
+    requestAnimationFrame(() => { requestAnimationFrame(() => { toast.classList.add('show'); }); });
+    setTimeout(() => dismissToast(toast), 5500);
+}
+
+function dismissToast(toast) {
+    if (!toast || toast.classList.contains('hide')) return;
+    toast.classList.add('hide');
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 500);
+}
+
+async function fetchNotifications() {
+    try {
+        const res  = await fetch('{{ path("app_notifications_list") }}');
+        const data = await res.json();
+        if (data.count > 0) { notifBadge.textContent = data.count; notifBadge.classList.add('visible'); } else { notifBadge.classList.remove('visible'); }
+        data.notifications.forEach(n => {
+            if (!shownNotifIds.includes(n.id)) {
+                shownNotifIds.push(n.id);
+                sessionStorage.setItem('shownNotifIds', JSON.stringify(shownNotifIds));
+                setTimeout(() => showToast(n), 800);
             }
-            
-            if (show && budget !== 'all') {
-                if (budget === 'budget' && price >= 500) show = false;
-                if (budget === 'medium' && (price < 500 || price > 1000)) show = false;
-                if (budget === 'luxury' && price < 1000) show = false;
-            }
-            
-            item.style.display = show ? '' : 'none';
-            if (show) visibleCount++;
         });
-        
-        const existingMsg = document.getElementById('noResultMsg');
-        if (visibleCount === 0) {
-            if (!existingMsg) {
-                const grid = document.getElementById('voyagesGrid');
-                const msg = document.createElement('div');
-                msg.id = 'noResultMsg';
-                msg.className = 'col-12';
-                msg.innerHTML = `
-                    <div class="no-results">
-                        <i class="fas fa-search"></i>
-                        <p class="text-muted mb-0">Aucun voyage ne correspond à vos critères</p>
-                    </div>
-                `;
-                grid.appendChild(msg);
-            }
-        } else if (existingMsg) {
-            existingMsg.remove();
-        }
+        renderNotifList(data.notifications);
+    } catch(e) { }
+}
+
+async function markNotifRead(id, el) {
+    try {
+        await fetch(`/voyage/notifications/${id}/read`, { method: 'POST' });
+        if (el) { el.classList.remove('unread'); }
+        fetchNotifications();
+    } catch(e) {}
+}
+
+btnReadAll.addEventListener('click', async () => {
+    try {
+        await fetch('{{ path("app_notifications_read_all") }}', { method: 'POST' });
+        fetchNotifications();
+        notifDropdown.classList.remove('open');
+    } catch(e) {}
+});
+
+notifBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    notifDropdown.classList.toggle('open');
+    if (notifDropdown.classList.contains('open')) fetchNotifications();
+});
+
+document.addEventListener('click', (e) => {
+    if (!notifWrapper.contains(e.target)) notifDropdown.classList.remove('open');
+});
+
+fetchNotifications();
+setInterval(fetchNotifications, 30000);
+
+// ==================== HUMEUR / RECOMMANDATION ====================
+const moodBtn          = document.getElementById('moodBtn');
+const moodOverlay      = document.getElementById('moodModalOverlay');
+const closeMoodBtn     = document.getElementById('closeMoodBtn');
+const budgetSlider     = document.getElementById('budgetSlider');
+const budgetDisplay    = document.getElementById('budgetDisplay');
+const btnRecommend     = document.getElementById('btnRecommend');
+const recommendResult  = document.getElementById('recommendResult');
+const recommendName    = document.getElementById('recommendName');
+const recommendPrice   = document.getElementById('recommendPrice');
+const recommendRaison  = document.getElementById('recommendRaison');
+const recommendLink    = document.getElementById('recommendLink');
+
+let selectedHumeur = '';
+let selectedPrefs  = [];
+let selectedSaison = '';
+
+moodBtn.addEventListener('click', () => moodOverlay.classList.add('open'));
+closeMoodBtn.addEventListener('click', () => moodOverlay.classList.remove('open'));
+moodOverlay.addEventListener('click', (e) => { if (e.target === moodOverlay) moodOverlay.classList.remove('open'); });
+
+function updateSliderFill() {
+    const min = parseInt(budgetSlider.min), max = parseInt(budgetSlider.max), val = parseInt(budgetSlider.value);
+    const pct = ((val - min) / (max - min)) * 100;
+    budgetSlider.style.backgroundSize = pct + '% 100%';
+    budgetDisplay.textContent = val.toLocaleString('fr-FR') + ' DT';
+}
+budgetSlider.addEventListener('input', updateSliderFill);
+updateSliderFill();
+
+document.querySelectorAll('.mood-emoji-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.mood-emoji-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedHumeur = btn.dataset.value;
+    });
+});
+
+document.querySelectorAll('.pref-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+        chip.classList.toggle('selected');
+        const v = chip.dataset.value;
+        if (chip.classList.contains('selected')) { selectedPrefs.push(v); }
+        else { selectedPrefs = selectedPrefs.filter(p => p !== v); }
+    });
+});
+
+document.querySelectorAll('.saison-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.saison-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedSaison = btn.dataset.value;
+    });
+});
+
+btnRecommend.addEventListener('click', async () => {
+    if (!selectedHumeur && selectedPrefs.length === 0) {
+        alert('Sélectionnez au moins votre humeur ou vos préférences !');
+        return;
     }
-    
-    if (filterBtn) filterBtn.addEventListener('click', applyFilters);
-    if (searchInput) searchInput.addEventListener('keyup', applyFilters);
-    if (durationFilter) durationFilter.addEventListener('change', applyFilters);
-    if (budgetFilter) budgetFilter.addEventListener('change', applyFilters);
-    
-    applyFilters();
+    btnRecommend.disabled = true;
+    btnRecommend.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyse en cours...';
+    recommendResult.style.display = 'none';
+
+    try {
+        const fd = new FormData();
+        fd.append('humeur',      selectedHumeur);
+        fd.append('preferences', selectedPrefs.join(', '));
+        fd.append('budget',      budgetSlider.value);
+        fd.append('saison',      selectedSaison);
+
+        const res  = await fetch('{{ path("app_ai_recommend") }}', { method: 'POST', body: fd });
+        const data = await res.json();
+
+        if (data.idV) {
+            recommendName.textContent  = data.nom;
+            document.getElementById('recommendPrice').innerHTML = `<i class="fas fa-tag"></i> ${parseFloat(data.prix).toLocaleString('fr-FR')} DT / personne`;
+            recommendRaison.textContent = data.raison;
+            recommendLink.href          = `/voyage/${data.idV}`;
+            recommendResult.style.display = 'block';
+            recommendResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else { throw new Error('Pas de résultat'); }
+    } catch(e) {
+        alert('Désolé, une erreur est survenue. Réessayez !');
+    } finally {
+        btnRecommend.disabled = false;
+        btnRecommend.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Trouver mon voyage idéal';
+    }
+});
+
+// ==================== VOICE CALL ENGINE ====================
+const callOverlay    = document.getElementById('callOverlay');
+const callTriggerBtn = document.getElementById('callTriggerBtn');
+const orbSphere      = document.getElementById('orbSphere');
+const orbCanvas      = document.getElementById('orbCanvas');
+const agentStatus    = document.getElementById('agentStatus');
+const callTranscript = document.getElementById('callTranscript');
+const audioBars      = document.getElementById('audioBars');
+const callTimer      = document.getElementById('callTimer');
+const ctrlMute       = document.getElementById('ctrlMute');
+const ctrlEnd        = document.getElementById('ctrlEnd');
+const ctrlKeyboard   = document.getElementById('ctrlKeyboard');
+const callTextInput  = document.getElementById('callTextInput');
+const callInputField = document.getElementById('callInputField');
+const callSendBtn    = document.getElementById('callSendBtn');
+
+let callActive=false, isMuted=false, timerInterval=null, timerSeconds=0;
+let recognition=null, isListening=false, isSpeaking=false;
+let synth=window.speechSynthesis, conversationHistory=[];
+let orbAnimFrame=null, audioCtx=null, analyser=null, micStream=null, lastVolume=0;
+let abortController=null;
+
+function setupCanvas() { const dpr=window.devicePixelRatio||1,size=orbSphere.offsetWidth||140; orbCanvas.width=size*dpr; orbCanvas.height=size*dpr; orbCanvas.style.width=size+'px'; orbCanvas.style.height=size+'px'; orbCanvas.getContext('2d').scale(dpr,dpr); }
+function drawWave(volume,state) {
+    const ctx=orbCanvas.getContext('2d'),w=orbCanvas.width/(window.devicePixelRatio||1),h=orbCanvas.height/(window.devicePixelRatio||1);
+    ctx.clearRect(0,0,w,h); const cx=w/2,cy=h/2,baseR=Math.min(w,h)*0.38,points=80,time=Date.now()/1000;
+    let color1,color2;
+    if(state==='listening'){color1='rgba(59,130,246,0.8)';color2='rgba(96,165,250,0.4)';}
+    else if(state==='speaking'){color1='rgba(16,185,129,0.8)';color2='rgba(34,197,94,0.4)';}
+    else if(state==='thinking'){color1='rgba(245,158,11,0.8)';color2='rgba(251,191,36,0.4)';}
+    else{color1='rgba(193,120,23,0.6)';color2='rgba(125,46,62,0.3)';}
+    const grad=ctx.createRadialGradient(cx,cy,0,cx,cy,baseR); grad.addColorStop(0,color2); grad.addColorStop(1,'transparent');
+    ctx.beginPath(); ctx.arc(cx,cy,baseR,0,Math.PI*2); ctx.fillStyle=grad; ctx.fill();
+    ctx.beginPath();
+    for(let i=0;i<=points;i++){const angle=(i/points)*Math.PI*2;let r=baseR;if(state!=='idle'){let freq1=0;if(analyser){const buf=new Uint8Array(analyser.frequencyBinCount);analyser.getByteFrequencyData(buf);freq1=(buf[Math.floor((i/points)*buf.length)]||0)/255;}const wave=Math.sin(angle*4+time*3)*(volume*25+6)+Math.sin(angle*7+time*5)*(volume*15+3)+Math.sin(angle*2+time*1.5)*4+freq1*20*volume;r=baseR+wave;}else{r=baseR+Math.sin(angle*3+time*0.8)*3+Math.cos(angle*5+time*1.2)*2;}const x=cx+r*Math.cos(angle),y=cy+r*Math.sin(angle);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}
+    ctx.closePath(); ctx.strokeStyle=color1; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx,cy,4,0,Math.PI*2); ctx.fillStyle=color1; ctx.fill();
+}
+function animateOrb() {
+    const state=orbSphere.classList.contains('listening')?'listening':orbSphere.classList.contains('speaking')?'speaking':orbSphere.classList.contains('thinking')?'thinking':'idle';
+    let volume=0;
+    if(analyser&&state==='listening'){const buf=new Uint8Array(analyser.frequencyBinCount);analyser.getByteFrequencyData(buf);volume=buf.reduce((a,b)=>a+b,0)/buf.length/128;}
+    else if(state==='speaking'){volume=0.3+Math.sin(Date.now()/200)*0.2;}
+    lastVolume=lastVolume*0.7+volume*0.3; drawWave(lastVolume,state);
+    orbAnimFrame=requestAnimationFrame(animateOrb);
+}
+function startTimer() { timerSeconds=0; timerInterval=setInterval(()=>{timerSeconds++;const m=String(Math.floor(timerSeconds/60)).padStart(2,'0'),s=String(timerSeconds%60).padStart(2,'0');callTimer.textContent=m+':'+s;},1000); }
+function stopTimer() { clearInterval(timerInterval); timerInterval=null; }
+function setOrbState(state) {
+    orbSphere.classList.remove('idle','listening','speaking','thinking'); orbSphere.classList.add(state);
+    const labels={idle:'En attente...',listening:'Je vous écoute...',speaking:'Je vous réponds...',thinking:'Réflexion...'};
+    const statusClasses={idle:'',listening:'listening',speaking:'speaking',thinking:'thinking'};
+    agentStatus.textContent=labels[state]||''; agentStatus.className='agent-status '+(statusClasses[state]||'');
+    audioBars.classList.toggle('active',state==='listening');
+}
+function addTranscriptLine(text,isUser) {
+    const dots=callTranscript.querySelector('.typing-dots-container'); if(dots)dots.remove();
+    const div=document.createElement('div'); div.className='transcript-line '+(isUser?'user-line':'bot-line');
+    div.textContent=isUser?'🎤 '+text:text; callTranscript.appendChild(div);
+    const lines=callTranscript.querySelectorAll('.transcript-line'); if(lines.length>6)lines[0].remove();
+    callTranscript.scrollTop=callTranscript.scrollHeight;
+}
+function showThinkingDots() { const div=document.createElement('div'); div.className='transcript-line bot-line typing-dots-container'; div.innerHTML='<div class="typing-dots"><span></span><span></span><span></span></div>'; callTranscript.appendChild(div); callTranscript.scrollTop=callTranscript.scrollHeight; }
+function speakText(text) {
+    if(!synth)return; synth.cancel();
+    const clean=text.replace(/[#*_`\[\]]/g,'').replace(/\n/g,'. ').replace(/\s+/g,' ').trim();
+    const utter=new SpeechSynthesisUtterance(clean); utter.lang='fr-FR'; utter.rate=0.95; utter.pitch=1.05; utter.volume=1;
+    const voices=synth.getVoices(); const frVoice=voices.find(v=>v.lang.startsWith('fr')&&v.localService)||voices.find(v=>v.lang.startsWith('fr'))||null;
+    if(frVoice)utter.voice=frVoice;
+    utter.onstart=()=>{setOrbState('speaking');isSpeaking=true;};
+    utter.onend=()=>{isSpeaking=false;if(callActive&&!isMuted){setTimeout(()=>{if(callActive&&!isMuted&&!isSpeaking)startListening();},500);}else setOrbState('idle');};
+    utter.onerror=()=>{isSpeaking=false;setOrbState('idle');};
+    synth.speak(utter);
+}
+
+async function sendToAI(text) {
+    if(abortController) abortController.abort();
+    abortController = new AbortController();
+    setOrbState('thinking');
+    showThinkingDots();
+    conversationHistory.push({ role: 'user', content: text });
+    if (conversationHistory.length > 20) conversationHistory = conversationHistory.slice(-20);
+    try {
+        const formData = new URLSearchParams();
+        formData.append('question', text);
+        formData.append('history', JSON.stringify(conversationHistory.slice(0, -1)));
+        const res  = await fetch('{{ path("app_ai_ask") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body:    formData.toString(),
+            signal:  abortController.signal
+        });
+        const data   = await res.json();
+        const answer = data.answer || "Je suis désolé, je n'ai pas pu répondre.";
+        conversationHistory.push({ role: 'assistant', content: answer });
+        if (conversationHistory.length > 20) conversationHistory = conversationHistory.slice(-20);
+        addTranscriptLine(answer, false);
+        speakText(answer);
+    } catch(e) {
+        if (e.name === 'AbortError') return;
+        const fallback = "Désolé, connexion interrompue. Réessayez !";
+        addTranscriptLine(fallback, false);
+        speakText(fallback);
+    }
+}
+function setupRecognition() {
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR)return null;
+    const r=new SR(); r.lang='fr-FR'; r.continuous=false; r.interimResults=true; r.maxAlternatives=1;
+    let finalTranscript='';
+    r.onstart=()=>{isListening=true;finalTranscript='';setOrbState('listening');};
+    r.onend=()=>{isListening=false;if(!isSpeaking)setOrbState('idle');if(finalTranscript.trim()){addTranscriptLine(finalTranscript.trim(),true);sendToAI(finalTranscript.trim());finalTranscript='';}};
+    r.onresult=(e)=>{let interim='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)finalTranscript+=e.results[i][0].transcript;else interim+=e.results[i][0].transcript;}if(interim){const existing=callTranscript.querySelector('.interim-line');if(existing)existing.remove();const div=document.createElement('div');div.className='transcript-line user-line interim-line';div.style.opacity='0.6';div.textContent='🎤 '+interim+'...';callTranscript.appendChild(div);callTranscript.scrollTop=callTranscript.scrollHeight;}};
+    r.onerror=(e)=>{isListening=false;const interim=callTranscript.querySelector('.interim-line');if(interim)interim.remove();if(e.error==='no-speech'&&callActive&&!isMuted&&!isSpeaking){setTimeout(()=>{if(callActive&&!isMuted&&!isSpeaking)startListening();},800);}};
+    return r;
+}
+function startListening() { if(!recognition||isMuted||isSpeaking||!callActive)return; try{recognition.start();}catch(e){} }
+function stopListening() { if(recognition){try{recognition.stop();}catch(e){}} isListening=false; }
+async function setupMicAnalyser() { try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});micStream=stream;audioCtx=new(window.AudioContext||window.webkitAudioContext)();const source=audioCtx.createMediaStreamSource(stream);analyser=audioCtx.createAnalyser();analyser.fftSize=256;source.connect(analyser);}catch(e){console.warn('Mic access:',e);} }
+async function openCall() {
+    callActive=true;conversationHistory=[];
+    callOverlay.classList.add('visible'); requestAnimationFrame(()=>callOverlay.classList.add('active'));
+    document.body.style.overflow='hidden';
+    setupCanvas(); if(!orbAnimFrame)animateOrb(); startTimer();
+    await setupMicAnalyser(); recognition=setupRecognition();
+    const greeting="Bonjour ! Je suis votre guide TunisiaJourney. Je peux vous parler de nos voyages, des destinations en Tunisie, de la gastronomie, ou répondre à toutes vos questions. Parlez-moi !";
+    callTranscript.innerHTML=''; addTranscriptLine(greeting,false); speakText(greeting);
+}
+function closeCall() {
+    callActive=false; stopListening(); synth.cancel(); stopTimer();
+    if(abortController){abortController.abort();abortController=null;}
+    isSpeaking=false;isListening=false;
+    if(micStream){micStream.getTracks().forEach(t=>t.stop());micStream=null;}
+    if(audioCtx){audioCtx.close();audioCtx=null;analyser=null;}
+    if(orbAnimFrame){cancelAnimationFrame(orbAnimFrame);orbAnimFrame=null;}
+    callOverlay.classList.remove('active'); setTimeout(()=>callOverlay.classList.remove('visible'),400);
+    document.body.style.overflow=''; callTextInput.classList.remove('visible'); setOrbState('idle');
+    timerSeconds=0;callTimer.textContent='00:00';
+}
+callTriggerBtn.addEventListener('click', openCall);
+ctrlEnd.addEventListener('click', closeCall);
+ctrlMute.addEventListener('click',()=>{isMuted=!isMuted;ctrlMute.classList.toggle('muted',isMuted);if(isMuted){stopListening();setOrbState('idle');}else if(callActive&&!isSpeaking)startListening();});
+ctrlKeyboard.addEventListener('click',()=>{const visible=callTextInput.classList.toggle('visible');ctrlKeyboard.classList.toggle('active',visible);if(visible)callInputField.focus();});
+function sendTextMessage(){const text=callInputField.value.trim();if(!text)return;callInputField.value='';stopListening();addTranscriptLine(text,true);sendToAI(text);}
+callSendBtn.addEventListener('click',sendTextMessage);
+callInputField.addEventListener('keypress',e=>{if(e.key==='Enter')sendTextMessage();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&callActive)closeCall();});
+if(synth.onvoiceschanged!==undefined)synth.onvoiceschanged=()=>{};
+
+// ==================== FLIPBOOK ENGINE ====================
+const flipbookOverlay   = document.getElementById('flipbookOverlay');
+const flipbookTriggerBtn= document.getElementById('flipbookTriggerBtn');
+const flipbookClose     = document.getElementById('flipbookClose');
+const flipbookSoundBtn  = document.getElementById('flipbookSoundBtn');
+const fbPrev            = document.getElementById('fbPrev');
+const fbNext            = document.getElementById('fbNext');
+const fbIndicator       = document.getElementById('fbIndicator');
+
+const FB_TOTAL_PAGES = 12;
+let fbCurrentPage  = 0;
+let fbIsAnimating  = false;
+let fbSoundMuted   = false;
+let ytPlayer       = null;
+let ytReady        = false;
+
+const fbPageLabels = [
+    'Couverture', 'Sommaire', 'Introduction', 'Histoire',
+    'Culture', 'Gastronomie', 'Destinations', 'Désert',
+    'Mer & Plages', 'Artisanat', 'Conseils', 'Épilogue'
+];
+
+window.onYouTubeIframeAPIReady = function() {
+    ytReady = true;
+    ytPlayer = new YT.Player('yt-player', {
+        videoId: 'ic8F58kk1-o',
+        playerVars: { autoplay: 0, controls: 0, loop: 1, playlist: 'ic8F58kk1-o', modestbranding: 1, rel: 0 },
+        events: { onReady: function(e) { e.target.setVolume(55); } }
+    });
+};
+
+(function loadYT() {
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(tag);
+})();
+
+function fbPlayMusic() { if (ytPlayer && ytReady && !fbSoundMuted) { try { ytPlayer.playVideo(); } catch(e) {} } }
+function fbPauseMusic() { if (ytPlayer && ytReady) { try { ytPlayer.pauseVideo(); } catch(e) {} } }
+
+flipbookSoundBtn.addEventListener('click', () => {
+    fbSoundMuted = !fbSoundMuted;
+    flipbookSoundBtn.classList.toggle('muted', fbSoundMuted);
+    flipbookSoundBtn.innerHTML = fbSoundMuted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-music"></i>';
+    if (fbSoundMuted) fbPauseMusic();
+    else fbPlayMusic();
+});
+
+function fbUpdateNav() {
+    fbPrev.disabled = fbCurrentPage === 0;
+    fbNext.disabled = fbCurrentPage === FB_TOTAL_PAGES - 1;
+    fbIndicator.textContent = fbPageLabels[fbCurrentPage] || `Page ${fbCurrentPage}`;
+}
+
+function fbShowPage(index, direction) {
+    if (fbIsAnimating) return;
+    if (index < 0 || index >= FB_TOTAL_PAGES) return;
+    const currentEl = document.getElementById('fb-page-' + fbCurrentPage);
+    const nextEl    = document.getElementById('fb-page-' + index);
+    if (!currentEl || !nextEl) return;
+    fbIsAnimating = true;
+    const outClass = direction === 'next' ? 'turning-out' : 'turning-out-back';
+    const inClass  = direction === 'next' ? 'turning-in'  : 'turning-in-back';
+    currentEl.classList.add(outClass);
+    currentEl.classList.remove('active');
+    setTimeout(() => {
+        currentEl.classList.remove(outClass);
+        currentEl.style.display = 'none';
+        nextEl.classList.add('active', inClass);
+        nextEl.style.display = '';
+        setTimeout(() => {
+            nextEl.classList.remove(inClass);
+            fbCurrentPage = index;
+            fbUpdateNav();
+            fbIsAnimating = false;
+        }, 560);
+    }, 560);
+}
+
+function flipbookGoTo(index) {
+    const dir = index > fbCurrentPage ? 'next' : 'prev';
+    fbShowPage(index, dir);
+}
+
+fbNext.addEventListener('click', () => { if (fbCurrentPage < FB_TOTAL_PAGES - 1) flipbookGoTo(fbCurrentPage + 1); });
+fbPrev.addEventListener('click', () => { if (fbCurrentPage > 0) flipbookGoTo(fbCurrentPage - 1); });
+
+flipbookTriggerBtn.addEventListener('click', () => {
+    flipbookOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    fbUpdateNav();
+    setTimeout(fbPlayMusic, 800);
+});
+
+function closeFlipbook() { flipbookOverlay.classList.remove('open'); document.body.style.overflow = ''; fbPauseMusic(); }
+flipbookClose.addEventListener('click', closeFlipbook);
+flipbookOverlay.addEventListener('click', (e) => { if (e.target === flipbookOverlay) closeFlipbook(); });
+
+document.addEventListener('keydown', (e) => {
+    if (!flipbookOverlay.classList.contains('open')) return;
+    if (e.key === 'ArrowRight') fbNext.click();
+    if (e.key === 'ArrowLeft')  fbPrev.click();
+    if (e.key === 'Escape') closeFlipbook();
+});
+
+(function initSwipe() {
+    const book = document.getElementById('flipbookBook');
+    if (!book) return;
+    let startX = 0;
+    book.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive:true});
+    book.addEventListener('touchend', e => {
+        const diff = startX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 50) { if (diff > 0) fbNext.click(); else fbPrev.click(); }
+    }, {passive:true});
+})();
+
+fbUpdateNav();
 </script>
 {% endblock %}

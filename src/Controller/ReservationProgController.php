@@ -4,8 +4,9 @@ namespace App\Controller;
 
 use App\Entity\ReservationProg;
 use App\Entity\Programme;
-use App\Service\BrevoMailerService;
-use Doctrine\DBAL\Connection;
+use App\Entity\User;
+use App\Service\EmailService;
+use App\Service\StripeService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,17 +21,52 @@ class ReservationProgController extends AbstractController
     public function new(
         Request $request,
         EntityManagerInterface $entityManager,
-        Connection $connection,
         ValidatorInterface $validator,
-        BrevoMailerService $mailerService = null,
-        string $idProg = null
+        EmailService $emailService,
+        StripeService $stripeService,
+        ?string $idProg = null
     ): Response {
 
-        if (!$idProg) {
-            $this->addFlash('error', 'ID du programme manquant');
-            return $this->redirectToRoute('app_voyage_index');
+        // ✅ VÉRIFICATION : Seuls les MEMBRES (connectés) peuvent réserver
+        $user = $this->getUser();
+        
+        // Si l'utilisateur n'est PAS connecté → redirection vers login
+        if (!$user) {
+            $this->addFlash('warning', '⚠️ Veuillez vous connecter ou créer un compte pour effectuer une réservation.');
+            return $this->redirectToRoute('app_login');
+        }
+        
+        // 🔥 Récupérer l'utilisateur complet depuis la base de données
+        $userRepo = $entityManager->getRepository(User::class);
+        $completeUser = null;
+        
+        if (method_exists($user, 'getId')) {
+            $completeUser = $userRepo->find($user->getId());
+        } else {
+            $completeUser = $userRepo->findOneBy(['email' => $user->getUserIdentifier()]);
+        }
+        
+        if (!$completeUser) {
+            $this->addFlash('error', 'Utilisateur non trouvé.');
+            return $this->redirectToRoute('app_programme_show', ['idProg' => $idProg]);
+        }
+        
+        // Vérifier le rôle de l'utilisateur (MEMBRE uniquement, pas ADMIN)
+        $userRole = $completeUser->getRole() ?? '';
+        
+        // Si l'utilisateur est ADMIN → refuser la réservation
+        if (strtoupper($userRole) === 'ADMIN') {
+            $this->addFlash('error', '❌ Les administrateurs ne peuvent pas effectuer de réservation. Veuillez utiliser un compte membre.');
+            return $this->redirectToRoute('app_programme_show', ['idProg' => $idProg]);
+        }
+        
+        // Vérifier que le rôle est MEMBRE
+        if (strtoupper($userRole) !== 'MEMBRE') {
+            $this->addFlash('error', '❌ Seuls les membres peuvent effectuer des réservations.');
+            return $this->redirectToRoute('app_programme_show', ['idProg' => $idProg]);
         }
 
+        // Récupérer le programme
         $programme = $entityManager->getRepository(Programme::class)->find($idProg);
 
         if (!$programme) {
@@ -38,87 +74,116 @@ class ReservationProgController extends AbstractController
             return $this->redirectToRoute('app_voyage_index');
         }
 
-        $data = $request->request->all();
+        // Récupérer les données du formulaire
+        $nom      = trim($request->request->get('nom', ''));
+        $prenom   = trim($request->request->get('prenom', ''));
+        $telephone = trim($request->request->get('telephone', ''));
+        $email    = trim($request->request->get('email', ''));
+        $nbre     = $request->request->get('nbre', '');
 
-        $reservation = new ReservationProg();
-        $reservation->setNom($data['nom'] ?? '');
-        $reservation->setPrenom($data['prenom'] ?? '');
-        $reservation->setTelephone($data['telephone'] ?? '');
-        $reservation->setEmail($data['email'] ?? '');
-
-        // Gestion sécurisée du champ nbre (texte brut depuis le formulaire)
-        $nbreRaw = trim($data['nbre'] ?? '');
-        if ($nbreRaw !== '' && ctype_digit($nbreRaw)) {
-            $reservation->setNbre((int) $nbreRaw);
+        // ✅ UTILISER LES INFOS DE L'UTILISATEUR CONNECTÉ SI LES CHAMPS SONT VIDES
+        if (empty($nom) && $completeUser->getNom()) {
+            $nom = $completeUser->getNom();
+        }
+        if (empty($prenom) && $completeUser->getPrenom()) {
+            $prenom = $completeUser->getPrenom();
+        }
+        if (empty($telephone) && $completeUser->getTelephone()) {
+            $telephone = $completeUser->getTelephone();
+        }
+        if (empty($email) && $completeUser->getEmail()) {
+            $email = $completeUser->getEmail();
         }
 
-        $reservation->setIdP($idProg);
+        // Créer la réservation
+        $reservation = new ReservationProg();
+        $reservation->setNom($nom);
+        $reservation->setPrenom($prenom);
+        $reservation->setTelephone($telephone);
+        $reservation->setEmail($email);
+        $reservation->setNbre(is_numeric($nbre) ? (int)$nbre : 0);
+        $reservation->setIdP($programme->getIdProg());
         $reservation->setDateProgramme(new \DateTime());
-        $reservation->setStatutPaiement('payé');
+        $reservation->setStatutPaiement('en_attente');
+        
+        // ✅ Lier l'utilisateur connecté (MEMBRE)
+        $reservation->setUserId($completeUser->getId());
 
-        $voyage = $programme->getVoyage();
-        $prixTotal = $voyage->getPrix() * ($reservation->getNbre() ?? 1);
-        $reservation->setPrixProg((float) $prixTotal);
-
-        // ✅ VALIDATION SYMFONY (annotations sur l'entité)
+        // ✅ VALIDATION SYMFONY
         $errors = $validator->validate($reservation);
 
         if (count($errors) > 0) {
-            $errorMessages = [];
             foreach ($errors as $error) {
-                $errorMessages[] = $error->getMessage();
+                $this->addFlash('error', $error->getMessage());
             }
-
-            $source = $request->request->get('source', 'programme_show');
-
-            if ($source === 'voyage_programmes') {
-                $voyageId = $request->request->get('voyageId') ?: $programme->getVoyage()->getIdV();
-                $voyage = $connection->fetchAssociative('SELECT * FROM voyages WHERE idV = ?', [$voyageId]);
-                $programmes = $connection->fetchAllAssociative('SELECT * FROM programmes WHERE idV = ? ORDER BY dateDebut ASC', [$voyageId]);
-
-                return $this->render('voyage/programmes.html.twig', [
-                    'voyage'    => $voyage,
-                    'programmes'=> $programmes,
-                    'errors'    => $errorMessages,
-                    'formData'  => $data,
-                ]);
-            }
-
-            return $this->render('programme/show.html.twig', [
-                'programme'  => $programme,
-                'errors'     => $errorMessages,
-                'formData'   => $data,
+            return $this->redirectToRoute('app_programme_show', [
+                'idProg' => $programme->getIdProg()
             ]);
         }
 
-        // Pas d'erreurs → on persiste
-        $entityManager->persist($reservation);
-        $entityManager->flush();
+        // Calculer le prix total
+        $prixTotal = $programme->getVoyage()->getPrix() * (int)$nbre;
+        $reservation->setPrixProg((float)$prixTotal);
 
-        // Envoi de l'email de confirmation (optionnel)
-        if ($mailerService) {
+        // Sauvegarder
+        try {
+            $entityManager->persist($reservation);
+            $entityManager->flush();
+            
+            // Envoi des emails (avec gestion d'erreur silencieuse)
+            $clientFullName = $prenom . ' ' . $nom;
+            $programmeDate = $programme->getDateDebut()->format('d/m/Y');
+            $lieu = $programme->getLieu();
+            
             try {
-                $mailerService->sendConfirmationEmail(
-                    $reservation->getEmail(),
-                    $reservation->getNom(),
-                    $reservation->getPrenom(),
-                    [
-                        'programme_nom' => $programme->getNom(),
-                        'lieu'          => $programme->getLieu(),
-                        'date_debut'    => $programme->getDateDebut()->format('d/m/Y'),
-                        'date_fin'      => $programme->getDateFin()->format('d/m/Y'),
-                        'nbre'          => $reservation->getNbre(),
-                        'prix_total'    => $prixTotal,
-                        'email'         => $reservation->getEmail(),
-                        'telephone'     => $reservation->getTelephone(),
-                    ]
+                $emailService->sendReservationConfirmation(
+                    $email,
+                    $clientFullName,
+                    $programme->getNom(),
+                    $programmeDate,
+                    $lieu,
+                    (int)$nbre,
+                    $prixTotal
                 );
+                $emailService->sendAdminNotification(
+                    $clientFullName,
+                    $email,
+                    $telephone,
+                    $programme->getNom(),
+                    (int)$nbre,
+                    $prixTotal
+                );
+                $this->addFlash('success', '✅ Réservation créée ! Redirection vers la page de paiement...');
             } catch (\Exception $e) {
-                // Silencieux : l'email échoue mais la réservation est enregistrée
+                $this->addFlash('success', '✅ Réservation créée ! Redirection vers la page de paiement...');
             }
+            
+            // ✅ REDIRECTION VERS STRIPE POUR LE PAIEMENT
+            return $this->redirectToRoute('stripe_checkout', ['idReservation' => $reservation->getIdRP()]);
+            
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur lors de la sauvegarde : ' . $e->getMessage());
         }
 
-        $this->addFlash('success', 'Réservation confirmée ! Un email vous a été envoyé.');
-        return $this->redirectToRoute('app_voyage_index');
+        return $this->redirectToRoute('app_programme_show', [
+            'idProg' => $programme->getIdProg()
+        ]);
+    }
+
+    #[Route('/test-brevo', name: 'test_brevo')]
+    public function testBrevo(\Symfony\Component\Mailer\MailerInterface $mailer): Response
+    {
+        try {
+            $email = (new \Symfony\Component\Mime\Email())
+                ->from('souhamzoughi01@gmail.com')
+                ->to('souhamzoughi01@gmail.com')
+                ->subject('Test Brevo')
+                ->text('Ceci est un test de Brevo');
+            
+            $mailer->send($email);
+            return new Response('✅ Email envoyé avec succès via Brevo !');
+        } catch (\Exception $e) {
+            return new Response('❌ Erreur Brevo: ' . $e->getMessage());
+        }
     }
 }
