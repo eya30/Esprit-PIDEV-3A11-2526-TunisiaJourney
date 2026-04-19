@@ -635,5 +635,137 @@
     </script>
     
     {% block javascripts %}{% endblock %}
+
+    {% if app.user %}
+    <!-- ══════════════════════════════════════════
+         SESSION TIMEOUT — Inactivité 15 minutes
+    ══════════════════════════════════════════ -->
+    <style>
+        .inactivity-overlay {
+            display: none; position: fixed; inset: 0; z-index: 99999;
+            background: rgba(0,0,0,.55); backdrop-filter: blur(6px);
+            align-items: center; justify-content: center;
+        }
+        .inactivity-overlay.active { display: flex; }
+        .inactivity-box {
+            background: white; border-radius: 20px; padding: 36px 32px;
+            max-width: 380px; width: 90%; text-align: center;
+            box-shadow: 0 32px 80px rgba(0,0,0,.25);
+            animation: popIn .35s cubic-bezier(.34,1.56,.64,1);
+        }
+        @keyframes popIn {
+            from { transform: scale(.85); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
+        }
+        .inactivity-icon {
+            width: 64px; height: 64px; border-radius: 50%;
+            background: #FEF2F2; margin: 0 auto 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; color: #93032E;
+        }
+        .inactivity-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem; font-weight: 700; color: #2C1810; margin: 0 0 8px;
+        }
+        .inactivity-msg { font-size: .88rem; color: #777; margin: 0 0 6px; line-height: 1.6; }
+        .inactivity-counter {
+            font-size: 2.2rem; font-weight: 700; color: #93032E;
+            margin: 10px 0 16px; font-family: monospace;
+        }
+        .inactivity-progress {
+            width: 100%; height: 5px; background: #F0E8DD;
+            border-radius: 10px; margin-bottom: 20px; overflow: hidden;
+        }
+        .inactivity-progress-bar {
+            height: 100%; background: linear-gradient(90deg, #93032E, #B5043A);
+            border-radius: 10px; transition: width 1s linear;
+        }
+        .btn-inactivity-stay {
+            width: 100%; padding: 12px;
+            background: linear-gradient(90deg, #93032E, #B5043A);
+            color: white; border: none; border-radius: 50px;
+            font-size: .92rem; font-weight: 700; cursor: pointer;
+            box-shadow: 0 5px 16px rgba(147,3,46,.3);
+            transition: transform .18s, box-shadow .18s;
+        }
+        .btn-inactivity-stay:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(147,3,46,.42); }
+        .btn-inactivity-logout {
+            width: 100%; padding: 10px; background: transparent;
+            color: #93032E; border: 1.5px solid rgba(147,3,46,.3);
+            border-radius: 50px; font-size: .85rem; font-weight: 600;
+            cursor: pointer; margin-top: 8px; transition: all .2s;
+        }
+        .btn-inactivity-logout:hover { background: #FFF1F0; }
+    </style>
+
+    <div class="inactivity-overlay" id="inactivityOverlay">
+        <div class="inactivity-box">
+            <div class="inactivity-icon">⏱</div>
+            <h3 class="inactivity-title">Session inactive</h3>
+            <p class="inactivity-msg">Vous êtes inactif depuis un moment.<br>Vous serez déconnecté dans :</p>
+            <div class="inactivity-counter" id="inactivityCounter">60</div>
+            <div class="inactivity-progress">
+                <div class="inactivity-progress-bar" id="inactivityBar" style="width:100%"></div>
+            </div>
+            <button class="btn-inactivity-stay" onclick="inactivityStay()">
+                ✓ Je suis toujours là
+            </button>
+            <form method="post" action="{{ path('app_logout') }}" id="inactivityLogoutForm" style="margin:0;">
+                <input type="hidden" name="_token" value="{{ csrf_token('logout') }}">
+                <button type="submit" class="btn-inactivity-logout">Se déconnecter maintenant</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        var INACTIVE_MS  = 0.2 * 60 * 1000;
+        var WARNING_SECS = 60;
+        var inactiveTimer, countdownTimer;
+        var countLeft = WARNING_SECS;
+        var overlay  = document.getElementById('inactivityOverlay');
+        var counter  = document.getElementById('inactivityCounter');
+        var bar      = document.getElementById('inactivityBar');
+
+        function resetTimer() {
+            clearTimeout(inactiveTimer);
+            clearInterval(countdownTimer);
+            if (overlay.classList.contains('active')) {
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+                counter.style.color = '#93032E';
+            }
+            inactiveTimer = setTimeout(showWarning, INACTIVE_MS);
+        }
+
+        function showWarning() {
+            countLeft = WARNING_SECS;
+            counter.textContent = countLeft;
+            bar.style.width = '100%';
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            countdownTimer = setInterval(function() {
+                countLeft--;
+                counter.textContent = countLeft;
+                bar.style.width = Math.round((countLeft / WARNING_SECS) * 100) + '%';
+                if (countLeft <= 10) counter.style.color = '#DC2626';
+                if (countLeft <= 0) {
+                    clearInterval(countdownTimer);
+                    document.getElementById('inactivityLogoutForm').submit();
+                }
+            }, 1000);
+        }
+
+        window.inactivityStay = function() { resetTimer(); };
+
+        ['mousemove','mousedown','keydown','touchstart','scroll','click'].forEach(function(evt) {
+            document.addEventListener(evt, resetTimer, { passive: true });
+        });
+
+        resetTimer();
+    })();
+    </script>
+    {% endif %}
 </body>
 </html>

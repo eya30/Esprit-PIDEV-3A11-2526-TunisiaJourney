@@ -716,7 +716,7 @@
                         <a class="nav-link {% if app.request.get('_route') == 'app_accueil' %}active{% endif %}" href="{{ path('app_accueil') }}">Accueil</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if app.request.get('_route') starts with 'app_voyage' %}active{% endif %}" href="{{ path('app_voyage_index') }}">Voyages</a>
+                        <a class="nav-link {% if app.request.get('_route') starts with 'app_voyage' %}active{% endif %}" href="#">Voyages</a>
                     </li>
                     <li class="nav-item"><a class="nav-link" href="#">Hôtels</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">Événements</a></li>
@@ -844,7 +844,7 @@
                     <h5 class="footer-title">Explorer</h5>
                     <ul class="list-unstyled">
                         <li><a href="{{ path('app_accueil') }}">Accueil</a></li>
-                        <li><a href="{{ path('app_voyage_index') }}">Voyages</a></li>
+                        <li><a href="#">Voyages</a></li>
                         <li><a href="#">Hôtels</a></li>
                         <li><a href="#">Événements</a></li>
                         <li><a href="#">Produits</a></li>
@@ -955,6 +955,40 @@
                 <button class="pf-edit-btn" id="openEditModal">
                     <i class="fas fa-pen"></i> Modifier le profil
                 </button>
+
+                {# ── Section 2FA ── #}
+                {% if app.user.isTotpEnabled %}
+                <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:#F0FDF4;border-radius:12px;border:1px solid #BBF7D0;margin-top:4px;">
+                    <div style="width:36px;height:36px;border-radius:50%;background:#DCFCE7;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="fas fa-shield-halved" style="color:#15803D;font-size:.9rem;"></i>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="font-weight:700;color:#15803D;font-size:.85rem;">2FA activée</div>
+                        <div style="font-size:.72rem;color:#aaa;">Votre compte est doublement protégé</div>
+                    </div>
+                    <form method="POST" action="{{ path('app_2fa_disable') }}" style="margin:0;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('2fa_disable') }}">
+                        <button type="submit"
+                                style="padding:6px 14px;background:transparent;border:1.5px solid #FECACA;border-radius:40px;color:#EF4444;font-size:.75rem;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all .2s;"
+                                onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='transparent'">
+                            Désactiver
+                        </button>
+                    </form>
+                </div>
+                {% else %}
+                <a href="{{ path('app_2fa_enable') }}"
+                   style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:#FFF1F0;border-radius:12px;border:1px solid rgba(160,35,31,.2);text-decoration:none;margin-top:4px;transition:all .2s;"
+                   onmouseover="this.style.borderColor='#A0231F'" onmouseout="this.style.borderColor='rgba(160,35,31,.2)'">
+                    <div style="width:36px;height:36px;border-radius:50%;background:#FDE8E8;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="fas fa-lock-open" style="color:#A0231F;font-size:.9rem;"></i>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="font-weight:700;color:#A0231F;font-size:.85rem;">Activer la 2FA</div>
+                        <div style="font-size:.72rem;color:#aaa;">Sécurisez avec Google Authenticator</div>
+                    </div>
+                    <i class="fas fa-chevron-right" style="color:#A0231F;font-size:.8rem;"></i>
+                </a>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -1377,5 +1411,201 @@
 
     {% block javascripts %}{% endblock %}
     {% block importmap %}{{ importmap('app') }}{% endblock %}
+
+    {# ══════════════════════════════════════════
+       SESSION TIMEOUT — Inactivité 15 minutes
+    ══════════════════════════════════════════ #}
+    {% if app.user %}
+    <style>
+        .inactivity-overlay {
+            display: none; position: fixed; inset: 0; z-index: 99999;
+            background: rgba(0,0,0,.55); backdrop-filter: blur(6px);
+            align-items: center; justify-content: center;
+        }
+        .inactivity-overlay.active { display: flex; }
+        .inactivity-box {
+            background: white; border-radius: 20px; padding: 36px 32px;
+            max-width: 380px; width: 90%; text-align: center;
+            box-shadow: 0 32px 80px rgba(0,0,0,.25);
+            animation: popIn .35s cubic-bezier(.34,1.56,.64,1);
+        }
+        @keyframes popIn {
+            from { transform: scale(.85); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
+        }
+        .inactivity-icon {
+            width: 64px; height: 64px; border-radius: 50%;
+            background: #FEF2F2; margin: 0 auto 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; color: #C41E3A;
+        }
+        .inactivity-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.25rem; font-weight: 700; color: #2C3E50; margin: 0 0 8px;
+        }
+        .inactivity-msg { font-size: .88rem; color: #777; margin: 0 0 6px; line-height: 1.6; }
+        .inactivity-counter {
+            font-size: 2.2rem; font-weight: 700; color: #C41E3A;
+            margin: 10px 0 16px; font-family: monospace;
+        }
+        .inactivity-progress {
+            width: 100%; height: 5px; background: #F0E0E0;
+            border-radius: 10px; margin-bottom: 20px; overflow: hidden;
+        }
+        .inactivity-progress-bar {
+            height: 100%; background: linear-gradient(90deg, #C41E3A, #E31B23);
+            border-radius: 10px; transition: width 1s linear;
+        }
+        .btn-inactivity-stay {
+            width: 100%; padding: 12px;
+            background: linear-gradient(90deg, #C41E3A, #E31B23);
+            color: white; border: none; border-radius: 50px;
+            font-size: .92rem; font-weight: 700; cursor: pointer;
+            box-shadow: 0 5px 16px rgba(196,30,58,.3);
+            transition: transform .18s, box-shadow .18s;
+        }
+        .btn-inactivity-stay:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(196,30,58,.42); }
+        .btn-inactivity-logout {
+            width: 100%; padding: 10px; background: transparent;
+            color: #C41E3A; border: 1.5px solid rgba(196,30,58,.3);
+            border-radius: 50px; font-size: .85rem; font-weight: 600;
+            cursor: pointer; margin-top: 8px; transition: all .2s;
+        }
+        .btn-inactivity-logout:hover { background: #FFF0F0; }
+    </style>
+
+    <div class="inactivity-overlay" id="inactivityOverlay">
+        <div class="inactivity-box">
+            <div class="inactivity-icon">⏱</div>
+            <h3 class="inactivity-title">Session inactive</h3>
+            <p class="inactivity-msg">Vous êtes inactif depuis un moment.<br>Vous serez déconnecté dans :</p>
+            <div class="inactivity-counter" id="inactivityCounter">60</div>
+            <div class="inactivity-progress">
+                <div class="inactivity-progress-bar" id="inactivityBar" style="width:100%"></div>
+            </div>
+            <button class="btn-inactivity-stay" onclick="inactivityStay()">
+                ✓ Je suis toujours là
+            </button>
+            <form method="post" action="{{ path('app_logout') }}" id="inactivityLogoutForm" style="margin:0;">
+                <input type="hidden" name="_token" value="{{ csrf_token('logout') }}">
+                <button type="submit" class="btn-inactivity-logout">Se déconnecter maintenant</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        var INACTIVE_MS  = 0.2 * 60 * 1000;
+        var WARNING_SECS = 60;
+        var inactiveTimer, countdownTimer;
+        var countLeft = WARNING_SECS;
+        var overlay  = document.getElementById('inactivityOverlay');
+        var counter  = document.getElementById('inactivityCounter');
+        var bar      = document.getElementById('inactivityBar');
+
+        function resetTimer() {
+            clearTimeout(inactiveTimer);
+            clearInterval(countdownTimer);
+            if (overlay.classList.contains('active')) {
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+                counter.style.color = '#C41E3A';
+            }
+            inactiveTimer = setTimeout(showWarning, INACTIVE_MS);
+        }
+
+        function showWarning() {
+            countLeft = WARNING_SECS;
+            counter.textContent = countLeft;
+            bar.style.width = '100%';
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            countdownTimer = setInterval(function() {
+                countLeft--;
+                counter.textContent = countLeft;
+                bar.style.width = Math.round((countLeft / WARNING_SECS) * 100) + '%';
+                if (countLeft <= 10) counter.style.color = '#DC2626';
+                if (countLeft <= 0) {
+                    clearInterval(countdownTimer);
+                    document.getElementById('inactivityLogoutForm').submit();
+                }
+            }, 1000);
+        }
+
+        window.inactivityStay = function() { resetTimer(); };
+
+        ['mousemove','mousedown','keydown','touchstart','scroll','click'].forEach(function(evt) {
+            document.addEventListener(evt, resetTimer, { passive: true });
+        });
+
+        resetTimer();
+    })();
+    </script>
+    {% endif %}
+
+    {# ══════════════════════════════════════════
+       TOAST ÉMOTION — Face ID login (via session PHP)
+    ══════════════════════════════════════════ #}
+    {% if app.session.get('face_emotion') %}
+    {% set _emo = app.session.get('face_emotion') %}
+    <script>
+    (function() {
+        const emoji  = {{ _emo.emoji|json_encode|raw }};
+        const msg    = {{ _emo.message|json_encode|raw }};
+        const prenom = {{ _emo.prenom|json_encode|raw }};
+
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);z-index:99998;';
+
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            position:fixed; top:50%; left:50%;
+            transform:translate(-50%,-50%);
+            background:white; border-radius:20px;
+            padding:32px 40px; text-align:center;
+            box-shadow:0 20px 60px rgba(0,0,0,.25);
+            z-index:99999; min-width:300px;
+            animation:toastPop .4s cubic-bezier(.34,1.56,.64,1);
+            font-family:'Montserrat',sans-serif;
+        `;
+        toast.innerHTML = `
+            <style>
+                @keyframes toastPop {
+                    from { transform:translate(-50%,-50%) scale(.7); opacity:0; }
+                    to   { transform:translate(-50%,-50%) scale(1);  opacity:1; }
+                }
+                @keyframes progressBar { from{width:100%} to{width:0%} }
+            </style>
+            <div style="font-size:3.8rem;margin-bottom:12px;">${emoji}</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:800;color:#1A2E4A;margin-bottom:6px;">
+                ${prenom ? 'Bonjour ' + prenom + ' !' : 'Connexion réussie !'}
+            </div>
+            <div style="font-size:.88rem;color:#777;line-height:1.5;">${msg}</div>
+            <div style="margin-top:16px;height:3px;background:#F0E0E0;border-radius:10px;overflow:hidden;">
+                <div style="height:100%;background:linear-gradient(90deg,#C41E3A,#E31B23);
+                            animation:progressBar 3s linear forwards;border-radius:10px;"></div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+        document.body.appendChild(toast);
+
+        function dismiss() {
+            toast.style.transition = 'opacity .4s';
+            overlay.style.transition = 'opacity .4s';
+            toast.style.opacity = '0';
+            overlay.style.opacity = '0';
+            setTimeout(() => { toast.remove(); overlay.remove(); }, 400);
+        }
+
+        overlay.addEventListener('click', dismiss);
+        setTimeout(dismiss, 3500);
+    })();
+    </script>
+    {% do app.session.remove('face_emotion') %}
+    {% endif %}
+
+   
 </body>
 </html>

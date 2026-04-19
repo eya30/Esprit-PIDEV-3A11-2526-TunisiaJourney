@@ -1,6 +1,12 @@
 twig:
     file_name_pattern: '*.twig'
+    globals:
+        recaptcha_site_key: '%env(RECAPTCHA_SITE_KEY)%'
+
 
 when@test:
     twig:
         strict_variables: true
+
+
+    

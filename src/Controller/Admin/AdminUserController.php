@@ -2,6 +2,8 @@
 
 namespace App\Controller\Admin;
 
+use App\Entity\AdminLog;
+use App\Service\AdminLogger;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,18 +25,17 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 #[Route('/admin/users')]
 class AdminUserController extends AbstractController
 {
+    public function __construct(private AdminLogger $adminLogger) {}
+
     #[Route('', name: 'admin_users_index', methods: ['GET'])]
-    public function index(UserRepository $userRepo): Response
+    public function index(UserRepository $userRepo, \App\Repository\AdminLogRepository $logRepo): Response
     {
         return $this->render('admin/dashboard/users/index.html.twig', [
             'users' => $userRepo->findAll(),
+            'logs'  => $logRepo->findRecent(100),
         ]);
     }
 
-    /**
-     * Appelé en AJAX depuis le JS après affichage des erreurs
-     * pour nettoyer la session.
-     */
     #[Route('/clear-edit-errors', name: 'admin_users_clear_edit_errors', methods: ['POST'])]
     public function clearEditErrors(Request $request): JsonResponse
     {
@@ -62,35 +63,39 @@ class AdminUserController extends AbstractController
 
         $session = $request->getSession();
 
-        // ── Lecture des champs ────────────────────────────────────
+        // ── Snapshot AVANT modification ────────────────────────────
+        $beforeNom       = $user->getNom();
+        $beforePrenom    = $user->getPrenom();
+        $beforeTelephone = $user->getTelephone();
+        $beforeAdresse   = $user->getAdresse();
+        $beforeNaissance = $user->getDateNaissance()?->format('d/m/Y');
+        $beforeRole      = $user->getRole();
+        $beforeStatut    = $user->getStatut();
+        $beforeNiveau    = $user->getNiveau();
+
+        // ── Lecture des champs ─────────────────────────────────────
         $nom           = trim($request->request->get('nom', ''));
         $prenom        = trim($request->request->get('prenom', ''));
         $telephone     = trim($request->request->get('telephone', ''));
         $adresse       = trim($request->request->get('adresse', ''));
         $dateNaissance = trim($request->request->get('dateNaissance', ''));
 
-        // Données à renvoyer en cas d'erreur
         $editData = compact('nom', 'prenom', 'telephone', 'adresse', 'dateNaissance');
 
-        // ── Hydratation (valeur soumise, même vide, pour que le validateur détecte les champs manquants) ──
         $user->setNom($nom);
         $user->setPrenom($prenom);
         $user->setTelephone($telephone !== '' ? $telephone : null);
         $user->setAdresse($adresse !== '' ? $adresse : null);
 
         if ($dateNaissance !== '') {
-            try {
-                $user->setDateNaissance(new \DateTime($dateNaissance));
-            } catch (\Exception) {
-                $user->setDateNaissance(null);
-            }
+            try { $user->setDateNaissance(new \DateTime($dateNaissance)); }
+            catch (\Exception) { $user->setDateNaissance(null); }
         } else {
             $user->setDateNaissance(null);
         }
 
-        // ── Validation Symfony ────────────────────────────────────
-        $violations = $validator->validate($user);
-
+        // ── Validation ─────────────────────────────────────────────
+        $violations = $validator->validate($user, null, ['profile']);
         if (count($violations) > 0) {
             $errors = [];
             foreach ($violations as $v) {
@@ -99,33 +104,29 @@ class AdminUserController extends AbstractController
             $session->set('_admin_edit_errors', $errors);
             $session->set('_admin_edit_data',   $editData);
             $session->set('_admin_edit_id',     $id);
-
-            // Annule les modifications en mémoire
             $em->refresh($user);
-
             return $this->redirectToRoute('admin_users_index', ['openEditUser' => $id]);
         }
 
-        // ── Rôle / Niveau / Statut ────────────────────────────────
+        // ── Rôle / Niveau / Statut ─────────────────────────────────
         $role = strtoupper($request->request->get('role', 'MEMBRE'));
         $user->setRole($role);
-
-       if ($role === 'ADMIN') {
-    $niveau = strtoupper($request->request->get('niveau', 'ADMIN'));
-    $user->setNiveau($niveau);
-    $user->setStatut(null);}
-     else {
+        if ($role === 'ADMIN') {
+            $niveau = strtoupper($request->request->get('niveau', 'ADMIN'));
+            $user->setNiveau($niveau);
+            $user->setStatut(null);
+        } else {
             $statut = strtoupper($request->request->get('statut', 'ACTIF'));
             $user->setStatut($statut);
             $user->setNiveau(null);
         }
 
-        // ── Suppression photo ─────────────────────────────────────
+        // ── Photo ──────────────────────────────────────────────────
+        $photoChanged = false;
         if ($request->request->get('remove_photo') === '1') {
             $user->setProfileImageUrl(null);
+            $photoChanged = true;
         }
-
-        // ── Upload photo via ImgBB ────────────────────────────────
         $photoFile = $request->files->get('photo');
         if ($photoFile && $photoFile->isValid()) {
             $ch = curl_init();
@@ -133,30 +134,49 @@ class AdminUserController extends AbstractController
                 CURLOPT_URL            => 'https://api.imgbb.com/1/upload?key=' . $params->get('imgbb_api_key'),
                 CURLOPT_POST           => true,
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_POSTFIELDS     => [
-                    'image' => new \CURLFile(
-                        $photoFile->getPathname(),
-                        $photoFile->getMimeType(),
-                        $photoFile->getClientOriginalName()
-                    ),
-                ],
+                CURLOPT_POSTFIELDS     => ['image' => new \CURLFile(
+                    $photoFile->getPathname(),
+                    $photoFile->getMimeType(),
+                    $photoFile->getClientOriginalName()
+                )],
             ]);
             $json = json_decode(curl_exec($ch), true);
             curl_close($ch);
             if (isset($json['data']['url'])) {
                 $user->setProfileImageUrl($json['data']['url']);
+                $photoChanged = true;
             }
         }
 
-        // ── Sauvegarde ───────────────────────────────────────────
+        // ── Sauvegarde ─────────────────────────────────────────────
         $em->flush();
 
-        // Nettoyage session
+        // ── LOG ────────────────────────────────────────────────────
+        /** @var \App\Entity\User $admin */
+        $admin = $this->getUser();
+        $cible = $user->getPrenom() . ' ' . $user->getNom() . ' (id=' . $user->getId() . ')';
+
+        $this->adminLogger->log(
+            $admin,
+            AdminLog::ACTION_EDIT_USER,
+            $cible,
+            AdminLogger::buildDetails([
+                AdminLogger::diff('nom',       $beforeNom,       $user->getNom()),
+                AdminLogger::diff('prénom',    $beforePrenom,    $user->getPrenom()),
+                AdminLogger::diff('téléphone', $beforeTelephone, $user->getTelephone()),
+                AdminLogger::diff('adresse',   $beforeAdresse,   $user->getAdresse()),
+                AdminLogger::diff('naissance', $beforeNaissance, $user->getDateNaissance()?->format('d/m/Y')),
+                AdminLogger::diff('rôle',      $beforeRole,      $user->getRole()),
+                AdminLogger::diff('statut',    $beforeStatut,    $user->getStatut()),
+                AdminLogger::diff('niveau',    $beforeNiveau,    $user->getNiveau()),
+                $photoChanged ? 'photo modifiée' : null,
+            ])
+        );
+
         $session->remove('_admin_edit_errors');
         $session->remove('_admin_edit_data');
         $session->remove('_admin_edit_id');
 
-       
         return $this->redirectToRoute('admin_users_index');
     }
 
@@ -172,16 +192,23 @@ class AdminUserController extends AbstractController
             $this->addFlash('error', 'Utilisateur introuvable.');
             return $this->redirectToRoute('admin_users_index');
         }
-
         if ($user === $this->getUser()) {
             $this->addFlash('error', 'Vous ne pouvez pas supprimer votre propre compte.');
             return $this->redirectToRoute('admin_users_index');
         }
 
+        /** @var \App\Entity\User $admin */
+        $admin = $this->getUser();
+        $cible = $user->getPrenom() . ' ' . $user->getNom() . ' (id=' . $user->getId() . ')';
+
+        // LOG avant suppression
+        $this->adminLogger->log($admin, AdminLog::ACTION_DELETE_USER, $cible,
+            'email: ' . $user->getEmail()
+        );
+
         $em->remove($user);
         $em->flush();
 
-       
         return $this->redirectToRoute('admin_users_index');
     }
 
@@ -198,12 +225,19 @@ class AdminUserController extends AbstractController
             return $this->redirectToRoute('admin_users_index');
         }
 
-        $newStatut = $user->getStatut() === 'ACTIF' ? 'BLOQUE' : 'ACTIF';
+        $oldStatut = $user->getStatut();
+        $newStatut = $oldStatut === 'ACTIF' ? 'BLOQUE' : 'ACTIF';
         $user->setStatut($newStatut);
         $em->flush();
 
-       
-       
+        /** @var \App\Entity\User $admin */
+        $admin = $this->getUser();
+        $cible = $user->getPrenom() . ' ' . $user->getNom() . ' (id=' . $user->getId() . ')';
+
+        $this->adminLogger->log($admin, AdminLog::ACTION_TOGGLE_STATUT, $cible,
+            'statut: ' . $oldStatut . ' → ' . $newStatut
+        );
+
         return $this->redirectToRoute('admin_users_index');
     }
 
@@ -211,7 +245,6 @@ class AdminUserController extends AbstractController
     public function exportExcel(UserRepository $userRepo): StreamedResponse
     {
         $users = $userRepo->findAll();
-
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Utilisateurs');
@@ -242,20 +275,15 @@ class AdminUserController extends AbstractController
             $sheet->setCellValue('D' . $r, $user->getEmail());
             $sheet->setCellValue('E' . $r, $user->getTelephone() ?? '—');
             $sheet->setCellValue('F' . $r, $user->getAdresse()   ?? '—');
-            $sheet->setCellValue('G' . $r, $user->getDateNaissance()   ? $user->getDateNaissance()->format('d/m/Y')   : '—');
+            $sheet->setCellValue('G' . $r, $user->getDateNaissance()   ? $user->getDateNaissance()->format('d/m/Y') : '—');
             $sheet->setCellValue('H' . $r, $user->getDateInscription() ? $user->getDateInscription()->format('d/m/Y') : '—');
             $sheet->setCellValue('I' . $r, $user->getRole()   ?? '—');
             $sheet->setCellValue('J' . $r, $user->getStatut() ?? '—');
 
             $sheet->getStyle("A{$r}:J{$r}")->applyFromArray($row % 2 === 0 ? $evenRowStyle : $oddRowStyle);
-
-            if ($user->getStatut() === 'BLOQUE') {
-                $sheet->getStyle("J{$r}")->getFont()->getColor()->setARGB('FFEF4444');
-                $sheet->getStyle("J{$r}")->getFont()->setBold(true);
-            } else {
-                $sheet->getStyle("J{$r}")->getFont()->getColor()->setARGB('FF16A34A');
-                $sheet->getStyle("J{$r}")->getFont()->setBold(true);
-            }
+            $color = $user->getStatut() === 'BLOQUE' ? 'FFEF4444' : 'FF16A34A';
+            $sheet->getStyle("J{$r}")->getFont()->getColor()->setARGB($color);
+            $sheet->getStyle("J{$r}")->getFont()->setBold(true);
             $sheet->getRowDimension($r)->setRowHeight(22);
         }
 
@@ -265,14 +293,11 @@ class AdminUserController extends AbstractController
 
         $lastRow = count($users) + 1;
         $sheet->getStyle("A1:J{$lastRow}")->getBorders()->getAllBorders()
-            ->setBorderStyle(Border::BORDER_THIN)
-            ->getColor()->setARGB('FFE0E0E0');
-
+            ->setBorderStyle(Border::BORDER_THIN)->getColor()->setARGB('FFE0E0E0');
         $sheet->freezePane('A2');
 
         $response = new StreamedResponse(function () use ($spreadsheet) {
-            $writer = new Xlsx($spreadsheet);
-            $writer->save('php://output');
+            (new Xlsx($spreadsheet))->save('php://output');
         });
 
         $filename = 'utilisateurs_' . date('Y-m-d') . '.xlsx';

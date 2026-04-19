@@ -8,6 +8,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  {# ── Script reCAPTCHA Google ── #}
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -134,7 +138,8 @@
     .input-icon svg { width: 16px; height: 16px; }
     .input-icon.toggle-eye { cursor: pointer; pointer-events: auto; }
     .input-icon.toggle-eye:hover { color: var(--rouge); }
-    .field-error { display: block; font-size: .72rem; color: var(--rouge-vif); margin-top: 3px; }
+    .field-error { display: block; font-size: .78rem; color: var(--rouge-vif); margin-top: 5px; font-weight: 500; }
+    .input-wrapper.has-error input { border-color: var(--rouge-vif) !important; background: #FFF5F5; }
     .fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
     .forgot-link { display: block; text-align: right; font-size: .76rem; color: var(--rouge); text-decoration: none; margin: -4px 0 12px; }
     .forgot-link:hover { text-decoration: underline; }
@@ -173,28 +178,64 @@
     .btn-social:hover { border-color: var(--rouge); color: var(--rouge); transform: translateY(-2px); }
 
     @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  15%       { transform: translateX(-7px); }
-  30%       { transform: translateX(7px); }
-  45%       { transform: translateX(-5px); }
-  60%       { transform: translateX(5px); }
-  75%       { transform: translateX(-3px); }
-  90%       { transform: translateX(3px); }
-}
-.alert-shake {
-  animation: shake 0.55s ease;
-}
+      0%, 100% { transform: translateX(0); }
+      15%       { transform: translateX(-7px); }
+      30%       { transform: translateX(7px); }
+      45%       { transform: translateX(-5px); }
+      60%       { transform: translateX(5px); }
+      75%       { transform: translateX(-3px); }
+      90%       { transform: translateX(3px); }
+    }
+    .alert-shake { animation: shake 0.55s ease; }
 
     .switch-link { text-align: center; font-size: .76rem; color: var(--gris); margin-top: 10px; }
     .switch-link a { color: var(--rouge); font-weight: 600; cursor: pointer; text-decoration: none; }
     .switch-link a:hover { text-decoration: underline; }
 
-    .field-error { display: block; font-size: .78rem; color: var(--rouge-vif); margin-top: 5px; font-weight: 500; }
-    .input-wrapper.has-error input { border-color: var(--rouge-vif) !important; background: #FFF5F5; }
-
     .alert { padding: 9px 12px; border-radius: 9px; font-size: .82rem; margin-bottom: 12px; }
     .alert-error   { background: #FDECEA; color: var(--rouge-vif); border-left: 4px solid var(--rouge-vif); }
     .alert-success { background: #E8F5E9; color: #2E7D32; border-left: 4px solid #2E7D32; }
+
+    /* ── reCAPTCHA wrapper ── */
+    .captcha-wrapper {
+      margin-bottom: 12px;
+    }
+    .captcha-wrapper .g-recaptcha {
+      transform-origin: left top;
+    }
+    .captcha-error {
+      display: block;
+      font-size: .78rem;
+      color: var(--rouge-vif);
+      margin-top: 6px;
+      font-weight: 500;
+    }
+    /* réduit le captcha sur petits écrans si besoin */
+    @media (max-width: 400px) {
+      .captcha-wrapper .g-recaptcha {
+        transform: scale(0.85);
+      }
+    }
+
+    /* ── Barre de force mot de passe (signup) ── */
+    .strength-bar { margin-top: 8px; }
+    .strength-track { height: 4px; background: #E0E0E0; border-radius: 4px; overflow: hidden; }
+    .strength-fill  { height: 100%; border-radius: 4px; width: 0%; transition: width .3s, background .3s; }
+    .strength-label { font-size: .72rem; color: var(--gris); margin-top: 4px; }
+    .requirements {
+      background: var(--sable-cl); border-radius: 10px;
+      padding: 10px 14px; margin-top: 6px; font-size: .78rem; color: var(--nuit);
+    }
+    .requirements ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+    .requirements li { display: flex; align-items: center; gap: 7px; }
+    .requirements li .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #ccc; flex-shrink: 0; transition: background .3s;
+    }
+    .requirements li.ok .dot { background: #2E7D32; }
+    .requirements li.ok { color: #2E7D32; }
+    .match-ok  { border-color: #2E7D32 !important; background: #F1F8F1 !important; }
+    .match-err { border-color: var(--rouge-vif) !important; background: #FFF5F5 !important; }
 
     @media (max-width: 680px) {
       .auth-wrapper { width: 100vw; height: 100dvh; border-radius: 0; }
@@ -209,50 +250,48 @@
 
 <div class="auth-wrapper {% if mode == 'register' %}register-mode{% endif %}" id="authWrapper">
 
-  {# ── PANNEAU LOGIN ── #}
+  {# ══════════════════════════════════════════
+     PANNEAU LOGIN
+  ══════════════════════════════════════════ #}
   <div class="auth-form-panel login-panel">
     <h1>Bienvenue&nbsp;!</h1>
     <p class="form-subtitle">Connectez-vous à votre espace</p>
 
-   {# ── Erreur d'authentification Symfony (mauvais email/mot de passe) ── #}
-{# ── Alertes login ── #}
-{% if app.session.get('_blocked_message') %}
-  <div class="alert alert-error alert-shake">
-    <div style="display:flex;align-items:center;gap:10px;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:20px;height:20px;flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      <div>
-        <strong>Compte bloqué</strong><br>
-        <span style="font-size:.8rem;">{{ app.session.get('_blocked_message') }}</span>
+    {# Compte bloqué #}
+    {% if app.session.get('_blocked_message') %}
+      <div class="alert alert-error alert-shake">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:20px;height:20px;flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div>
+            <strong>Compte bloqué</strong><br>
+            <span style="font-size:.8rem;">{{ app.session.get('_blocked_message') }}</span>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-  {% do app.session.remove('_blocked_message') %}
-
-{% elseif error %}
-  <div class="alert alert-error alert-shake">
-    <div style="display:flex;align-items:center;gap:10px;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:20px;height:20px;flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      <div>
-        <strong>Identifiants incorrects</strong><br>
-        <span style="font-size:.8rem;">L'adresse email ou le mot de passe est invalide.</span>
+      {% do app.session.remove('_blocked_message') %}
+    {% elseif error %}
+      <div class="alert alert-error alert-shake">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:20px;height:20px;flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div>
+            <strong>Identifiants incorrects</strong><br>
+            <span style="font-size:.8rem;">L'adresse email ou le mot de passe est invalide.</span>
+          </div>
+          <button onclick="this.parentElement.parentElement.style.display='none'" style="margin-left:auto;background:none;border:none;cursor:pointer;color:inherit;font-size:1.1rem;">✕</button>
+        </div>
       </div>
-      <button onclick="this.parentElement.parentElement.style.display='none'" style="margin-left:auto;background:none;border:none;cursor:pointer;color:inherit;font-size:1.1rem;">✕</button>
-    </div>
-  </div>
-{% endif %}
+    {% endif %}
 
-{% for msg in app.flashes('success') %}
-  <div class="alert alert-success">{{ msg }}</div>
-{% endfor %}
+    {% for msg in app.flashes('success') %}
+      <div class="alert alert-success">{{ msg }}</div>
+    {% endfor %}
 
-{% for msg in app.flashes('login_error') %}
-  <div class="alert alert-error">{{ msg }}</div>
-{% endfor %}
-{% for msg in app.flashes('success') %}
-  <div class="alert alert-success">{{ msg }}</div>
-{% endfor %}
+    {% for msg in app.flashes('login_error') %}
+      <div class="alert alert-error alert-shake">{{ msg }}</div>
+    {% endfor %}
 
     {{ form_start(loginForm, {'action': path('app_login'), 'method': 'POST', 'attr': {'novalidate': 'novalidate', 'autocomplete': 'off'}}) }}
+
       <div class="form-group">
         {{ form_label(loginForm.email) }}
         <div class="input-wrapper {% if loginForm.email.vars.errors|length %}has-error{% endif %}">
@@ -280,35 +319,41 @@
       </div>
 
       <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-      <a href="#" class="forgot-link">Mot de passe oublié&nbsp;?</a>
+      <a href="{{ path('app_forgot_password') }}" class="forgot-link">Mot de passe oublié ?</a>
       <button type="submit" class="btn-primary">Se connecter</button>
       <a href="{{ path('app_accueil') }}" class="btn-outline">Annuler</a>
-
-     
 
     {{ form_end(loginForm) }}
 
     <div class="social-sep">ou se connecter avec</div>
     <div class="social-btns">
-      <a href="#" class="btn-social" title="Face ID">
+      <a href="#" class="btn-social" onclick="loginWithFace()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
       </a>
-      <a href="#" class="btn-social" title="Google">G</a>
+      <div id="cameraBox" style="display:none; text-align:center; margin-top:20px;">
+    <video id="video" autoplay playsinline style="width:320px; border-radius:12px;"></video>
+    <br><br>
+   <button onclick="captureFace()">📸 Prendre photo</button>
+</div>
+      <a href="{{ path('connect_google_start') }}" class="btn-social" title="Google">G</a>
     </div>
 
     <p class="switch-link">Pas encore de compte&nbsp;? <a id="goRegister">S'inscrire</a></p>
   </div>
 
-  {# ── PANNEAU REGISTER ── #}
+  {# ══════════════════════════════════════════
+     PANNEAU REGISTER
+  ══════════════════════════════════════════ #}
   <div class="auth-form-panel register-panel">
     <h1>Inscription</h1>
     <p class="form-subtitle">Créez votre espace TunisiaJourney</p>
 
     {% for msg in app.flashes('register_error') %}
-      <div class="alert alert-error">{{ msg }}</div>
+      <div class="alert alert-error alert-shake">{{ msg }}</div>
     {% endfor %}
 
-    {{ form_start(registrationForm, {'action': path('app_register'), 'method': 'POST', 'attr': {'novalidate': 'novalidate', 'autocomplete': 'off'}}) }}
+    {{ form_start(registrationForm, {'action': path('app_register'), 'method': 'POST', 'attr': {'novalidate': 'novalidate', 'autocomplete': 'off', 'id': 'registerForm'}}) }}
+
       <div class="fields-grid">
         <div class="form-group">
           {{ form_label(registrationForm.nom) }}
@@ -356,12 +401,12 @@
         </div>
         <div class="form-group">
           {{ form_label(registrationForm.dateNaissance) }}
-<div class="input-wrapper {% if registrationForm.dateNaissance.vars.errors|length %}has-error{% endif %}">
-  {{ form_widget(registrationForm.dateNaissance) }}
-</div>
-{% if registrationForm.dateNaissance.vars.errors|length %}
-  <span class="field-error">{{ registrationForm.dateNaissance.vars.errors[0].message }}</span>
-{% endif %}
+          <div class="input-wrapper {% if registrationForm.dateNaissance.vars.errors|length %}has-error{% endif %}">
+            {{ form_widget(registrationForm.dateNaissance) }}
+          </div>
+          {% if registrationForm.dateNaissance.vars.errors|length %}
+            <span class="field-error">{{ registrationForm.dateNaissance.vars.errors[0].message }}</span>
+          {% endif %}
         </div>
       </div>
 
@@ -377,46 +422,83 @@
       </div>
 
       <div class="fields-grid">
-        <div class="form-group">
+        <div class="form-group" style="grid-column:1/-1">
           {{ form_label(registrationForm.mot_de_passe.first) }}
+          {# Requirements AU-DESSUS du champ #}
+          <div class="requirements" style="margin-bottom:8px; margin-top:4px;">
+            <ul>
+              <li id="reg-req-len"><span class="dot"></span>Au moins 8 caractères</li>
+              <li id="reg-req-upper"><span class="dot"></span>Une majuscule</li>
+              <li id="reg-req-num"><span class="dot"></span>Un chiffre</li>
+            </ul>
+          </div>
           <div class="input-wrapper {% if registrationForm.mot_de_passe.vars.errors|length %}has-error{% endif %}">
-            {{ form_widget(registrationForm.mot_de_passe.first, {'attr': {'id': 'rpass'}}) }}
+            {{ form_widget(registrationForm.mot_de_passe.first, {'attr': {'id': 'rpass', 'class': 'reg-pwd-input'}}) }}
             <span class="input-icon toggle-eye" onclick="togglePwd('rpass', this)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             </span>
+          </div>
+          {# Barre de force SOUS le champ #}
+          <div class="strength-bar">
+            <div class="strength-track"><div class="strength-fill" id="regStrengthFill"></div></div>
+            <div class="strength-label" id="regStrengthLabel">Entrez un mot de passe</div>
           </div>
           {% if registrationForm.mot_de_passe.first.vars.errors|length %}
             <span class="field-error">{{ registrationForm.mot_de_passe.first.vars.errors[0].message }}</span>
           {% endif %}
         </div>
-        <div class="form-group">
+        <div class="form-group" style="grid-column:1/-1">
           {{ form_label(registrationForm.mot_de_passe.second) }}
-          <div class="input-wrapper {% if registrationForm.mot_de_passe.vars.errors|length %}has-error{% endif %}">
+          <div class="input-wrapper {% if registrationForm.mot_de_passe.vars.errors|length %}has-error{% endif %}" id="regConfirmWrapper">
             {{ form_widget(registrationForm.mot_de_passe.second, {'attr': {'id': 'rpass2'}}) }}
             <span class="input-icon toggle-eye" onclick="togglePwd('rpass2', this)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             </span>
           </div>
+          <span class="field-error" id="regMatchError" style="display:none">Les mots de passe ne correspondent pas</span>
           {% if registrationForm.mot_de_passe.vars.errors|length %}
             <span class="field-error">{{ registrationForm.mot_de_passe.vars.errors[0].message }}</span>
           {% endif %}
         </div>
       </div>
 
+      {# ══════════════════════════════════════════
+         RECAPTCHA — juste avant le bouton submit
+      ══════════════════════════════════════════ #}
+      <div class="captcha-wrapper">
+        <div class="g-recaptcha"
+             data-sitekey="{{ recaptcha_site_key }}"
+             data-theme="light">
+        </div>
+        {# Message d'erreur serveur (captcha non coché ou token invalide) #}
+        {% for msg in app.flashes('register_error') %}
+          {# déjà affiché en haut, on ne re-affiche pas ici #}
+        {% endfor %}
+        {# Zone pour l'erreur client-side JS #}
+        <span class="captcha-error" id="captchaClientError" style="display:none;">
+          Veuillez cocher la case "Je ne suis pas un robot".
+        </span>
+      </div>
+
       <button type="submit" class="btn-primary">S'inscrire</button>
       <a href="{{ path('app_accueil') }}" class="btn-outline">Annuler</a>
+
     {{ form_end(registrationForm) }}
 
     <p class="switch-link">Déjà un compte&nbsp;? <a id="goLogin">Se connecter</a></p>
   </div>
 
-  {# ── OVERLAY ── #}
+  {# ══════════════════════════════════════════
+     OVERLAY ANIMÉ
+  ══════════════════════════════════════════ #}
   <div class="auth-overlay" id="authOverlay">
     <div class="overlay-circles"><span></span><span></span><span></span><span></span><span></span></div>
 
     <div class="overlay-logo">
       <div class="overlay-logo-ring">
-        <img src="{{ asset('images/logo.png') }}" alt="TunisiaJourney logo">
+        <img src="{{ asset('images/logo.png') }}"
+             alt="TunisiaJourney logo"
+             referrerpolicy="no-referrer">
       </div>
     </div>
 
@@ -425,7 +507,6 @@
       <span class="brand-sub">DÉCOUVREZ LA TUNISIE</span>
     </div>
 
-    {# Texte et bouton initialisés selon le mode côté serveur #}
     <h2 class="overlay-title" id="overlayTitle">
       {% if mode == 'register' %}Bon retour&nbsp;!{% else %}Bonjour,<br>Bienvenue&nbsp;!{% endif %}
     </h2>
@@ -438,7 +519,6 @@
   </div>
 
 </div>
-
 
 <script>
 (function(){
@@ -486,7 +566,139 @@
     if (input.type === 'password') { input.type = 'text'; svg.innerHTML = eyeClosed; }
     else { input.type = 'password'; svg.innerHTML = eyeOpen; }
   };
+
+  /* ══════════════════════════════════════════
+     RECAPTCHA — blocage côté client
+  ══════════════════════════════════════════ */
+  var registerForm = document.getElementById('registerForm');
+  if (registerForm) {
+    registerForm.addEventListener('submit', function(e) {
+      var captchaError = document.getElementById('captchaClientError');
+
+      /* grecaptcha peut ne pas être chargé si réseau lent → on laisse passer */
+      if (typeof grecaptcha === 'undefined') return;
+
+      var captchaResponse = grecaptcha.getResponse();
+      if (!captchaResponse) {
+        e.preventDefault();
+        captchaError.style.display = 'block';
+
+        /* scroll jusqu'au captcha pour que l'utilisateur le voie */
+        document.querySelector('.captcha-wrapper').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        captchaError.style.display = 'none';
+      }
+    });
+  }
+
+  /* Cache le message d'erreur dès que l'utilisateur coche le captcha */
+  window.onCaptchaSuccess = function() {
+    var captchaError = document.getElementById('captchaClientError');
+    if (captchaError) captchaError.style.display = 'none';
+  };
 })();
+
+  /* ── Barre de force signup — même logique que reset_password ── */
+  const regPwdInput = document.querySelector('[name$="[first]"], #rpass, .reg-pwd-input');
+  const regFillEl   = document.getElementById('regStrengthFill');
+  const regLabelEl  = document.getElementById('regStrengthLabel');
+  const regReqLen   = document.getElementById('reg-req-len');
+  const regReqUpper = document.getElementById('reg-req-upper');
+  const regReqNum   = document.getElementById('reg-req-num');
+
+  if (regPwdInput && regFillEl) {
+    regPwdInput.addEventListener('input', function() {
+      const v = this.value;
+      let score = 0;
+      const hasLen   = v.length >= 8;
+      const hasUpper = /[A-Z]/.test(v);
+      const hasNum   = /[0-9]/.test(v);
+
+      if (regReqLen)   regReqLen.classList.toggle('ok', hasLen);
+      if (regReqUpper) regReqUpper.classList.toggle('ok', hasUpper);
+      if (regReqNum)   regReqNum.classList.toggle('ok', hasNum);
+
+      if (hasLen)        score++;
+      if (hasUpper)      score++;
+      if (hasNum)        score++;
+      if (v.length >= 12) score++;
+
+      const levels = [
+        { pct: '0%',   color: '#ccc',    label: 'Entrez un mot de passe' },
+        { pct: '25%',  color: '#E53935', label: 'Très faible' },
+        { pct: '50%',  color: '#FB8C00', label: 'Faible' },
+        { pct: '75%',  color: '#FDD835', label: 'Moyen' },
+        { pct: '100%', color: '#43A047', label: 'Fort 💪' },
+      ];
+      const lvl = levels[v.length === 0 ? 0 : score];
+      regFillEl.style.width      = lvl.pct;
+      regFillEl.style.background = lvl.color;
+      if (regLabelEl) regLabelEl.textContent = lvl.label;
+
+      if (regConfirmInput && regConfirmInput.value) checkRegMatch();
+    });
+  }
+
+  // ── Vérification correspondance signup ──
+  const regConfirmInput = document.querySelector('[name$="[second]"], #rpass2');
+  const regMatchError   = document.getElementById('regMatchError');
+  const regConfirmWrap  = document.getElementById('regConfirmWrapper');
+
+  if (regConfirmInput) {
+    regConfirmInput.addEventListener('input', function() {
+      checkRegMatch();
+    });
+  }
+
+  function checkRegMatch() {
+    if (!regConfirmInput || !regPwdInput) return;
+    const match = regConfirmInput.value === regPwdInput.value;
+    if (regMatchError)  regMatchError.style.display = (match || !regConfirmInput.value) ? 'none' : 'block';
+    if (regConfirmWrap) {
+      regConfirmWrap.classList.toggle('match-err', !match && !!regConfirmInput.value);
+      regConfirmWrap.classList.toggle('match-ok',   match && !!regConfirmInput.value);
+    }
+  }
+
+//FACEID
+async function loginWithFace() {
+    try {
+        const video = document.getElementById('video');
+        const box = document.getElementById('cameraBox');
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        box.style.display = "block";
+    } catch (e) {
+        alert('Erreur caméra ❌');
+        console.error(e);
+    }
+}
+
+async function captureFace() {
+    const video = document.getElementById('video');
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    const canvas = document.createElement('canvas');
+    canvas.width  = video.videoWidth  || 640;
+    canvas.height = video.videoHeight || 480;
+    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+    const image = canvas.toDataURL('image/jpeg', 0.95).split(',')[1];
+
+    const response = await fetch('{{ path('face_login') }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ image: image })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+        // ← Redirection simple — pas de paramètres émotion dans l'URL
+        window.location.href = data.redirect;
+    } else {
+        alert(data.error ?? "Utilisateur non reconnu ❌");
+    }
+}
 </script>
 
 </body>

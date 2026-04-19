@@ -6,9 +6,12 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: \App\Repository\UserRepository::class)]
 #[ORM\Table(name: "utilisateur")]
+#[ORM\UniqueConstraint(name: "unique_email", columns: ["email"])]
+#[UniqueEntity(fields: ['email'], message: "Cet email est déjà utilisé.")]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     public const STATUT_ACTIF       = 'ACTIF';
@@ -21,63 +24,39 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: "integer")]
     private ?int $id = null;
 
-    // ── Nom ──────────────────────────────────────────────────────
     #[ORM\Column(type: "string", length: 100)]
-    #[Assert\NotBlank(message: "Le nom est obligatoire.")]
-    #[Assert\Length(max: 100, maxMessage: "100 caractères maximum.")]
-    #[Assert\Regex(
-        pattern: '/^[a-zA-ZÀ-ÿ\s\-\']+$/',
-        message: "Le nom ne doit contenir que des lettres."
-    )]
+    #[Assert\NotBlank(message: "Le nom est obligatoire.", groups: ['Default', 'registration', 'profile'])]
+    #[Assert\Length(max: 100, maxMessage: "100 caractères maximum.", groups: ['Default', 'registration', 'profile'])]
+    #[Assert\Regex(pattern: '/^[a-zA-ZÀ-ÿ\s\-\']+$/', message: "Le nom ne doit contenir que des lettres.", groups: ['Default', 'registration', 'profile'])]
     private ?string $nom = null;
 
-    // ── Prénom ───────────────────────────────────────────────────
     #[ORM\Column(type: "string", length: 100)]
-    #[Assert\NotBlank(message: "Le prénom est obligatoire.")]
-    #[Assert\Length(max: 100, maxMessage: "100 caractères maximum.")]
-    #[Assert\Regex(
-        pattern: '/^[a-zA-ZÀ-ÿ\s\-\']+$/',
-        message: "Le prénom ne doit contenir que des lettres."
-    )]
+    #[Assert\NotBlank(message: "Le prénom est obligatoire.", groups: ['Default', 'registration', 'profile'])]
+    #[Assert\Length(max: 100, maxMessage: "100 caractères maximum.", groups: ['Default', 'registration', 'profile'])]
+    #[Assert\Regex(pattern: '/^[a-zA-ZÀ-ÿ\s\-\']+$/', message: "Le prénom ne doit contenir que des lettres.", groups: ['Default', 'registration', 'profile'])]
     private ?string $prenom = null;
 
-    // ── Email ────────────────────────────────────────────────────
-    #[ORM\Column(type: "string", length: 150)]
-    #[Assert\NotBlank(message: "L'email est obligatoire.")]
-    #[Assert\Email(message: "Adresse email invalide.")]
+    #[ORM\Column(type: "string", length: 150, unique: true)]
+    #[Assert\NotBlank(message: "L'email est obligatoire.", groups: ['Default', 'registration'])]
+    #[Assert\Email(message: "Adresse email invalide.", groups: ['Default', 'registration'])]
     private ?string $email = null;
 
-    // ── Mot de passe ─────────────────────────────────────────────
-    // Pas de Assert ici : hashé manuellement, validé dans RegistrationType
-    // et dans le contrôleur pour le profil.
-    #[ORM\Column(type: "string", length: 255)]
+    #[ORM\Column(type: "string", length: 255, nullable: true)]
     private ?string $motDePasse = null;
 
-    // ── Téléphone ────────────────────────────────────────────────
-    // Obligatoire pour l'edit profil ; nullable en BDD car non requis à l'inscription
     #[ORM\Column(type: "string", length: 30, nullable: true)]
-    #[Assert\NotBlank(message: "Le téléphone est obligatoire.")]
-    #[Assert\Regex(
-        pattern: '/^\d{8,15}$/',
-        message: "Le téléphone doit contenir uniquement des chiffres (8 à 15 chiffres)."
-    )]
+    #[Assert\NotBlank(message: "Le téléphone est obligatoire.", groups: ['profile'])]
+    #[Assert\Regex(pattern: '/^\d{8,15}$/', message: "Le téléphone doit contenir uniquement des chiffres (8 à 15 chiffres).", groups: ['Default', 'registration', 'profile'])]
     private ?string $telephone = null;
 
-    // ── Date de naissance ────────────────────────────────────────
-    // Obligatoire pour l'edit profil ; nullable en BDD car non requis à l'inscription
     #[ORM\Column(type: "date", nullable: true)]
-    #[Assert\NotBlank(message: "La date de naissance est obligatoire.")]
-    #[Assert\LessThanOrEqual(
-        value: "-18 years",
-        message: "Vous devez avoir au moins 18 ans."
-    )]
+    #[Assert\NotBlank(message: "La date de naissance est obligatoire.", groups: ['profile'])]
+    #[Assert\LessThanOrEqual(value: "-18 years", message: "Vous devez avoir au moins 18 ans.", groups: ['Default', 'registration', 'profile'])]
     private ?\DateTimeInterface $dateNaissance = null;
 
-    // ── Adresse ──────────────────────────────────────────────────
-    // Obligatoire pour l'edit profil ; nullable en BDD car non requis à l'inscription
     #[ORM\Column(type: "string", length: 255, nullable: true)]
-    #[Assert\NotBlank(message: "L'adresse est obligatoire.")]
-    #[Assert\Length(max: 255, maxMessage: "255 caractères maximum.")]
+    #[Assert\NotBlank(message: "L'adresse est obligatoire.", groups: ['profile'])]
+    #[Assert\Length(max: 255, maxMessage: "255 caractères maximum.", groups: ['Default', 'registration', 'profile'])]
     private ?string $adresse = null;
 
     #[ORM\Column(type: "string", length: 20)]
@@ -87,9 +66,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?\DateTimeInterface $dateInscription = null;
 
     #[ORM\Column(type: "string", length: 20, nullable: true)]
-private ?string $statut = null;
-
-
+    private ?string $statut = null;
 
     #[ORM\Column(type: "string", length: 50, nullable: true)]
     private ?string $niveau = null;
@@ -99,6 +76,16 @@ private ?string $statut = null;
 
     #[ORM\Column(type: "string", length: 255, nullable: true)]
     private ?string $faceToken = null;
+
+    #[ORM\Column(type: "text", nullable: true)]
+    private ?string $faceEmbedding = null;
+
+    // ── 2FA ──────────────────────────────────────────────────────
+    #[ORM\Column(type: "string", length: 255, nullable: true)]
+    private ?string $twoFactorSecret = null;
+
+    #[ORM\Column(type: "boolean")]
+    private bool $isTotpEnabled = false;
 
     // ================= GETTERS / SETTERS =================
 
@@ -114,7 +101,7 @@ private ?string $statut = null;
     public function setEmail(string $email): self { $this->email = $email; return $this; }
 
     public function getMotDePasse(): ?string { return $this->motDePasse; }
-    public function setMotDePasse(string $motDePasse): self { $this->motDePasse = $motDePasse; return $this; }
+    public function setMotDePasse(?string $motDePasse): self { $this->motDePasse = $motDePasse; return $this; }
 
     public function getTelephone(): ?string { return $this->telephone; }
     public function setTelephone(?string $telephone): self { $this->telephone = $telephone; return $this; }
@@ -132,7 +119,7 @@ private ?string $statut = null;
     public function setDateInscription(\DateTimeInterface $dateInscription): self { $this->dateInscription = $dateInscription; return $this; }
 
     public function getStatut(): ?string { return $this->statut; }
-   public function setStatut(?string $statut): self { $this->statut = $statut; return $this; }
+    public function setStatut(?string $statut): self { $this->statut = $statut; return $this; }
 
     public function getNiveau(): ?string { return $this->niveau; }
     public function setNiveau(?string $niveau): self { $this->niveau = $niveau; return $this; }
@@ -146,6 +133,16 @@ private ?string $statut = null;
     public function getPassword(): ?string { return $this->motDePasse; }
 
     public function getUserIdentifier(): string { return $this->email; }
+
+    public function getFaceEmbedding(): ?string { return $this->faceEmbedding; }
+    public function setFaceEmbedding(?string $v): self { $this->faceEmbedding = $v; return $this; }
+
+    // ── 2FA getters/setters ──────────────────────────────────────
+    public function getTwoFactorSecret(): ?string { return $this->twoFactorSecret; }
+    public function setTwoFactorSecret(?string $v): self { $this->twoFactorSecret = $v; return $this; }
+
+    public function isTotpEnabled(): bool { return $this->isTotpEnabled; }
+    public function setIsTotpEnabled(bool $v): self { $this->isTotpEnabled = $v; return $this; }
 
     public function getRoles(): array
     {
