@@ -3,6 +3,7 @@
 {% block title %}{{ evenement.Titre }} - TunisiaJourney{% endblock %}
 
 {% block stylesheets %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
     .evenement-container {
         display: flex;
@@ -62,7 +63,6 @@
         gap: 0;
     }
 
-    /* Titre principal */
     .evenement-title {
         font-family: 'Cormorant Garamond', serif;
         font-size: 2.6rem;
@@ -73,7 +73,6 @@
         letter-spacing: -0.5px;
     }
 
-    /* Description */
     .evenement-description {
         color: #111111;
         line-height: 1.85;
@@ -81,7 +80,6 @@
         margin-bottom: 2.5rem;
     }
 
-    /* Info rows */
     .evenement-infos {
         background: #F8F4F0;
         border-radius: 16px;
@@ -129,7 +127,6 @@
         text-align: right;
     }
 
-    /* Section activités */
     .activites-section {
         margin-bottom: 2.2rem;
     }
@@ -186,7 +183,6 @@
         margin-top: 4px;
     }
 
-    /* Bouton voir toutes */
     .btn-all-activites {
         background: #264653;
         color: white;
@@ -215,7 +211,72 @@
         text-decoration: none;
     }
 
-    /* Responsive */
+    .map-section {
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        border: 1px solid #F0E8DD;
+        box-shadow: 0 4px 24px rgba(38,70,83,0.08);
+        margin-bottom: 5rem;
+    }
+
+    .map-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 1.4rem 2rem;
+        border-bottom: 1px solid #F0E8DD;
+        background: #FEF9F0;
+    }
+
+    .map-pin-icon {
+        font-size: 2rem;
+        line-height: 1;
+    }
+
+    .map-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #264653;
+        margin: 0 0 2px 0;
+    }
+
+    .map-lieu-label {
+        color: #7D2E3E;
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin: 0;
+    }
+
+    #event-map {
+        width: 100%;
+        height: 400px;
+        z-index: 1;
+    }
+
+    .map-error {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        height: 120px;
+        color: #9CA3AF;
+        font-size: 0.95rem;
+        background: #F8F4F0;
+    }
+
+    .map-footer {
+        padding: 0.75rem 2rem;
+        background: #F8F4F0;
+        border-top: 1px solid #F0E8DD;
+        font-size: 0.8rem;
+        color: #9CA3AF;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
     @media (max-width: 768px) {
         .evenement-container  { flex-direction: column; }
         .evenement-image      { min-height: 320px; }
@@ -224,6 +285,8 @@
         .info-row             { flex-direction: column; align-items: flex-start; gap: 3px; }
         .info-value           { text-align: left; }
         .info-label           { min-width: unset; }
+        #event-map            { height: 280px; }
+        .map-header           { padding: 1rem 1.2rem; }
     }
 </style>
 {% endblock %}
@@ -232,7 +295,6 @@
 <div class="container py-5">
 
     <div class="evenement-container">
-        <!-- Image -->
         <div class="evenement-image">
             {% if evenement.Image %}
                 <img src="{{ asset('uploads/evenements/' ~ evenement.Image|split('/')|last) }}" alt="{{ evenement.Titre }}">
@@ -243,18 +305,10 @@
             {% endif %}
         </div>
 
-        <!-- Infos -->
         <div class="evenement-info">
-
-            <!-- Titre -->
             <h1 class="evenement-title">{{ evenement.Titre }}</h1>
+            <div class="evenement-description">{{ evenement.Description }}</div>
 
-            <!-- Description -->
-            <div class="evenement-description">
-                {{ evenement.Description }}
-            </div>
-
-            <!-- Données structurées -->
             <div class="evenement-infos">
                 <div class="info-row">
                     <span class="info-label"><i class="fas fa-calendar-check"></i> Date de début</span>
@@ -278,7 +332,6 @@
                 </div>
             </div>
 
-            <!-- Activités disponibles -->
             {% if activites is defined and activites|length > 0 %}
             <div class="activites-section">
                 <h3><i class="fas fa-star" style="color:#7D2E3E; margin-right:6px;"></i>Activités disponibles</h3>
@@ -289,12 +342,9 @@
                         <div class="activite-horaire">
                             <i class="far fa-clock"></i> {{ activite.HeureDebut }} &bull; {{ activite.Duree }}
                         </div>
-                        <div class="activite-prix">
-                            {{ activite.Prix|number_format(2, ',', ' ') }} TND / personne
-                        </div>
+                        <div class="activite-prix">{{ activite.Prix|number_format(2, ',', ' ') }} TND / personne</div>
                     </div>
                 {% endfor %}
-
                 {% if activites|length > 3 %}
                     <a href="{{ path('app_evenement_activites', {'IDEv': evenement.IDEv}) }}" class="btn-all-activites">
                         Voir toutes les activités ({{ activites|length }})<i class="fas fa-arrow-right"></i>
@@ -304,13 +354,91 @@
             {% else %}
                 <p class="text-muted" style="margin-bottom: 2rem;">Aucune activité disponible pour cet événement.</p>
             {% endif %}
+        </div>
+    </div>
 
-            <!-- Bouton retour -->
-            <a href="{{ path('app_evenement_index') }}" class="btn-all-activites">
-                <i class="fas fa-arrow-left"></i> Retour aux événements
-            </a>
-
+    <div class="map-section">
+        <div class="map-header">
+            <span class="map-pin-icon">📍</span>
+            <div>
+                <h2 class="map-title">Lieu de l'événement</h2>
+                <p class="map-lieu-label">{{ evenement.Lieu }}</p>
+            </div>
+        </div>
+        <div id="event-map"></div>
+        <div id="map-error" style="display:none;" class="map-error">
+            <i class="fas fa-exclamation-circle"></i>
+            Impossible de localiser « {{ evenement.Lieu }} » sur la carte.
+        </div>
+        <div class="map-footer">
+            <i class="fas fa-info-circle"></i>
+            Carte © <a href="https://www.openstreetmap.org/copyright" target="_blank" style="color:#7D2E3E;">OpenStreetMap</a> contributors
         </div>
     </div>
 </div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function() {
+    // Utiliser les coordonnées de la base de données
+    {% if evenement.Latitude is defined and evenement.Latitude is not null and evenement.Longitude is not null %}
+        var lat = {{ evenement.Latitude }};
+        var lon = {{ evenement.Longitude }};
+        var lieu = {{ evenement.Lieu|json_encode|raw }};
+        
+        var map = L.map('event-map').setView([lat, lon], 15);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+        
+        var customIcon = L.divIcon({
+            className: '',
+            html: '<div style="font-size:2.4rem;line-height:1;filter:drop-shadow(0 3px 8px rgba(125,46,62,0.55));">📍</div>',
+            iconSize: [40, 40],
+            iconAnchor: [20, 40],
+            popupAnchor: [0, -42]
+        });
+        
+        L.marker([lat, lon], { icon: customIcon })
+            .addTo(map)
+            .bindPopup('<strong style="color:#264653;">📍 ' + lieu + '</strong>')
+            .openPopup();
+        
+        L.circle([lat, lon], {
+            color: '#7D2E3E',
+            fillColor: '#7D2E3E',
+            fillOpacity: 0.1,
+            radius: 200
+        }).addTo(map);
+        
+    {% else %}
+        // Fallback si pas de coordonnées
+        var lieu = {{ evenement.Lieu|json_encode|raw }};
+        
+        fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(lieu + ', Tunisie'), {
+            headers: { 'Accept-Language': 'fr', 'User-Agent': 'TunisiaJourney/1.0' }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(results) {
+            if (!results || !results.length) throw new Error('Lieu introuvable');
+            
+            var lat = parseFloat(results[0].lat);
+            var lon = parseFloat(results[0].lon);
+            
+            var map = L.map('event-map').setView([lat, lon], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            L.marker([lat, lon]).bindPopup(lieu).openPopup();
+        })
+        .catch(function() {
+            document.getElementById('event-map').style.display = 'none';
+            document.getElementById('map-error').style.display = 'flex';
+        });
+    {% endif %}
+})();
+</script>
 {% endblock %}

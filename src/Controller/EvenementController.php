@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Repository\CodePromoRepository;
 use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -95,7 +96,6 @@ class EvenementController extends AbstractController
         $ids          = array_column($activites, 'IDAct');
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
 
-        // Une seule requête pour toutes les réservations
         $reservations = $connection->fetchAllAssociative(
             "SELECT IDAct, COALESCE(SUM(NombrePlaces), 0) AS totalReserve
              FROM reservationact
@@ -131,7 +131,6 @@ class EvenementController extends AbstractController
                 'disponibilite'          => $disponibilite,
             ];
 
-            // Collecter les types uniques pour le filtre
             $type = $activite['TypeActivite'] ?? null;
             if ($type && !in_array($type, $typesActivite)) {
                 $typesActivite[] = $type;
@@ -146,15 +145,20 @@ class EvenementController extends AbstractController
     // ── Page principale ──────────────────────────────────────────────────────
 
     #[Route('/', name: 'app_evenement_index')]
-    public function index(Connection $connection): Response
+    public function index(Connection $connection, CodePromoRepository $codePromoRepository): Response
     {
         $evenements = $connection->fetchAllAssociative(
             "SELECT * FROM Evenement ORDER BY DateDebut ASC"
         );
         $evenements = $this->enrichEvenements($evenements, $connection);
 
+        // ── Récupérer le premier code promo actif valide aujourd'hui ──
+        $codesValides = $codePromoRepository->findAllValides();
+        $codePromoActif = !empty($codesValides) ? $codesValides[0] : null;
+
         return $this->render('evenement/indexev.html.twig', [
-            'evenements' => $evenements,
+            'evenements'     => $evenements,
+            'codePromoActif' => $codePromoActif,
         ]);
     }
 
@@ -213,13 +217,15 @@ class EvenementController extends AbstractController
         ]);
     }
 
-    // ── Détail d'un événement ────────────────────────────────────────────────
+    // ── Détail d'un événement (MODIFIÉ) ─────────────────────────────────────
 
     #[Route('/{IDEv}', name: 'app_evenement_show')]
     public function show(Connection $connection, int $IDEv): Response
     {
+        // 🔴 MODIFICATION : Ajout de Latitude et Longitude dans la requête
         $evenement = $connection->fetchAssociative(
-            "SELECT * FROM Evenement WHERE IDEv = ?", [$IDEv]
+            "SELECT *, Latitude, Longitude FROM Evenement WHERE IDEv = ?", 
+            [$IDEv]
         );
 
         if (!$evenement) {
@@ -235,7 +241,8 @@ class EvenementController extends AbstractController
         );
 
         $activites = $connection->fetchAllAssociative(
-            "SELECT * FROM Activite WHERE IDEv = ? ORDER BY HeureDebut ASC", [$IDEv]
+            "SELECT * FROM Activite WHERE IDEv = ? ORDER BY HeureDebut ASC", 
+            [$IDEv]
         );
 
         return $this->render('evenement/showev.html.twig', [
@@ -261,7 +268,6 @@ class EvenementController extends AbstractController
             "SELECT * FROM Activite WHERE IDEv = ? ORDER BY HeureDebut ASC", [$IDEv]
         );
 
-        // Calcul des places restantes + types uniques pour les filtres
         [$placesData, $typesActivite] = $this->buildPlacesData($activites, $connection);
 
         return $this->render('evenement/activites_ev.html.twig', [

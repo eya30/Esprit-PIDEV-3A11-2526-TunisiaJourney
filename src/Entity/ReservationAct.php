@@ -52,6 +52,7 @@ class ReservationAct
     #[ORM\Column(name: "NombrePlaces", type: "integer", nullable: true)]
     #[Assert\NotBlank(message: "Le nombre de personnes est requis.")]
     #[Assert\Positive(message: "Le nombre de personnes doit être supérieur à 0.")]
+    #[Assert\Type(type: "integer", message: "Le nombre de personnes doit être un nombre entier.")]
     #[Assert\LessThanOrEqual(
         value: 100,
         message: "Le nombre de personnes ne peut pas dépasser {{ compared_value }}."

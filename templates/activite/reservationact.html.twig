@@ -95,7 +95,6 @@
         box-shadow: 0 0 0 3px rgba(38,70,83,0.08);
     }
 
-    /* Erreur : bordure rouge, fond identique à l'état normal — pas de rose pastel */
     .field-input.is-error {
         border: 2px solid #C0392B !important;
         background: #F8F5F0 !important;
@@ -106,15 +105,56 @@
         font-size: 0.83rem;
         margin-top: 6px;
         font-weight: 600;
-        display: none;          /* caché par défaut, affiché par JS après réponse serveur */
+        display: none;
         align-items: center;
         gap: 5px;
     }
 
-    .field-error.visible {
+    .field-error.visible { display: flex; }
+
+    .promo-input-row {
         display: flex;
+        gap: 0.6rem;
+        align-items: center;
     }
 
+    .promo-input-row .field-input { flex: 1; }
+
+    .btn-verifier-promo {
+        background: #264653;
+        color: white;
+        border: none;
+        padding: 11px 20px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.88rem;
+        cursor: pointer;
+        white-space: nowrap;
+        font-family: 'Montserrat', sans-serif;
+        transition: background 0.2s;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-verifier-promo:hover { background: #1a3340; }
+    .btn-verifier-promo:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .promo-status {
+        font-size: 0.85rem;
+        font-weight: 700;
+        margin-top: 7px;
+        display: none;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .promo-status.visible { display: flex; }
+    .promo-status.valide  { color: #27AE60; }
+    .promo-status.invalide { color: #C0392B; }
+
+    /* ── Section prix ── */
     .prix-section {
         margin-top: 1.5rem;
         padding-top: 1.5rem;
@@ -124,7 +164,7 @@
         gap: 0.6rem;
     }
 
-    .prix-row { display: flex; align-items: center; gap: 2rem; padding: 0.3rem 0; }
+    .prix-row { display: flex; align-items: flex-start; gap: 2rem; padding: 0.3rem 0; }
 
     .prix-label {
         display: flex;
@@ -135,12 +175,104 @@
         font-size: 1rem;
         color: #264653;
         flex-shrink: 0;
+        padding-top: 2px;
     }
 
     .prix-label i { color: #264653; font-size: 1rem; width: 18px; text-align: center; }
 
     .prix-value { font-size: 1.15rem; font-weight: 700; color: #C0392B; }
     .prix-value.neutral { color: #264653; font-size: 1rem; font-weight: 600; }
+
+    .prix-row-reduction { display: none; }
+    .prix-row-reduction.visible { display: flex; }
+    .prix-reduction-value { font-size: 1rem; font-weight: 700; color: #27AE60; }
+
+    /* ── Total avec conversion ── */
+    .total-value-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    .total-tnd {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #C0392B;
+    }
+
+    /* Dropdown + résultat */
+    .total-devise-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .devise-select-resa {
+        border: 1.5px solid #D0C8BE;
+        border-radius: 8px;
+        padding: 5px 10px;
+        font-size: 0.88rem;
+        color: #264653;
+        background: white;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: 600;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        min-width: 130px;
+    }
+
+    .devise-select-resa:focus {
+        border-color: #264653;
+        box-shadow: 0 0 0 3px rgba(38,70,83,0.08);
+    }
+
+    .total-converti-inline {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .total-conv-label {
+        font-size: 0.88rem;
+        color: #7D7D7D;
+        font-weight: 500;
+        display: none;
+    }
+
+    .total-conv-val {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #C0392B;
+        display: none;
+    }
+
+    .total-conv-loading {
+        font-size: 0.82rem;
+        color: #bbb;
+        display: none;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .total-conv-taux {
+        font-size: 0.95rem;
+        color: #5e5c5c;
+        display: none;
+        font-weight: 500;
+    }
+
+    .spin-xs {
+        width: 11px; height: 11px;
+        border: 2px solid #ddd;
+        border-top-color: #C0392B;
+        border-radius: 50%;
+        animation: spinXsR 0.7s linear infinite;
+        display: inline-block;
+        flex-shrink: 0;
+    }
+    @keyframes spinXsR { to { transform: rotate(360deg); } }
 
     .reservation-actions {
         display: flex;
@@ -190,10 +322,7 @@
         -webkit-text-fill-color: white !important;
     }
 
-    .btn-confirmer:disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
-    }
+    .btn-confirmer:disabled { opacity: 0.7; cursor: not-allowed; }
 
     .flash-success {
         background: #F0FFF4;
@@ -206,6 +335,15 @@
         display: none;
     }
 
+    .api-warning {
+        background: #FFF3CD;
+        border: 1px solid #FFEAA7;
+        border-radius: 8px;
+        padding: 6px 10px;
+        font-size: 0.75rem;
+        color: #856404;
+    }
+
     @media (max-width: 640px) {
         .reservation-body   { padding: 1.5rem; }
         .reservation-header { padding: 1.5rem; border-radius: 18px 18px 0 0; }
@@ -215,6 +353,9 @@
         .prix-label         { min-width: unset; }
         .reservation-actions { flex-direction: column; align-items: center; }
         .btn-annuler, .btn-confirmer { width: 100%; justify-content: center; }
+        .promo-input-row { flex-direction: column; }
+        .btn-verifier-promo { width: 100%; justify-content: center; }
+        .total-devise-row { flex-direction: column; align-items: flex-start; }
     }
 </style>
 {% endblock %}
@@ -223,7 +364,6 @@
 <div class="reservation-page">
     <div class="container">
 
-        {# Message succès affiché dynamiquement par JS (pas de rechargement) #}
         <div class="flash-success" id="flashSuccess">
             <i class="fas fa-check-circle me-2"></i>
             <span id="flashSuccessText"></span>
@@ -235,129 +375,131 @@
                 <h2>Activité : {{ activite.Titre }}</h2>
                 <div class="reservation-header-meta">
                     <span><i class="fas fa-clock"></i> {{ activite.HeureDebut }} ({{ activite.Duree }})</span>
-                    
-                    
+                    <span><i class="fas fa-users"></i> {{ placesDisponibles }} place(s) disponible(s)</span>
                 </div>
             </div>
 
             <div class="reservation-body">
 
-                {#
-                    novalidate   → désactive la validation HTML5 native
-                    autocomplete → désactive l'historique de saisie
-                    La validation est 100% assurée par le Symfony Validator Component côté serveur.
-                    Le JS ne fait que soumettre en AJAX et afficher la réponse JSON du serveur.
-                #}
                 <form id="reservationForm"
                       method="POST"
                       action="{{ path('app_reservationact_new', {'IDAct': activite.IDAct}) }}"
                       novalidate
                       autocomplete="off">
 
-                    {# NOM #}
                     <div class="field-row">
                         <div class="field-label"><i class="fas fa-user"></i> Nom :</div>
                         <div class="field-input-wrap">
-                            <input type="text"
-                                   name="nom"
-                                   id="field-nom"
-                                   class="field-input"
-                                   placeholder="Votre nom"
-                                   autocomplete="off">
-                            <div class="field-error" id="error-nom">
-                                <i class="fas fa-exclamation-circle"></i>
-                                <span></span>
-                            </div>
+                            <input type="text" name="nom" id="field-nom" class="field-input" placeholder="Votre nom" autocomplete="off">
+                            <div class="field-error" id="error-nom"><i class="fas fa-exclamation-circle"></i><span></span></div>
                         </div>
                     </div>
 
-                    {# PRÉNOM #}
                     <div class="field-row">
                         <div class="field-label"><i class="fas fa-user"></i> Prénom :</div>
                         <div class="field-input-wrap">
-                            <input type="text"
-                                   name="prenom"
-                                   id="field-prenom"
-                                   class="field-input"
-                                   placeholder="Votre prénom"
-                                   autocomplete="off">
-                            <div class="field-error" id="error-prenom">
-                                <i class="fas fa-exclamation-circle"></i>
-                                <span></span>
-                            </div>
+                            <input type="text" name="prenom" id="field-prenom" class="field-input" placeholder="Votre prénom" autocomplete="off">
+                            <div class="field-error" id="error-prenom"><i class="fas fa-exclamation-circle"></i><span></span></div>
                         </div>
                     </div>
 
-                    {# TÉLÉPHONE #}
                     <div class="field-row">
                         <div class="field-label"><i class="fas fa-phone"></i> Téléphone :</div>
                         <div class="field-input-wrap">
-                            <input type="text"
-                                   name="telephone"
-                                   id="field-telephone"
-                                   class="field-input"
-                                   placeholder="8 chiffres (ex: 71234567)"
-                                   autocomplete="off"
-                                   maxlength="8">
-                            <div class="field-error" id="error-telephone">
-                                <i class="fas fa-exclamation-circle"></i>
-                                <span></span>
-                            </div>
+                            <input type="text" name="telephone" id="field-telephone" class="field-input" placeholder="8 chiffres (ex: 71234567)" autocomplete="off" maxlength="8">
+                            <div class="field-error" id="error-telephone"><i class="fas fa-exclamation-circle"></i><span></span></div>
                         </div>
                     </div>
 
-                    {# EMAIL #}
                     <div class="field-row">
                         <div class="field-label"><i class="fas fa-envelope"></i> Email :</div>
                         <div class="field-input-wrap">
-                            <input type="text"
-                                   name="email"
-                                   id="field-email"
-                                   class="field-input"
-                                   placeholder="exemple@domaine.com"
-                                   autocomplete="off">
-                            <div class="field-error" id="error-email">
-                                <i class="fas fa-exclamation-circle"></i>
-                                <span></span>
-                            </div>
+                            <input type="text" name="email" id="field-email" class="field-input" placeholder="exemple@domaine.com" autocomplete="off">
+                            <div class="field-error" id="error-email"><i class="fas fa-exclamation-circle"></i><span></span></div>
                         </div>
                     </div>
 
-                    {# NOMBRE DE PERSONNES #}
                     <div class="field-row">
                         <div class="field-label"><i class="fas fa-users"></i> Personnes :</div>
                         <div class="field-input-wrap">
-                            <input type="text"
-                                   name="nombrePlaces"
-                                   id="field-nombrePlaces"
-                                   class="field-input"
-                                   placeholder="Ex: 2"
-                                   autocomplete="off">
-                            <div class="field-error" id="error-nombrePlaces">
-                                <i class="fas fa-exclamation-circle"></i>
-                                <span></span>
+                            <input type="text" name="nombrePlaces" id="field-nombrePlaces" class="field-input" placeholder="Ex: 2" autocomplete="off">
+                            <div class="field-error" id="error-nombrePlaces"><i class="fas fa-exclamation-circle"></i><span></span></div>
+                        </div>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field-label"><i class="fas fa-ticket-alt"></i> Code promo :</div>
+                        <div class="field-input-wrap">
+                            <div class="promo-input-row">
+                                <input type="text" name="codePromo" id="field-codePromo" class="field-input"
+                                       placeholder="Ex: PROMO20 (optionnel)" autocomplete="off" maxlength="50">
+                                <button type="button" class="btn-verifier-promo" id="btnVerifierPromo">
+                                    <i class="fas fa-search"></i> Vérifier
+                                </button>
+                            </div>
+                            <div class="promo-status valide" id="promoValide">
+                                <i class="fas fa-check-circle"></i>
+                                <span id="promoValideText"></span>
+                            </div>
+                            <div class="promo-status invalide" id="promoInvalide">
+                                <i class="fas fa-times-circle"></i>
+                                <span id="promoInvalideText"></span>
                             </div>
                         </div>
                     </div>
 
-                    {# SECTION PRIX — affichage UX uniquement #}
+                    {# SECTION PRIX #}
                     <div class="prix-section">
                         <div class="prix-row">
-                            <div class="prix-label"><i class="fas fa-tag"></i> Prix original :</div>
+                            <div class="prix-label"><i class="fas fa-tag"></i> Prix unitaire :</div>
                             <div class="prix-value neutral" id="prixOriginal">
                                 {{ activite.Prix|number_format(2, ',', ' ') }} TND / personne
                             </div>
                         </div>
+                        <div class="prix-row prix-row-reduction" id="rowReduction">
+                            <div class="prix-label"><i class="fas fa-percent"></i> Réduction :</div>
+                            <div class="prix-reduction-value" id="prixReduction">-0,00 TND</div>
+                        </div>
+
+                        {# ── Total à payer + conversion ── #}
                         <div class="prix-row">
                             <div class="prix-label"><i class="fas fa-coins"></i> Total à payer :</div>
-                            <div class="prix-value" id="prixTotal">0,00 TND</div>
+                            <div class="total-value-wrap">
+                                <div class="total-devise-row">
+                                    <span class="total-tnd" id="prixTotal">0,00 TND</span>
+                                    <select class="devise-select-resa" id="devisePickerResa">
+                                        <option value="">Devise ▾</option>
+                                        <option value="EUR">EUR — €</option>
+                                        <option value="USD">USD — $</option>
+                                        <option value="GBP">GBP — £</option>
+                                        <option value="MAD">MAD</option>
+                                        <option value="DZD">DZD</option>
+                                        <option value="SAR">SAR</option>
+                                        <option value="AED">AED</option>
+                                        <option value="JPY">JPY — ¥</option>
+                                    </select>
+                                </div>
+                                <div class="total-converti-inline" id="totalConvertiRow" style="display:none;">
+                                    <span class="total-conv-label" id="totalConvLabel">Converti :</span>
+                                    <div class="total-conv-loading" id="totalConvLoading">
+                                        <span class="spin-xs"></span> ...
+                                    </div>
+                                    <span class="total-conv-val" id="totalConvVal"></span>
+                                </div>
+                                <div>
+                                    <span class="total-conv-taux" id="totalConvTaux"></span>
+                                </div>
+                                {% if not exchangeRateApiKey %}
+                                <div class="api-warning">
+                                    <i class="fas fa-exclamation-triangle"></i> Conversion indisponible (clé API manquante)
+                                </div>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
 
-                    {# BOUTONS #}
                     <div class="reservation-actions">
-                        <a href="{{ path('app_activite_show', {'IDAct': activite.IDAct}) }}"
-                           class="btn-annuler">
+                        <a href="{{ path('app_activite_show', {'IDAct': activite.IDAct}) }}" class="btn-annuler">
                             <i class="fas fa-times"></i> Annuler
                         </a>
                         <button type="submit" class="btn-confirmer" id="btnConfirmer">
@@ -373,48 +515,242 @@
 </div>
 
 <script>
+// ══ CLÉ API (passée depuis le controller) ══
+var EXCHANGE_API_KEY = '{{ exchangeRateApiKey }}';
+
+// Taux de fallback
+var FALLBACK_RATES = {
+    'EUR': 0.30,
+    'USD': 0.32,
+    'GBP': 0.26,
+    'MAD': 3.20,
+    'DZD': 43.50,
+    'SAR': 1.20,
+    'AED': 1.18,
+    'JPY': 48.00
+};
+
+var SYMBOLES = { EUR:'€', USD:'$', GBP:'£', MAD:'MAD', DZD:'DA', SAR:'SAR', AED:'AED', JPY:'¥' };
+
 (function () {
 
-    var redirectUrl = "{{ path('app_activite_show', {'IDAct': activite.IDAct}) }}";
-
-    /* ── Calcul du prix (UX, pas de validation) ────────────────────────── */
+    var redirectUrl    = "{{ path('app_activite_show', {'IDAct': activite.IDAct}) }}";
+    var verifyUrl      = "{{ path('app_reservationact_verify_promo') }}";
     var prixUnit       = {{ activite.Prix }};
-    var inputPlaces    = document.getElementById('field-nombrePlaces');
-    var prixOrigEl     = document.getElementById('prixOriginal');
-    var prixTotalEl    = document.getElementById('prixTotal');
+    var promoReduction = 0;
+    var currentTotal   = 0;
+    var rateCache      = {};
+
+    var inputPlaces   = document.getElementById('field-nombrePlaces');
+    var inputPromo    = document.getElementById('field-codePromo');
+    var prixOrigEl    = document.getElementById('prixOriginal');
+    var prixTotalEl   = document.getElementById('prixTotal');
+    var prixRedEl     = document.getElementById('prixReduction');
+    var rowReduction  = document.getElementById('rowReduction');
+
+    var promoValideDiv    = document.getElementById('promoValide');
+    var promoValideText   = document.getElementById('promoValideText');
+    var promoInvalideDiv  = document.getElementById('promoInvalide');
+    var promoInvalideText = document.getElementById('promoInvalideText');
+    var btnVerifier       = document.getElementById('btnVerifierPromo');
+
+    // Éléments conversion
+    var devisePickerResa   = document.getElementById('devisePickerResa');
+    var totalConvertiRow   = document.getElementById('totalConvertiRow');
+    var totalConvLabel     = document.getElementById('totalConvLabel');
+    var totalConvLoading   = document.getElementById('totalConvLoading');
+    var totalConvVal       = document.getElementById('totalConvVal');
+    var totalConvTaux      = document.getElementById('totalConvTaux');
 
     function fmt(n) { return n.toFixed(2).replace('.', ',') + ' TND'; }
 
+    // ── Mise à jour prix ──
     function updatePrix() {
         var n = parseInt(inputPlaces.value, 10);
         if (!isNaN(n) && n > 0) {
-            prixOrigEl.textContent  = fmt(prixUnit) + ' × ' + n;
-            prixTotalEl.textContent = fmt(prixUnit * n);
+            var total      = prixUnit * n;
+            var reduction  = total * (promoReduction / 100);
+            var totalFinal = total - reduction;
+            currentTotal   = totalFinal;
+
+            prixOrigEl.textContent  = prixUnit.toFixed(2).replace('.', ',') + ' TND × ' + n;
+            prixTotalEl.textContent = fmt(totalFinal);
+
+            if (promoReduction > 0) {
+                prixRedEl.textContent = '-' + fmt(reduction) + ' (' + promoReduction + '%)';
+                rowReduction.classList.add('visible');
+            } else {
+                rowReduction.classList.remove('visible');
+            }
         } else {
-            prixOrigEl.textContent  = fmt(prixUnit) + ' / personne';
+            currentTotal = 0;
+            prixOrigEl.textContent  = prixUnit.toFixed(2).replace('.', ',') + ' TND / personne';
             prixTotalEl.textContent = '0,00 TND';
+            rowReduction.classList.remove('visible');
+        }
+
+        // Rafraîchir la conversion si devise sélectionnée
+        if (devisePickerResa && devisePickerResa.value) {
+            afficherConversionTotal(devisePickerResa.value);
+        } else {
+            resetConvTotal();
         }
     }
 
-    if (inputPlaces) {
-        inputPlaces.addEventListener('input', updatePrix);
+    if (inputPlaces) inputPlaces.addEventListener('input', updatePrix);
+
+    // ── Conversion du total ──
+    function resetConvTotal() {
+        totalConvertiRow.style.display = 'none';
+        totalConvTaux.style.display    = 'none';
     }
 
-    /* ── Affichage / effacement des erreurs renvoyées par Symfony ──────── */
+    function setLoadingTotal(on) {
+        totalConvLoading.style.display = on ? 'flex' : 'none';
+        totalConvVal.style.display     = on ? 'none' : 'inline';
+        totalConvLabel.style.display   = on ? 'none' : 'inline';
+    }
 
+    function afficherConversionTotal(devise) {
+        if (!devise || currentTotal <= 0) { resetConvTotal(); return; }
+
+        // Si pas de clé API, utiliser fallback
+        if (!EXCHANGE_API_KEY || EXCHANGE_API_KEY === '') {
+            var fallbackTaux = FALLBACK_RATES[devise];
+            if (fallbackTaux) {
+                renderConvTotal(devise, fallbackTaux, true);
+            } else {
+                totalConvertiRow.style.display = 'flex';
+                setLoadingTotal(false);
+                totalConvLabel.style.display = 'inline';
+                totalConvVal.textContent = 'Taux non disponible';
+                totalConvVal.style.color = '#aaa';
+            }
+            return;
+        }
+
+        var now = Date.now();
+        if (rateCache[devise] && (now - rateCache[devise].ts) < 600000) {
+            renderConvTotal(devise, rateCache[devise].taux, false);
+            return;
+        }
+
+        totalConvertiRow.style.display = 'flex';
+        totalConvTaux.style.display    = 'none';
+        setLoadingTotal(true);
+
+        fetch('https://v6.exchangerate-api.com/v6/' + EXCHANGE_API_KEY + '/pair/TND/' + devise)
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.result === 'success') {
+                    rateCache[devise] = { taux: data.conversion_rate, ts: Date.now() };
+                    renderConvTotal(devise, data.conversion_rate, false);
+                } else {
+                    var fallbackTaux = FALLBACK_RATES[devise];
+                    if (fallbackTaux) {
+                        renderConvTotal(devise, fallbackTaux, true);
+                    } else {
+                        throw new Error('Taux non disponible');
+                    }
+                }
+            })
+            .catch(function () {
+                var fallbackTaux = FALLBACK_RATES[devise];
+                if (fallbackTaux) {
+                    renderConvTotal(devise, fallbackTaux, true);
+                } else {
+                    setLoadingTotal(false);
+                    totalConvLabel.style.display = 'inline';
+                    totalConvVal.textContent   = 'Taux indisponible';
+                    totalConvVal.style.color   = '#aaa';
+                    totalConvVal.style.display = 'inline';
+                }
+            });
+    }
+
+    function renderConvTotal(devise, taux, isFallback) {
+        var montant  = currentTotal * taux;
+        var symbole  = SYMBOLES[devise] || devise;
+        var decimals = (devise === 'JPY') ? 0 : 2;
+        var fmtMont  = montant.toFixed(decimals).replace('.', ',');
+        var prefix = isFallback ? '(approx) ' : '';
+
+        totalConvertiRow.style.display = 'flex';
+        setLoadingTotal(false);
+        totalConvLabel.style.display = 'inline';
+        totalConvVal.textContent     = prefix + fmtMont + ' ' + symbole;
+        totalConvVal.style.color     = '#C0392B';
+
+        if (isFallback) {
+            totalConvTaux.textContent = 'Taux approximatif (service indisponible)';
+        } else {
+            totalConvTaux.textContent = '1 TND = ' + taux.toFixed(4) + ' ' + devise;
+        }
+        totalConvTaux.style.display = 'inline';
+    }
+
+    if (devisePickerResa) {
+        devisePickerResa.addEventListener('change', function () {
+            afficherConversionTotal(this.value);
+        });
+    }
+
+    // ── Réinitialiser promo ──
+    function resetPromoStatus() {
+        promoValideDiv.classList.remove('visible');
+        promoInvalideDiv.classList.remove('visible');
+        promoReduction = 0;
+        rowReduction.classList.remove('visible');
+        updatePrix();
+    }
+
+    if (inputPromo) inputPromo.addEventListener('input', function () { resetPromoStatus(); });
+
+    // ── Vérification code promo ──
+    if (btnVerifier) {
+        btnVerifier.addEventListener('click', function () {
+            var code = inputPromo.value.trim();
+            if (!code) { resetPromoStatus(); return; }
+
+            btnVerifier.disabled = true;
+            btnVerifier.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            fetch(verifyUrl + '?code=' + encodeURIComponent(code), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                btnVerifier.disabled = false;
+                btnVerifier.innerHTML = '<i class="fas fa-search"></i> Vérifier';
+                promoValideDiv.classList.remove('visible');
+                promoInvalideDiv.classList.remove('visible');
+
+                if (data.valide) {
+                    promoReduction = data.pourcentage;
+                    promoValideText.textContent = 'Code valide — ' + data.pourcentage + '% de réduction !';
+                    promoValideDiv.classList.add('visible');
+                } else {
+                    promoReduction = 0;
+                    promoInvalideText.textContent = data.message;
+                    promoInvalideDiv.classList.add('visible');
+                }
+                updatePrix();
+            })
+            .catch(function () {
+                btnVerifier.disabled = false;
+                btnVerifier.innerHTML = '<i class="fas fa-search"></i> Vérifier';
+            });
+        });
+    }
+
+    // ── Erreurs champs ──
     var fields = ['nom', 'prenom', 'telephone', 'email', 'nombrePlaces'];
 
-    /**
-     * Affiche un message d'erreur sur un champ.
-     * msg vide → efface l'erreur et retire la bordure rouge.
-     */
     function setFieldError(name, msg) {
         var input    = document.getElementById('field-' + name);
         var errorDiv = document.getElementById('error-' + name);
         var span     = errorDiv ? errorDiv.querySelector('span') : null;
-
         if (!input || !errorDiv || !span) return;
-
         if (msg) {
             input.classList.add('is-error');
             span.textContent = msg;
@@ -426,16 +762,8 @@
         }
     }
 
-    /**
-     * Efface toutes les erreurs (appelé avant chaque soumission
-     * et lorsqu'un champ est modifié après une erreur).
-     */
-    function clearAllErrors() {
-        fields.forEach(function (name) { setFieldError(name, ''); });
-    }
+    function clearAllErrors() { fields.forEach(function (n) { setFieldError(n, ''); }); }
 
-    /* Quand l'utilisateur modifie un champ en erreur → effacer immédiatement
-       cette erreur (le serveur revalidera à la prochaine soumission)         */
     fields.forEach(function (name) {
         var input = document.getElementById('field-' + name);
         if (input) {
@@ -446,56 +774,46 @@
         }
     });
 
-    /* ── Soumission AJAX — validation par Symfony Validator côté serveur ── */
-
-    var form        = document.getElementById('reservationForm');
-    var btnConfirm  = document.getElementById('btnConfirmer');
-    var flashBox    = document.getElementById('flashSuccess');
-    var flashText   = document.getElementById('flashSuccessText');
+    // ── Soumission AJAX ──
+    var form       = document.getElementById('reservationForm');
+    var btnConfirm = document.getElementById('btnConfirmer');
+    var flashBox   = document.getElementById('flashSuccess');
+    var flashText  = document.getElementById('flashSuccessText');
 
     if (form) {
         form.addEventListener('submit', function (e) {
             e.preventDefault();
-
             clearAllErrors();
-
             btnConfirm.disabled = true;
             btnConfirm.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi...';
 
             var formData = new FormData(form);
+            formData.append('promoReduction', promoReduction);
 
             fetch(form.action, {
                 method: 'POST',
                 headers: { 'X-Requested-With': 'XMLHttpRequest' },
                 body: formData
             })
-            .then(function (response) { return response.json(); })
+            .then(function (r) { return r.json(); })
             .then(function (data) {
-
                 if (data.success) {
-                    /* Succès : afficher le message et rediriger */
                     flashText.textContent = 'Votre réservation a été enregistrée avec succès !';
                     flashBox.style.display = 'flex';
                     form.reset();
+                    resetPromoStatus();
                     updatePrix();
-                    setTimeout(function () {
-                        window.location.href = redirectUrl;
-                    }, 1500);
+                    if (devisePickerResa) { devisePickerResa.value = ''; resetConvTotal(); }
+                    setTimeout(function () { window.location.href = redirectUrl; }, 1500);
                 } else {
-                    /* Erreurs Symfony : les afficher champ par champ */
                     if (data.errors) {
-                        Object.keys(data.errors).forEach(function (field) {
-                            setFieldError(field, data.errors[field]);
-                        });
+                        Object.keys(data.errors).forEach(function (field) { setFieldError(field, data.errors[field]); });
                     }
                     btnConfirm.disabled = false;
                     btnConfirm.innerHTML = '<i class="fas fa-check"></i> Confirmer la réservation';
                 }
             })
-            .catch(function () {
-                /* Erreur réseau : fallback soumission classique */
-                form.submit();
-            });
+            .catch(function () { form.submit(); });
         });
     }
 

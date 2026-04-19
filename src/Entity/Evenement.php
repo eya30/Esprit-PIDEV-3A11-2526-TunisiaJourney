@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: EvenementRepository::class)]
 #[ORM\Table(name: 'Evenement')]
@@ -108,6 +109,36 @@ class Evenement
     public function __construct()
     {
         $this->activites = new ArrayCollection();
+    }
+
+    // ── Validation personnalisée pour la date de début ──
+    #[Assert\Callback]
+    public function validateDateDebut(ExecutionContextInterface $context): void
+    {
+        if ($this->DateDebut === null) {
+            return;
+        }
+
+        $today = new \DateTime();
+        $today->setTime(0, 0, 0);
+        
+        // Contrôle 1 : La date ne peut pas être dans le passé
+        if ($this->DateDebut < $today) {
+            $context->buildViolation('Impossible de créer un événement avec une date de début dans le passé (la date de début ne peut pas être antérieure à aujourd\'hui).')
+                ->atPath('DateDebut')
+                ->addViolation();
+            return;
+        }
+        
+        // Contrôle 2 : Il faut au moins 5 jours de délai
+        $minDate = clone $today;
+        $minDate->modify('+5 days');
+        
+        if ($this->DateDebut < $minDate) {
+            $context->buildViolation('La date de début doit être au moins 5 jours après aujourd\'hui (délai minimum de 5 jours avant l\'événement). Date minimale : ' . $minDate->format('d/m/Y'))
+                ->atPath('DateDebut')
+                ->addViolation();
+        }
     }
 
     // ── Getters & Setters ─────────────────────────────────────────────────────

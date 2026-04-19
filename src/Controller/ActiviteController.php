@@ -3,13 +3,18 @@
 namespace App\Controller;
 
 use App\Entity\Activite;
+use App\Entity\AvisAct;
 use App\Entity\Evenement;
 use App\Entity\ReservationAct;
 use App\Form\ActiviteType;
+use App\Form\AvisActType;
 use App\Repository\ActiviteRepository;
+use App\Repository\AvisActRepository;
+use App\Service\AISummaryService;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -52,20 +57,92 @@ class ActiviteController extends AbstractController
     }
 
     #[Route('/{IDAct}', name: 'app_activite_show', methods: ['GET'])]
-    public function show(Activite $activite, Connection $connection): Response
-    {
-        $placesReservees = (int) $connection->fetchOne(
+    public function show(
+        Activite          $activite,
+        Connection        $connection,
+        AvisActRepository $avisRepo
+    ): Response {
+        $placesReservees   = (int) $connection->fetchOne(
             "SELECT COALESCE(SUM(NombrePlaces), 0) FROM ReservationAct WHERE IDAct = ?",
             [$activite->getIDAct()]
         );
         $placesDisponibles = $activite->getCapaciteM() - $placesReservees;
 
-        return $this->render('activite/showactv.html.twig', [
-            'activite'          => $activite,
-            'placesDisponibles' => $placesDisponibles,
-            'reservation'       => new ReservationAct(),
-            'errors'            => [],
+        $avis        = $avisRepo->findByActivite($activite);
+        $moyenneNote = $avisRepo->getMoyenneNote($activite);
+        $formAvis    = $this->createForm(AvisActType::class, new AvisAct(), [
+            'action' => $this->generateUrl('app_avis_new', ['IDAct' => $activite->getIDAct()]),
+            'method' => 'POST',
         ]);
+
+        // Récupération de la clé API avec vérification
+        $apiKey = $_ENV['EXCHANGERATE_API_KEY'] ?? '';
+        
+        // Tester si la clé API est valide (optionnel)
+        $apiKeyValid = !empty($apiKey);
+
+        return $this->render('activite/showactv.html.twig', [
+            'activite'            => $activite,
+            'placesDisponibles'   => $placesDisponibles,
+            'reservation'         => new ReservationAct(),
+            'errors'              => [],
+            'avis'                => $avis,
+            'moyenneNote'         => $moyenneNote,
+            'formAvis'            => $formAvis->createView(),
+            'exchangeRateApiKey'  => $apiKey,
+            'apiKeyValid'         => $apiKeyValid,
+        ]);
+    }
+
+    #[Route('/{IDAct}/ai-summary', name: 'app_activite_ai_summary', methods: ['GET'])]
+    public function getAISummary(
+        Activite $activite,
+        AISummaryService $aiSummaryService
+    ): JsonResponse {
+        $summary = $aiSummaryService->generateSummary($activite->getIDAct());
+        
+        return $this->json([
+            'success' => true,
+            'summary' => $summary
+        ]);
+    }
+
+    #[Route('/{IDAct}/avis', name: 'app_avis_new', methods: ['POST'])]
+    public function newAvis(
+        Request                $request,
+        Activite               $activite,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $avis = new AvisAct();
+        $avis->setActivite($activite);
+
+        $form = $this->createForm(AvisActType::class, $avis);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+
+            $postData = $request->request->all();
+            $formName = $form->getName();
+            $noteRaw  = $postData[$formName]['note'] ?? '';
+            $note     = (int) $noteRaw;
+
+            if ($note < 1 || $note > 5) {
+                $this->addFlash('error', 'Veuillez sélectionner une note entre 1 et 5.');
+                return $this->redirectToRoute('app_activite_show', ['IDAct' => $activite->getIDAct()]);
+            }
+
+            $avis->setNote($note);
+
+            if ($form->isValid()) {
+                $entityManager->persist($avis);
+                $entityManager->flush();
+                $this->addFlash('success', 'Votre avis a été publié avec succès !');
+            } else {
+                $this->addFlash('error', 'Veuillez remplir tous les champs obligatoires.');
+            }
+        }
+
+        return $this->redirectToRoute('app_activite_show', ['IDAct' => $activite->getIDAct()]);
     }
 
     #[Route('/{IDAct}/edit', name: 'app_activite_edit', methods: ['GET', 'POST'])]
@@ -145,9 +222,9 @@ class ActiviteController extends AbstractController
             $restantes   = max(0, $capacite - $reserve);
             $pourcentage = $capacite > 0 ? round(($reserve / $capacite) * 100) : 100;
 
-            if ($pourcentage >= 100)      $disponibilite = 'soldout';
-            elseif ($pourcentage >= 80)   $disponibilite = 'warning';
-            else                          $disponibilite = 'available';
+            if ($pourcentage >= 100)    $disponibilite = 'soldout';
+            elseif ($pourcentage >= 80) $disponibilite = 'warning';
+            else                        $disponibilite = 'available';
 
             $placesData[$id] = [
                 'placesRestantes'        => $restantes,

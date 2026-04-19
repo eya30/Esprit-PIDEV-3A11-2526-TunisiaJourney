@@ -11,7 +11,6 @@
 
         <form method="post" enctype="multipart/form-data" id="evenementForm" action="{{ path('admin_evenement_new') }}">
 
-            {# ── Titre ────────────────────────────────────────────────────── #}
             <div class="form-group {% if errors.titre is defined %}has-error{% endif %}" data-field="titre">
                 <label class="form-label">Titre de l'événement <span class="required">*</span></label>
                 <div class="input-group-custom">
@@ -26,7 +25,6 @@
                 {% endif %}
             </div>
 
-            {# ── Description ──────────────────────────────────────────────── #}
             <div class="form-group {% if errors.description is defined %}has-error{% endif %}" data-field="description">
                 <label class="form-label">Description <span class="required">*</span></label>
                 <div class="input-group-custom">
@@ -39,7 +37,6 @@
                 {% endif %}
             </div>
 
-            {# ── Lieu ─────────────────────────────────────────────────────── #}
             <div class="form-group {% if errors.lieu is defined %}has-error{% endif %}" data-field="lieu">
                 <label class="form-label">Lieu <span class="required">*</span></label>
                 <div class="input-group-custom">
@@ -60,7 +57,7 @@
                         <label class="form-label">Date de début <span class="required">*</span></label>
                         <div class="input-group-custom">
                             <i class="fas fa-calendar-alt"></i>
-                            <input type="text" name="dateDebut" class="form-control"
+                            <input type="text" name="dateDebut" id="dateDebut" class="form-control"
                                    value="{{ old.dateDebut|default('') }}"
                                    placeholder="JJ/MM/AAAA" autocomplete="off">
                         </div>
@@ -118,7 +115,6 @@
                 </div>
             </div>
 
-            {# ── Image ────────────────────────────────────────────────────── #}
             <div class="form-group">
                 <label class="form-label">Image de l'événement</label>
                 <div class="upload-area" id="uploadArea">
@@ -143,247 +139,64 @@
 </div>
 
 <style>
-    .form-container {
-        max-width: 900px;
-        margin: 0 auto;
-    }
-
-    .form-card {
-        background: white;
-        border-radius: 24px;
-        padding: 32px;
-        border: 1px solid #F0E8DD;
-    }
-
-    .form-title {
-        font-family: 'Playfair Display', serif;
-        font-size: 1.4rem;
-        font-weight: 700;
-        color: #2C1810;
-        margin-bottom: 8px;
-    }
-
-    .form-subtitle {
-        font-size: 0.85rem;
-        color: #93032E;
-        margin-bottom: 24px;
-        padding-bottom: 16px;
-        border-bottom: 1px solid #F0E8DD;
-    }
-
-    .required {
-        color: #93032E;
-        font-size: 12px;
-    }
-
-    .input-group-custom {
-        display: flex;
-        align-items: center;
-        background: white;
-        border: 1.5px solid #93032E;
-        border-radius: 12px;
-        transition: all 0.2s;
-    }
-
-    .input-group-custom:focus-within {
-        border-color: #93032E;
-        box-shadow: 0 0 0 2px rgba(147,3,46,0.1);
-    }
-
-    .form-group.has-error .input-group-custom {
-        border-color: #dc2626;
-        background: white;
-    }
-
-    .form-group.has-error .input-group-custom:focus-within {
-        border-color: #dc2626;
-        box-shadow: 0 0 0 2px rgba(220,38,38,0.1);
-    }
-
-    .input-group-custom i {
-        padding: 12px 0 12px 16px;
-        color: #828282;
-        font-size: 1rem;
-    }
-
-    .input-group-custom .form-control {
-        border: none;
-        background: transparent;
-        padding: 12px 16px;
-        font-size: 14px;
-        width: 100%;
-        outline: none;
-    }
-
-    .input-group-custom .form-control:focus {
-        outline: none;
-        box-shadow: none;
-    }
-
-    .form-group {
-        margin-bottom: 20px;
-    }
-
-    .form-label {
-        font-size: 13px;
-        font-weight: 600;
-        color: #2C1810;
-        margin-bottom: 8px;
-        display: block;
-    }
-
-    .error-message {
-        color: #dc2626;
-        font-size: 12px;
-        margin-top: 6px;
-        padding-left: 12px;
-        display: block;
-    }
-
-    .upload-area {
-        background: #FEF9F0;
-        border: 1.5px dashed #93032E;
-        border-radius: 16px;
-        padding: 32px;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .upload-area:hover {
-        border-color: #93032E;
-        background: #FFF5F0;
-    }
-
-    .upload-area i {
-        font-size: 2rem;
-        color: #828282;
-        margin-bottom: 12px;
-    }
-
-    .upload-area p {
-        margin: 0;
-        font-size: 0.9rem;
-        color: #4A3B2F;
-    }
-
-    .upload-area small {
-        font-size: 0.75rem;
-        color: #9CA3AF;
-    }
-
-    .image-preview-container {
-        margin-top: 16px;
-        text-align: center;
-    }
-
-    .image-preview {
-        max-width: 200px;
-        max-height: 150px;
-        border-radius: 12px;
-        border: 1px solid #E8DFD1;
-    }
-
-    .form-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 12px;
-        margin-top: 32px;
-        padding-top: 24px;
-        border-top: 1px solid #F0E8DD;
-    }
-
-    .btn-primary {
-        background: #93032E;
-        border: none;
-        padding: 10px 24px;
-        border-radius: 40px;
-        font-size: 13px;
-        font-weight: 600;
-        color: white;
-        transition: all 0.2s;
-        cursor: pointer;
-    }
-
-    .btn-primary:hover {
-        background: #6B0221;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(147,3,46,0.3);
-    }
-
-    .btn-outline {
-        background: transparent;
-        border: 1.5px solid #93032E;
-        padding: 10px 24px;
-        border-radius: 40px;
-        font-size: 13px;
-        font-weight: 500;
-        color: #93032E;
-        transition: all 0.2s;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-    }
-
-    .btn-outline:hover {
-        border-color: #6B0221;
-        color: #6B0221;
-        background: #FFF9F0;
-    }
-
-    .row {
-        display: flex;
-        gap: 20px;
-        margin-bottom: 0;
-    }
-
-    .col-md-6 {
-        flex: 1;
-    }
-
-    .me-2 {
-        margin-right: 0.5rem;
-    }
-
-    @media (max-width: 768px) {
-        .row {
-            flex-direction: column;
-            gap: 0;
-        }
-    }
+    .form-container { max-width: 900px; margin: 0 auto; }
+    .form-card { background: white; border-radius: 24px; padding: 32px; border: 1px solid #F0E8DD; }
+    .form-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: #2C1810; margin-bottom: 8px; }
+    .form-subtitle { font-size: 0.85rem; color: #93032E; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #F0E8DD; }
+    .required { color: #93032E; font-size: 12px; }
+    .input-group-custom { display: flex; align-items: center; background: white; border: 1.5px solid #93032E; border-radius: 12px; transition: all 0.2s; }
+    .input-group-custom:focus-within { border-color: #93032E; box-shadow: 0 0 0 2px rgba(147,3,46,0.1); }
+    .form-group.has-error .input-group-custom { border-color: #dc2626; background: white; }
+    .form-group.has-error .input-group-custom:focus-within { border-color: #dc2626; box-shadow: 0 0 0 2px rgba(220,38,38,0.1); }
+    .input-group-custom i { padding: 12px 0 12px 16px; color: #828282; font-size: 1rem; }
+    .input-group-custom .form-control { border: none; background: transparent; padding: 12px 16px; font-size: 14px; width: 100%; outline: none; }
+    .input-group-custom .form-control:focus { outline: none; box-shadow: none; }
+    .form-group { margin-bottom: 20px; }
+    .form-label { font-size: 13px; font-weight: 600; color: #2C1810; margin-bottom: 8px; display: block; }
+    .error-message { color: #dc2626; font-size: 12px; margin-top: 6px; padding-left: 12px; display: block; }
+    .upload-area { background: #FEF9F0; border: 1.5px dashed #93032E; border-radius: 16px; padding: 32px; text-align: center; cursor: pointer; transition: all 0.2s; }
+    .upload-area:hover { border-color: #93032E; background: #FFF5F0; }
+    .upload-area i { font-size: 2rem; color: #828282; margin-bottom: 12px; }
+    .upload-area p { margin: 0; font-size: 0.9rem; color: #4A3B2F; }
+    .upload-area small { font-size: 0.75rem; color: #9CA3AF; }
+    .image-preview-container { margin-top: 16px; text-align: center; }
+    .image-preview { max-width: 200px; max-height: 150px; border-radius: 12px; border: 1px solid #E8DFD1; }
+    .form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; padding-top: 24px; border-top: 1px solid #F0E8DD; }
+    .btn-primary { background: #93032E; border: none; padding: 10px 24px; border-radius: 40px; font-size: 13px; font-weight: 600; color: white; transition: all 0.2s; cursor: pointer; }
+    .btn-primary:hover { background: #6B0221; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(147,3,46,0.3); }
+    .btn-outline { background: transparent; border: 1.5px solid #93032E; padding: 10px 24px; border-radius: 40px; font-size: 13px; font-weight: 500; color: #93032E; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; }
+    .btn-outline:hover { border-color: #6B0221; color: #6B0221; background: #FFF9F0; }
+    .row { display: flex; gap: 20px; margin-bottom: 0; }
+    .col-md-6 { flex: 1; }
+    .me-2 { margin-right: 0.5rem; }
+    @media (max-width: 768px) { .row { flex-direction: column; gap: 0; } }
 </style>
 
 <script>
-    // Script pour effacer les erreurs en temps réel
-    const formGroups = document.querySelectorAll('.form-group[data-field]');
-    
-    formGroups.forEach(group => {
-        const input = group.querySelector('input, textarea, select');
+    // ── Effacer les erreurs en temps réel ──
+    document.querySelectorAll('.form-group[data-field]').forEach(function(group) {
+        var input = group.querySelector('input, textarea, select');
         if (input) {
             input.addEventListener('input', function() {
                 group.classList.remove('has-error');
-                const errorMsg = group.querySelector('.error-message');
-                if (errorMsg) {
-                    errorMsg.remove();
-                }
+                var errorMsg = group.querySelector('.error-message');
+                if (errorMsg) errorMsg.remove();
             });
         }
     });
 
-    // Script pour l'upload d'image
-    const uploadArea = document.getElementById('uploadArea');
-    const imageInput = document.getElementById('imageInput');
-    const imagePreview = document.getElementById('imagePreview');
+    // ── Upload d'image ──
+    var uploadArea   = document.getElementById('uploadArea');
+    var imageInput   = document.getElementById('imageInput');
+    var imagePreview = document.getElementById('imagePreview');
 
     if (uploadArea) {
-        uploadArea.addEventListener('click', () => {
-            imageInput.click();
-        });
+        uploadArea.addEventListener('click', function() { imageInput.click(); });
 
         imageInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
+            var file = e.target.files[0];
             if (file) {
-                const reader = new FileReader();
+                var reader = new FileReader();
                 reader.onload = function(e) {
                     imagePreview.innerHTML = '<img src="' + e.target.result + '" class="image-preview">';
                     uploadArea.style.display = 'none';
@@ -392,22 +205,20 @@
             }
         });
 
-        uploadArea.addEventListener('dragover', (e) => {
+        uploadArea.addEventListener('dragover', function(e) {
             e.preventDefault();
-            uploadArea.style.borderColor = '#93032E';
             uploadArea.style.background = '#FFF5F0';
         });
 
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.style.borderColor = '#93032E';
+        uploadArea.addEventListener('dragleave', function() {
             uploadArea.style.background = '#FEF9F0';
         });
 
-        uploadArea.addEventListener('drop', (e) => {
+        uploadArea.addEventListener('drop', function(e) {
             e.preventDefault();
-            const file = e.dataTransfer.files[0];
+            var file = e.dataTransfer.files[0];
             if (file && file.type.startsWith('image/')) {
-                const reader = new FileReader();
+                var reader = new FileReader();
                 reader.onload = function(e) {
                     imagePreview.innerHTML = '<img src="' + e.target.result + '" class="image-preview">';
                     uploadArea.style.display = 'none';
@@ -415,9 +226,24 @@
                 reader.readAsDataURL(file);
                 imageInput.files = e.dataTransfer.files;
             }
-            uploadArea.style.borderColor = '#93032E';
             uploadArea.style.background = '#FEF9F0';
         });
     }
+
+    // ── NOUVEAU : Pré-remplir la date depuis le calendrier ──
+    (function () {
+        var params = new URLSearchParams(window.location.search);
+        var d = params.get('dateDebut');
+        if (d) {
+            var parts = d.split('-');
+            if (parts.length === 3) {
+                var input = document.getElementById('dateDebut');
+                if (input && !input.value) {
+                    input.value = parts[2] + '/' + parts[1] + '/' + parts[0];
+                }
+            }
+        }
+    })();
 </script>
+
 {% endblock %}
