@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billet — {{ activite.Titre }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'DM Sans', sans-serif;
+            padding: 24px;
+        }
+
+        .ticket-wrapper { width: 100%; max-width: 480px; }
+
+        .ticket {
+            background: #ffffff;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+            position: relative;
+        }
+
+        /* ── IMAGE DE FOND : balise <img> + src base64 passé depuis le contrôleur ── */
+        .ticket-bg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            z-index: 0;
+            display: block;
+        }
+
+        .ticket-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(8,20,45,0.65) 0%,
+                rgba(8,20,45,0.40) 40%,
+                rgba(8,20,45,0.70) 100%
+            );
+            z-index: 1;
+        }
+
+        /* ── HEADER ── */
+        .ticket-header {
+            position: relative;
+            z-index: 2;
+            padding: 32px 32px 24px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.18);
+        }
+        .ticket-header .brand {
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .ticket-header .date-badge {
+            display: inline-block;
+            margin-bottom: 10px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #7ec8f7;
+            background: rgba(26,111,168,0.40);
+            border: 1px solid rgba(126,200,247,0.35);
+            padding: 4px 16px;
+            border-radius: 30px;
+        }
+        .ticket-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            font-weight: 900;
+            color: #fff;
+            line-height: 1.25;
+            text-shadow: 0 2px 14px rgba(0,0,0,0.5);
+        }
+
+        /* ── DÉCOUPE ── */
+        .ticket-tear-wrap {
+            position: relative;
+            z-index: 2;
+            padding: 14px 0;
+        }
+        .ticket-tear {
+            position: relative;
+            height: 0;
+            border-top: 2px dashed rgba(255,255,255,0.25);
+            margin: 0 16px;
+        }
+        .ticket-notch-left,
+        .ticket-notch-right {
+            width: 28px;
+            height: 28px;
+            background: #ffffff;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .ticket-notch-left  { left: -30px; }
+        .ticket-notch-right { right: -30px; }
+
+        /* ── BODY ── */
+        .ticket-body {
+            position: relative;
+            z-index: 2;
+            padding: 20px 32px 28px;
+        }
+
+        /* ── LIGNES INFO ── */
+        .info-line {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.10);
+        }
+        .info-line:last-of-type { border-bottom: none; }
+
+        .info-line .v-label {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            transform: rotate(180deg);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            white-space: nowrap;
+            flex-shrink: 0;
+            padding: 4px 0;
+        }
+        .info-line.reserved .v-label { color: #f3f1f1; }
+        .info-line.heure    .v-label { color: #f3f1f1; }
+        .info-line.prix     .v-label { color: #f3f1f1; }
+
+        .info-line .v-sep {
+            width: 1px;
+            height: 36px;
+            flex-shrink: 0;
+            background: rgba(255,255,255,0.15);
+        }
+
+        .info-line .v-value {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+        .info-line .v-value span.sub {
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(100, 95, 95, 0.4);
+        }
+        .info-line .v-value span.main {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .info-line.reserved .v-value span.main { color: #f3f1f1; }
+        .info-line.heure    .v-value span.main { color: #f3f1f1; }
+        .info-line.prix     .v-value span.main {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            font-weight: 900;
+            color: #f3f1f1;
+        }
+
+        /* ── FOOTER ── */
+        .ticket-footer {
+            position: relative;
+            z-index: 2;
+            border-top: 1px dashed rgba(255,255,255,0.20);
+            padding: 18px 32px 24px;
+            text-align: center;
+        }
+        .ticket-footer .footer-note {
+            font-size: 11px;
+            color: rgba(255,255,255,0.45);
+            margin-top: 6px;
+        }
+
+        /* ── BOUTON imprimer ── */
+        .print-btn {
+            display: block;
+            margin: 20px auto 0;
+            background: rgba(255, 255, 255, 0.85);
+            color: #264653;
+            border: 1px solid rgba(126,200,247,0.4);
+            padding: 12px 32px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+        }
+
+        @media print {
+            body { background: #fff; padding: 0; }
+            .print-btn { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="ticket-wrapper">
+    <div class="ticket">
+
+        {# ── IMAGE en base64 : fonctionne sur tous les navigateurs mobiles y compris Safari iOS ── #}
+        <img class="ticket-bg" src="{{ imageBase64 }}" alt="">
+        <div class="ticket-overlay"></div>
+
+        <!-- HEADER -->
+        <div class="ticket-header">
+            <p class="brand">TunisiaJourney</p>
+            <div class="date-badge">{{ reservation.DateReservation }}</div>
+            <h1>{{ activite.Titre }}</h1>
+        </div>
+
+        <!-- DÉCOUPE -->
+        <div class="ticket-tear-wrap">
+            <div class="ticket-tear">
+                <div class="ticket-notch-left"></div>
+                <div class="ticket-notch-right"></div>
+            </div>
+        </div>
+
+        <!-- BODY -->
+        <div class="ticket-body">
+
+            <div class="info-line reserved">
+                <span class="v-label">Réservé par</span>
+                <div class="v-sep"></div>
+                <div class="v-value">
+                    <span class="sub">Réservé par</span>
+                    <span class="main">{{ reservation.Prenom }} {{ reservation.Nom }}</span>
+                </div>
+            </div>
+
+            <div class="info-line heure">
+                <span class="v-label">Heure de début</span>
+                <div class="v-sep"></div>
+                <div class="v-value">
+                    <span class="sub">Heure de début</span>
+                    <span class="main">{{ activite.HeureDebut }}</span>
+                </div>
+            </div>
+
+            <div class="info-line prix">
+                <span class="v-label">Prix total</span>
+                <div class="v-sep"></div>
+                <div class="v-value">
+                    <span class="sub">Prix total</span>
+                    <span class="main">{{ reservation.Prix|number_format(2, ',', ' ') }} TND</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- FOOTER -->
+        <div class="ticket-footer">
+            <p class="footer-note">🎟️ Présentez ce billet à l'entrée de l'activité</p>
+        </div>
+
+    </div>
+
+    <a href="javascript:window.print()" class="print-btn">🖨️ Imprimer le billet</a>
+</div>
+
+</body>
+</html>

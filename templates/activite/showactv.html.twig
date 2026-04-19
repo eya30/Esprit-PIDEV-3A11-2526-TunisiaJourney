@@ -1,0 +1,763 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ activite.titre }} - TunisiaJourney{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    /* ══ ACTIVITE ══ */
+    .activite-container {
+        display: flex;
+        gap: 0;
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        border: 1px solid #F0E8DD;
+        box-shadow: 0 4px 24px rgba(38,70,83,0.08);
+        min-height: 600px;
+        margin-bottom: 3rem;
+    }
+
+    .activite-image {
+        flex: 0 0 45%;
+        position: relative;
+        overflow: hidden;
+        background: #F0E8DD;
+        min-height: 600px;
+    }
+    .activite-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        position: absolute;
+        top: 0; left: 0;
+        border-radius: 0;
+        box-shadow: none;
+    }
+    .activite-image-placeholder {
+        width: 100%; height: 100%;
+        position: absolute; top: 0; left: 0;
+        display: flex; align-items: center; justify-content: center;
+        color: #C8B89A; font-size: 4.5rem;
+        background: #F0E8DD;
+    }
+
+    .activite-info {
+        flex: 1;
+        padding: 2.5rem 2.5rem 2rem 2.5rem;
+        display: flex; flex-direction: column;
+        min-width: 0;
+        overflow-y: auto;
+    }
+    .activite-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.2rem; font-weight: 800;
+        color: #264653; margin-bottom: 1.5rem;
+        line-height: 1.2;
+    }
+    .activite-description {
+        color: #444; line-height: 1.7;
+        font-size: 1rem; margin-bottom: 2rem;
+    }
+    .activite-infos {
+        background: #F8F4F0; border-radius: 16px;
+        padding: 1.2rem 1.5rem; margin-bottom: 2rem;
+    }
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #E8DFD1;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-label {
+        font-weight: 600; color: #7D2E3E; font-size: 0.95rem;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .info-label i { color: #7D2E3E; width: 18px; }
+    .info-value { color: #1a1a1a; font-weight: 500; font-size: 0.95rem; text-align: right; }
+    .info-value.soldout { color: #E74C3C; font-weight: 700; }
+
+    .prix-value-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 5px;
+    }
+    .devise-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+    .devise-select {
+        border: 1.5px solid #D0C8BE;
+        border-radius: 8px;
+        padding: 5px 10px;
+        font-size: 0.85rem;
+        background: white;
+        cursor: pointer;
+    }
+    .converti-row {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+    .converti-val {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #C0392B;
+    }
+    .converti-taux {
+        font-size: 0.8rem;
+        color: #888;
+    }
+    .converti-loading {
+        display: none;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.8rem;
+        color: #999;
+    }
+    .spin-xs {
+        width: 12px; height: 12px;
+        border: 2px solid #ddd;
+        border-top-color: #C0392B;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .btn-reserve {
+        background: #264653; color: white; border: none;
+        padding: 12px 28px; border-radius: 30px;
+        font-weight: 600; font-size: 0.95rem;
+        transition: all 0.3s ease;
+        display: inline-flex; align-items: center; gap: 10px;
+        align-self: flex-start;
+        text-decoration: none;
+    }
+    .btn-reserve:hover {
+        background: #1a3340; color: white;
+        transform: translateY(-2px);
+        text-decoration: none;
+    }
+    .btn-complet {
+        background: #C9807F; color: white;
+        padding: 12px 28px; border-radius: 30px;
+        font-weight: 700; font-size: 0.95rem;
+        display: inline-flex; align-items: center; gap: 10px;
+        align-self: flex-start;
+        cursor: not-allowed;
+        text-decoration: none;
+    }
+
+    /* ══ IA SUMMARY CARD ══ */
+    .ai-summary-card {
+        background: linear-gradient(135deg, #1a1a2e, #2d2d5e);
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(245, 166, 35, 0.3);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    .ai-summary-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #F5A623;
+    }
+
+    .ai-summary-header i {
+        font-size: 2rem;
+        color: #F5A623;
+    }
+
+    .ai-summary-header h4 {
+        margin: 0;
+        color: white;
+        font-weight: 700;
+        font-size: 1.2rem;
+    }
+
+    .ai-badge {
+        background: #F5A623;
+        color: #1a1a2e;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        margin-left: auto;
+    }
+
+    .ai-summary-text {
+        color: #e0e0e0;
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        background: rgba(255,255,255,0.05);
+        border-radius: 12px;
+    }
+
+    .ai-key-points {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .key-point {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .key-point.positive {
+        background: rgba(16, 185, 129, 0.2);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .key-point.negative {
+        background: rgba(239, 68, 68, 0.2);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .ai-confidence {
+        font-size: 0.8rem;
+        color: #9ca3af;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding-top: 0.75rem;
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .ai-loader-small {
+        background: white;
+        border-radius: 16px;
+        padding: 1rem;
+        text-align: center;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .spinner-small {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #e2e8f0;
+        border-top-color: #E31B23;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        display: inline-block;
+        margin-right: 10px;
+        vertical-align: middle;
+    }
+
+    /* ══ AVIS ══ */
+    .avis-section { 
+        margin-top: 2rem;
+        background: #FDF9F5;
+        border-radius: 24px;
+        padding: 2rem;
+    }
+    .avis-section-title {
+        font-size: 1.8rem; font-weight: 700;
+        color: #264653; margin-bottom: 1.5rem;
+        display: flex; align-items: center; gap: 10px;
+    }
+    .avis-section-title i { color: #E2A04A; }
+    .avis-stats {
+        background: white; border-radius: 16px;
+        padding: 1.2rem; margin-bottom: 1.5rem;
+        border: 1px solid #F0E8DD;
+    }
+    .stat-note-moyenne { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .note-chiffre { font-size: 2.5rem; font-weight: 800; color: #264653; }
+    .note-etoiles { font-size: 1.3rem; color: #E2A04A; letter-spacing: 3px; }
+    .note-total { color: #666; font-size: 0.85rem; }
+    .avis-feed { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem; max-height: 500px; overflow-y: auto; }
+    .avis-card {
+        background: white; border-radius: 16px; padding: 1rem 1.2rem;
+        border: 1px solid #F0E8DD;
+        transition: all 0.2s;
+    }
+    .avis-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .avis-card-header { display: flex; gap: 0.75rem; margin-bottom: 0.5rem; }
+    .avis-avatar {
+        width: 40px; height: 40px; border-radius: 50%;
+        background: #7D2E3E;
+        display: flex; align-items: center; justify-content: center;
+        color: white; font-weight: 700; font-size: 1rem;
+    }
+    .avis-user-info { flex: 1; }
+    .avis-nom { font-weight: 700; color: #1a1a1a; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .avis-note-badge { background: #FEF3E2; border-radius: 10px; padding: 2px 8px; font-size: 0.7rem; font-weight: 600; color: #B8800A; }
+    .avis-date { color: #888; font-size: 0.7rem; }
+    .avis-stars { color: #E2A04A; font-size: 0.85rem; margin-bottom: 0.5rem; letter-spacing: 2px; }
+    .avis-commentaire { color: #333; line-height: 1.5; font-size: 0.9rem; margin-bottom: 0.5rem; }
+    .avis-image { margin-top: 0.5rem; cursor: pointer; display: inline-block; }
+    .avis-image img { max-width: 200px; max-height: 150px; border-radius: 8px; object-fit: cover; }
+    .no-avis-msg {
+        text-align: center;
+        padding: 2rem;
+        background: white;
+        border-radius: 16px;
+        border: 2px dashed #E2A04A;
+        margin-bottom: 1.5rem;
+    }
+    .no-avis-msg i { font-size: 2.5rem; color: #E2A04A; margin-bottom: 0.5rem; }
+    .form-avis-wrapper {
+        background: white; border-radius: 20px;
+        padding: 1.5rem; margin-top: 1.5rem;
+        border: 1px solid #F0E8DD;
+    }
+    .form-avis-title {
+        font-size: 1.3rem; font-weight: 700;
+        color: #264653; margin-bottom: 1.2rem;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .form-field-label { font-weight: 600; color: #264653; font-size: 0.9rem; margin-bottom: 0.4rem; display: block; }
+    .form-control { border: 2px solid #F0E8DD; border-radius: 12px; padding: 0.6rem 1rem; width: 100%; }
+    .form-control:focus { border-color: #E2A04A; outline: none; }
+    .star-picker { display: flex; gap: 8px; margin-bottom: 0.5rem; }
+    .star-picker span { font-size: 2rem; color: #ddd; cursor: pointer; transition: all 0.2s; }
+    .star-picker span:hover, .star-picker span.active { color: #E2A04A; transform: scale(1.1); }
+    .btn-submit-avis {
+        background: #7D2E3E; color: white;
+        padding: 10px 24px; border-radius: 30px;
+        font-weight: 600; border: none;
+        cursor: pointer; transition: all 0.2s;
+        display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-submit-avis:hover { background: #5e2230; transform: translateY(-2px); }
+    .image-modal {
+        display: none; position: fixed; z-index: 9999;
+        left: 0; top: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.95);
+        cursor: pointer;
+    }
+    .image-modal-content {
+        display: flex; justify-content: center; align-items: center;
+        height: 100%; width: 100%; padding: 20px;
+    }
+    .image-modal-content img { max-width: 90%; max-height: 90%; object-fit: contain; border-radius: 8px; }
+    .image-modal-close {
+        position: absolute; top: 20px; right: 35px;
+        color: white; font-size: 40px; font-weight: bold;
+        cursor: pointer;
+    }
+    .image-modal-close:hover { color: #E2A04A; }
+    .api-warning {
+        background: #FFF3CD; border: 1px solid #FFEAA7;
+        border-radius: 8px; padding: 6px 10px;
+        font-size: 0.7rem; color: #856404;
+        text-align: right; margin-top: 5px;
+    }
+
+    @media (max-width: 768px) {
+        .activite-container { flex-direction: column; }
+        .activite-image { min-height: 300px; }
+        .activite-info { padding: 1.5rem; }
+        .info-row { flex-direction: column; gap: 5px; }
+        .info-value { text-align: left; }
+        .prix-value-wrap { align-items: flex-start; }
+        .devise-row { justify-content: flex-start; }
+        .ai-summary-card { padding: 1rem; }
+        .ai-summary-text { font-size: 0.9rem; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+
+    {% set isSoldout = placesDisponibles <= 0 %}
+
+    <div class="activite-container">
+        <div class="activite-image">
+            {% if activite.image and activite.image != 'NULL' and activite.image != '' %}
+                <img src="{{ asset('uploads/activites/' ~ activite.image|replace({' ': '%20'})) }}" alt="{{ activite.titre }}">
+            {% else %}
+                <div class="activite-image-placeholder">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="activite-info">
+            <h1 class="activite-title">{{ activite.titre }}</h1>
+            <div class="activite-description">{{ activite.description }}</div>
+
+            <div class="activite-infos">
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-icons"></i> Type</span>
+                    <span class="info-value">{{ activite.typeActivite }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-clock"></i> Heure début</span>
+                    <span class="info-value">{{ activite.heureDebut }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-hourglass-half"></i> Durée</span>
+                    <span class="info-value">{{ activite.duree }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-chalkboard-teacher"></i> Animateur</span>
+                    <span class="info-value">{{ activite.nomAnimateur }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-users"></i> Places restantes</span>
+                    <span class="info-value {{ isSoldout ? 'soldout' : '' }}">
+                        {% if isSoldout %}0/{{ activite.capaciteM }} — Complet
+                        {% else %}{{ placesDisponibles }}/{{ activite.capaciteM }}{% endif %}
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-tag"></i> Prix</span>
+                    <div class="prix-value-wrap">
+                        <div class="devise-row">
+                            <span class="prix-tnd">{{ activite.prix|number_format(2, ',', ' ') }} TND / personne</span>
+                            <select class="devise-select" id="devisePicker">
+                                <option value="">Devise ▾</option>
+                                <option value="EUR">EUR — €</option>
+                                <option value="USD">USD — $</option>
+                                <option value="GBP">GBP — £</option>
+                                <option value="MAD">MAD</option>
+                                <option value="DZD">DZD</option>
+                                <option value="SAR">SAR</option>
+                                <option value="AED">AED</option>
+                                <option value="JPY">JPY — ¥</option>
+                            </select>
+                        </div>
+                        <div class="converti-row" id="convertiRow" style="display:none;">
+                            <span class="converti-label">Converti :</span>
+                            <div class="converti-loading" id="convLoading">
+                                <span class="spin-xs"></span> chargement...
+                            </div>
+                            <span class="converti-val" id="convVal"></span>
+                        </div>
+                        <div class="converti-taux" id="convTaux" style="display:none;"></div>
+                        {% if not apiKeyValid %}
+                        <div class="api-warning">
+                            <i class="fas fa-exclamation-triangle"></i> Conversion temporairement indisponible
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% if isSoldout %}
+                <span class="btn-complet"><i class="fas fa-times-circle"></i> Complet</span>
+            {% else %}
+                <a href="{{ path('app_reservationact_new', {'IDAct': activite.IDAct}) }}" class="btn-reserve">
+                    Réserver <i class="fas fa-arrow-right"></i>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ══ SECTION AVIS ══ #}
+    <div class="avis-section">
+        <h2 class="avis-section-title">
+            <i class="fas fa-star"></i> Avis & Notation
+        </h2>
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>{{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>{{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+
+        <!-- Résumé IA des avis -->
+        <div class="ai-summary-card" id="aiSummaryCard" style="display: none;">
+            <div class="ai-summary-header">
+                <i class="fas fa-robot"></i>
+                <h4>Résumé Intelligent des Avis</h4>
+                <span class="ai-badge">IA généré</span>
+            </div>
+            <div class="ai-summary-body">
+                <div class="ai-summary-text" id="aiSummaryText"></div>
+                <div class="ai-key-points" id="aiKeyPoints"></div>
+                <div class="ai-confidence">
+                    <i class="fas fa-chart-line"></i>
+                    Confiance: <span id="aiConfidence">0</span>%
+                </div>
+            </div>
+        </div>
+
+        <!-- Loader IA -->
+        <div class="ai-loader-small" id="aiLoader" style="display: none;">
+            <div class="spinner-small"></div>
+            <span>Analyse des avis en cours...</span>
+        </div>
+
+        {% if avis|length > 0 %}
+            {% set noteMoyenne = (avis|reduce((carry, av) => carry + av.note, 0) / avis|length)|round(1) %}
+            <div class="avis-stats">
+                <div class="stat-note-moyenne">
+                    <div class="note-chiffre">{{ noteMoyenne }}/5</div>
+                    <div class="note-etoiles">
+                        {% for i in 1..5 %}{% if i <= noteMoyenne %}★{% else %}☆{% endif %}{% endfor %}
+                    </div>
+                    <div class="note-total"><i class="fas fa-users me-1"></i>{{ avis|length }} avis</div>
+                </div>
+            </div>
+
+            <div class="avis-feed">
+                {% for av in avis %}
+                    <div class="avis-card">
+                        <div class="avis-card-header">
+                            <div class="avis-avatar">{{ av.nom|first|upper }}</div>
+                            <div class="avis-user-info">
+                                <div class="avis-nom">
+                                    {{ av.nom }}
+                                    <span class="avis-note-badge">{{ av.note }}/5</span>
+                                </div>
+                                <div class="avis-date">
+                                    <i class="fas fa-calendar-alt me-1"></i>{{ av.dateAvis|date('d/m/Y H:i') }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="avis-stars">
+                            {% for i in 1..5 %}<i class="{% if i <= av.note %}fas fa-star{% else %}far fa-star{% endif %}"></i>{% endfor %}
+                        </div>
+                        {% if av.commentaire %}
+                            <div class="avis-commentaire">{{ av.commentaire }}</div>
+                        {% endif %}
+                        {% if av.image %}
+                            <div class="avis-image" onclick="openImageModal('{{ asset('uploads/avis/' ~ av.image) }}')">
+                                <img src="{{ asset('uploads/avis/' ~ av.image) }}" alt="Image">
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-avis-msg">
+                <i class="fas fa-comment-slash"></i>
+                <p>Aucun avis pour le moment.<br>Soyez le premier à donner votre avis !</p>
+            </div>
+        {% endif %}
+
+        <div class="form-avis-wrapper">
+            <h3 class="form-avis-title">
+                <i class="fas fa-pen-fancy"></i> Donnez votre avis
+            </h3>
+
+            {{ form_start(formAvis, {'attr': {'enctype': 'multipart/form-data', 'id': 'formAvis'}}) }}
+
+                <div class="mb-3">
+                    <label class="form-field-label">Votre nom <span class="text-danger">*</span></label>
+                    {{ form_widget(formAvis.nom, {'attr': {'class': 'form-control', 'placeholder': 'Votre nom', 'autocomplete': 'off'}}) }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-field-label">Votre note <span class="text-danger">*</span></label>
+                    <div class="star-picker" id="starPicker">
+                        <span data-value="1">★</span>
+                        <span data-value="2">★</span>
+                        <span data-value="3">★</span>
+                        <span data-value="4">★</span>
+                        <span data-value="5">★</span>
+                    </div>
+                    <div style="display:none;">{{ form_widget(formAvis.note) }}</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-field-label">Votre commentaire</label>
+                    {{ form_widget(formAvis.commentaire, {'attr': {'class': 'form-control', 'rows': 3, 'placeholder': 'Partagez votre expérience...'}}) }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-field-label">Photo (optionnelle)</label>
+                    {{ form_widget(formAvis.imageFile, {'attr': {'class': 'form-control'}}) }}
+                    <small class="text-muted">JPG, PNG, GIF max. 5MB</small>
+                </div>
+
+                <button type="submit" class="btn-submit-avis">
+                    <i class="fas fa-paper-plane"></i> Publier mon avis
+                </button>
+
+            {{ form_end(formAvis) }}
+        </div>
+    </div>
+</div>
+
+<!-- Modal image -->
+<div id="imageModal" class="image-modal" onclick="closeImageModal()">
+    <span class="image-modal-close" onclick="closeImageModal()">&times;</span>
+    <div class="image-modal-content">
+        <img id="modalImage" src="" alt="Image">
+    </div>
+</div>
+
+<script>
+var EXCHANGE_API_KEY = '{{ exchangeRateApiKey }}';
+var API_KEY_VALID = {{ apiKeyValid ? 'true' : 'false' }};
+var FALLBACK_RATES = {'EUR':0.30,'USD':0.32,'GBP':0.26,'MAD':3.20,'DZD':43.50,'SAR':1.20,'AED':1.18,'JPY':48.00};
+var SYMBOLES = {EUR:'€',USD:'$',GBP:'£',MAD:'MAD',DZD:'DA',SAR:'SAR',AED:'AED',JPY:'¥'};
+
+(function() {
+    var prixTND = {{ activite.prix }};
+    var rateCache = {};
+    var devisePicker = document.getElementById('devisePicker');
+    var convertiRow = document.getElementById('convertiRow');
+    var convLoading = document.getElementById('convLoading');
+    var convVal = document.getElementById('convVal');
+    var convTaux = document.getElementById('convTaux');
+
+    function setLoading(on) {
+        convLoading.style.display = on ? 'flex' : 'none';
+        convVal.style.display = on ? 'none' : 'inline';
+    }
+
+    function afficher(devise, taux, isFallback) {
+        var montant = prixTND * taux;
+        var symbole = SYMBOLES[devise] || devise;
+        var fmtMont = montant.toFixed(2).replace('.', ',');
+        var prefix = isFallback ? '(approx) ' : '';
+        convertiRow.style.display = 'flex';
+        setLoading(false);
+        convVal.textContent = prefix + fmtMont + ' ' + symbole;
+        convTaux.textContent = isFallback ? 'Taux approximatif' : '1 TND = ' + taux.toFixed(4) + ' ' + devise;
+        convTaux.style.display = 'block';
+    }
+
+    function convertir(devise) {
+        if (!devise) { convertiRow.style.display = 'none'; return; }
+        if (!API_KEY_VALID || !EXCHANGE_API_KEY) {
+            var fb = FALLBACK_RATES[devise];
+            if (fb) afficher(devise, fb, true);
+            else { convertiRow.style.display = 'flex'; setLoading(false); convVal.textContent = 'Indisponible'; }
+            return;
+        }
+        if (rateCache[devise] && (Date.now() - rateCache[devise].ts) < 600000) {
+            afficher(devise, rateCache[devise].taux, false);
+            return;
+        }
+        convertiRow.style.display = 'flex';
+        convTaux.style.display = 'none';
+        setLoading(true);
+        fetch('https://v6.exchangerate-api.com/v6/' + EXCHANGE_API_KEY + '/pair/TND/' + devise)
+            .then(r => r.json())
+            .then(data => {
+                if (data.result === 'success') {
+                    rateCache[devise] = { taux: data.conversion_rate, ts: Date.now() };
+                    afficher(devise, data.conversion_rate, false);
+                } else throw new Error();
+            })
+            .catch(() => {
+                var fb = FALLBACK_RATES[devise];
+                if (fb) afficher(devise, fb, true);
+                else { setLoading(false); convVal.textContent = 'Erreur'; }
+            });
+    }
+    if (devisePicker) devisePicker.addEventListener('change', function() { convertir(this.value); });
+})();
+
+function openImageModal(url) {
+    document.getElementById('imageModal').style.display = 'block';
+    document.getElementById('modalImage').src = url;
+    document.body.style.overflow = 'hidden';
+}
+function closeImageModal() {
+    document.getElementById('imageModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeImageModal(); });
+
+document.addEventListener('DOMContentLoaded', function() {
+    var stars = document.querySelectorAll('#starPicker span');
+    var noteField = document.querySelector('input[name="avis_act[note]"]');
+    var selected = 0;
+    if (!noteField) return;
+    function paintStars(upTo) {
+        stars.forEach(function(s, idx) {
+            if (idx < upTo) s.classList.add('active');
+            else s.classList.remove('active');
+        });
+    }
+    stars.forEach(function(star) {
+        star.addEventListener('mouseenter', function() { paintStars(parseInt(this.dataset.value)); });
+        star.addEventListener('mouseleave', function() { paintStars(selected); });
+        star.addEventListener('click', function() {
+            selected = parseInt(this.dataset.value);
+            noteField.value = selected;
+            paintStars(selected);
+        });
+    });
+    document.getElementById('formAvis').addEventListener('submit', function(e) {
+        if (!selected) { e.preventDefault(); alert('Veuillez sélectionner une note'); }
+    });
+});
+
+// Chargement du résumé IA des avis
+function loadAISummary() {
+    const activiteId = {{ activite.IDAct }};
+    const summaryCard = document.getElementById('aiSummaryCard');
+    const loader = document.getElementById('aiLoader');
+    const summaryText = document.getElementById('aiSummaryText');
+    const keyPointsContainer = document.getElementById('aiKeyPoints');
+    const confidenceSpan = document.getElementById('aiConfidence');
+    
+    loader.style.display = 'block';
+    
+    fetch(`/activite/${activiteId}/ai-summary`)
+        .then(response => response.json())
+        .then(data => {
+            loader.style.display = 'none';
+            
+            if (data.success && data.summary.has_avis) {
+                summaryCard.style.display = 'block';
+                summaryText.textContent = data.summary.summary;
+                confidenceSpan.textContent = data.summary.confidence;
+                
+                keyPointsContainer.innerHTML = '';
+                if (data.summary.key_points && data.summary.key_points.length > 0) {
+                    data.summary.key_points.forEach(point => {
+                        const pointDiv = document.createElement('div');
+                        pointDiv.className = `key-point ${point.type}`;
+                        let icon = point.type === 'positive' ? '✓' : '⚠️';
+                        let text = point.text;
+                        if (point.mentions) text += ` (${point.mentions} mentions)`;
+                        if (point.score) text += ` (${point.score}/5)`;
+                        pointDiv.innerHTML = `<span>${icon}</span> ${text}`;
+                        keyPointsContainer.appendChild(pointDiv);
+                    });
+                }
+            } else {
+                summaryCard.style.display = 'none';
+            }
+        })
+        .catch(error => {
+            console.error('Erreur chargement résumé IA:', error);
+            loader.style.display = 'none';
+            summaryCard.style.display = 'none';
+        });
+}
+
+// Appeler le chargement du résumé IA
+loadAISummary();
+</script>
+{% endblock %}

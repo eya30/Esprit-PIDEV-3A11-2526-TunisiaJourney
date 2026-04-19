@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %} {% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #F5F7FA;
+            color: #2C1810;
+            visibility: hidden;
+        }
+        body.ready {
+            visibility: visible;
+        }    
+        
+        /* Layout */
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar Élégant */
+        .sidebar {
+            width: 280px;
+            background: #FFF9F0;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            border-right: 1px solid #E8DFD1;
+            overflow-y: auto;
+            box-shadow: 0 0 20px rgba(0,0,0,0.02);
+        }
+        
+        .sidebar::-webkit-scrollbar {
+            width: 5px;
+        }
+        
+        .sidebar::-webkit-scrollbar-track {
+            background: #F5F0E8;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #C49A6C;
+            border-radius: 5px;
+        }
+        
+        /* Sidebar Header - Logo plus grand, sans texte */
+        .sidebar-header {
+            padding: 24px 24px;
+            text-align: center;
+            border-bottom: 1px solid #E8DFD1;
+        }
+        
+        .sidebar-header img {
+            width: 150px;
+            height: 150px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(147,3,46,0.1));
+        }
+        
+        /* Navigation Menu */
+        .nav-menu {
+            list-style: none;
+            padding: 20px 16px;
+        }
+        
+        .nav-item {
+            margin-bottom: 4px;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            color: #4A3B2F;
+            text-decoration: none;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .nav-link i {
+            width: 22px;
+            font-size: 1.1rem;
+            color: #C49A6C;
+        }
+        
+        .nav-link:hover {
+            background: rgba(147, 3, 46, 0.05);
+            color: #93032E;
+        }
+        
+        .nav-link:hover i {
+            color: #93032E;
+        }
+        
+        .nav-link.active {
+            background: rgba(147, 3, 46, 0.08);
+            color: #93032E;
+            font-weight: 600;
+            border-left: 3px solid #93032E;
+            border-radius: 12px 0 0 12px;
+        }
+        
+        .nav-link.active i {
+            color: #93032E;
+        }
+        
+        /* Sidebar Footer */
+        .sidebar-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            border-top: 1px solid #E8DFD1;
+            background: #FFF9F0;
+        }
+        
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            background: transparent;
+            color: #93032E;
+            text-decoration: none;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: 1.5px solid #93032E;
+        }
+        
+        .logout-btn i {
+            width: 22px;
+            font-size: 1.1rem;
+        }
+        
+        .logout-btn:hover {
+            background: #93032E;
+            color: white;
+        }
+        
+        .logout-btn:hover i {
+            color: white;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+        }
+        
+        /* Top Bar */
+        .top-bar {
+            background: white;
+            padding: 20px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #F0E8DD;
+            position: sticky;
+            top: 0;
+            z-index: 99;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+        
+        .page-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #2C1810;
+            margin: 0;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #F5F7FA;
+            padding: 8px 16px;
+            border-radius: 40px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: #93032E;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+        
+        /* Content */
+        .content {
+            padding: 28px;
+        }
+        
+        /* Dashboard Cards */
+        .stat-card {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            border: 1px solid #F0E8DD;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px -12px rgba(147,3,46,0.1);
+            border-color: #E8DFD1;
+        }
+        
+        .stat-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 36px;
+            font-weight: 700;
+            color: #2C1810;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 13px;
+            color: #93032E;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-icon {
+            width: 55px;
+            height: 55px;
+            background: #FFF1F0;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #93032E;
+            font-size: 1.5rem;
+        }
+        
+        .stat-trend {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid #F0E8DD;
+            font-size: 12px;
+        }
+        
+        .trend-up {
+            color: #10b981;
+            font-weight: 600;
+        }
+        
+        .trend-text {
+            color: #9CA3AF;
+            margin-left: 8px;
+        }
+        
+        /* Dashboard Cards */
+        .card-dashboard {
+            background: white;
+            border-radius: 24px;
+            border: 1px solid #F0E8DD;
+            overflow: hidden;
+        }
+        
+        .card-header-dashboard {
+            padding: 20px 24px;
+            border-bottom: 1px solid #F0E8DD;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-header-dashboard h5 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2C1810;
+            margin: 0;
+        }
+        
+        .card-body-dashboard {
+            padding: 24px;
+        }
+        
+        .btn-link {
+            color: #93032E;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .btn-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* Destination List */
+        .destination-list {
+            margin-bottom: 8px;
+        }
+        
+        .destination-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        
+        .destination-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+            color: #4A3B2F;
+        }
+        
+        .destination-info i {
+            color: #93032E;
+            font-size: 0.8rem;
+        }
+        
+        .destination-percent {
+            font-weight: 600;
+            color: #2C1810;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: #F0E8DD;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #93032E;
+            border-radius: 10px;
+        }
+        
+        /* Tables */
+        .admin-table {
+            background: white;
+            border-radius: 20px;
+            border: 1px solid #F0E8DD;
+            overflow: hidden;
+        }
+        
+        .admin-table th {
+            background: #FEF9F0;
+            padding: 14px 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #93032E;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #F0E8DD;
+        }
+        
+        .admin-table td {
+            padding: 14px 20px;
+            font-size: 13px;
+            border-bottom: 1px solid #F5F0E8;
+            color: #4A3B2F;
+        }
+        
+        .admin-table tr:hover td {
+            background: #FFF9F0;
+        }
+        
+        .price {
+            font-weight: 600;
+            color: #93032E;
+        }
+        
+        .badge-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .badge-success {
+            background: #E0F2E9;
+            color: #047857;
+        }
+        
+        .badge-pending {
+            background: #FEF3C7;
+            color: #B45309;
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background: #93032E;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary:hover {
+            background: #6B0221;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(147,3,46,0.3);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid #E8DFD1;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #4A3B2F;
+            transition: all 0.2s;
+        }
+        
+        .btn-outline:hover {
+            border-color: #93032E;
+            color: #93032E;
+            background: #FFF9F0;
+        }
+        
+        /* Form */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #2C1810;
+            margin-bottom: 6px;
+            display: block;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #E8DFD1;
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.2s;
+            background: #FEF9F0;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #93032E;
+            box-shadow: 0 0 0 3px rgba(147,3,46,0.05);
+            background: white;
+        }
+        
+        textarea.form-control {
+            resize: vertical;
+        }
+        
+        /* Image Preview */
+        .image-preview {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 1px solid #E8DFD1;
+            margin-top: 10px;
+        }
+        
+        /* Mobile Toggle */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #4A3B2F;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+                z-index: 1000;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .menu-toggle {
+                display: block;
+            }
+        }
+    </style>
+    
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="{{ asset('images/logo.png') }}" alt="Logo">
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="{{ path('admin_dashboard') }}" class="nav-link {% if app.request.get('_route') == 'admin_dashboard' %}active{% endif %}">
+                        <i class="fas fa-chart-line"></i> Tableau de bord
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ path('app_accueil') }}" class="nav-link">
+                        <i class="fas fa-home"></i> Accueil site
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-suitcase"></i> Voyages
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-hotel"></i> Hôtels
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ path('admin_evenement_index') }}" class="nav-link {% if app.request.get('_route') starts with 'admin_activite' %}active{% endif %}">
+                        <i class="fas fa-calendar-alt"></i> Événements
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-gift"></i> Produits
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-users"></i> Utilisateurs
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-comments"></i> Forum
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="sidebar-footer">
+                <a href="#" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </a>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-bar">
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h2 class="page-title">{% block page_title %}Administration{% endblock %}</h2>
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <span>Admin</span>
+                </div>
+            </div>
+            
+            <div class="content">
+                {% for label, messages in app.flashes %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ label }} alert-dismissible fade show" style="border-radius: 12px; background: #FEF2F2; border: none; color: #93032E;">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+                
+                {% block body %}{% endblock %}
+            </div>
+        </main>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+        document.body.classList.add('ready'); });
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        
+        if (menuToggle) {
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+            });
+        }
+    </script>
+    
+    {% block javascripts %}{% endblock %}
+</body>
+</html>

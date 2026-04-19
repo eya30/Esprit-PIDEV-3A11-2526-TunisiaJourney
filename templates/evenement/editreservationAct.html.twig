@@ -1,0 +1,393 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier la réservation{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .edit-page-wrapper {
+        min-height: 70vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .edit-page-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2.5rem;
+        max-width: 500px;
+        width: 100%;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+
+    body.dark-mode .edit-page-card {
+        background: #2d2d3f;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+
+    .edit-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.8rem;
+        padding-bottom: 1.2rem;
+        border-bottom: 2px solid #F0E8DD;
+    }
+
+    body.dark-mode .edit-page-header {
+        border-bottom-color: rgba(255,255,255,0.1);
+    }
+
+    .edit-page-header h3 {
+        font-size: 1.4rem;
+        color: var(--tunisia-blue);
+        margin: 0;
+        font-family: 'Cormorant Garamond', serif;
+        font-weight: 800;
+    }
+
+    body.dark-mode .edit-page-header h3 {
+        color: #70A1FF;
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: transparent;
+        border: 2px solid #ddd;
+        color: #666;
+        padding: 6px 14px;
+        border-radius: 30px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        font-family: 'Montserrat', sans-serif;
+    }
+
+    .btn-back:hover {
+        border-color: var(--tunisia-red);
+        color: var(--tunisia-red);
+    }
+
+    body.dark-mode .btn-back {
+        border-color: rgba(255,255,255,0.2);
+        color: #aaa;
+    }
+
+    body.dark-mode .btn-back:hover {
+        border-color: #FF6B6B;
+        color: #FF6B6B;
+    }
+
+    .ep-form-group {
+        margin-bottom: 1.2rem;
+    }
+
+    .ep-form-group label {
+        display: block;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #A0A0A0;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-bottom: 0.4rem;
+    }
+
+    .ep-form-group input {
+        width: 100%;
+        padding: 11px 14px;
+        border: 1.5px solid #E8DFD1;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        font-family: 'Montserrat', sans-serif;
+        color: #2C3E50;
+        background: white;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        outline: none;
+    }
+
+    .ep-form-group input:focus {
+        border-color: var(--tunisia-blue);
+        box-shadow: 0 0 0 3px rgba(0,84,166,0.08);
+    }
+
+    body.dark-mode .ep-form-group input {
+        background: #25253a;
+        border-color: rgba(255,255,255,0.1);
+        color: #e0e0e0;
+    }
+
+    body.dark-mode .ep-form-group input:focus {
+        border-color: #70A1FF;
+        box-shadow: 0 0 0 3px rgba(112,161,255,0.12);
+    }
+
+    .ep-form-group input.ep-readonly {
+        background-color: #f5f5f5 !important;
+        cursor: not-allowed !important;
+        border-color: #ddd !important;
+        color: #999 !important;
+        opacity: 0.8;
+    }
+
+    body.dark-mode .ep-form-group input.ep-readonly {
+        background-color: #3a3a4a !important;
+        border-color: #555 !important;
+        color: #777 !important;
+    }
+
+    .ep-form-group input.ep-input-error {
+        border-color: #E31B23 !important;
+        background-color: #fff5f5 !important;
+        box-shadow: 0 0 0 3px rgba(227,27,35,0.08) !important;
+    }
+
+    body.dark-mode .ep-form-group input.ep-input-error {
+        background-color: #4a2525 !important;
+    }
+
+    .ep-error-msg {
+        color: #E31B23;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 5px;
+        animation: epFadeIn 0.3s ease;
+    }
+
+    .ep-error-msg::before {
+        content: '!';
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #E31B23;
+        color: white;
+        font-size: 0.6rem;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    @keyframes epFadeIn {
+        from { opacity: 0; transform: translateY(-4px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .ep-readonly-note {
+        font-size: 0.68rem;
+        color: #bbb;
+        font-weight: 400;
+        text-transform: none;
+        letter-spacing: 0;
+        margin-left: 4px;
+    }
+
+    .ep-divider {
+        border: none;
+        border-top: 1px solid #F0E8DD;
+        margin: 1.5rem 0;
+    }
+
+    body.dark-mode .ep-divider {
+        border-top-color: rgba(255,255,255,0.08);
+    }
+
+    .ep-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 1.5rem;
+    }
+
+    .btn-ep-cancel {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 12px;
+        border: 2px solid var(--tunisia-red);
+        border-radius: 30px;
+        background: transparent;
+        color: var(--tunisia-red);
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.88rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.22s;
+        text-decoration: none;
+    }
+
+    .btn-ep-cancel:hover {
+        background: var(--tunisia-red);
+        color: white;
+    }
+
+    .btn-ep-save {
+        flex: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 12px;
+        background: linear-gradient(90deg, var(--tunisia-blue), #0070cc);
+        color: white;
+        border: none;
+        border-radius: 30px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.88rem;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(0,84,166,0.28);
+        transition: transform 0.18s, box-shadow 0.18s;
+    }
+
+    .btn-ep-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 7px 20px rgba(0,84,166,0.4);
+    }
+
+    .btn-ep-save:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="edit-page-wrapper">
+    <div class="edit-page-card">
+
+        <div class="edit-page-header">
+            <h3><i class="fas fa-edit me-2"></i>Modifier la réservation</h3>
+            <a href="{{ path('app_evenement_index') }}" class="btn-back">
+                
+            </a>
+        </div>
+
+        <form id="epEditForm" novalidate>
+            <input type="hidden" id="epReservationId" value="{{ reservation.IDRes }}">
+
+            {# Champs en lecture seule #}
+            <div class="ep-form-group">
+                <label>Nom <span class="ep-readonly-note">(non modifiable)</span></label>
+                <input type="text" value="{{ reservation.Nom }}" readonly class="ep-readonly">
+            </div>
+
+            <div class="ep-form-group">
+                <label>Prénom <span class="ep-readonly-note">(non modifiable)</span></label>
+                <input type="text" value="{{ reservation.Prenom }}" readonly class="ep-readonly">
+            </div>
+
+            <hr class="ep-divider">
+
+            {# Champs modifiables #}
+            <div class="ep-form-group">
+                <label>Téléphone <span style="color:#E31B23;">*</span></label>
+                <input type="text" id="epTelephone" value="{{ reservation.telephone }}"
+                       placeholder="12345678" autocomplete="off">
+            </div>
+
+            <div class="ep-form-group">
+                <label>Email <span style="color:#E31B23;">*</span></label>
+                <input type="text" id="epEmail" value="{{ reservation.email }}"
+                       placeholder="nom@domaine.com" autocomplete="off">
+            </div>
+
+            <div class="ep-form-group">
+                <label>Nombre de personnes <span style="color:#E31B23;">*</span></label>
+                <input type="number" id="epNbre" value="{{ reservation.NombrePlaces }}" min="1">
+            </div>
+
+            <div class="ep-actions">
+                <a href="{{ path('app_evenement_index') }}" class="btn-ep-cancel">
+                    <i class="fas fa-times"></i> Annuler
+                </a>
+                <button type="submit" class="btn-ep-save" id="epSubmitBtn">
+                    <i class="fas fa-check"></i> Enregistrer
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+(function () {
+    const reservationId = document.getElementById('epReservationId').value;
+
+    function clearErrors() {
+        document.querySelectorAll('.ep-error-msg').forEach(s => s.remove());
+        document.querySelectorAll('.ep-form-group input').forEach(i => i.classList.remove('ep-input-error'));
+    }
+
+    function showErrors(errors) {
+        clearErrors();
+        const map = {
+            telephone: 'epTelephone',
+            email:     'epEmail',
+            nbre:      'epNbre'
+        };
+        for (const [field, message] of Object.entries(errors)) {
+            const input = document.getElementById(map[field]);
+            if (!input) continue;
+            input.classList.add('ep-input-error');
+            const span = document.createElement('span');
+            span.className = 'ep-error-msg';
+            span.textContent = message;
+            input.parentNode.appendChild(span);
+        }
+    }
+
+    document.getElementById('epEditForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearErrors();
+
+        const data = {
+            telephone: document.getElementById('epTelephone').value.trim(),
+            email:     document.getElementById('epEmail').value.trim(),
+            nbre:      parseInt(document.getElementById('epNbre').value)
+        };
+
+        const btn = document.getElementById('epSubmitBtn');
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enregistrement...';
+
+        try {
+            const response = await fetch(`/api/reservations-act/${reservationId}`, {
+                method:  'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                window.location.href = "{{ path('app_evenement_index') }}";
+            } else if (result.errors) {
+                showErrors(result.errors);
+            } else {
+                alert('Erreur lors de la modification.');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Erreur réseau.');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+        }
+    });
+})();
+</script>
+{% endblock %}

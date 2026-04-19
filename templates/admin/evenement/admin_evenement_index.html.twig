@@ -1,0 +1,889 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Gestion des événements{% endblock %}
+{% block page_title %}Liste des événements{% endblock %}
+
+{% block body %}
+
+{# ── PREMIER CONTAINER BLANC ── #}
+<div class="white-container first-container">
+    <div class="toolbar-titles">
+        <h1 class="page-main-title">Liste des événements</h1>
+        <p class="page-header-subtitle">Gérez l'ensemble de vos événements</p>
+    </div>
+    <div class="admin-badge">
+        <div class="admin-avatar"><i class="fas fa-user"></i></div>
+        <span class="admin-label">Admin</span>
+    </div>
+</div>
+
+{# ── DEUXIÈME CONTAINER BLANC ── #}
+<div class="white-container second-container">
+    <a href="{{ path('admin_evenement_new') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i> Nouvel événement
+    </a>
+
+    <form method="get" action="{{ path('admin_evenement_index') }}" id="searchForm" class="toolbar-form">
+        <input type="hidden" name="sort" value="{{ sort }}">
+        <input type="hidden" name="page" value="1">
+        <div class="search-wrapper">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" name="search" id="searchInput" class="search-input"
+                   placeholder="Rechercher un événement..." value="{{ search }}" autocomplete="off">
+            <span class="search-loading" id="searchLoading"><i class="fas fa-spinner fa-spin"></i></span>
+            {% if search %}
+                <a href="{{ path('admin_evenement_index', {sort: sort}) }}" class="search-clear" title="Effacer">
+                    <i class="fas fa-times"></i>
+                </a>
+            {% endif %}
+        </div>
+        <div class="sort-wrapper">
+            <button type="button" class="sort-btn" id="sortToggle">
+                <i class="fas fa-sort-amount-down me-1"></i> Trier
+                <i class="fas fa-chevron-down ms-1 sort-arrow"></i>
+            </button>
+            <div class="sort-dropdown" id="sortDropdown">
+                <a href="#" class="sort-option {% if sort == 'date_asc' %}active{% endif %}" data-sort="date_asc">
+                    <i class="fas fa-calendar-alt me-2"></i> Date (croissant)
+                </a>
+                <a href="#" class="sort-option {% if sort == 'capacite_asc' %}active{% endif %}" data-sort="capacite_asc">
+                    <i class="fas fa-users me-2"></i> Capacité
+                </a>
+                <a href="#" class="sort-option {% if sort == 'titre_az' %}active{% endif %}" data-sort="titre_az">
+                    <i class="fas fa-sort-alpha-down me-2"></i> Titre (A-Z)
+                </a>
+                <a href="#" class="sort-option {% if sort == 'organisateur_az' %}active{% endif %}" data-sort="organisateur_az">
+                    <i class="fas fa-user me-2"></i> Organisateur (A-Z)
+                </a>
+            </div>
+            <input type="hidden" name="sort" id="sortInput" value="{{ sort }}">
+        </div>
+    </form>
+
+    <a href="{{ path('admin_evenement_export_pdf', {search: search, sort: sort}) }}" class="btn-export-pdf">
+        <i class="fas fa-file-pdf me-1"></i> Export PDF
+    </a>
+
+    <button type="button" class="btn-calendar" id="openCalendar">
+        <i class="fas fa-calendar-week me-1"></i> Calendrier
+    </button>
+</div>
+
+{# ── Tableau ── #}
+<div class="admin-table-wrapper">
+    <div class="admin-table">
+        <table class="table" id="evenementsTable">
+            <thead>
+                <tr>
+                    <th style="width:100px">Image</th>
+                    <th style="width:200px">Titre</th>
+                    <th style="width:350px">Description</th>
+                    <th style="width:180px">Lieu</th>
+                    <th style="width:100px">Capacité</th>
+                    <th style="width:180px">Période</th>
+                    <th style="width:150px">Organisateur</th>
+                    <th style="width:140px">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for evenement in evenements %}
+                <tr class="evenement-row">
+                    <td>
+                        {% if evenement.image %}
+                            <img src="{{ asset('uploads/evenements/' ~ evenement.image) }}"
+                            class="evenement-thumbnail" alt="{{ evenement.titre }}"
+                            width="70" height="70"
+                            style="width:70px;height:70px;object-fit:cover;border-radius:12px;">
+                        {% else %}
+                            <div class="thumbnail-placeholder"><i class="fas fa-calendar-alt"></i></div>
+                        {% endif %}
+                    </td>
+                    <td class="evenement-titre" title="{{ evenement.titre }}">{{ evenement.titre }}</td>
+                    <td class="evenement-description-cell" title="{{ evenement.description }}">{{ evenement.description }}</td>
+                    <td class="evenement-lieu" title="{{ evenement.lieu }}">
+                        <span><i class="fas fa-map-marker-alt me-1"></i> {{ evenement.lieu }}</span>
+                    </td>
+                    <td class="evenement-capacite"><span>{{ evenement.capacitemax }} pers</span></td>
+                    <td class="evenement-periode">
+                        <div class="periode-info">
+                            <span class="date-debut">{{ evenement.datedebut|date('d/m/Y') }}</span>
+                            <i class="fas fa-arrow-right mx-1" style="font-size:10px;"></i>
+                            <span class="date-fin">{{ evenement.datefin|date('d/m/Y') }}</span>
+                        </div>
+                    </td>
+                    <td class="evenement-organisateur" title="{{ evenement.organisateur }}">
+                        {% if evenement.organisateur %}
+                            <span>{{ evenement.organisateur }}</span>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{{ path('admin_evenement_activites', {'id': evenement.idev}) }}"
+                               class="action-btn activites-btn" title="Voir les activités">
+                                <i class="fas fa-tasks"></i>
+                            </a>
+                            <a href="{{ path('admin_evenement_edit', {'id': evenement.idev}) }}"
+                               class="action-btn edit-btn" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form method="post" action="{{ path('admin_evenement_delete', {'id': evenement.idev}) }}"
+                                  style="display:inline-block;">
+                                <input type="hidden" name="_token"
+                                       value="{{ csrf_token('delete_evenement_' ~ evenement.idev) }}">
+                                <button type="submit" class="action-btn delete-btn"
+                                        onclick="return confirm('Supprimer cet événement ?')" title="Supprimer">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center py-5">
+                        <i class="fas fa-calendar-times fa-3x mb-3" style="color:#E8DFD1;"></i>
+                        <p class="text-muted mb-0">Aucun événement trouvé</p>
+                        {% if search %}
+                            <a href="{{ path('admin_evenement_index') }}" class="btn btn-primary mt-3">Effacer la recherche</a>
+                        {% else %}
+                            <a href="{{ path('admin_evenement_new') }}" class="btn btn-primary mt-3">Créer un événement</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{# ── Pagination ── #}
+{% if total_pages is defined and total_pages > 1 %}
+<div class="pagination-wrapper">
+    <div class="pagination-info">
+        Affichage de <strong>{{ evenements|length }}</strong> événement(s) sur
+        <strong>{{ total_items }}</strong> total
+        <span class="text-muted">| Page {{ current_page }} / {{ total_pages }}</span>
+    </div>
+    <nav class="pagination-nav">
+        <ul class="pagination">
+            <li class="page-item {% if current_page == 1 %}disabled{% endif %}">
+                <a class="page-link" href="{{ path('admin_evenement_index', {page: 1, search: search, sort: sort}) }}">
+                    <i class="fas fa-angle-double-left"></i></a>
+            </li>
+            <li class="page-item {% if current_page == 1 %}disabled{% endif %}">
+                <a class="page-link" href="{{ path('admin_evenement_index', {page: current_page - 1, search: search, sort: sort}) }}">
+                    <i class="fas fa-chevron-left"></i></a>
+            </li>
+            {% set start_page = max(1, current_page - 2) %}
+            {% set end_page   = min(total_pages, current_page + 2) %}
+            {% if start_page > 1 %}<li class="page-item disabled"><span class="page-link">...</span></li>{% endif %}
+            {% for i in start_page..end_page %}
+                <li class="page-item {% if i == current_page %}active{% endif %}">
+                    <a class="page-link" href="{{ path('admin_evenement_index', {page: i, search: search, sort: sort}) }}">{{ i }}</a>
+                </li>
+            {% endfor %}
+            {% if end_page < total_pages %}<li class="page-item disabled"><span class="page-link">...</span></li>{% endif %}
+            <li class="page-item {% if current_page == total_pages %}disabled{% endif %}">
+                <a class="page-link" href="{{ path('admin_evenement_index', {page: current_page + 1, search: search, sort: sort}) }}">
+                    <i class="fas fa-chevron-right"></i></a>
+            </li>
+            <li class="page-item {% if current_page == total_pages %}disabled{% endif %}">
+                <a class="page-link" href="{{ path('admin_evenement_index', {page: total_pages, search: search, sort: sort}) }}">
+                    <i class="fas fa-angle-double-right"></i></a>
+            </li>
+        </ul>
+    </nav>
+</div>
+{% endif %}
+
+{# ══ MODAL FULLCALENDAR ══ #}
+<div class="cal-overlay" id="calendarOverlay">
+    <div class="fc-modal">
+        <div class="fc-modal-header">
+            <span><i class="fas fa-calendar-alt me-2"></i> Calendrier des Événements — Tunisie</span>
+            <button class="cal-close-btn" id="closeCalendar"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="cal-legend-bar">
+            <span class="cal-leg-item"><span class="cal-leg-box leg-ev"></span> Événement</span>
+            <span class="cal-leg-item"><span class="cal-leg-box leg-we"></span> Week-end (jaune)</span>
+            <span class="cal-leg-item"><span class="cal-leg-box leg-ferie"></span> Jour férié (vert)</span>
+            <span class="cal-leg-item"><span class="cal-leg-box leg-today"></span> Aujourd'hui 📍</span>
+            <span class="cal-leg-hint"><i class="fas fa-mouse-pointer me-1"></i> Cliquer sur un jour pour créer</span>
+        </div>
+        <div id="fullcalendar"></div>
+    </div>
+</div>
+
+<div id="fcTooltip" class="fc-custom-tooltip"></div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css">
+
+<style>
+.top-bar { display: none !important; }
+
+/* ── Containers ── */
+.white-container { background: white; border-radius: 20px; border: 1px solid #F0E8DD; padding: 30px 24px; margin-bottom: 20px; }
+.first-container  { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.second-container { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.toolbar-titles { margin-right: auto; }
+.page-main-title { font-size: 1.4rem; font-weight: 800; color: #2C1810; margin: 0 0 2px 0; }
+.page-header-subtitle { font-size: 0.85rem; color: #93032E; font-weight: 500; margin: 0; }
+.admin-badge { display: flex; align-items: center; gap: 8px; background: #F5F5F5; border-radius: 40px; padding: 6px 14px 6px 6px; }
+.admin-avatar { width: 32px; height: 32px; border-radius: 50%; background: #93032E; color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.admin-label { font-size: 13px; font-weight: 600; color: #2C1810; }
+
+/* ── Recherche ── */
+.toolbar-form { display: flex; align-items: center; gap: 12px; flex: 1; flex-wrap: wrap; }
+.search-wrapper { position: relative; flex: 1; min-width: 200px; }
+.search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #B0A090; font-size: 13px; pointer-events: none; z-index: 2; }
+.search-input { width: 100%; height: 42px; border: 1.5px solid #E8DFD1; border-radius: 40px; padding: 0 40px 0 38px; font-size: 13px; color: #2C1810; background: #FDFAF7; outline: none; transition: all 0.2s; }
+.search-input:focus { border-color: #93032E; box-shadow: 0 0 0 3px rgba(147,3,46,0.08); }
+.search-loading { display: none; position: absolute; right: 40px; top: 50%; transform: translateY(-50%); color: #93032E; font-size: 12px; }
+.search-loading.visible { display: inline-block; }
+.search-clear { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #B0A090; font-size: 12px; text-decoration: none; z-index: 2; }
+.search-clear:hover { color: #93032E; }
+
+/* ── Tri ── */
+.sort-wrapper { position: relative; }
+.sort-btn { height: 42px; padding: 0 18px; border-radius: 40px; border: 1.5px solid #E8DFD1; background: #FDFAF7; color: #2C1810; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; white-space: nowrap; }
+.sort-btn:hover, .sort-btn.open { border-color: #93032E; color: #93032E; }
+.sort-arrow { font-size: 10px; transition: transform 0.2s; }
+.sort-btn.open .sort-arrow { transform: rotate(180deg); }
+.sort-dropdown { display: none; position: absolute; top: calc(100% + 8px); left: 0; background: white; border: 1px solid #F0E8DD; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); z-index: 100; min-width: 200px; overflow: hidden; }
+.sort-dropdown.open { display: block; }
+.sort-option { display: flex; align-items: center; padding: 11px 18px; font-size: 13px; color: #4A3B2F; text-decoration: none; transition: background 0.15s; }
+.sort-option:hover { background: #FFF9F0; color: #93032E; }
+.sort-option.active { background: #FEF0F3; color: #93032E; font-weight: 600; }
+
+/* ── Boutons ── */
+.btn-export-pdf { height: 42px; padding: 0 18px; border-radius: 40px; border: 1.5px solid #93032E; background: white; color: #93032E; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; white-space: nowrap; text-decoration: none; }
+.btn-export-pdf:hover { background: #93032E; color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(147,3,46,0.3); }
+.btn-calendar { height: 42px; padding: 0 18px; border-radius: 40px; border: 1.5px solid #344D59; background: white; color: #344D59; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; white-space: nowrap; }
+.btn-calendar:hover { background: #344D59; color: white; transform: translateY(-2px); }
+.btn-primary { background: #93032E; border: none; padding: 10px 20px; border-radius: 40px; font-size: 13px; font-weight: 600; color: white; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; height: 42px; white-space: nowrap; }
+.btn-primary:hover { background: #6B0221; transform: translateY(-2px); color: white; }
+
+/* ── Tableau ── */
+.admin-table-wrapper { width: 100%; overflow-x: auto; border-radius: 20px; }
+.admin-table { background: white; border-radius: 20px; border: 1px solid #F0E8DD; }
+.admin-table .table { margin-bottom: 0; width: 100%; table-layout: fixed; }
+.admin-table th { background: #FEF9F0; padding: 16px 20px; font-size: 12px; font-weight: 700; color: #93032E; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #F0E8DD; white-space: nowrap; }
+.admin-table td { padding: 16px 20px; font-size: 13px; border-bottom: 1px solid #F5F0E8; color: #4A3B2F; vertical-align: middle; background: white; height: 102px; }
+
+.evenement-row {
+    transition: all 0.25s ease;
+}
+.evenement-row:hover {
+    background-color: #FFF9F0;
+    cursor: pointer;
+    position: relative;
+}
+.evenement-row:hover td:first-child {
+    border-left: 3px solid #93032E;
+}
+.evenement-row:hover td {
+    background-color: #FFF9F0;
+}
+
+.evenement-thumbnail { width: 70px; height: 70px; object-fit: cover; border-radius: 12px; border: 1px solid #F0E8DD; transition: all 0.2s; display: block; }
+.evenement-thumbnail:hover { transform: scale(1.05); border-color: #93032E; }
+.thumbnail-placeholder { width: 70px; height: 70px; background: #FEF9F0; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #E8DFD1; font-size: 1.5rem; border: 1px solid #F0E8DD; }
+.evenement-titre { font-weight: 700; color: #2C1810; font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.evenement-description-cell { color: #6B7280; line-height: 1.4; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.evenement-lieu span { display: inline-flex; align-items: center; background: #FEF9F0; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; color: #2C1810; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.evenement-lieu span i { color: #93032E; flex-shrink: 0; }
+.evenement-capacite span { display: inline-flex; align-items: center; background: #FEF9F0; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; color: #93032E; }
+.evenement-periode .periode-info { display: inline-flex; align-items: center; background: #FEF9F0; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; color: #4A3B2F; white-space: nowrap; gap: 4px; }
+.date-debut, .date-fin { font-weight: 600; }
+.evenement-organisateur span { font-size: 12px; color: #6B7280; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; max-width: 130px; }
+.action-buttons { display: flex; gap: 8px; justify-content: center; }
+.action-btn { width: 36px; height: 36px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; cursor: pointer; border: none; background: transparent; font-size: 0.9rem; text-decoration: none; }
+.activites-btn { background: #FEF3C7; color: #D97706; }
+.edit-btn      { background: #EFF6FF; color: #2F4558; }
+.delete-btn    { background: #FEF2F2; color: #EF4444; }
+
+/* ── Pagination ── */
+.pagination-wrapper { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding: 16px 0; border-top: 1px solid #F0E8DD; }
+.pagination-info { font-size: 0.85rem; color: #9CA3AF; }
+.pagination-info strong { color: #93032E; font-weight: 600; }
+.pagination { margin: 0; gap: 6px; padding-left: 0; display: flex; flex-wrap: wrap; }
+.page-item { list-style: none; }
+.page-link { display: flex; align-items: center; justify-content: center; min-width: 36px; height: 36px; padding: 0 8px; border-radius: 10px; background: white; border: 1px solid #E8DFD1; color: #4A3B2F; font-size: 0.85rem; font-weight: 500; transition: all 0.2s; text-decoration: none; }
+.page-link:hover { background: #FFF9F0; border-color: #93032E; color: #93032E; }
+.page-item.active .page-link { background: #93032E; border-color: #93032E; color: white; }
+.page-item.disabled .page-link { background: #FEF9F0; border-color: #F0E8DD; color: #E8DFD1; cursor: not-allowed; pointer-events: none; }
+
+/* ══ MODAL CALENDRIER ══ */
+.cal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:2000; align-items:center; justify-content:center; padding:10px; }
+.cal-overlay.open { display:flex; }
+
+.fc-modal {
+    background: white;
+    border-radius: 16px;
+    width: 92%; max-width: 1100px; max-height: 92vh;
+    overflow: hidden; display: flex; flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    border: 2px solid #26474E;
+    animation: calIn 0.25s ease;
+}
+@keyframes calIn { from{opacity:0;transform:scale(0.95) translateY(-10px)} to{opacity:1;transform:scale(1) translateY(0)} }
+
+/* ── Header modal ── */
+.fc-modal-header {
+    background: #26474E;
+    color: white; padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 1.05rem; font-weight: 700; flex-shrink: 0;
+}
+.cal-close-btn {
+    background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);
+    color: white; width: 32px; height: 32px; border-radius: 8px;
+    cursor: pointer; font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+}
+.cal-close-btn:hover { background: rgba(255,255,255,0.35); }
+
+/* ── Légende ── */
+.cal-legend-bar {
+    background: white; padding: 10px 24px;
+    display: flex; gap: 20px; flex-wrap: wrap;
+    border-bottom: 0.3px solid #442818;
+    flex-shrink: 0; align-items: center;
+    font-size: 12px; font-weight: 600; color: #374151;
+}
+.cal-leg-item { display: flex; align-items: center; gap: 7px; }
+.cal-leg-box { width: 30px; height: 16px; border-radius: 3px; display: inline-block; border: 1px solid rgba(0,0,0,0.15); flex-shrink: 0; }
+.leg-ev    { background: #A92831; border-color: #A92831; }
+.leg-we    { background: repeating-linear-gradient(45deg, rgba(160,95,0,0.65), rgba(160,95,0,0.65) 2px, white 2px, white 9px); border-color: #a16207; }
+.leg-ferie { background: repeating-linear-gradient(45deg, rgba(10,80,35,0.65), rgba(10,80,35,0.65) 2px, white 2px, white 9px); border-color: #166534; }
+.leg-today { background: white; border: 2px solid #26474E; }
+.cal-leg-hint { margin-left: auto; color: #A92831; font-style: italic; display: flex; align-items: center; gap: 5px; font-size: 12px; }
+
+/* ── Zone fullcalendar ── */
+#fullcalendar { flex: 1; overflow-y: auto; padding: 16px 20px; background: white; }
+
+/* ── Boutons FC ── */
+.fc .fc-button,
+.fc .fc-button-primary {
+    background: #26474E !important;
+    border-color: #1a3338 !important;
+    border-radius: 7px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    box-shadow: none !important;
+    transition: opacity 0.15s !important;
+    color: white !important;
+}
+.fc .fc-button:hover,
+.fc .fc-button-primary:hover {
+    background: #26474E !important;
+    border-color: #1a3338 !important;
+    opacity: 0.85 !important;
+}
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+    background: #1a3338 !important;
+    border-color: #1a3338 !important;
+}
+.fc .fc-button:disabled { opacity: 0.4 !important; }
+
+.fc .fc-toolbar-chunk:last-child .fc-button-group {
+    gap: 12px !important;
+}
+.fc .fc-toolbar-chunk:last-child .fc-button-group .fc-button {
+    margin: 0 !important;
+}
+
+/* ── Titre du mois ── */
+.fc .fc-toolbar-title {
+    color: #A92831;
+    font-size: 1.1rem !important;
+    font-weight: 800 !important;
+}
+
+/* ══ BORDURES FULLCALENDAR ══ */
+.fc-theme-standard td,
+.fc-theme-standard th {
+    border: 0.3px solid #442818 !important;
+}
+.fc-theme-standard .fc-scrollgrid {
+    border: 0.3px solid #442818 !important;
+}
+.fc-theme-standard .fc-scrollgrid-section-header td,
+.fc-theme-standard .fc-scrollgrid-section-header th {
+    border-bottom: 0.3px solid #442818 !important;
+}
+
+/* ── En-tête colonnes ── */
+.fc .fc-col-header-cell {
+    background: white !important;
+    padding: 8px 0 !important;
+}
+.fc .fc-col-header-cell-cushion {
+    color: #A92831 !important;
+    font-weight: 700 !important;
+    font-size: 12px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.6px !important;
+    text-decoration: none !important;
+}
+
+/* ── Cellules jours ── */
+.fc .fc-daygrid-day {
+    background: white !important;
+    cursor: pointer;
+}
+.fc .fc-daygrid-day:hover { background: white !important; }
+.fc .fc-daygrid-day-frame { min-height: 88px; }
+.fc .fc-daygrid-day-number {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #374151 !important;
+    text-decoration: none !important;
+    padding: 5px 7px !important;
+}
+
+/* ── Aujourd'hui ── */
+.fc .fc-day-today,
+.fc .fc-day-today:hover {
+    background: white !important;
+    border: 2px solid #26474E !important;
+}
+.fc .fc-day-today .fc-daygrid-day-number {
+    color: #374151 !important;
+    font-weight: 800 !important;
+}
+.fc-day-today-pin {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 6px 0 2px 0;
+    font-size: 22px;
+    line-height: 1;
+}
+
+/* ── Week-end : hachures jaune foncé ── */
+.fc .fc-daygrid-day.fc-day-we,
+.fc .fc-daygrid-day.fc-day-we:hover {
+    background: repeating-linear-gradient(
+        45deg,
+        rgba(160, 95, 0, 0.65),
+        rgba(160, 95, 0, 0.65) 2px,
+        white 2px,
+        white 10px
+    ) !important;
+}
+.fc .fc-daygrid-day.fc-day-we .fc-daygrid-day-number {
+    color: #78350f !important;
+    font-weight: 700 !important;
+}
+
+/* ── Jours fériés : hachures vert foncé ── */
+.fc .fc-daygrid-day.fc-day-ferie,
+.fc .fc-daygrid-day.fc-day-ferie:hover {
+    background: repeating-linear-gradient(
+        45deg,
+        rgba(10, 80, 35, 0.39),
+        rgba(10, 80, 35, 0.39) 2px,
+        white 2px,
+        white 10px
+    ) !important;
+}
+.fc .fc-daygrid-day.fc-day-ferie .fc-daygrid-day-number {
+    color: #14532d !important;
+    font-weight: 700 !important;
+}
+
+/* ── Label jour férié ── */
+.fc-day-ferie-label {
+    font-size: 11px;
+    font-weight: 800;
+    color: #0c321b;
+    text-align: left;
+    line-height: 1.4;
+    overflow: hidden;
+    white-space: normal;
+    word-break: break-word;
+    max-width: 100%;
+    display: block;
+    margin: 1px 4px 0;
+    padding: 0;
+    background: none;
+    border-radius: 0;
+}
+
+/* ══ VUE LISTE - AUCUN ROUGE ══ */
+/* Pas de fond rouge du tout dans la liste */
+.fc .fc-list-table,
+.fc .fc-list-table tbody,
+.fc .fc-list-table tr,
+.fc .fc-list-event,
+.fc .fc-list-event td {
+    background: white !important;
+}
+
+/* Suppression de toute couleur de fond */
+.fc .fc-list-event {
+    background: white !important;
+    border: none !important;
+}
+
+/* Nom de l'événement en ROUGE dans la vue Liste */
+.fc .fc-list-event-title a {
+    color: #A92831 !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+}
+
+/* Texte "Toute la journée" en ROUGE dans la vue Liste */
+.fc .fc-list-event-time {
+    color: #A92831 !important;
+    font-weight: 600 !important;
+}
+
+/* Hover : carte blanche avec bordure rouge uniquement */
+.fc .fc-list-event:hover {
+    background: white !important;
+    cursor: pointer;
+    position: relative;
+}
+.fc .fc-list-event:hover td {
+    background: white !important;
+}
+.fc .fc-list-event:hover td:first-child {
+    border-left: 3px solid #A92831 !important;
+}
+
+/* Ombre légère au hover */
+.fc-direction-ltr .fc-list-table .fc-list-event:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* Ligne du jour dans la liste - fond très clair */
+.fc .fc-list-day-cushion {
+    background: #f9fafb !important;
+}
+.fc .fc-list-empty {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+/* Événements dans la vue mois - garder le fond rouge */
+.fc .fc-event {
+    border-radius: 5px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    padding: 2px 6px !important;
+    background: #A92831 !important;
+    border-color: #7f1d1d !important;
+    color: white !important;
+    box-shadow: none !important;
+}
+.fc .fc-event:hover { opacity: 0.9; }
+
+/* ── Tooltip ── */
+.fc-custom-tooltip {
+    position: fixed; background: #1e293b; color: white;
+    padding: 10px 14px; border-radius: 10px;
+    font-size: 13px; font-weight: 500; line-height: 1.65;
+    pointer-events: none; z-index: 9999;
+    max-width: 270px; white-space: normal;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4); display: none;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+
+/* ── Anti-flash au chargement ── */
+#evenementsTable tbody {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+#evenementsTable tbody.loaded {
+    opacity: 1;
+}
+/* Utilitaires */
+.text-muted  { color: #9CA3AF !important; }
+.text-center { text-align: center; }
+.py-5  { padding-top: 3rem; padding-bottom: 3rem; }
+.mt-3  { margin-top: 1rem; }
+.mb-0  { margin-bottom: 0; }
+.mb-3  { margin-bottom: 1rem; }
+.me-1  { margin-right: 0.25rem; }
+.me-2  { margin-right: 0.5rem; }
+.ms-1  { margin-left: 0.25rem; }
+.mx-1  { margin-left: 0.25rem; margin-right: 0.25rem; }
+
+@media (max-width: 768px) {
+    .first-container, .second-container { flex-direction: column; align-items: stretch; }
+    .toolbar-form { flex-direction: column; }
+    .pagination-wrapper { flex-direction: column; gap: 16px; align-items: center; }
+    .pagination { justify-content: center; }
+    .cal-legend-bar { gap: 10px; }
+    .cal-leg-hint { margin-left: 0; }
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.11/locales/fr.global.min.js"></script>
+
+<script>
+
+// Anti-flash tableau
+document.addEventListener('DOMContentLoaded', function () {
+    var tbody = document.querySelector('#evenementsTable tbody');
+    if (tbody) {
+        requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+                tbody.classList.add('loaded');
+            });
+        });
+    }
+});
+
+// Forcer rechargement si page vient du bfcache
+window.addEventListener('pageshow', function(e) {
+    if (e.persisted) {
+        window.location.replace(window.location.href);
+    }
+});
+
+// Masquer la page immédiatement si elle vient du cache
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+        var perf = window.performance;
+        if (perf && perf.navigation && perf.navigation.type === 2) {
+            window.location.replace(window.location.href);
+        }
+    }
+});
+
+// ── Recherche debounce ──
+(function () {
+    var input   = document.getElementById('searchInput');
+    var form    = document.getElementById('searchForm');
+    var loading = document.getElementById('searchLoading');
+    if (!input || !form) return;
+    var timer = null, submitting = false, lastVal = input.value;
+    function restoreFocus() {
+        if (input.value.length > 0) { input.focus(); var l = input.value.length; input.setSelectionRange(l, l); }
+    }
+    document.readyState === 'loading'
+        ? document.addEventListener('DOMContentLoaded', restoreFocus) : restoreFocus();
+    input.addEventListener('input', function () {
+        clearTimeout(timer);
+        if (this.value === lastVal) return;
+        if (loading) loading.classList.add('visible');
+        timer = setTimeout(function () {
+            if (submitting) return;
+            submitting = true;
+            if (loading) loading.classList.remove('visible');
+            var p = form.querySelector('input[name="page"]');
+            if (p) p.value = 1;
+            lastVal = input.value;
+            form.submit();
+        }, 500);
+    });
+    form.addEventListener('submit', function () {
+        clearTimeout(timer);
+        if (loading) loading.classList.remove('visible');
+        submitting = true;
+    });
+})();
+
+// ── Tri dropdown ──
+(function () {
+    var btn  = document.getElementById('sortToggle');
+    var dd   = document.getElementById('sortDropdown');
+    var si   = document.getElementById('sortInput');
+    var form = document.getElementById('searchForm');
+    if (!btn) return;
+    btn.addEventListener('click', function (e) { e.stopPropagation(); btn.classList.toggle('open'); dd.classList.toggle('open'); });
+    document.querySelectorAll('.sort-option').forEach(function (opt) {
+        opt.addEventListener('click', function (e) {
+            e.preventDefault(); si.value = this.dataset.sort;
+            var p = form.querySelector('input[name="page"]'); if (p) p.value = 1;
+            form.submit();
+        });
+    });
+    document.addEventListener('click', function () { btn.classList.remove('open'); dd.classList.remove('open'); });
+})();
+
+// ── FullCalendar ──
+document.addEventListener('DOMContentLoaded', function () {
+    var overlay  = document.getElementById('calendarOverlay');
+    var openBtn  = document.getElementById('openCalendar');
+    var closeBtn = document.getElementById('closeCalendar');
+    var tooltip  = document.getElementById('fcTooltip');
+    var calendar = null;
+
+    var FERIES = {
+        '2025-01-01':"Jour de l'An",'2025-03-20':"Fête de l'Indépendance",
+        '2025-03-30':"Aïd el-Fitr",'2025-03-31':"Aïd el-Fitr",'2025-04-01':"Aïd el-Fitr",
+        '2025-04-09':"Journée des Martyrs",'2025-05-01':"Fête du Travail",
+        '2025-06-06':"Aïd el-Adha",'2025-06-07':"Aïd el-Adha",
+        '2025-07-25':"Fête de la République",'2025-08-13':"Fête de la Femme",
+        '2025-10-15':"Fête de l'Évacuation",'2025-12-17':"Fête de la Révolution",
+        '2026-01-01':"Jour de l'An",'2026-03-20':"Indépendance / Aïd el-Fitr",
+        '2026-03-21':"Aïd el-Fitr",'2026-03-22':"Aïd el-Fitr",
+        '2026-04-09':"Journée des Martyrs",'2026-05-01':"Fête du Travail",
+        '2026-05-27':"Aïd el-Adha",'2026-05-28':"Aïd el-Adha",
+        '2026-06-16':"Ras el Am el Hijri",'2026-07-25':"Fête de la République",
+        '2026-08-13':"Fête de la Femme",'2026-08-25':"Mouled",
+        '2026-10-15':"Fête de l'Évacuation",'2026-12-17':"Fête de la Révolution",
+        '2027-01-01':"Jour de l'An",'2027-03-09':"Aïd el-Fitr",
+        '2027-03-10':"Aïd el-Fitr",'2027-03-11':"Aïd el-Fitr",
+        '2027-03-20':"Fête de l'Indépendance",'2027-04-09':"Journée des Martyrs",
+        '2027-05-01':"Fête du Travail",'2027-05-17':"Aïd el-Adha",'2027-05-18':"Aïd el-Adha",
+        '2027-06-06':"Ras el Am el Hijri",'2027-07-25':"Fête de la République",
+        '2027-08-13':"Fête de la Femme",'2027-08-14':"Mouled",
+        '2027-10-15':"Fête de l'Évacuation",'2027-12-17':"Fête de la Révolution",
+        '2028-01-01':"Jour de l'An",'2028-02-26':"Aïd el-Fitr",
+        '2028-02-27':"Aïd el-Fitr",'2028-02-28':"Aïd el-Fitr",
+        '2028-03-20':"Fête de l'Indépendance",'2028-04-09':"Journée des Martyrs",
+        '2028-05-01':"Fête du Travail",'2028-05-05':"Aïd el-Adha",'2028-05-06':"Aïd el-Adha",
+        '2028-05-25':"Ras el Am el Hijri",'2028-07-25':"Fête de la République",
+        '2028-08-03':"Mouled",'2028-08-13':"Fête de la Femme",
+        '2028-10-15':"Fête de l'Évacuation",'2028-12-17':"Fête de la Révolution"
+    };
+
+    function getDateStr(date) {
+        return date.getFullYear() + '-'
+            + String(date.getMonth() + 1).padStart(2, '0') + '-'
+            + String(date.getDate()).padStart(2, '0');
+    }
+
+    function initCalendar() {
+        if (calendar) { calendar.render(); return; }
+        var el = document.getElementById('fullcalendar');
+
+        calendar = new FullCalendar.Calendar(el, {
+            locale: 'fr',
+            initialView: 'dayGridMonth',
+            height: 'auto',
+            headerToolbar: {
+                left:   'prev,next today',
+                center: 'title',
+                right:  'dayGridMonth,listMonth'
+            },
+            buttonText: {
+                today: "Aujourd'hui",
+                month: 'Mois',
+                list:  'Liste'
+            },
+            showNonCurrentDates: false,
+            fixedWeekCount:      false,
+            events: '{{ path('admin_fullcalendar_events') }}',
+            eventColor:       '#A92831',
+            eventBorderColor: '#7f1d1d',
+            eventTextColor:   '#ffffff',
+
+            dayCellDidMount: function (info) {
+                if (info.el.classList.contains('fc-day-other')) return;
+
+                var dateStr = getDateStr(info.date);
+                var dow     = info.date.getDay();
+                var isWe    = (dow === 0 || dow === 6);
+                var ferie   = FERIES[dateStr] || null;
+                var isToday = (dateStr === getDateStr(new Date()));
+
+                if (isToday) {
+                    var frame = info.el.querySelector('.fc-daygrid-day-frame');
+                    var numEl = info.el.querySelector('.fc-daygrid-day-number');
+                    if (frame && numEl && !frame.querySelector('.fc-day-today-pin')) {
+                        numEl.style.display = 'none';
+                        var pin = document.createElement('div');
+                        pin.className = 'fc-day-today-pin';
+                        pin.textContent = '📍';
+                        frame.insertBefore(pin, frame.firstChild);
+                    }
+                }
+
+                if (!isToday) {
+                    if (ferie) {
+                        info.el.classList.add('fc-day-ferie');
+                        var frame2 = info.el.querySelector('.fc-daygrid-day-frame');
+                        if (frame2 && !frame2.querySelector('.fc-day-ferie-label')) {
+                            var lbl = document.createElement('div');
+                            lbl.className   = 'fc-day-ferie-label';
+                            lbl.textContent = ferie;
+                            frame2.appendChild(lbl);
+                        }
+                    } else if (isWe) {
+                        info.el.classList.add('fc-day-we');
+                    }
+                }
+
+                var parts = [];
+                if (isToday) parts.push("📅 Aujourd'hui");
+                if (ferie)   parts.push('🌿 ' + ferie);
+                if (isWe && !ferie && !isToday) parts.push('🌟 Week-end');
+                parts.push('➕ Cliquer pour créer un événement');
+                info.el.title = parts.join('\n');
+            },
+
+            dateClick: function (info) {
+                window.location.href = '{{ path('admin_evenement_new') }}?dateDebut=' + info.dateStr;
+            },
+
+            eventClick: function (info) {
+                if (info.event.url) {
+                    info.jsEvent.preventDefault();
+                    window.location.href = info.event.url;
+                }
+            },
+
+            eventMouseEnter: function (info) {
+                var lieu  = info.event.extendedProps.lieu || '';
+                var start = info.event.start;
+                var end   = info.event.end;
+                var html  = '<strong style="font-size:14px;">📌 ' + info.event.title + '</strong>';
+                if (lieu) html += '<br>📍 ' + lieu;
+                if (start) {
+                    html += '<br>🗓 ' + start.toLocaleDateString('fr-FR');
+                    if (end) {
+                        var realEnd = new Date(end);
+                        realEnd.setDate(realEnd.getDate() - 1);
+                        if (realEnd > start) html += ' → ' + realEnd.toLocaleDateString('fr-FR');
+                    }
+                }
+                html += '<br><span style="font-size:11px;opacity:0.65;display:block;margin-top:2px;">✏️ Cliquer pour modifier</span>';
+                tooltip.innerHTML     = html;
+                tooltip.style.display = 'block';
+            },
+            eventMouseLeave: function () {
+                tooltip.style.display = 'none';
+            },
+        });
+
+        calendar.render();
+    }
+
+    document.addEventListener('mousemove', function (e) {
+        if (tooltip.style.display === 'block') {
+            tooltip.style.left = (e.clientX + 16) + 'px';
+            tooltip.style.top  = (e.clientY - 12) + 'px';
+        }
+    });
+
+    openBtn.addEventListener('click', function () {
+        overlay.classList.add('open');
+        setTimeout(initCalendar, 50);
+    });
+    closeBtn.addEventListener('click', function () {
+        overlay.classList.remove('open');
+        tooltip.style.display = 'none';
+    });
+    overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) {
+            overlay.classList.remove('open');
+            tooltip.style.display = 'none';
+        }
+    });
+});
+</script>
+
+{% endblock %}
