@@ -1,79 +1,182 @@
 {% extends 'admin/base_admin.html.twig' %}
 
-{% block title %}Réservations du programme - {{ programme.nom }}{% endblock %}
-{% block page_title %}Réservations : {{ programme.nom }}{% endblock %}
+{% block title %}Réservations du programme{% endblock %}
+{% block page_title %}Réservations - {{ programme.nom }}{% endblock %}
 
 {% block body %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <a href="{{ path('admin_voyage_programmes', {'id': programme.idV}) }}" class="btn-back">
-            <i class="fas fa-arrow-left me-2"></i> Retour aux programmes
-        </a>
-        <h4 class="mb-1 mt-3" style="font-family: 'Playfair Display', serif;">Réservations du programme</h4>
-        <p class="text-muted small" style="color: #93032E !important;">
-            Lieu: {{ programme.lieu }} | Dates: {{ programme.dateDebut|date('d/m/Y') }} - {{ programme.dateFin|date('d/m/Y') }}
-        </p>
+<div class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+        <div>
+            <h4 class="mb-0" style="font-family: 'Playfair Display', serif;">Liste des réservations</h4>
+            <p class="text-muted small" style="color: #5b051f !important;">
+                Programme du {{ programme.dateDebut|date('d/m/Y') }} au {{ programme.dateFin|date('d/m/Y') }}
+                {% if programme.lieu %} - Lieu: {{ programme.lieu }}{% endif %}
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ path('admin_programme_reservations_pdf', {'id': programme.idProg, 'search': search}) }}" class="btn btn-pdf" target="_blank">
+                <i class="fas fa-file-pdf me-2"></i> Exporter PDF
+            </a>
+            <a href="{{ path('admin_voyage_programmes', {'id': programme.idV}) }}" class="btn btn-outline">
+                <i class="fas fa-arrow-left me-2"></i> Retour
+            </a>
+        </div>
     </div>
-    <div class="d-flex gap-3">
-        <a href="{{ path('admin_programme_reservations', {'id': programme.idProg, 'sort': 'nom'}) }}" class="btn-elegant" style="background: #93032E;">
-            <i class="fas fa-sort-alpha-down"></i>
-            <span>Trier A-Z</span>
-        </a>
-        <button id="exportPdfBtn" class="btn-elegant btn-elegant-outline">
-            <i class="fas fa-file-pdf"></i>
-            <span>Exporter PDF</span>
+</div>
+
+<!-- Barre de recherche et tri -->
+<div class="search-sort-bar mb-4">
+    <div class="search-field-wrapper">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" id="searchInput" class="search-input" placeholder="Rechercher par nom, prénom, email ou téléphone..." value="{{ search }}">
+        <button class="search-clear-btn" id="clearSearchBtn" style="display: {% if search %}flex{% else %}none{% endif %};">
+            <i class="fas fa-times"></i>
         </button>
+    </div>
+    
+    <div class="sort-wrapper">
+        <button class="sort-toggle-btn" id="sortToggleBtn" type="button">
+            <i class="fas fa-sort-amount-down-alt"></i>
+            <span id="sortLabel">
+                {% if sort == 'nom_asc' %}Nom (A-Z)
+                {% elseif sort == 'nom_desc' %}Nom (Z-A)
+                {% elseif sort == 'date_asc' %}Date (plus ancien)
+                {% elseif sort == 'date_desc' %}Date (plus récent)
+                {% elseif sort == 'prix_asc' %}Prix (croissant)
+                {% elseif sort == 'prix_desc' %}Prix (décroissant)
+                {% else %}Date (plus récent){% endif %}
+            </span>
+            <i class="fas fa-chevron-down sort-chevron"></i>
+        </button>
+        <div class="sort-dropdown-menu" id="sortDropdownMenu">
+            <div class="sort-option" data-value="nom_asc"><i class="fas fa-sort-alpha-down"></i> Nom (A-Z)</div>
+            <div class="sort-option" data-value="nom_desc"><i class="fas fa-sort-alpha-up"></i> Nom (Z-A)</div>
+            <div class="sort-option" data-value="date_desc"><i class="fas fa-calendar-alt"></i> Date (plus récent)</div>
+            <div class="sort-option" data-value="date_asc"><i class="fas fa-calendar-alt"></i> Date (plus ancien)</div>
+            <div class="sort-option" data-value="prix_asc"><i class="fas fa-arrow-up"></i> Prix (croissant)</div>
+            <div class="sort-option" data-value="prix_desc"><i class="fas fa-arrow-down"></i> Prix (décroissant)</div>
+        </div>
+    </div>
+    
+    <div class="search-info">
+        <span id="resultCount">{{ reservations|length }}</span> réservation(s)
     </div>
 </div>
 
 <div class="admin-table">
-    <table class="table" id="reservationsTable">
+    <table class="table">
         <thead>
             <tr>
+                <th>ID</th>
                 <th>Client</th>
-                <th>Contact</th>
-                <th>Nb personnes</th>
-                <th>Prix total</th>
+                <th>Email / Téléphone</th>
+                <th class="text-center">Personnes</th>
+                <th class="text-end">Prix total</th>
                 <th>Date réservation</th>
                 <th>Statut</th>
-                <th>Action</th>
+                <th>Actions</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="reservationsTableBody">
             {% for reservation in reservations %}
                 <tr>
-                    <td class="client-name">
+                    <td>#{{ reservation.idRP }}</td>
+                    <td>
                         <strong>{{ reservation.prenom }} {{ reservation.nom }}</strong>
                     </td>
                     <td>
-                        <div><i class="fas fa-phone me-1" style="color: #93032E;"></i> {{ reservation.telephone }}</div>
-                        <div><i class="fas fa-envelope me-1" style="color: #93032E;"></i> {{ reservation.email }}</div>
+                        {{ reservation.email }}<br>
+                        <small class="text-muted">{{ reservation.telephone }}</small>
                     </td>
-                    <td class="client-nbre">{{ reservation.nbre }} pers</td>
-                    <td class="reservation-price">{{ reservation.prixProg|number_format(2, ',', ' ') }} DT</td>
-                    <td class="reservation-date">{{ reservation.dateProgramme|date('d/m/Y H:i') }}</td>
+                    <td class="text-center">{{ reservation.nbre }}</td>
+                    <td class="text-end">{{ reservation.prixProg|number_format(0, ',', ' ') }} DT</td>
+                    <td>{{ reservation.dateProgramme|date('d/m/Y H:i') }}</td>
                     <td>
                         {% if reservation.statutPaiement == 'payé' %}
-                            <span class="badge-status badge-success">Payé</span>
+                            <span class="badge bg-success">Payé</span>
+                        {% elseif reservation.statutPaiement == 'en_attente' %}
+                            <span class="badge bg-warning">En attente</span>
                         {% else %}
-                            <span class="badge-status badge-pending">En attente</span>
+                            <span class="badge bg-secondary">{{ reservation.statutPaiement }}</span>
                         {% endif %}
                     </td>
                     <td>
-                        <div class="action-buttons">
-                            <form method="post" action="{{ path('admin_reservation_delete', {'id': reservation.idRP}) }}" style="display: inline-block;">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete_reservation_' ~ reservation.idRP) }}">
-                                <button type="submit" class="action-btn delete-btn" onclick="return confirm('Supprimer cette réservation ?')" title="Supprimer">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </form>
-                        </div>
+                        <button type="button" class="action-btn view-btn" data-bs-toggle="modal" data-bs-target="#reservationModal{{ reservation.idRP }}" title="Voir détails">
+                            <i class="fas fa-eye"></i>
+                        </button>
                     </td>
                 </tr>
+                
+                <!-- Modal Détails -->
+                <div class="modal fade" id="reservationModal{{ reservation.idRP }}" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="background: #93032E; color: white;">
+                                <h5 class="modal-title">Détails de la réservation #{{ reservation.idRP }}</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <strong>Client :</strong><br>
+                                        {{ reservation.prenom }} {{ reservation.nom }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Téléphone :</strong><br>
+                                        {{ reservation.telephone }}
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <strong>Email :</strong><br>
+                                        {{ reservation.email }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Nombre de personnes :</strong><br>
+                                        {{ reservation.nbre }}
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <strong>Prix total :</strong><br>
+                                        {{ reservation.prixProg|number_format(0, ',', ' ') }} DT
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Statut paiement :</strong><br>
+                                        {% if reservation.statutPaiement == 'payé' %}
+                                            <span class="badge bg-success">Payé</span>
+                                        {% elseif reservation.statutPaiement == 'en_attente' %}
+                                            <span class="badge bg-warning">En attente</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ reservation.statutPaiement }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <strong>Date de réservation :</strong><br>
+                                        {{ reservation.dateProgramme|date('d/m/Y H:i:s') }}
+                                    </div>
+                                </div>
+                                {% if reservation.stripeSessionId %}
+                                <div class="row">
+                                    <div class="col-12">
+                                        <strong>Session Stripe :</strong><br>
+                                        <code class="small">{{ reservation.stripeSessionId }}</code>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             {% else %}
                 <tr>
-                    <td colspan="7" class="text-center py-5">
-                        <i class="fas fa-ticket-alt fa-3x mb-3" style="color: #E8DFD1;"></i>
+                    <td colspan="8" class="text-center py-5">
+                        <i class="fas fa-calendar-alt fa-3x mb-3" style="color: #E8DFD1;"></i>
                         <p class="text-muted mb-0">Aucune réservation pour ce programme</p>
                     </td>
                 </tr>
@@ -83,66 +186,156 @@
 </div>
 
 <style>
-    /* Boutons élégants */
-    .btn-elegant {
-        display: inline-flex;
+    .search-sort-bar {
+        background: white;
+        border-radius: 16px;
+        padding: 16px 20px;
+        border: 1px solid #F0E8DD;
+        display: flex;
         align-items: center;
-        gap: 10px;
-        padding: 12px 24px;
-        border-radius: 40px;
-        font-weight: 600;
-        font-size: 0.85rem;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-        background: #93032E;
-        color: white;
-        box-shadow: 0 4px 12px rgba(147, 3, 46, 0.2);
+        gap: 1.2rem;
+        flex-wrap: wrap;
     }
     
-    .btn-elegant:hover {
-        background: #6B0221;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(147, 3, 46, 0.3);
-        color: white;
-        text-decoration: none;
+    .search-field-wrapper {
+        position: relative;
+        flex: 1;
+        min-width: 260px;
     }
     
-    .btn-elegant-outline {
-        background: transparent;
-        border: 2px solid #93032E;
-        color: #93032E;
-        box-shadow: none;
+    .search-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9CA3AF;
+        font-size: 0.9rem;
     }
     
-    .btn-elegant-outline:hover {
-        background: #93032E;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(147, 3, 46, 0.3);
-    }
-    
-    .btn-back {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: #FEF9F0;
+    .search-input {
+        width: 100%;
+        padding: 10px 40px 10px 40px;
         border: 1px solid #E8DFD1;
-        padding: 8px 20px;
         border-radius: 40px;
-        font-size: 0.8rem;
-        font-weight: 500;
-        color: #4A3B2F;
-        text-decoration: none;
+        font-size: 14px;
+        background: #FEF9F0;
         transition: all 0.2s;
     }
     
-    .btn-back:hover {
+    .search-input:focus {
+        outline: none;
         border-color: #93032E;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(147,3,46,0.1);
+    }
+    
+    .search-clear-btn {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #9CA3AF;
+        cursor: pointer;
+        padding: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.2s;
+    }
+    
+    .search-clear-btn:hover {
         color: #93032E;
-        background: #FFF9F0;
-        transform: translateX(-3px);
+    }
+    
+    .sort-wrapper {
+        position: relative;
+    }
+    
+    .sort-toggle-btn {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 20px;
+        border: 1px solid #E8DFD1;
+        border-radius: 40px;
+        background: #FEF9F0;
+        color: #4A3B2F;
+        font-weight: 500;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .sort-toggle-btn:hover {
+        border-color: #93032E;
+        background: white;
+    }
+    
+    .sort-chevron {
+        transition: transform 0.2s;
+        font-size: 0.7rem;
+    }
+    
+    .sort-toggle-btn.open .sort-chevron {
+        transform: rotate(180deg);
+    }
+    
+    .sort-dropdown-menu {
+        display: none;
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        min-width: 220px;
+        z-index: 1000;
+        overflow: hidden;
+        border: 1px solid #F0E8DD;
+    }
+    
+    .sort-dropdown-menu.open {
+        display: block;
+        animation: fadeIn 0.2s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .sort-option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 18px;
+        font-size: 0.85rem;
+        color: #4A3B2F;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .sort-option:hover {
+        background: #FEF9F0;
+        color: #93032E;
+    }
+    
+    .sort-option i {
+        width: 20px;
+        color: #C49A6C;
+    }
+    
+    .search-info {
+        font-size: 0.85rem;
+        color: #9CA3AF;
+        white-space: nowrap;
+    }
+    
+    .search-info span {
+        color: #93032E;
+        font-weight: 600;
     }
     
     .admin-table {
@@ -175,56 +368,32 @@
         background: #FFF9F0;
     }
     
-    .client-name strong {
-        color: #2C1810;
-    }
-    
-    .client-nbre {
-        white-space: nowrap;
-    }
-    
-    .reservation-price {
-        font-weight: 700;
-        color: #93032E;
-        font-size: 0.95rem;
-        white-space: nowrap;
-    }
-    
-    .reservation-date {
-        white-space: nowrap;
-        color: #9CA3AF;
-        font-size: 0.85rem;
-    }
-    
-    .badge-status {
-        padding: 6px 12px;
+    .badge {
+        padding: 5px 12px;
         border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        display: inline-block;
-        text-align: center;
-        min-width: 85px;
+        font-size: 11px;
+        font-weight: 500;
     }
     
-    .badge-success {
-        background: #E0F2E9;
-        color: #047857;
+    .bg-success {
+        background: #10B981;
+        color: white;
     }
     
-    .badge-pending {
-        background: #FEF3C7;
-        color: #B45309;
+    .bg-warning {
+        background: #be0909;
+        color: white;
     }
     
-    .action-buttons {
-        display: flex;
-        gap: 8px;
+    .bg-secondary {
+        background: #6B7280;
+        color: white;
     }
     
     .action-btn {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -236,50 +405,186 @@
         text-decoration: none;
     }
     
-    .delete-btn {
-        background: #FEF2F2;
-        color: #EF4444;
+    .view-btn {
+        background: #EFF6FF;
+        color: #3B82F6;
     }
     
-    .delete-btn:hover {
-        background: #EF4444;
+    .view-btn:hover {
+        background: #3B82F6;
         color: white;
         transform: translateY(-2px);
     }
     
+    .btn-pdf {
+        background: #DC2626;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 40px;
+        font-size: 13px;
+        font-weight: 600;
+        color: white;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .btn-pdf:hover {
+        background: #B91C1C;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220,38,38,0.3);
+        color: white;
+    }
+    
+    .btn-outline {
+        background: transparent;
+        border: 1.5px solid #E8DFD1;
+        padding: 8px 20px;
+        border-radius: 40px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #4A3B2F;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .btn-outline:hover {
+        border-color: #93032E;
+        color: #93032E;
+        background: #FFF9F0;
+    }
+    
+    .btn-secondary {
+        background: #6B7280;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 40px;
+        font-size: 13px;
+        color: white;
+    }
+    
+    .modal-content {
+        border-radius: 20px;
+        overflow: hidden;
+    }
+    
+    .modal-header {
+        background: #93032E;
+        color: white;
+        border: none;
+    }
+    
     @media (max-width: 768px) {
-        .admin-table {
-            overflow-x: auto;
+        .search-sort-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .search-info {
+            text-align: center;
+        }
+        
+        .sort-wrapper {
+            width: 100%;
+        }
+        
+        .sort-toggle-btn {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .sort-dropdown-menu {
+            right: auto;
+            left: 0;
+            width: 100%;
         }
     }
 </style>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
-    document.getElementById('exportPdfBtn')?.addEventListener('click', function() {
-        const element = document.getElementById('reservationsTable');
-        const titleDiv = document.createElement('div');
-        titleDiv.innerHTML = `
-            <div style="text-align: center; margin-bottom: 20px;">
-                <h1 style="color: #93032E;">TunisiaJourney</h1>
-                <h2>Réservations du programme: {{ programme.nom }}</h2>
-                <p>Lieu: {{ programme.lieu }} | Dates: {{ programme.dateDebut|date('d/m/Y') }} - {{ programme.dateFin|date('d/m/Y') }}</p>
-                <p>Généré le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}</p>
-                <hr>
-            </div>
-        `;
-        const cloneTable = element.cloneNode(true);
-        const container = document.createElement('div');
-        container.appendChild(titleDiv);
-        container.appendChild(cloneTable);
-        
-        html2pdf().set({
-            margin: [0.5, 0.5, 0.5, 0.5],
-            filename: `reservations_${new Date().toISOString().slice(0,19)}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
-        }).from(container).save();
+    // Éléments DOM
+    const searchInput = document.getElementById('searchInput');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    const sortToggleBtn = document.getElementById('sortToggleBtn');
+    const sortDropdownMenu = document.getElementById('sortDropdownMenu');
+    const sortOptions = document.querySelectorAll('.sort-option');
+    const sortLabel = document.getElementById('sortLabel');
+    
+    let searchTimeout;
+    let currentSort = '{{ sort }}';
+    let currentSearch = '{{ search }}';
+    
+    // Mettre à jour l'URL et recharger la page
+    function updateUrlAndReload() {
+        const url = new URL(window.location.href);
+        url.searchParams.set('sort', currentSort);
+        if (currentSearch) {
+            url.searchParams.set('search', currentSearch);
+        } else {
+            url.searchParams.delete('search');
+        }
+        window.location.href = url.toString();
+    }
+    
+    // Recherche avec debounce
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            currentSearch = this.value;
+            clearSearchBtn.style.display = currentSearch ? 'flex' : 'none';
+            searchTimeout = setTimeout(updateUrlAndReload, 500);
+        });
+    }
+    
+    // Clear search
+    if (clearSearchBtn) {
+        clearSearchBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            currentSearch = '';
+            clearSearchBtn.style.display = 'none';
+            updateUrlAndReload();
+        });
+    }
+    
+    // Toggle dropdown tri
+    if (sortToggleBtn) {
+        sortToggleBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            sortDropdownMenu.classList.toggle('open');
+            sortToggleBtn.classList.toggle('open');
+        });
+    }
+    
+    // Fermer dropdown en cliquant ailleurs
+    document.addEventListener('click', function(e) {
+        if (sortToggleBtn && !sortToggleBtn.contains(e.target)) {
+            sortDropdownMenu.classList.remove('open');
+            sortToggleBtn.classList.remove('open');
+        }
     });
+    
+    // Sélection du tri
+    sortOptions.forEach(option => {
+        option.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const value = this.dataset.value;
+            currentSort = value;
+            sortLabel.textContent = this.textContent.trim();
+            sortDropdownMenu.classList.remove('open');
+            sortToggleBtn.classList.remove('open');
+            updateUrlAndReload();
+        });
+    });
+    
+    // Activer Bootstrap modals
+    if (typeof bootstrap !== 'undefined') {
+        var modals = document.querySelectorAll('.modal');
+        modals.forEach(function(modal) {
+            new bootstrap.Modal(modal);
+        });
+    }
 </script>
 {% endblock %}

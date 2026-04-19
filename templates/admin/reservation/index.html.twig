@@ -14,19 +14,19 @@
             <i class="fas fa-sort-alpha-down"></i>
             <span>Trier A-Z</span>
         </a>
-        <button id="exportPdfBtn" class="btn-elegant btn-elegant-outline">
+        <a href="{{ path('admin_reservation_pdf') }}" target="_blank" class="btn-elegant btn-elegant-outline">
             <i class="fas fa-file-pdf"></i>
             <span>Exporter PDF</span>
-        </button>
+        </a>
     </div>
 </div>
 
-<!-- Barre de recherche dynamique -->
+<!-- Barre de recherche -->
 <div class="search-bar-wrapper mb-4">
     <div class="search-input-group">
         <i class="fas fa-search search-icon"></i>
-        <input type="text" id="searchInput" class="form-control search-input" 
-               placeholder="Rechercher par nom, prénom, email, téléphone ou programme..." 
+        <input type="text" id="searchInput" class="form-control search-input"
+               placeholder="Rechercher par nom, prénom, email, téléphone ou programme..."
                value="{{ search }}">
         <button id="clearSearch" class="clear-search-btn" style="display: {% if search %}flex{% else %}none{% endif %};">
             <i class="fas fa-times"></i>
@@ -37,26 +37,26 @@
     </div>
 </div>
 
-<!-- Boutons de tri rapide -->
+<!-- Boutons de tri -->
 <div class="sort-buttons-wrapper mb-4">
     <span class="sort-label"><i class="fas fa-sort-amount-down-alt me-2"></i>Trier par :</span>
     <div class="sort-buttons-group">
-        <button class="sort-btn {% if sort == 'nom' %}active{% endif %}" data-sort="nom">
+        <button type="button" class="sort-btn {% if sort == 'nom' %}active{% endif %}" data-sort="nom">
             <i class="fas fa-user"></i> Nom (A-Z)
         </button>
-        <button class="sort-btn {% if sort == 'prenom' %}active{% endif %}" data-sort="prenom">
+        <button type="button" class="sort-btn {% if sort == 'prenom' %}active{% endif %}" data-sort="prenom">
             <i class="fas fa-user"></i> Prénom (A-Z)
         </button>
-        <button class="sort-btn {% if sort == 'dateProgramme' %}active{% endif %}" data-sort="dateProgramme">
+        <button type="button" class="sort-btn {% if sort == 'dateProgramme' %}active{% endif %}" data-sort="dateProgramme">
             <i class="fas fa-calendar"></i> Date (récent → ancien)
         </button>
-        <button class="sort-btn {% if sort == 'prixProg' %}active{% endif %}" data-sort="prixProg">
+        <button type="button" class="sort-btn {% if sort == 'prixProg' %}active{% endif %}" data-sort="prixProg">
             <i class="fas fa-tag"></i> Prix (croissant)
         </button>
-        <button class="sort-btn {% if sort == 'nbre' %}active{% endif %}" data-sort="nbre">
+        <button type="button" class="sort-btn {% if sort == 'nbre' %}active{% endif %}" data-sort="nbre">
             <i class="fas fa-users"></i> Personnes
         </button>
-        <button class="sort-btn {% if sort == 'statutPaiement' %}active{% endif %}" data-sort="statutPaiement">
+        <button type="button" class="sort-btn {% if sort == 'statutPaiement' %}active{% endif %}" data-sort="statutPaiement">
             <i class="fas fa-check-circle"></i> Statut
         </button>
     </div>
@@ -66,52 +66,17 @@
     <table class="table" id="reservationsTable">
         <thead>
             <tr>
-                <th>
-                    Programme 
-                    {% if sort == 'programme_nom' %}
-                        <i class="fas fa-sort-{% if direction == 'ASC' %}up{% else %}down{% endif %} sort-icon-active"></i>
-                    {% endif %}
-                </th>
-                <th>
-                    Client 
-                    {% if sort == 'nom' %}
-                        <i class="fas fa-sort-{% if direction == 'ASC' %}up{% else %}down{% endif %} sort-icon-active"></i>
-                    {% endif %}
-                </th>
-                <th>
-                    Contact 
-                    {% if sort == 'email' %}
-                        <i class="fas fa-sort-{% if direction == 'ASC' %}up{% else %}down{% endif %} sort-icon-active"></i>
-                    {% endif %}
-                </th>
-                <th>
-                    Nb pers 
-                    {% if sort == 'nbre' %}
-                        <i class="fas fa-sort-{% if direction == 'ASC' %}up{% else %}down{% endif %} sort-icon-active"></i>
-                    {% endif %}
-                </th>
-                <th>
-                    Prix total 
-                    {% if sort == 'prixProg' %}
-                        <i class="fas fa-sort-{% if direction == 'ASC' %}up{% else %}down{% endif %} sort-icon-active"></i>
-                    {% endif %}
-                </th>
-                <th>
-                    Date réservation 
-                    {% if sort == 'dateProgramme' %}
-                        <i class="fas fa-sort-{% if direction == 'ASC' %}up{% else %}down{% endif %} sort-icon-active"></i>
-                    {% endif %}
-                </th>
-                <th>
-                    Statut 
-                    {% if sort == 'statutPaiement' %}
-                        <i class="fas fa-sort-{% if direction == 'ASC' %}up{% else %}down{% endif %} sort-icon-active"></i>
-                    {% endif %}
-                </th>
+                <th>Programme</th>
+                <th>Client</th>
+                <th>Contact</th>
+                <th>Nb pers</th>
+                <th>Prix total</th>
+                <th>Date réservation</th>
+                <th>Statut</th>
                 <th style="width: 80px">Action</th>
             </tr>
         </thead>
-        <tbody id="reservationsTableBody">
+        <tbody>
             {% for reservation in reservations %}
                 <tr data-id="{{ reservation.idRP }}">
                     <td class="programme-name">
@@ -185,7 +150,6 @@
 </div>
 
 <style>
-    /* Boutons élégants */
     .btn-elegant {
         display: inline-flex;
         align-items: center;
@@ -202,7 +166,7 @@
         color: white;
         box-shadow: 0 4px 12px rgba(147, 3, 46, 0.2);
     }
-    
+   
     .btn-elegant:hover {
         background: #6B0221;
         transform: translateY(-2px);
@@ -210,21 +174,21 @@
         color: white;
         text-decoration: none;
     }
-    
+   
     .btn-elegant-outline {
         background: transparent;
         border: 2px solid #93032E;
         color: #93032E;
         box-shadow: none;
     }
-    
+   
     .btn-elegant-outline:hover {
         background: #93032E;
         color: white;
         transform: translateY(-2px);
         box-shadow: 0 6px 18px rgba(147, 3, 46, 0.3);
     }
-    
+   
     .search-bar-wrapper {
         background: white;
         border-radius: 16px;
@@ -236,13 +200,13 @@
         flex-wrap: wrap;
         gap: 15px;
     }
-    
+   
     .search-input-group {
         position: relative;
         flex: 1;
         min-width: 250px;
     }
-    
+   
     .search-icon {
         position: absolute;
         left: 15px;
@@ -251,7 +215,7 @@
         color: #9CA3AF;
         font-size: 0.9rem;
     }
-    
+   
     .search-input {
         width: 100%;
         padding: 12px 40px 12px 40px;
@@ -261,14 +225,14 @@
         background: #FEF9F0;
         transition: all 0.2s;
     }
-    
+   
     .search-input:focus {
         outline: none;
         border-color: #93032E;
         background: white;
         box-shadow: 0 0 0 3px rgba(147,3,46,0.1);
     }
-    
+   
     .clear-search-btn {
         position: absolute;
         right: 15px;
@@ -284,22 +248,22 @@
         justify-content: center;
         transition: color 0.2s;
     }
-    
+   
     .clear-search-btn:hover {
         color: #93032E;
     }
-    
+   
     .search-info {
         font-size: 0.85rem;
         color: #9CA3AF;
         white-space: nowrap;
     }
-    
+   
     .search-info span {
         color: #93032E;
         font-weight: 600;
     }
-    
+   
     .sort-buttons-wrapper {
         background: white;
         border-radius: 16px;
@@ -310,19 +274,19 @@
         flex-wrap: wrap;
         gap: 15px;
     }
-    
+   
     .sort-label {
         font-size: 0.85rem;
         font-weight: 600;
         color: #2C1810;
     }
-    
+   
     .sort-buttons-group {
         display: flex;
         flex-wrap: wrap;
         gap: 10px;
     }
-    
+   
     .sort-btn {
         background: #FEF9F0;
         border: 1px solid #E8DFD1;
@@ -337,51 +301,45 @@
         align-items: center;
         gap: 8px;
     }
-    
+   
     .sort-btn i {
         font-size: 0.75rem;
         color: #9CA3AF;
     }
-    
+   
     .sort-btn:hover {
         background: #FFF0E8;
         border-color: #93032E;
         color: #93032E;
         transform: translateY(-2px);
     }
-    
+   
     .sort-btn:hover i {
         color: #93032E;
     }
-    
+   
     .sort-btn.active {
         background: #93032E;
         border-color: #93032E;
         color: white;
     }
-    
+   
     .sort-btn.active i {
         color: white;
     }
-    
-    .sort-icon-active {
-        color: #93032E;
-        margin-left: 5px;
-    }
-    
+   
     .admin-table {
         background: white;
         border-radius: 20px;
         border: 1px solid #F0E8DD;
         overflow-x: auto;
-        overflow-y: visible;
     }
-    
+   
     .admin-table .table {
         margin-bottom: 0;
         min-width: 1000px;
     }
-    
+   
     .admin-table th {
         background: #FEF9F0;
         padding: 14px 20px;
@@ -391,79 +349,67 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
         border-bottom: 1px solid #F0E8DD;
-        white-space: nowrap;
     }
-    
+   
     .admin-table td {
         padding: 14px 20px;
         font-size: 13px;
         border-bottom: 1px solid #F5F0E8;
         color: #4A3B2F;
         vertical-align: middle;
-        background: white;
     }
-    
+   
     .admin-table tr:hover td {
         background: #FFF9F0;
     }
-    
+   
     .programme-name {
         font-weight: 600;
         color: #2C1810;
         font-size: 0.9rem;
     }
-    
+   
     .programme-name small {
         font-size: 0.7rem;
         color: #93032E;
     }
-    
+   
     .client-name strong {
         color: #2C1810;
     }
-    
-    .client-nbre {
-        white-space: nowrap;
-    }
-    
+   
     .reservation-price {
         font-weight: 700;
         color: #93032E;
         font-size: 0.95rem;
         white-space: nowrap;
     }
-    
-    .reservation-date {
-        white-space: nowrap;
-        color: #9CA3AF;
-        font-size: 0.85rem;
-    }
-    
+   
     .badge-status {
         padding: 6px 12px;
         border-radius: 20px;
         font-size: 0.75rem;
         font-weight: 600;
         display: inline-block;
-        text-align: center;
         min-width: 85px;
+        text-align: center;
     }
-    
+   
     .badge-success {
         background: #E0F2E9;
         color: #047857;
     }
-    
+   
     .badge-pending {
         background: #FEF3C7;
         color: #B45309;
     }
-    
+   
     .action-buttons {
         display: flex;
         gap: 8px;
     }
-    
+   
     .action-btn {
         width: 36px;
         height: 36px;
@@ -476,20 +422,19 @@
         border: none;
         background: transparent;
         font-size: 0.9rem;
-        text-decoration: none;
     }
-    
+   
     .delete-btn {
         background: #FEF2F2;
         color: #EF4444;
     }
-    
+   
     .delete-btn:hover {
         background: #EF4444;
         color: white;
         transform: translateY(-2px);
     }
-    
+   
     .pagination-wrapper {
         display: flex;
         justify-content: space-between;
@@ -497,30 +442,21 @@
         margin-top: 24px;
         padding: 16px 0;
     }
-    
+   
     .pagination-info {
         font-size: 0.85rem;
         color: #9CA3AF;
     }
-    
+   
     .pagination-info strong {
         color: #93032E;
-        font-weight: 600;
     }
-    
-    .pagination-nav {
-        margin: 0;
-    }
-    
+   
     .pagination {
         margin: 0;
         gap: 6px;
     }
-    
-    .page-item {
-        list-style: none;
-    }
-    
+   
     .page-link {
         display: flex;
         align-items: center;
@@ -532,108 +468,43 @@
         border: 1px solid #E8DFD1;
         color: #4A3B2F;
         font-size: 0.85rem;
-        font-weight: 500;
-        transition: all 0.2s;
         text-decoration: none;
     }
-    
+   
     .page-link:hover {
         background: #FFF9F0;
         border-color: #93032E;
         color: #93032E;
     }
-    
+   
     .page-item.active .page-link {
         background: #93032E;
         border-color: #93032E;
         color: white;
     }
-    
+   
     .page-item.disabled .page-link {
         background: #FEF9F0;
         border-color: #F0E8DD;
         color: #E8DFD1;
         cursor: not-allowed;
     }
-    
-    @media (max-width: 768px) {
-        .search-bar-wrapper {
-            flex-direction: column;
-            align-items: stretch;
-        }
-        
-        .search-info {
-            text-align: center;
-        }
-        
-        .sort-buttons-wrapper {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-        
-        .sort-buttons-group {
-            width: 100%;
-        }
-        
-        .sort-btn {
-            flex: 1;
-            text-align: center;
-            justify-content: center;
-        }
-        
-        .pagination-wrapper {
-            flex-direction: column;
-            gap: 16px;
-            align-items: center;
-        }
-        
-        .admin-table {
-            overflow-x: auto;
-        }
-    }
 </style>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
-    // Export PDF
-    document.getElementById('exportPdfBtn')?.addEventListener('click', function() {
-        const element = document.getElementById('reservationsTable');
-        const titleDiv = document.createElement('div');
-        titleDiv.innerHTML = `
-            <div style="text-align: center; margin-bottom: 20px;">
-                <h1 style="color: #93032E;">TunisiaJourney</h1>
-                <h2>Liste des réservations</h2>
-                <p>Généré le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}</p>
-                <hr>
-            </div>
-        `;
-        const cloneTable = element.cloneNode(true);
-        const container = document.createElement('div');
-        container.appendChild(titleDiv);
-        container.appendChild(cloneTable);
-        
-        html2pdf().set({
-            margin: [0.5, 0.5, 0.5, 0.5],
-            filename: `reservations_${new Date().toISOString().slice(0,19)}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
-        }).from(container).save();
-    });
-    
     // Recherche
     let searchTimeout;
     const searchInput = document.getElementById('searchInput');
     const clearSearchBtn = document.getElementById('clearSearch');
-    
+   
     function performSearch() {
-        const searchValue = searchInput.value;
+        const searchValue = searchInput ? searchInput.value : '';
         const url = new URL(window.location.href);
         url.searchParams.set('search', searchValue);
         url.searchParams.set('page', 1);
         window.location.href = url.toString();
     }
-    
+   
     if (searchInput) {
         searchInput.addEventListener('input', function() {
             clearTimeout(searchTimeout);
@@ -642,8 +513,8 @@
             }
         });
     }
-    
-    if (clearSearchBtn) {
+   
+    if (clearSearchBtn && searchInput) {
         clearSearchBtn.addEventListener('click', function() {
             searchInput.value = '';
             performSearch();
@@ -652,34 +523,44 @@
             clearSearchBtn.style.display = this.value.length > 0 ? 'flex' : 'none';
         });
     }
-    
+   
     // Tri
-    document.querySelectorAll('.sort-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const sort = this.getAttribute('data-sort');
-            const url = new URL(window.location.href);
-            let direction = 'ASC';
-            if (sort === 'dateProgramme') direction = 'DESC';
-            else if (sort === 'prixProg') direction = 'ASC';
-            else if (sort === 'nbre') direction = 'ASC';
-            url.searchParams.set('sort', sort);
-            url.searchParams.set('direction', direction);
-            url.searchParams.set('page', 1);
-            window.location.href = url.toString();
-        });
-    });
-    
-    // Pagination
-    document.querySelectorAll('.page-link[data-page]').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const page = this.getAttribute('data-page');
-            if (page && !this.parentElement.classList.contains('disabled')) {
+    const sortBtns = document.querySelectorAll('.sort-btn');
+    if (sortBtns && sortBtns.length > 0) {
+        sortBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const sort = this.getAttribute('data-sort');
+                if (!sort) return;
+                
                 const url = new URL(window.location.href);
-                url.searchParams.set('page', page);
+                let direction = 'ASC';
+                if (sort === 'dateProgramme') direction = 'DESC';
+                else if (sort === 'prixProg') direction = 'ASC';
+                else if (sort === 'nbre') direction = 'ASC';
+                
+                url.searchParams.set('sort', sort);
+                url.searchParams.set('direction', direction);
+                url.searchParams.set('page', 1);
                 window.location.href = url.toString();
-            }
+            });
         });
-    });
+    }
+   
+    // Pagination
+    const pageLinks = document.querySelectorAll('.page-link[data-page]');
+    if (pageLinks && pageLinks.length > 0) {
+        pageLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const page = this.getAttribute('data-page');
+                if (page && !this.parentElement.classList.contains('disabled')) {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('page', page);
+                    window.location.href = url.toString();
+                }
+            });
+        });
+    }
 </script>
 {% endblock %}

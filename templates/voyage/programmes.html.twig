@@ -5,217 +5,389 @@
 {% block stylesheets %}
 <style>
     :root {
-        --tunisia-red: #E31B23;
-        --tunisia-blue: #0054A6;
-        --tunisia-blue-light: #E8F0FE;
+        --tunisia-red: #9e770b;
+        --tunisia-blue: #1C2942;
+        --tunisia-orange: #F39C12;
         --tunisia-sand: #FDF5E6;
         --dark-gray: #2C3E50;
+        --light-gray: #F8F9FA;
     }
 
-    .back-arrow {
+    /* ===================================================
+       HEADER SIMPLE
+    =================================================== */
+    .page-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+        position: relative;
+    }
+    
+    .back-link {
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        color: var(--tunisia-red);
+        color: var(--tunisia-blue);
         text-decoration: none;
         font-weight: 500;
-        margin-bottom: 2rem;
+        font-size: 0.9rem;
         transition: all 0.3s ease;
+        background: white;
+        padding: 8px 18px;
+        border-radius: 40px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border: 1px solid #E8DFD1;
     }
-    
-    .back-arrow:hover {
-        transform: translateX(-5px);
-        color: var(--tunisia-orange);
+    .back-link:hover {
+        transform: translateY(-50%) translateX(-3px);
+        color: var(--tunisia-red);
+        border-color: var(--tunisia-red);
+        box-shadow: 0 4px 12px rgba(227,27,35,0.15);
+    }
+    .back-link i {
+        font-size: 0.8rem;
+        transition: transform 0.2s;
+    }
+    .back-link:hover i {
+        transform: translateX(-3px);
     }
 
     .page-title {
         font-family: 'Cormorant Garamond', serif;
-        font-size: 2rem;
+        font-size: 2.8rem;
         font-weight: 700;
+        color: #77021D;
+        margin: 0;
+        display: inline-block;
+    }
+    
+    .page-subtitle {
+        color: #9CA3AF;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .stats-badge {
+        display: inline-block;
+        background: var(--light-gray);
+        padding: 4px 12px;
+        border-radius: 30px;
+        font-size: 0.7rem;
         color: var(--tunisia-red);
-        margin-bottom: 2rem;
-        border-left: 4px solid var(--tunisia-red);
-        padding-left: 1rem;
+        font-weight: 600;
+        margin-top: 0.8rem;
     }
 
-    /* Grille égale */
+    /* ===================================================
+       TOOLBAR
+    =================================================== */
+    .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 2rem;
+        background: white;
+        border-radius: 18px;
+        padding: 1rem 1.3rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+        border: 1px solid #F0E8DD;
+    }
+    .search-wrapper {
+        position: relative;
+        flex: 1 1 240px;
+    }
+    .search-wrapper i {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9CA3AF;
+        pointer-events: none;
+        font-size: 0.85rem;
+    }
+    .search-input {
+        width: 100%;
+        padding: 10px 14px 10px 40px;
+        border: 1.5px solid #E8DFD1;
+        border-radius: 30px;
+        font-size: 0.88rem;
+        transition: all 0.2s;
+        box-sizing: border-box;
+        background: var(--light-gray);
+        color: var(--dark-gray);
+    }
+    .search-input:focus {
+        outline: none;
+        border-color: var(--tunisia-blue);
+        background: white;
+        box-shadow: 0 0 0 3px rgba(0,84,166,0.1);
+    }
+    .search-input::placeholder { color: #B0B8C5; }
+
+    .sort-group {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+    .sort-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 8px 14px;
+        border-radius: 30px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1.5px solid transparent;
+        transition: all 0.2s ease;
+        background: var(--light-gray);
+        color: #6c757d;
+        white-space: nowrap;
+    }
+    .sort-pill:hover {
+        border-color: var(--tunisia-blue);
+        color: var(--tunisia-blue);
+        background: rgba(0,84,166,0.06);
+    }
+    .sort-pill.active-az,
+    .sort-pill.active-za {
+        background: linear-gradient(135deg, #77021D, #680f24);
+        color: white;
+        border-color: transparent;
+        box-shadow: 0 3px 10px rgba(0,84,166,0.35);
+    }
+    .sort-pill.active-date-asc,
+    .sort-pill.active-date-desc {
+        background: linear-gradient(135deg, var(--tunisia-orange), #d68910);
+        color: white;
+        border-color: transparent;
+        box-shadow: 0 3px 10px rgba(243,156,18,0.4);
+    }
+    .sort-pill i { font-size: 0.72rem; }
+
+    .toolbar-divider {
+        width: 1px;
+        height: 28px;
+        background: #E8DFD1;
+        flex-shrink: 0;
+    }
+    .results-count {
+        font-size: 0.78rem;
+        color: #9CA3AF;
+        white-space: nowrap;
+        margin-left: auto;
+        font-weight: 500;
+    }
+    .results-count strong { color: var(--tunisia-blue); font-weight: 700; }
+
+    /* ===================================================
+       GRID & CARDS
+    =================================================== */
     .programmes-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-        gap: 30px;
+        grid-template-columns: repeat(auto-fill, minmax(370px, 1fr));
+        gap: 28px;
+        margin-top: 10px;
     }
-
     .programme-card {
         background: white;
-        border-radius: 24px;
+        border-radius: 20px;
         overflow: hidden;
         box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         display: flex;
         flex-direction: column;
         height: 100%;
         position: relative;
     }
-
     .programme-card:hover {
         transform: translateY(-8px);
         box-shadow: 0 20px 40px rgba(227,27,35,0.15);
     }
-
-    /* Badge "Nouveau" ou "Promo" */
     .programme-badge {
         position: absolute;
         top: 15px;
         right: 15px;
-        background: linear-gradient(135deg, #E31B23, #FF6B35);
+        background: #4b0512;
         color: white;
         padding: 5px 12px;
         border-radius: 20px;
         font-size: 0.7rem;
         font-weight: 600;
-        z-index: 2;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        z-index: 1;
     }
-
     .programme-img {
-        height: 310px;
+        height: 230px;
         overflow: hidden;
         position: relative;
     }
-
     .programme-img img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         transition: transform 0.5s ease;
     }
-
-    .programme-card:hover .programme-img img {
-        transform: scale(1.05);
-    }
-
+    .programme-card:hover .programme-img img { transform: scale(1.08); }
     .programme-content {
-        padding: 1.5rem;
+        padding: 1.6rem;
         flex: 1;
         display: flex;
         flex-direction: column;
     }
-
     .programme-title {
         font-family: 'Cormorant Garamond', serif;
-        font-size: 1.2rem;
+        font-size: 1.45rem;
         font-weight: 700;
-        color: var(--tunisia-red);
-        margin-bottom: 0.5rem;
-        line-height: 1.4;
-        min-height: 55px;
+        color: var(--tunisia-blue);
+        margin-bottom: 0.75rem;
+        line-height: 1.3;
     }
-
     .programme-info {
         display: flex;
-        gap: 1rem;
-        margin-bottom: 0.8rem;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
         font-size: 0.8rem;
         color: #6c757d;
-        flex-wrap: wrap;
     }
-
-    .programme-info i {
-        color: var(--tunisia-red);
-        margin-right: 5px;
-        width: 14px;
+    .info-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: var(--light-gray);
+        padding: 4px 10px;
+        border-radius: 20px;
     }
-
+    .info-item i { color: var(--tunisia-red); width: 14px; margin-right: 4px; }
     .programme-desc {
         color: #6c757d;
-        line-height: 1.5;
+        line-height: 1.6;
         margin-bottom: 1rem;
         font-size: 0.85rem;
         flex: 1;
     }
-
     .programme-dates {
-        background: #FEF9F0;
-        padding: 8px 12px;
-        border-radius: 12px;
         font-size: 0.75rem;
-        color: #93032E;
+        color: #9CA3AF;
         margin-bottom: 1rem;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        width: fit-content;
-    }
-
-    .programme-dates i {
-        color: var(--tunisia-red);
-    }
-
-    .btn-group {
+        padding: 8px 0;
+        border-top: 1px solid #E8DFD1;
+        border-bottom: 1px solid #E8DFD1;
         display: flex;
-        gap: 10px;
-        margin-top: 0.5rem;
+        justify-content: space-between;
+        align-items: center;
     }
-
+    .dates-label { font-weight: 600; color: var(--tunisia-blue); }
+    .btn-group { display: flex; gap: 10px; margin-top: auto; }
     .btn-details {
         flex: 1;
         background: transparent;
-        border: 1.5px solid var(--tunisia-red);
+        border: 2px solid var(--tunisia-red);
         color: var(--tunisia-red);
         padding: 8px 0;
-        border-radius: 30px;
+        border-radius: 25px;
         font-weight: 600;
         text-decoration: none;
         display: inline-block;
         text-align: center;
         transition: all 0.3s ease;
-        font-size: 0.8rem;
+        font-size: 0.85rem;
+        cursor: pointer;
     }
-
-    .btn-details:hover {
-        background: var(--tunisia-red);
-        color: white;
-        transform: translateY(-2px);
-    }
-
+    .btn-details:hover { background: var(--tunisia-red); color: white; transform: translateY(-2px); }
     .btn-reserve {
         flex: 1;
-        background: linear-gradient(135deg, var(--tunisia-blue), #00408a);
+        background: linear-gradient(135deg, var(--tunisia-blue) 0%, #00408a 100%);
         color: white;
         border: none;
         padding: 8px 0;
-        border-radius: 30px;
+        border-radius: 25px;
         font-weight: 600;
-        font-size: 0.8rem;
+        font-size: 0.85rem;
         cursor: pointer;
         transition: all 0.3s ease;
         text-align: center;
     }
+    .btn-reserve:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,84,166,0.3); }
 
-    .btn-reserve:hover {
-        background: linear-gradient(135deg, #00408a, var(--tunisia-blue));
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,84,166,0.3);
+    /* ===================================================
+       EMPTY STATE
+    =================================================== */
+    .empty-state {
+        text-align: center;
+        padding: 4rem;
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        grid-column: 1 / -1;
     }
+    .empty-state i { font-size: 3.5rem; color: #E8DFD1; margin-bottom: 1rem; display: block; }
+    .empty-state h3 { color: var(--dark-gray); margin-bottom: 0.5rem; font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; }
+    .empty-state p  { color: #9CA3AF; font-size: 0.9rem; }
 
-    /* Modal Styles */
+    /* ===================================================
+       PAGINATION
+    =================================================== */
+    .pagination-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        margin-top: 3rem;
+        flex-wrap: wrap;
+    }
+    .page-btn {
+        min-width: 40px;
+        height: 40px;
+        padding: 0 10px;
+        border-radius: 50px;
+        border: 1.5px solid #E8DFD1;
+        background: white;
+        color: var(--dark-gray);
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+    }
+    .page-btn:hover:not(:disabled) {
+        border-color: var(--tunisia-blue);
+        color: var(--tunisia-blue);
+        background: rgba(0,84,166,0.05);
+    }
+    .page-btn.active {
+        background: linear-gradient(135deg, var(--tunisia-blue), #003580);
+        border-color: transparent;
+        color: white;
+        box-shadow: 0 3px 10px rgba(0,84,166,0.3);
+    }
+    .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .page-info { font-size: 0.78rem; color: #9CA3AF; margin: 0 6px; font-weight: 500; }
+
+    /* ===================================================
+       MODAL
+    =================================================== */
     .modal {
         display: none;
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.5);
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.55);
+        backdrop-filter: blur(5px);
         z-index: 1000;
         align-items: center;
         justify-content: center;
     }
-    
-    .modal.active {
-        display: flex;
-    }
-    
+    .modal.active { display: flex; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .modal-content {
         background: white;
         border-radius: 24px;
@@ -224,8 +396,12 @@
         width: 90%;
         max-height: 90vh;
         overflow-y: auto;
+        animation: slideUp 0.3s ease;
     }
-    
+    @keyframes slideUp {
+        from { transform: translateY(30px); opacity: 0; }
+        to   { transform: translateY(0);    opacity: 1; }
+    }
     .modal-header {
         display: flex;
         justify-content: space-between;
@@ -234,248 +410,194 @@
         padding-bottom: 1rem;
         border-bottom: 2px solid #F0E8DD;
     }
-    
     .modal-header h3 {
-        font-size: 1.3rem;
+        font-size: 1.4rem;
         font-weight: 700;
-        color: var(--tunisia-red);
+        color: var(--tunisia-blue);
         margin: 0;
         font-family: 'Cormorant Garamond', serif;
     }
-    
     .close-modal {
         background: none;
         border: none;
-        font-size: 1.5rem;
+        font-size: 1.8rem;
         cursor: pointer;
         color: #9CA3AF;
         transition: all 0.2s;
+        line-height: 1;
     }
-    
-    .close-modal:hover {
-        color: var(--tunisia-red);
-        transform: rotate(90deg);
-    }
-    
-    .form-group {
-        margin-bottom: 1.2rem;
-    }
-    
-    .form-group label {
-        display: block;
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: var(--dark-gray);
-        margin-bottom: 0.3rem;
-    }
-    
-    .form-group label .required {
-        color: #E31B23;
-        margin-left: 3px;
-    }
-    
+    .close-modal:hover { color: var(--tunisia-red); transform: rotate(90deg); }
+    .form-group { margin-bottom: 1.2rem; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--dark-gray); margin-bottom: 0.4rem; }
+    .form-group label .required { color: var(--tunisia-red); margin-left: 3px; }
     .form-group input {
         width: 100%;
-        padding: 10px 14px;
-        border: 1px solid #E8DFD1;
+        padding: 12px 14px;
+        border: 1.5px solid #E8DFD1;
         border-radius: 12px;
         font-size: 0.9rem;
         transition: all 0.2s;
-        background: #FEF9F0;
+        box-sizing: border-box;
     }
-    
-    .form-group input:focus {
-        outline: none;
-        border-color: var(--tunisia-blue);
-        background: white;
-        box-shadow: 0 0 0 3px rgba(0,84,166,0.1);
-    }
-    
-    .form-group input.error {
-        border-color: #EF4444;
-        background: #FEF2F2;
-    }
-    
-    .error-message {
-        color: #EF4444;
-        font-size: 0.7rem;
-        margin-top: 0.3rem;
-        display: none;
-    }
-    
-    .error-message.show {
-        display: block;
-    }
-    
-    .error-messages {
-        background: #FEF2F2;
-        border-left: 4px solid #EF4444;
-        padding: 12px 16px;
-        margin-bottom: 1rem;
-        border-radius: 12px;
-    }
-    
-    .error-messages ul {
-        margin: 0;
-        padding-left: 1.2rem;
-        color: #EF4444;
-        font-size: 0.85rem;
-    }
-    
-    .success-messages {
-        background: #E0F2E9;
-        border-left: 4px solid #10B981;
-        padding: 12px 16px;
-        margin-bottom: 1rem;
-        border-radius: 12px;
-    }
-    
-    .success-messages ul {
-        margin: 0;
-        padding-left: 1.2rem;
-        color: #047857;
-        font-size: 0.85rem;
-    }
-    
+    .form-group input:focus { outline: none; border-color: var(--tunisia-blue); box-shadow: 0 0 0 3px rgba(0,84,166,0.1); }
+    .form-group input.error { border-color: #EF4444; background: #FEF2F2; }
+    .error-message { color: #EF4444; font-size: 0.7rem; margin-top: 0.3rem; display: none; }
+    .error-message.show { display: block; }
     .btn-submit {
         width: 100%;
-        background: linear-gradient(135deg, var(--tunisia-blue), #00408a);
+        background: linear-gradient(135deg, var(--tunisia-blue) 0%, #00408a 100%);
         color: white;
         border: none;
-        padding: 12px;
-        border-radius: 40px;
+        padding: 14px;
+        border-radius: 30px;
         font-weight: 600;
-        font-size: 0.95rem;
+        font-size: 1rem;
         cursor: pointer;
         transition: all 0.3s ease;
         margin-top: 0.5rem;
     }
-    
-    .btn-submit:hover {
-        background: linear-gradient(135deg, #00408a, var(--tunisia-blue));
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(0,84,166,0.3);
-    }
-    
-    .btn-submit:disabled {
-        background: #9CA3AF;
-        cursor: not-allowed;
-        transform: none;
-    }
-    
-    /* Toast */
-    .success-toast {
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,84,166,0.4); }
+    .btn-submit:disabled { background: #9CA3AF; cursor: not-allowed; transform: none; }
+
+    /* ===================================================
+       TOAST
+    =================================================== */
+    .toast {
         position: fixed;
         top: 100px;
         right: 20px;
-        background: #10B981;
-        color: white;
-        padding: 12px 20px;
+        padding: 14px 20px;
         border-radius: 12px;
         display: flex;
         align-items: center;
-        gap: 10px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        gap: 12px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         z-index: 1100;
         animation: slideInRight 0.3s ease, fadeOut 0.3s ease 3.7s forwards;
         font-size: 0.9rem;
+        font-weight: 500;
     }
-    
-    .error-toast {
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        background: #EF4444;
-        color: white;
-        padding: 12px 20px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        z-index: 1100;
-        animation: slideInRight 0.3s ease, fadeOut 0.3s ease 3.7s forwards;
-        font-size: 0.9rem;
-    }
-    
-    @keyframes slideInRight {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-    
-    @keyframes fadeOut {
-        to { opacity: 0; visibility: hidden; }
-    }
-    
-    .success-toast i, .error-toast i {
-        font-size: 1.2rem;
-    }
+    .toast.success { background: linear-gradient(135deg, #10B981, #059669); color: white; }
+    .toast.error   { background: linear-gradient(135deg, #EF4444, #DC2626); color: white; }
+    @keyframes slideInRight { from { transform: translateX(110%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
 
-    .empty-state {
-        text-align: center;
-        padding: 4rem;
-        background: white;
-        border-radius: 24px;
-        border: 1px solid #F0E8DD;
-    }
-    
-    .empty-state i {
-        font-size: 4rem;
-        color: #E8DFD1;
-        margin-bottom: 1rem;
-    }
-    
-    .empty-state h3 {
-        font-family: 'Cormorant Garamond', serif;
-        color: var(--tunisia-red);
-        margin-bottom: 0.5rem;
-    }
-
+    /* ===================================================
+       RESPONSIVE
+    =================================================== */
     @media (max-width: 768px) {
-        .page-title { font-size: 1.5rem; }
+        .page-title { font-size: 2rem; }
+        .back-link { position: static; transform: none; display: inline-flex; margin-bottom: 1rem; justify-content: center; }
+        .page-header { text-align: center; }
         .programmes-grid { grid-template-columns: 1fr; gap: 20px; }
         .programme-img { height: 200px; }
-        .btn-group { flex-direction: column; gap: 8px; }
+        .programme-content { padding: 1.2rem; }
         .modal-content { padding: 1.5rem; }
+        .toolbar { flex-direction: column; align-items: stretch; }
+        .sort-group { justify-content: flex-start; }
+        .results-count { margin-left: 0; }
+        .toolbar-divider { display: none; }
+    }
+    @media (min-width: 1400px) {
+        .programmes-grid { grid-template-columns: repeat(3, 1fr); }
     }
 </style>
 {% endblock %}
 
 {% block body %}
 <div class="container py-5">
-    <a href="{{ path('app_voyage_index') }}" class="back-arrow">
-        <i class="fas fa-arrow-left"></i> Retour aux voyages
-    </a>
-    
-    <h1 class="page-title">{{ voyage.nom }}</h1>
 
-    <div class="programmes-grid">
+    {# ===== HEADER SIMPLE ===== #}
+    <div class="page-header">
+        <a href="{{ path('app_voyage_index') }}" class="back-link">
+            <i class="fas fa-arrow-left"></i> Retour aux voyages
+        </a>
+        <h1 class="page-title">{{ voyage.nom }}</h1>
+        <div class="page-subtitle">Découvrez tous les programmes disponibles</div>
+        <div class="stats-badge">
+            <i class="fas fa-calendar-alt"></i> {{ programmes|length }} programme{{ programmes|length != 1 ? 's' : '' }}
+        </div>
+    </div>
+
+    {# ===== TOOLBAR ===== #}
+    {% if programmes|length > 0 %}
+    <div class="toolbar">
+        <div class="search-wrapper">
+            <i class="fas fa-search"></i>
+            <input type="text"
+                   id="searchInput"
+                   class="search-input"
+                   placeholder="Rechercher un programme, un lieu…"
+                   oninput="filterAndRender()">
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <div class="sort-group">
+            <button class="sort-pill" id="pill-default" onclick="setSort('default')">
+                <i class="fas fa-sliders-h"></i> Défaut
+            </button>
+            <button class="sort-pill" id="pill-az" onclick="setSort('az')">
+                <i class="fas fa-sort-alpha-down"></i> A → Z
+            </button>
+            <button class="sort-pill" id="pill-za" onclick="setSort('za')">
+                <i class="fas fa-sort-alpha-up"></i> Z → A
+            </button>
+            <button class="sort-pill" id="pill-date-asc" onclick="setSort('date-asc')">
+                <i class="far fa-calendar-plus"></i> Date ↑
+            </button>
+            <button class="sort-pill" id="pill-date-desc" onclick="setSort('date-desc')">
+                <i class="far fa-calendar-minus"></i> Date ↓
+            </button>
+        </div>
+
+        <span class="results-count" id="resultsCount"></span>
+    </div>
+    {% endif %}
+
+    {# ===== GRILLE ===== #}
+    <div class="programmes-grid" id="programmesGrid">
         {% for programme in programmes %}
-            <div class="programme-card">
+            <div class="programme-card"
+                 data-name="{{ (programme.nom ~ ' ' ~ programme.lieu)|lower }}"
+                 data-nomraw="{{ programme.nom }}"
+                 data-dateraw="{{ programme.dateDebut|date('Y-m-d') }}">
+                <div class="programme-badge">
+                    <i class="fas fa-tag"></i> {{ programme.activiteAssociee ?? 'Programme' }}
+                </div>
                 <div class="programme-img">
-                    {% if programme.image and programme.image != 'NULL' %}
-                        <img src="{{ asset('uploads/programmes/' ~ programme.image|replace({' ': '%20'})) }}" alt="{{ programme.nom }}">
+                    {% if programme.image is defined and programme.image and programme.image != 'NULL' %}
+                        <img src="{{ asset('uploads/programmes/' ~ programme.image|replace({' ': '%20'})) }}"
+                             alt="{{ programme.nom }}" loading="lazy">
                     {% else %}
-                        <img src="https://images.pexels.com/photos/1618750/pexels-photo-1618750.jpeg?auto=compress&cs=tinysrgb&w=800" alt="{{ programme.nom }}">
+                        <img src="https://images.pexels.com/photos/1618750/pexels-photo-1618750.jpeg?auto=compress&cs=tinysrgb&w=800"
+                             alt="{{ programme.nom }}" loading="lazy">
                     {% endif %}
-                    <span class="programme-badge">⭐ À découvrir</span>
                 </div>
                 <div class="programme-content">
                     <h3 class="programme-title">{{ programme.nom }}</h3>
                     <div class="programme-info">
-                        <span><i class="fas fa-map-marker-alt"></i> {{ programme.lieu }}</span>
-                        <span><i class="fas fa-hotel"></i> {{ programme.hotel }}</span>
+                        <span class="info-item"><i class="fas fa-map-marker-alt"></i> {{ programme.lieu }}</span>
+                        <span class="info-item"><i class="fas fa-hotel"></i> {{ programme.hotel }}</span>
                     </div>
-                    <p class="programme-desc">{{ programme.description|slice(0, 100) }}{% if programme.description|length > 100 %}...{% endif %}</p>
+                    <p class="programme-desc">
+                        {% set desc = programme.description ?? '' %}
+                        {% if desc|length > 130 %}{{ desc|slice(0,130) }}...{% else %}{{ desc }}{% endif %}
+                    </p>
                     <div class="programme-dates">
-                        <i class="far fa-calendar-alt"></i> {{ programme.dateDebut|date('d/m/Y') }} - {{ programme.dateFin|date('d/m/Y') }}
+                        <span>
+                            <i class="far fa-calendar-alt"></i>
+                            <span class="dates-label">Du</span> {{ programme.dateDebut|date('d/m/Y') }}
+                        </span>
+                        <span><span class="dates-label">au</span> {{ programme.dateFin|date('d/m/Y') }}</span>
                     </div>
                     <div class="btn-group">
                         <a href="{{ path('app_programme_show', {'idProg': programme.idProg}) }}" class="btn-details">
-                            <i class="fas fa-info-circle me-1"></i> Détails
+                            <i class="fas fa-info-circle"></i> Détails
                         </a>
-                        <button class="btn-reserve" onclick="openReservationModal('{{ programme.idProg }}', '{{ programme.nom }}')">
-                            <i class="fas fa-calendar-check me-1"></i> Réserver
+                        <button class="btn-reserve"
+                                onclick="openReservationModal('{{ programme.idProg }}', '{{ programme.nom|escape('js') }}')">
+                            <i class="fas fa-calendar-check"></i> Réserver
                         </button>
                     </div>
                 </div>
@@ -485,191 +607,329 @@
                 <i class="fas fa-calendar-alt"></i>
                 <h3>Aucun programme disponible</h3>
                 <p>Aucun programme n'est proposé pour ce voyage pour le moment.</p>
-                <a href="{{ path('app_voyage_index') }}" class="btn-details" style="display: inline-block; margin-top: 1rem; padding: 10px 25px;">Découvrir d'autres voyages</a>
             </div>
         {% endfor %}
     </div>
+
+    <div class="pagination-wrapper" id="paginationWrapper"></div>
 </div>
 
-<!-- Modal de réservation -->
+{# ================================================================
+   MODAL DE RÉSERVATION
+================================================================ #}
 <div id="reservationModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3><i class="fas fa-ticket-alt me-2"></i> Réserver un programme</h3>
+            <h3 id="modalTitle"><i class="fas fa-ticket-alt"></i> Réserver un programme</h3>
             <button class="close-modal" onclick="closeReservationModal()">&times;</button>
         </div>
-
-        {% if errors is defined and errors|length > 0 %}
-            <div class="error-messages">
-                <ul>
-                    {% for message in errors %}
-                        <li>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-        {% endif %}
-
-        {% for message in app.flashes('success') %}
-            <div class="success-messages">
-                <ul><li>{{ message }}</li></ul>
-            </div>
-        {% endfor %}
-
-        <form id="reservationForm" method="post">
+        <form id="reservationForm" method="post" novalidate>
             <input type="hidden" name="source" value="voyage_programmes">
             <input type="hidden" name="voyageId" value="{{ voyage.idV }}">
-            <input type="hidden" name="idProg" id="programmeId">
+            <input type="hidden" name="idProg" id="programmeIdInput" value="">
             <div class="form-group">
                 <label>Nom <span class="required">*</span></label>
-                <input type="text" name="nom" id="nom" placeholder="Votre nom" value="{{ formData.nom|default('') }}">
-                <div class="error-message" id="nomError"></div>
+                <input type="text" name="nom" id="nom" placeholder="Votre nom" value="">
+                <div class="error-message" id="nomError">Le nom est requis (2-50 caractères)</div>
             </div>
             <div class="form-group">
                 <label>Prénom <span class="required">*</span></label>
-                <input type="text" name="prenom" id="prenom" placeholder="Votre prénom" value="{{ formData.prenom|default('') }}">
-                <div class="error-message" id="prenomError"></div>
+                <input type="text" name="prenom" id="prenom" placeholder="Votre prénom" value="">
+                <div class="error-message" id="prenomError">Le prénom est requis (2-50 caractères)</div>
             </div>
             <div class="form-group">
                 <label>Téléphone <span class="required">*</span></label>
-                <input type="text" name="telephone" id="telephone" placeholder="Ex: 12345678" value="{{ formData.telephone|default('') }}">
-                <div class="error-message" id="telephoneError"></div>
+                <input type="tel" name="telephone" id="telephone" placeholder="12345678" value="" pattern="[0-9]{8}">
+                <div class="error-message" id="telephoneError">8 chiffres exactement</div>
             </div>
             <div class="form-group">
                 <label>Email <span class="required">*</span></label>
-                <input type="text" name="email" id="email" placeholder="exemple@email.com" value="{{ formData.email|default('') }}">
-                <div class="error-message" id="emailError"></div>
+                <input type="email" name="email" id="email" placeholder="exemple@email.com" value="">
+                <div class="error-message" id="emailError">Email valide requis</div>
             </div>
             <div class="form-group">
                 <label>Nombre de personnes <span class="required">*</span></label>
-                <input type="text" name="nbre" id="nbre" value="{{ formData.nbre|default('1') }}" placeholder="Ex: 2">
-                <div class="error-message" id="nbreError"></div>
+                <input type="number" name="nbre" id="nbre" value="1" min="1" max="20">
+                <div class="error-message" id="nbreError">Entre 1 et 20 personnes</div>
             </div>
+            {% if errors is defined and errors|length > 0 %}
+                <div class="form-errors-block"
+                     style="background:#fee;border:1px solid #f88;border-radius:8px;padding:12px;margin-bottom:16px;">
+                    <div style="color:#c33;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px;">
+                        <i class="fas fa-exclamation-triangle"></i> Erreurs détectées :
+                    </div>
+                    <ul style="margin:0;padding-left:24px;">
+                        {% for error in errors %}
+                            <li style="color:#c33;font-size:13px;margin-bottom:4px;">{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
             <button type="submit" class="btn-submit" id="submitBtn">
-                <i class="fas fa-check-circle me-2"></i> Confirmer la réservation
+                <i class="fas fa-check-circle"></i> Confirmer la réservation
             </button>
         </form>
     </div>
 </div>
 
 <script>
-    let isSubmitting = false;
-    
-    function showToast(message, isError = false) {
-        const toast = document.createElement('div');
-        toast.className = isError ? 'error-toast' : 'success-toast';
-        toast.innerHTML = isError ? 
-            '<i class="fas fa-exclamation-circle"></i> ' + message : 
-            '<i class="fas fa-check-circle"></i> ' + message;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 4000);
-    }
-    
-    function openReservationModal(programmeId) {
-        const modal = document.getElementById('reservationModal');
-        const form = document.getElementById('reservationForm');
-        const routeUrl = "{{ path('app_reservation_new', {'idProg': 'PROGRAMME_ID'}) }}";
-        form.action = routeUrl.replace('PROGRAMME_ID', programmeId);
-        document.getElementById('programmeId').value = programmeId;
-        modal.classList.add('active');
-        
-        // Réinitialiser les erreurs
-        document.querySelectorAll('.error-message').forEach(el => {
-            el.classList.remove('show');
-            el.textContent = '';
-        });
-        document.querySelectorAll('.form-group input').forEach(el => {
-            el.classList.remove('error');
-        });
-    }
-    
-    function closeReservationModal() {
-        const modal = document.getElementById('reservationModal');
-        modal.classList.remove('active');
-        isSubmitting = false;
-    }
-    
-    function displayErrors(errors) {
-        document.querySelectorAll('.error-message').forEach(el => {
-            el.classList.remove('show');
-            el.textContent = '';
-        });
-        document.querySelectorAll('.form-group input').forEach(el => el.classList.remove('error'));
-        
-        const errorMap = {
-            'nom': 'nomError', 'prénom': 'prenomError', 'prenom': 'prenomError',
-            'téléphone': 'telephoneError', 'telephone': 'telephoneError',
-            'email': 'emailError', 'personnes': 'nbreError', 'nbre': 'nbreError'
-        };
-        
-        errors.forEach(error => {
-            const lowerError = error.toLowerCase();
-            let field = null;
-            for (const [key, value] of Object.entries(errorMap)) {
-                if (lowerError.includes(key)) { field = value; break; }
-            }
-            if (field) {
-                const errorDiv = document.getElementById(field);
-                if (errorDiv) {
-                    errorDiv.textContent = error;
-                    errorDiv.classList.add('show');
-                }
-                const inputId = field.replace('Error', '');
-                const input = document.getElementById(inputId);
-                if (input) input.classList.add('error');
-            }
-        });
-    }
-    
-    document.getElementById('reservationForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        if (isSubmitting) return;
-        isSubmitting = true;
-        
-        const submitBtn = document.getElementById('submitBtn');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Traitement...';
-        submitBtn.disabled = true;
-        
-        try {
-            const response = await fetch(this.action, {
-                method: 'POST',
-                body: new FormData(this)
-            });
-            const result = await response.json();
-            
-            if (result.success) {
-                closeReservationModal();
-                showToast(result.message);
-                setTimeout(() => window.location.reload(), 2000);
-            } else if (result.errors) {
-                displayErrors(result.errors);
-                showToast('Veuillez corriger les erreurs', true);
-                isSubmitting = false;
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-            } else {
-                showToast(result.message || 'Une erreur est survenue', true);
-                isSubmitting = false;
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-            }
-        } catch (error) {
-            showToast('Erreur de connexion', true);
-            isSubmitting = false;
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-        }
+var CARDS_PER_PAGE = 6;
+var currentPage    = 1;
+var currentSort    = 'default';
+var allCards       = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+    allCards = Array.from(document.querySelectorAll('#programmesGrid .programme-card'));
+    updatePillUI();
+    filterAndRender();
+});
+
+function setSort(val) {
+    currentSort = val;
+    currentPage = 1;
+    updatePillUI();
+    filterAndRender();
+}
+
+function updatePillUI() {
+    var pillMap = {
+        'default': 'pill-default',
+        'az':      'pill-az',
+        'za':      'pill-za',
+        'date-asc':  'pill-date-asc',
+        'date-desc': 'pill-date-desc'
+    };
+    var activeClass = {
+        'default':   'active-default',
+        'az':        'active-az',
+        'za':        'active-za',
+        'date-asc':  'active-date-asc',
+        'date-desc': 'active-date-desc'
+    };
+    Object.keys(pillMap).forEach(function(key) {
+        var el = document.getElementById(pillMap[key]);
+        if (!el) return;
+        el.classList.remove('active-az','active-za','active-date-asc','active-date-desc','active-default');
+        if (key === currentSort) el.classList.add(activeClass[key]);
     });
-    
-    {% if errors is defined and errors|length > 0 %}
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('reservationModal').classList.add('active');
+}
+
+function filterAndRender() {
+    var q = ((document.getElementById('searchInput') || {}).value || '').toLowerCase().trim();
+
+    var filtered = allCards.filter(function(card) {
+        return !q || card.dataset.name.indexOf(q) !== -1;
+    });
+
+    if (currentSort === 'az') {
+        filtered.sort(function(a, b) {
+            return a.dataset.nomraw.localeCompare(b.dataset.nomraw, 'fr', { sensitivity: 'base' });
         });
-    {% endif %}
-    
-    window.onclick = function(event) {
-        const modal = document.getElementById('reservationModal');
-        if (event.target === modal) closeReservationModal();
+    } else if (currentSort === 'za') {
+        filtered.sort(function(a, b) {
+            return b.dataset.nomraw.localeCompare(a.dataset.nomraw, 'fr', { sensitivity: 'base' });
+        });
+    } else if (currentSort === 'date-asc') {
+        filtered.sort(function(a, b) { return a.dataset.dateraw.localeCompare(b.dataset.dateraw); });
+    } else if (currentSort === 'date-desc') {
+        filtered.sort(function(a, b) { return b.dataset.dateraw.localeCompare(a.dataset.dateraw); });
     }
+
+    var totalPages = Math.max(1, Math.ceil(filtered.length / CARDS_PER_PAGE));
+    if (currentPage > totalPages) currentPage = 1;
+
+    var start = (currentPage - 1) * CARDS_PER_PAGE;
+    var end   = start + CARDS_PER_PAGE;
+
+    allCards.forEach(function(c) { c.style.display = 'none'; });
+
+    var grid = document.getElementById('programmesGrid');
+    var dynamicEmpty = document.getElementById('dynamicEmpty');
+    if (dynamicEmpty) dynamicEmpty.remove();
+
+    filtered.forEach(function(card, idx) {
+        grid.appendChild(card);
+        card.style.display = (idx >= start && idx < end) ? '' : 'none';
+    });
+
+    if (filtered.length === 0) {
+        var emptyDiv = document.createElement('div');
+        emptyDiv.id = 'dynamicEmpty';
+        emptyDiv.className = 'empty-state';
+        emptyDiv.innerHTML = '<i class="fas fa-search"></i><h3>Aucun résultat</h3><p>Aucun programme ne correspond à votre recherche.</p>';
+        grid.appendChild(emptyDiv);
+    }
+
+    var countEl = document.getElementById('resultsCount');
+    if (countEl) {
+        countEl.innerHTML = '<strong>' + filtered.length + '</strong> programme' + (filtered.length !== 1 ? 's' : '');
+    }
+
+    renderPagination(filtered.length, totalPages);
+}
+
+function renderPagination(total, totalPages) {
+    var wrapper = document.getElementById('paginationWrapper');
+    wrapper.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    var prev = makePaginBtn('<i class="fas fa-chevron-left"></i>');
+    if (currentPage === 1) prev.disabled = true;
+    prev.addEventListener('click', function() {
+        currentPage--; filterAndRender();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    wrapper.appendChild(prev);
+
+    for (var i = 1; i <= totalPages; i++) {
+        var btn = makePaginBtn(i);
+        if (i === currentPage) btn.classList.add('active');
+        (function(p) {
+            btn.addEventListener('click', function() {
+                currentPage = p; filterAndRender();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        })(i);
+        wrapper.appendChild(btn);
+    }
+
+    var next = makePaginBtn('<i class="fas fa-chevron-right"></i>');
+    if (currentPage === totalPages) next.disabled = true;
+    next.addEventListener('click', function() {
+        currentPage++; filterAndRender();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    wrapper.appendChild(next);
+
+    var info = document.createElement('span');
+    info.className = 'page-info';
+    var s = (currentPage - 1) * CARDS_PER_PAGE + 1;
+    var e = Math.min(currentPage * CARDS_PER_PAGE, total);
+    info.textContent = s + '–' + e + ' / ' + total;
+    wrapper.appendChild(info);
+}
+
+function makePaginBtn(content) {
+    var btn = document.createElement('button');
+    btn.className = 'page-btn';
+    btn.innerHTML = content;
+    return btn;
+}
+
+function openReservationModal(programmeId, programmeName) {
+    var form    = document.getElementById('reservationForm');
+    var modal   = document.getElementById('reservationModal');
+    var title   = document.getElementById('modalTitle');
+    var idInput = document.getElementById('programmeIdInput');
+
+    var baseUrl = "{{ path('app_reservation_new', {'idProg': '__PROG_ID__'}) }}";
+    form.action = baseUrl.replace('__PROG_ID__', programmeId);
+    idInput.value = programmeId;
+
+    var shortName = programmeName.length > 30 ? programmeName.substring(0, 30) + '…' : programmeName;
+    title.innerHTML = '<i class="fas fa-ticket-alt"></i> Réserver : ' + shortName;
+
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeReservationModal() {
+    document.getElementById('reservationModal').classList.remove('active');
+    document.body.style.overflow = '';
+    clearErrors();
+}
+
+function clearErrors() {
+    document.querySelectorAll('.error-message').forEach(function(e) { e.classList.remove('show'); });
+    document.querySelectorAll('.form-group input').forEach(function(i) { i.classList.remove('error'); });
+}
+
+function validateForm() {
+    var isValid  = true;
+    var nomRegex = /^[a-zA-ZÀ-ÿ\s-]{2,50}$/;
+
+    var nom = document.getElementById('nom');
+    if (!nom.value.trim() || !nomRegex.test(nom.value.trim())) { showFieldError('nomError', nom, true); isValid = false; }
+    else { showFieldError('nomError', nom, false); }
+
+    var prenom = document.getElementById('prenom');
+    if (!prenom.value.trim() || !nomRegex.test(prenom.value.trim())) { showFieldError('prenomError', prenom, true); isValid = false; }
+    else { showFieldError('prenomError', prenom, false); }
+
+    var telephone = document.getElementById('telephone');
+    if (!/^[0-9]{8}$/.test(telephone.value.trim())) { showFieldError('telephoneError', telephone, true); isValid = false; }
+    else { showFieldError('telephoneError', telephone, false); }
+
+    var email = document.getElementById('email');
+    if (!/^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/.test(email.value.trim())) { showFieldError('emailError', email, true); isValid = false; }
+    else { showFieldError('emailError', email, false); }
+
+    var nbre = document.getElementById('nbre');
+    var nbreVal = parseInt(nbre.value, 10);
+    if (isNaN(nbreVal) || nbreVal < 1 || nbreVal > 20) { showFieldError('nbreError', nbre, true); isValid = false; }
+    else { showFieldError('nbreError', nbre, false); }
+
+    return isValid;
+}
+
+function showFieldError(errorId, input, show) {
+    var el = document.getElementById(errorId);
+    if (el) el.classList.toggle('show', show);
+    if (input) input.classList.toggle('error', show);
+}
+
+['nom', 'prenom', 'telephone', 'email', 'nbre'].forEach(function(field) {
+    var input = document.getElementById(field);
+    if (input) input.addEventListener('input', function() { if (this.classList.contains('error')) validateForm(); });
+});
+
+document.getElementById('reservationForm').addEventListener('submit', function(e) {
+    var form = document.getElementById('reservationForm');
+    if (!form.action || form.action.endsWith('#') || form.action.endsWith('/')) {
+        e.preventDefault(); showToast('Programme non sélectionné, veuillez réessayer.', 'error'); return;
+    }
+    if (!validateForm()) {
+        e.preventDefault(); showToast('Veuillez remplir tous les champs correctement.', 'error');
+    } else {
+        var btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours...';
+    }
+});
+
+function showToast(message, type) {
+    var existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+    var toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    var icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+    toast.innerHTML = '<i class="fas ' + icon + '"></i><span>' + message + '</span>';
+    document.body.appendChild(toast);
+    setTimeout(function() { if (toast && toast.parentNode) toast.remove(); }, 4000);
+}
+
+window.addEventListener('click', function(event) {
+    var modal = document.getElementById('reservationModal');
+    if (event.target === modal) closeReservationModal();
+});
+
+{% for message in app.flashes('success') %}
+    document.addEventListener('DOMContentLoaded', function() { showToast('{{ message|escape('js') }}', 'success'); });
+{% endfor %}
+{% for message in app.flashes('error') %}
+    document.addEventListener('DOMContentLoaded', function() { showToast('{{ message|escape('js') }}', 'error'); });
+{% endfor %}
+
+{% if errors is defined and errors|length > 0 and formData is defined and formData.idProg is defined %}
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('reservationModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+        setTimeout(function() {
+            var errorBlock = document.querySelector('.form-errors-block');
+            if (errorBlock) errorBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 300);
+        showToast('Veuillez corriger les erreurs ci-dessous.', 'error');
+    });
+{% endif %}
 </script>
 {% endblock %}

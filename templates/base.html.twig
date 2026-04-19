@@ -771,38 +771,52 @@
     </div>
 
     <!-- MODAL RÉSERVATION ÉDITION -->
-    <div class="edit-modal" id="editModal">
-        <div class="edit-modal-content">
-            <div class="edit-modal-header">
-                <h3>Modifier la réservation</h3>
-                <button class="close-edit-modal" id="closeEditModal">&times;</button>
-            </div>
-            <form id="editReservationForm">
-                <input type="hidden" id="editReservationId">
-                <div class="edit-form-group">
-                    <label>Nom</label>
-                    <input type="text" id="editNom">
-                </div>
-                <div class="edit-form-group">
-                    <label>Prénom</label>
-                    <input type="text" id="editPrenom">
-                </div>
-                <div class="edit-form-group">
-                    <label>Téléphone</label>
-                    <input type="tel" id="editTelephone">
-                </div>
-                <div class="edit-form-group">
-                    <label>Email</label>
-                    <input type="email" id="editEmail">
-                </div>
-                <div class="edit-form-group">
-                    <label>Nombre de personnes</label>
-                    <input type="number" id="editNbre" min="1">
-                </div>
-                <button type="submit" class="btn-save-edit">Enregistrer</button>
-            </form>
+    <!-- MODAL RÉSERVATION ÉDITION (modification limitée) -->
+<div class="edit-modal" id="editModal">
+    <div class="edit-modal-content">
+        <div class="edit-modal-header">
+            <h3>Modifier la réservation</h3>
+            <button class="close-edit-modal" id="closeEditModal">&times;</button>
         </div>
+        <form id="editReservationForm">
+            <input type="hidden" id="editReservationId">
+            
+            <!-- Champ Nom (lecture seule) -->
+            <div class="edit-form-group">
+                <label>Nom <span style="color:#9CA3AF; font-size:0.7rem;">(non modifiable)</span></label>
+                <input type="text" id="editNom" readonly style="background:#f5f5f5; cursor:not-allowed;">
+            </div>
+            
+            <!-- Champ Prénom (lecture seule) -->
+            <div class="edit-form-group">
+                <label>Prénom <span style="color:#9CA3AF; font-size:0.7rem;">(non modifiable)</span></label>
+                <input type="text" id="editPrenom" readonly style="background:#f5f5f5; cursor:not-allowed;">
+            </div>
+            
+            <!-- Champ Téléphone (modifiable) -->
+            <div class="edit-form-group">
+                <label>Téléphone <span class="required">*</span></label>
+                <input type="tel" id="editTelephone" placeholder="12345678">
+                <small style="font-size:0.7rem; color:#6c757d;">8 chiffres exactement</small>
+            </div>
+            
+            <!-- Champ Email (lecture seule) -->
+            <div class="edit-form-group">
+                <label>Email <span style="color:#9CA3AF; font-size:0.7rem;">(non modifiable)</span></label>
+                <input type="email" id="editEmail" readonly style="background:#f5f5f5; cursor:not-allowed;">
+            </div>
+            
+            <!-- Champ Nombre de personnes (modifiable) -->
+            <div class="edit-form-group">
+                <label>Nombre de personnes <span class="required">*</span></label>
+                <input type="number" id="editNbre" min="1" max="20">
+                <small style="font-size:0.7rem; color:#6c757d;">Entre 1 et 20 personnes</small>
+            </div>
+            
+            <button type="submit" class="btn-save-edit">Enregistrer les modifications</button>
+        </form>
     </div>
+</div>
 
     <!-- Espace navbar fixe -->
     <div style="height: 85px;"></div>
@@ -1163,43 +1177,48 @@
         if (reservationIcon) reservationIcon.addEventListener('click', openSidebar);
         if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeSidebar);
         if (overlay) overlay.addEventListener('click', closeSidebar);
-
-        async function loadReservations() {
-            const container = document.getElementById('reservationsList');
-            if (!container) return;
-            try {
-                const response = await fetch('/api/reservations');
-                const reservations = await response.json();
-                if (reservations.length === 0) {
-                    container.innerHTML = '<div class="empty-reservations"><i class="fas fa-ticket-alt fa-3x mb-2"></i><p>Aucune réservation trouvée</p></div>';
-                    return;
-                }
-                container.innerHTML = reservations.map(res => `
-                    <div class="reservation-card" data-id="${res.idRP}">
-                        <div class="reservation-info">
-                            <div class="reservation-name">${escapeHtml(res.prenom)} ${escapeHtml(res.nom)}</div>
-                            <div class="reservation-details">
-                                <div><i class="fas fa-phone"></i> ${escapeHtml(res.telephone)}</div>
-                                <div><i class="fas fa-envelope"></i> ${escapeHtml(res.email)}</div>
-                                <div><i class="fas fa-users"></i> ${res.nbre} personnes</div>
-                                <div><i class="fas fa-calendar"></i> ${res.dateProgramme}</div>
-                                <div><i class="fas fa-tag"></i> ${res.prixProg} DT</div>
-                            </div>
-                        </div>
-                        <div class="reservation-actions">
-                            <button class="btn-edit-reservation" onclick="editReservation(${res.idRP})">
-                                <i class="fas fa-edit"></i> Modifier
-                            </button>
-                            <button class="btn-delete-reservation" onclick="deleteReservation(${res.idRP})">
-                                <i class="fas fa-trash"></i> Supprimer
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
-            } catch (error) {
-                container.innerHTML = '<div class="empty-reservations"><i class="fas fa-exclamation-circle fa-3x mb-2"></i><p>Erreur de chargement</p></div>';
-            }
+async function loadReservations() {
+    const container = document.getElementById('reservationsList');
+    if (!container) return;
+    try {
+        const response = await fetch('/api/reservations');
+        const reservations = await response.json();
+        
+        // 🔥 DEBUG : Afficher dans la console
+        console.log('Réservations reçues:', reservations);
+        console.log('Nombre de réservations:', reservations.length);
+        
+        if (reservations.length === 0) {
+            container.innerHTML = '<div class="empty-reservations"><i class="fas fa-ticket-alt fa-3x mb-2"></i><p>Aucune réservation trouvée</p><p class="small">Connectez-vous avec le même email que votre réservation</p></div>';
+            return;
         }
+        container.innerHTML = reservations.map(res => `
+            <div class="reservation-card" data-id="${res.idRP}">
+                <div class="reservation-info">
+                    <div class="reservation-name">${escapeHtml(res.prenom)} ${escapeHtml(res.nom)}</div>
+                    <div class="reservation-details">
+                        <div><i class="fas fa-phone"></i> ${escapeHtml(res.telephone)}</div>
+                        <div><i class="fas fa-envelope"></i> ${escapeHtml(res.email)}</div>
+                        <div><i class="fas fa-users"></i> ${res.nbre} personnes</div>
+                        <div><i class="fas fa-calendar"></i> ${res.dateProgramme}</div>
+                        <div><i class="fas fa-tag"></i> ${res.prixProg} DT</div>
+                    </div>
+                </div>
+                <div class="reservation-actions">
+                    <button class="btn-edit-reservation" onclick="editReservation(${res.idRP})">
+                        <i class="fas fa-edit"></i> Modifier
+                    </button>
+                    <button class="btn-delete-reservation" onclick="deleteReservation(${res.idRP})">
+                        <i class="fas fa-trash"></i> Supprimer
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Erreur:', error);
+        container.innerHTML = '<div class="empty-reservations"><i class="fas fa-exclamation-circle fa-3x mb-2"></i><p>Erreur de chargement</p></div>';
+    }
+}
 
         function escapeHtml(str) {
             if (!str) return '';
@@ -1207,18 +1226,49 @@
         }
 
         async function editReservation(id) {
-            try {
-                const response = await fetch(`/api/reservations/${id}`);
-                const res = await response.json();
-                document.getElementById('editReservationId').value = res.idRP;
-                document.getElementById('editNom').value = res.nom;
-                document.getElementById('editPrenom').value = res.prenom;
-                document.getElementById('editTelephone').value = res.telephone;
-                document.getElementById('editEmail').value = res.email;
-                document.getElementById('editNbre').value = res.nbre;
-                document.getElementById('editModal').classList.add('active');
-            } catch (error) { alert('Erreur lors du chargement'); }
+    try {
+        const response = await fetch(`/api/reservations/${id}`);
+        const res = await response.json();
+        document.getElementById('editReservationId').value = res.idRP;
+        
+        // Champs en lecture seule (désactivés)
+        const nomInput = document.getElementById('editNom');
+        const prenomInput = document.getElementById('editPrenom');
+        const emailInput = document.getElementById('editEmail');
+        
+        if (nomInput) {
+            nomInput.value = res.nom;
+            nomInput.disabled = true;
+            nomInput.style.backgroundColor = '#f5f5f5';
+            nomInput.style.cursor = 'not-allowed';
         }
+        if (prenomInput) {
+            prenomInput.value = res.prenom;
+            prenomInput.disabled = true;
+            prenomInput.style.backgroundColor = '#f5f5f5';
+            prenomInput.style.cursor = 'not-allowed';
+        }
+        if (emailInput) {
+            emailInput.value = res.email;
+            emailInput.disabled = true;
+            emailInput.style.backgroundColor = '#f5f5f5';
+            emailInput.style.cursor = 'not-allowed';
+        }
+        
+        // Champs modifiables
+        document.getElementById('editTelephone').value = res.telephone;
+        document.getElementById('editNbre').value = res.nbre;
+        
+        // Activer les champs modifiables
+        document.getElementById('editTelephone').disabled = false;
+        document.getElementById('editNbre').disabled = false;
+        
+        document.getElementById('editModal').classList.add('active');
+    } catch (error) { 
+        console.error('Erreur:', error);
+        alert('Erreur lors du chargement de la réservation'); 
+    }
+}
 
         const closeEditModalBtn = document.getElementById('closeEditModal');
         if (closeEditModalBtn) {
@@ -1226,31 +1276,66 @@
         }
 
         const editReservationForm = document.getElementById('editReservationForm');
-        if (editReservationForm) {
-            editReservationForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const id = document.getElementById('editReservationId').value;
-                const data = {
-                    nom: document.getElementById('editNom').value,
-                    prenom: document.getElementById('editPrenom').value,
-                    telephone: document.getElementById('editTelephone').value,
-                    email: document.getElementById('editEmail').value,
-                    nbre: parseInt(document.getElementById('editNbre').value)
-                };
-                try {
-                    const response = await fetch(`/api/reservations/${id}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
-                    });
-                    if (response.ok) {
-                        document.getElementById('editModal').classList.remove('active');
-                        loadReservations();
-                        showToast('Réservation modifiée avec succès !');
-                    } else { alert('Erreur lors de la modification'); }
-                } catch (error) { alert('Erreur lors de la modification'); }
-            });
+if (editReservationForm) {
+    editReservationForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('editReservationId').value;
+        
+        // 🔥 On n'envoie QUE le téléphone et le nombre de personnes
+        const data = {
+            telephone: document.getElementById('editTelephone').value,
+            nbre: parseInt(document.getElementById('editNbre').value)
+        };
+        
+        // Validation côté client
+        let errors = [];
+        
+        // Validation téléphone : exactement 8 chiffres
+        const phoneRegex = /^[0-9]{8}$/;
+        if (!phoneRegex.test(data.telephone)) {
+            errors.push('Le téléphone doit contenir exactement 8 chiffres');
+            document.getElementById('editTelephone').style.borderColor = '#EF4444';
+        } else {
+            document.getElementById('editTelephone').style.borderColor = '#E8DFD1';
         }
+        
+        // Validation nombre de personnes : entre 1 et 20
+        if (data.nbre < 1 || data.nbre > 20) {
+            errors.push('Le nombre de personnes doit être compris entre 1 et 20');
+            document.getElementById('editNbre').style.borderColor = '#EF4444';
+        } else {
+            document.getElementById('editNbre').style.borderColor = '#E8DFD1';
+        }
+        
+        if (errors.length > 0) {
+            alert('❌ ' + errors.join('\n'));
+            return;
+        }
+        
+        try {
+            // 🔥 Utiliser la route MODIFY (pas UPDATE)
+            const response = await fetch(`/api/reservations/${id}/modify`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                document.getElementById('editModal').classList.remove('active');
+                loadReservations();
+                showToast('✅ Réservation modifiée avec succès !');
+            } else {
+                const errorMsg = result.errors ? result.errors.join('\n') : (result.message || 'Erreur lors de la modification');
+                alert('❌ ' + errorMsg);
+            }
+        } catch (error) { 
+            console.error('Erreur:', error);
+            alert('❌ Erreur lors de la modification'); 
+        }
+    });
+}
 
         async function deleteReservation(id) {
             if (!confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?')) return;
@@ -1376,6 +1461,5 @@
     </script>
 
     {% block javascripts %}{% endblock %}
-    {% block importmap %}{{ importmap('app') }}{% endblock %}
 </body>
 </html>
