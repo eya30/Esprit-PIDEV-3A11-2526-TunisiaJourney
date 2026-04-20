@@ -4,7 +4,9 @@ framework:
             discord: '%env(DISCORD_WEBHOOK_URL)%'
         texter_transports:
         channel_policy:
-            urgent: ['discord']
-            high: ['discord']
-            medium: ['discord']
-            low: ['discord']
+            urgent: ['discord', 'email']
+            high: ['discord', 'email']
+            medium: ['email']
+            low: ['email']
+        admin_recipients:
+            - { email: admin@example.com }

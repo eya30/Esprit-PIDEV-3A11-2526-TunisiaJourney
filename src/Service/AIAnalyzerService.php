@@ -39,6 +39,9 @@ class AIAnalyzerService
             ORDER BY p.dateDebut ASC
         ");
 
+        // ─── Données pour Ollama (contexte global) ───────────────────────
+        $ollamaContextData = [];
+
         foreach ($programmes as $programme) {
 
             // ─── Stats réservations ──────────────────────────────────────
@@ -65,31 +68,47 @@ class AIAnalyzerService
             }
 
             $prixActuel = (float)($programme['prix'] ?? 0);
+            $taux = $capaciteMax > 0 ? round(($stats['total_personnes'] / $capaciteMax) * 100, 1) : 0;
+
+            // Accumule les données pour Ollama
+            $ollamaContextData[] = [
+                'programme'          => $programme['nom'],
+                'voyage'             => $programme['voyage_nom'],
+                'jours_avant_depart' => $joursRestants,
+                'capacite'           => $capaciteMax,
+                'reservations'       => (int)$stats['total_reservations'],
+                'personnes'          => (int)$stats['total_personnes'],
+                'places_libres'      => $placesDisponibles,
+                'taux_occupation'    => $taux . '%',
+                'paiements_en_attente' => (int)$stats['en_attente'],
+                'prix_actuel'        => $prixActuel . ' DT',
+            ];
 
             // ═══════════════════════════════════════════════════════════════
             // ALERTE 1 : AUCUNE RÉSERVATION (critique)
             // ═══════════════════════════════════════════════════════════════
             if ($stats['total_reservations'] == 0 && $joursRestants > 0) {
 
-                $prixFlash    = $prixActuel * 0.70;  // -30 %
-                $prixEarlyb   = $prixActuel * 0.85;  // -15 % early bird
+                $prixFlash  = $prixActuel * 0.70;
+                $prixEarlyb = $prixActuel * 0.85;
                 $urgenceLabel = $joursRestants < 14 ? '🔴 URGENT' : ($joursRestants < 30 ? '🟠 PRIORITAIRE' : '🟡 À surveiller');
 
                 $idees = $this->buildNoReservationIdeas($programme['nom'], $prixActuel, $prixFlash, $prixEarlyb, $joursRestants);
 
                 $alerts[] = [
-                    'type'         => 'danger',
-                    'programme_id' => $programme['idProg'],
-                    'programme_nom'=> $programme['nom'],
-                    'message'      => "🚨 {$urgenceLabel} — AUCUNE RÉSERVATION : \"{$programme['nom']}\" · {$joursRestants} jours avant départ",
-                    'action'       => "Offre flash recommandée : " . number_format($prixFlash, 2) . " DT (au lieu de {$prixActuel} DT) — voir idées ci-dessous",
-                    'idees'        => $idees,
-                    'priority'     => 1,
+                    'type'          => 'danger',
+                    'programme_id'  => $programme['idProg'],
+                    'programme_nom' => $programme['nom'],
+                    'message'       => "🚨 {$urgenceLabel} — AUCUNE RÉSERVATION : \"{$programme['nom']}\" · {$joursRestants} jours avant départ",
+                    'action'        => "Offre flash recommandée : " . number_format($prixFlash, 2) . " DT (au lieu de {$prixActuel} DT) — voir idées ci-dessous",
+                    'idees'         => $idees,
+                    'priority'      => 1,
+                    'ai_insight'    => '',
                 ];
 
                 $tasks[] = $this->createTask(
                     "🚨 Offre spéciale pour \"{$programme['nom']}\" — Zéro inscription",
-                    "Aucune réservation à {$joursRestants} jours du départ. Lancer offre flash -30% à {$prixFlash} DT. Relancer via WhatsApp + réseaux sociaux.",
+                    "Aucune réservation à {$joursRestants} jours du départ. Lancer offre flash -30% à " . number_format($prixFlash, 2) . " DT.",
                     'urgent',
                     'programme',
                     $programme['idProg']
@@ -102,28 +121,29 @@ class AIAnalyzerService
             elseif ($stats['total_personnes'] < 3 && $stats['total_personnes'] > 0
                     && $joursRestants > 0 && $joursRestants < 45) {
 
-                $prixPromo = $prixActuel * 0.85; // -15 %
+                $prixPromo = $prixActuel * 0.85;
                 $manquants = 3 - $stats['total_personnes'];
 
                 $alerts[] = [
-                    'type'         => 'warning',
-                    'programme_id' => $programme['idProg'],
-                    'programme_nom'=> $programme['nom'],
-                    'message'      => "⚠️ TRÈS PEU DE RÉSERVATIONS : {$stats['total_personnes']} personne(s) inscrite(s) pour \"{$programme['nom']}\" — il manque {$manquants} pour atteindre le minimum",
-                    'action'       => "Lancer une promotion à " . number_format($prixPromo, 2) . " DT + offre \"Amenez un ami\"",
-                    'idees'        => [
+                    'type'          => 'warning',
+                    'programme_id'  => $programme['idProg'],
+                    'programme_nom' => $programme['nom'],
+                    'message'       => "⚠️ TRÈS PEU DE RÉSERVATIONS : {$stats['total_personnes']} personne(s) pour \"{$programme['nom']}\" — manque {$manquants} pour le minimum",
+                    'action'        => "Lancer une promotion à " . number_format($prixPromo, 2) . " DT + offre \"Amenez un ami\"",
+                    'idees'         => [
                         "🎁 Offre duo : -10% supplémentaires si inscription en groupe",
                         "📣 Boost payant sur Facebook & Instagram ciblé Tunisie",
                         "🤝 Partenariat avec agences locales pour co-promotion",
                         "📧 Email marketing sur base clients existants",
                         "⏰ Compte à rebours \"Offre valable 48h\" sur le site",
                     ],
-                    'priority'     => 2,
+                    'priority'      => 2,
+                    'ai_insight'    => '',
                 ];
 
                 $tasks[] = $this->createTask(
                     "Augmenter visibilité de \"{$programme['nom']}\"",
-                    "Seulement {$stats['total_personnes']} personne(s). Besoin de {$manquants} de plus. Promotion -15% à {$prixPromo} DT + campagne duo.",
+                    "Seulement {$stats['total_personnes']} personne(s). Besoin de {$manquants} de plus. Promotion -15% à " . number_format($prixPromo, 2) . " DT + campagne duo.",
                     'high',
                     'programme',
                     $programme['idProg']
@@ -131,29 +151,32 @@ class AIAnalyzerService
             }
 
             // ═══════════════════════════════════════════════════════════════
-            // ALERTE 3 : SURCHARGE (overbooked)
+            // ALERTE 3 : SURCHARGE — capacité voyage < nbre réservations
             // ═══════════════════════════════════════════════════════════════
             elseif ($placesDisponibles < 0) {
+
                 $excedent = abs($placesDisponibles);
 
                 $alerts[] = [
-                    'type'         => 'danger',
-                    'programme_id' => $programme['idProg'],
-                    'programme_nom'=> $programme['nom'],
-                    'message'      => "⚠️ SURCHARGE : \"{$programme['nom']}\" — {$stats['total_personnes']} personnes pour {$capaciteMax} places ({$excedent} en trop)",
-                    'action'       => "Ajouter {$excedent} places OU contacter les derniers inscrits pour report",
-                    'idees'        => [
-                        "📞 Appeler les {$excedent} derniers inscrits pour proposer un report avec geste commercial",
+                    'type'          => 'danger',
+                    'programme_id'  => $programme['idProg'],
+                    'programme_nom' => $programme['nom'],
+                    'message'       => "🔴 SURCHARGE CRITIQUE : \"{$programme['nom']}\" — {$stats['total_personnes']} personnes inscrites pour seulement {$capaciteMax} places ({$excedent} en trop !)",
+                    'action'        => "URGENT : Augmenter la capacité de {$excedent} places OU contacter les derniers inscrits pour report",
+                    'idees'         => [
                         "🚌 Ajouter un bus/véhicule supplémentaire si logistiquement possible",
+                        "📞 Appeler les {$excedent} derniers inscrits pour proposer un report avec geste commercial",
                         "🗓️ Ouvrir une 2ème session identique rapidement",
-                        "💰 Proposer un remboursement + bon d'achat aux volontaires",
+                        "💰 Proposer un remboursement + bon d'achat de 20% aux volontaires",
+                        "⚙️ Mettre à jour la capacité dans la base de données",
                     ],
-                    'priority'     => 1,
+                    'priority'      => 1,
+                    'ai_insight'    => '',
                 ];
 
                 $tasks[] = $this->createTask(
-                    "Résoudre surcharge \"{$programme['nom']}\"",
-                    "Programme complet à {$stats['total_personnes']}/{$capaciteMax} ({$excedent} personnes en excédent).",
+                    "🔴 URGENT — Résoudre surcharge \"{$programme['nom']}\"",
+                    "Programme complet et surchargé : {$stats['total_personnes']}/{$capaciteMax} ({$excedent} personnes en excédent). Capacité voyage insuffisante.",
                     'urgent',
                     'programme',
                     $programme['idProg']
@@ -169,18 +192,19 @@ class AIAnalyzerService
                 $pourcentage = round(($stats['total_personnes'] / $capaciteMax) * 100);
 
                 $alerts[] = [
-                    'type'         => 'warning',
-                    'programme_id' => $programme['idProg'],
-                    'programme_nom'=> $programme['nom'],
-                    'message'      => "📊 PROGRAMME PRESQUE COMPLET : \"{$programme['nom']}\" à {$pourcentage}% ({$placesDisponibles} places restantes)",
-                    'action'       => "Afficher badge \"Plus que {$placesDisponibles} places !\" + préparer une 2ème session",
-                    'idees'        => [
+                    'type'          => 'warning',
+                    'programme_id'  => $programme['idProg'],
+                    'programme_nom' => $programme['nom'],
+                    'message'       => "📊 PRESQUE COMPLET : \"{$programme['nom']}\" à {$pourcentage}% ({$placesDisponibles} places restantes)",
+                    'action'        => "Afficher badge \"Plus que {$placesDisponibles} places !\" + préparer une 2ème session",
+                    'idees'         => [
                         "🔖 Badge \"Dernières places\" sur la page programme",
                         "🚀 Ouvrir les inscriptions pour une 2ème session identique",
                         "📲 Story Instagram \"Plus que {$placesDisponibles} places !\"",
                         "💌 Email liste d'attente pour les intéressés",
                     ],
-                    'priority'     => 2,
+                    'priority'      => 2,
+                    'ai_insight'    => '',
                 ];
 
                 $tasks[] = $this->createTask(
@@ -199,23 +223,24 @@ class AIAnalyzerService
                 $montantEstime = $prixActuel * $stats['en_attente'];
 
                 $alerts[] = [
-                    'type'         => 'warning',
-                    'programme_id' => $programme['idProg'],
-                    'programme_nom'=> $programme['nom'],
-                    'message'      => "💳 PAIEMENTS EN ATTENTE : {$stats['en_attente']} réservation(s) non payée(s) pour \"{$programme['nom']}\" (~" . number_format($montantEstime, 0) . " DT à récupérer)",
-                    'action'       => "Relancer immédiatement les {$stats['en_attente']} client(s) concerné(s)",
-                    'idees'        => [
+                    'type'          => 'warning',
+                    'programme_id'  => $programme['idProg'],
+                    'programme_nom' => $programme['nom'],
+                    'message'       => "💳 PAIEMENTS EN ATTENTE : {$stats['en_attente']} réservation(s) non payée(s) pour \"{$programme['nom']}\" (~" . number_format($montantEstime, 0) . " DT à récupérer)",
+                    'action'        => "Relancer immédiatement les {$stats['en_attente']} client(s) concerné(s)",
+                    'idees'         => [
                         "📲 WhatsApp personnalisé avec lien de paiement direct",
                         "📧 Email automatique rappel avec deadline 48h",
                         "📞 Appel téléphonique pour les cas > 72h sans paiement",
                         "🔒 Libérer la place automatiquement après 5 jours sans paiement",
                     ],
-                    'priority'     => 2,
+                    'priority'      => 2,
+                    'ai_insight'    => '',
                 ];
 
                 $tasks[] = $this->createTask(
                     "Relancer paiements en attente — \"{$programme['nom']}\"",
-                    "{$stats['en_attente']} client(s) n'ont pas encore payé (~{$montantEstime} DT). Relance WhatsApp + email.",
+                    "{$stats['en_attente']} client(s) n'ont pas encore payé (~" . number_format($montantEstime, 0) . " DT). Relance WhatsApp + email.",
                     'high',
                     'programme',
                     $programme['idProg']
@@ -223,9 +248,16 @@ class AIAnalyzerService
             }
         }
 
+        // ─── Enrichissement IA Ollama des alertes ────────────────────────
+        if (!empty($alerts) && $this->ollamaService->isAvailable()) {
+            $ollamaInsight = $this->ollamaService->generateAlertInsights($ollamaContextData);
+            if (!empty($ollamaInsight)) {
+                // On attache l'insight global à la première alerte
+                $alerts[0]['ai_insight'] = $ollamaInsight;
+            }
+        }
+
         // ─── Statistiques globales ───────────────────────────────────────
-        $totalProgrammes    = count($programmes);
-        $totalReservations  = $this->connection->fetchOne("SELECT COUNT(*) FROM reservationprog");
         $programmesSansResa = $this->connection->fetchOne("
             SELECT COUNT(*) FROM programmes p
             WHERE NOT EXISTS (SELECT 1 FROM reservationprog r WHERE r.idP = p.idProg)
@@ -242,12 +274,66 @@ class AIAnalyzerService
             );
         }
 
+        // ─── Auto-transition : todo → done si alerte fixée ───────────────
+        // Une tâche 'todo' passe automatiquement en 'done' si son programme
+        // n'a plus le problème qui l'a générée (ex: surcharge résolue).
+        $tasks = $this->autoTransitionTasks($tasks, $ollamaContextData);
+
         // ─── Sauvegarde en session ───────────────────────────────────────
         $_SESSION['ai_alerts']        = $alerts;
         $_SESSION['ai_tasks']         = $tasks;
         $_SESSION['ai_last_analysis'] = date('Y-m-d H:i:s');
 
         return ['alerts' => $alerts, 'tasks' => $tasks];
+    }
+
+    /**
+     * Auto-transition : si une tâche 'todo' a été précédemment résolue
+     * (le problème n'existe plus dans les données actuelles), elle passe en 'done'.
+     */
+    private function autoTransitionTasks(array $newTasks, array $currentProgrammeStats): array
+    {
+        $previousTasks = $_SESSION['ai_tasks'] ?? [];
+        if (empty($previousTasks)) {
+            return $newTasks;
+        }
+
+        // Index des programmes actuellement en alerte
+        $currentAlertProgrammes = [];
+        foreach ($newTasks as $task) {
+            if ($task['entity_id']) {
+                $currentAlertProgrammes[$task['entity_id']] = true;
+            }
+        }
+
+        // Pour chaque tâche précédente en 'doing' ou 'todo'
+        foreach ($previousTasks as $prevTask) {
+            if (in_array($prevTask['status'], ['todo', 'doing']) && $prevTask['entity_id']) {
+                // Si le programme de cette tâche n'est plus en alerte → auto done
+                if (!isset($currentAlertProgrammes[$prevTask['entity_id']])) {
+                    // Chercher la tâche correspondante dans les nouvelles et la marquer done
+                    foreach ($newTasks as &$newTask) {
+                        if ($newTask['entity_id'] === $prevTask['entity_id']
+                            && $newTask['entity_type'] === $prevTask['entity_type']) {
+                            $newTask['status'] = 'done';
+                        }
+                    }
+                    unset($newTask);
+                }
+            }
+            // Si la tâche était 'doing', on conserve ce statut dans les nouvelles tâches
+            if ($prevTask['status'] === 'doing') {
+                foreach ($newTasks as &$newTask) {
+                    if ($newTask['entity_id'] === $prevTask['entity_id']
+                        && $newTask['title'] === $prevTask['title']) {
+                        $newTask['status'] = 'doing';
+                    }
+                }
+                unset($newTask);
+            }
+        }
+
+        return $newTasks;
     }
 
     /**
@@ -273,7 +359,6 @@ class AIAnalyzerService
             "📰 Publication dans les groupes Facebook voyage & tourisme en Tunisie",
         ];
 
-        // Si très peu de temps, ajouter des idées d'urgence
         if ($joursRestants < 14) {
             array_unshift($idees,
                 "🚨 URGENT : Envisager un report ou annulation si 0 inscription dans 72h",
@@ -316,7 +401,7 @@ class AIAnalyzerService
         return false;
     }
 
-    public function getTasks(): array      { return $_SESSION['ai_tasks']         ?? []; }
-    public function getAlerts(): array     { return $_SESSION['ai_alerts']        ?? []; }
+    public function getTasks(): array          { return $_SESSION['ai_tasks']         ?? []; }
+    public function getAlerts(): array         { return $_SESSION['ai_alerts']        ?? []; }
     public function getLastAnalysis(): ?string { return $_SESSION['ai_last_analysis'] ?? null; }
 }

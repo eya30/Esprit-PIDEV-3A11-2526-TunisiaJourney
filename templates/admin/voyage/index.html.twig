@@ -5,7 +5,6 @@
 
 {% block body %}
 
-
 <!-- ==================== NOTIFICATIONS DISCORD ==================== -->
 {% set discordNotifications = app.session.get('discord_notifications', []) %}
 {% set unreadCount = discordNotifications|filter(n => not n.read)|length %}
@@ -18,22 +17,17 @@
             <span class="notification-badge">{{ unreadCount }}</span>
         {% endif %}
     </div>
-    
     <div id="discordNotificationPanel" class="notification-panel" style="display: none;">
         <div class="panel-header" style="background: linear-gradient(135deg, #5865F2, #4752C4);">
             <i class="fab fa-discord"></i>
             <strong>Notifications Discord</strong>
-            <button onclick="markAllAsRead()" class="mark-read-btn">
-                <i class="fas fa-check-double"></i> Tout lire
-            </button>
+            <button onclick="markAllAsRead()" class="mark-read-btn"><i class="fas fa-check-double"></i> Tout lire</button>
         </div>
         <div class="panel-body" id="discordNotificationsList">
             {% if discordNotifications|length > 0 %}
                 {% for notif in discordNotifications %}
                     <div class="notif-item {% if not notif.read %}unread{% endif %}" data-notif-id="{{ notif.id }}">
-                        <div class="notif-icon" style="background: #E8EEFF;">
-                            <i class="fab fa-discord" style="color: #5865F2;"></i>
-                        </div>
+                        <div class="notif-icon" style="background: #E8EEFF;"><i class="fab fa-discord" style="color: #5865F2;"></i></div>
                         <div class="notif-content">
                             <div class="notif-message">{{ notif.message }}</div>
                             <div class="notif-time">{{ notif.time }}</div>
@@ -49,273 +43,24 @@
                 </div>
             {% endif %}
         </div>
-        <div class="panel-footer">
-            <small><i class="fab fa-discord"></i> Notifications en temps réel</small>
-        </div>
+        <div class="panel-footer"><small><i class="fab fa-discord"></i> Notifications en temps réel</small></div>
     </div>
 </div>
 
-<style>
-.discord-notification-bell {
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    z-index: 1000;
-}
-
-.notification-icon {
-    background: white;
-    padding: 10px 14px;
-    border-radius: 50px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    cursor: pointer;
-    transition: all 0.2s;
-    border: 1px solid #E8DFD1;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.notification-icon:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 15px rgba(88,101,242,0.2);
-    border-color: #5865F2;
-}
-
-.notification-badge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: #EF4444;
-    color: white;
-    border-radius: 50%;
-    min-width: 18px;
-    height: 18px;
-    font-size: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    padding: 0 4px;
-    animation: bellRing 0.5s ease-in-out;
-}
-
-.notification-panel {
-    position: absolute;
-    top: 50px;
-    right: 0;
-    width: 350px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    border: 1px solid #E8DFD1;
-    z-index: 1001;
-    overflow: hidden;
-    animation: slideInRight 0.2s ease;
-}
-
-.panel-header {
-    padding: 12px 15px;
-    color: white;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.panel-header strong {
-    flex: 1;
-}
-
-.mark-read-btn {
-    background: rgba(255,255,255,0.2);
-    border: none;
-    color: white;
-    cursor: pointer;
-    font-size: 11px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    transition: all 0.2s;
-}
-
-.mark-read-btn:hover {
-    background: rgba(255,255,255,0.3);
-}
-
-.panel-body {
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-.notif-item {
-    padding: 12px 15px;
-    border-bottom: 1px solid #F0E8DD;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    transition: background 0.2s;
-}
-
-.notif-item.unread {
-    background: #F0F2FF;
-    border-left: 3px solid #5865F2;
-}
-
-.notif-item:hover {
-    background: #F5F5F5;
-}
-
-.notif-item.unread:hover {
-    background: #E8EEFF;
-}
-
-.notif-icon {
-    width: 32px;
-    height: 32px;
-    background: #E8EEFF;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.notif-content {
-    flex: 1;
-}
-
-.notif-message {
-    font-size: 12px;
-    font-weight: 500;
-    color: #333;
-}
-
-.notif-time {
-    font-size: 10px;
-    color: #9CA3AF;
-    margin-top: 3px;
-}
-
-.notif-btn {
-    font-size: 11px;
-    color: #5865F2;
-    text-decoration: none;
-    background: #E8EEFF;
-    padding: 4px 12px;
-    border-radius: 15px;
-    transition: all 0.2s;
-}
-
-.notif-btn:hover {
-    background: #5865F2;
-    color: white;
-}
-
-.empty-notifications {
-    padding: 40px 20px;
-    text-align: center;
-    color: #9CA3AF;
-}
-
-.empty-notifications i {
-    font-size: 40px;
-    margin-bottom: 10px;
-    opacity: 0.5;
-}
-
-.empty-notifications p {
-    font-size: 13px;
-    margin: 0;
-}
-
-.empty-notifications small {
-    font-size: 10px;
-}
-
-.panel-footer {
-    padding: 8px;
-    border-top: 1px solid #F0E8DD;
-    text-align: center;
-    background: #FAFAFA;
-    font-size: 9px;
-    color: #9CA3AF;
-}
-
-@keyframes bellRing {
-    0% { transform: rotate(0deg); }
-    10% { transform: rotate(15deg); }
-    20% { transform: rotate(-10deg); }
-    30% { transform: rotate(5deg); }
-    40% { transform: rotate(-5deg); }
-    50% { transform: rotate(0deg); }
-    100% { transform: rotate(0deg); }
-}
-
-@keyframes slideInRight {
-    from { opacity: 0; transform: translateX(20px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-</style>
-
-<script>
-let discordPanelVisible = false;
-
-function toggleDiscordNotifications() {
-    const panel = document.getElementById('discordNotificationPanel');
-    discordPanelVisible = !discordPanelVisible;
-    panel.style.display = discordPanelVisible ? 'block' : 'none';
-}
-
-function markAllAsRead() {
-    fetch('{{ path("admin_discord_mark_read") }}', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            document.querySelectorAll('.notif-item').forEach(item => {
-                item.classList.remove('unread');
-            });
-            const badge = document.querySelector('.notification-badge');
-            if (badge) badge.style.display = 'none';
-        }
-    })
-    .catch(error => console.error('Erreur:', error));
-}
-
-// Fermer le panel en cliquant ailleurs
-document.addEventListener('click', function(event) {
-    const container = document.querySelector('.discord-notification-bell');
-    if (container && !container.contains(event.target) && discordPanelVisible) {
-        document.getElementById('discordNotificationPanel').style.display = 'none';
-        discordPanelVisible = false;
-    }
-});
-</script>
-
-<!-- ==================== FIN NOTIFICATIONS DISCORD ==================== -->
-
-<!-- VOTRE CODE EXISTANT CONTINUE ICI -->
-
-<!-- BOUTONS IA ANALYZER ET IA REPORT - Intégrés élégamment -->
+<!-- ==================== HEADER IA ==================== -->
 <div class="ai-analyzer-header mb-4">
     <div class="ai-info-card">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
-                <h5 class="mb-1">
-                    <i class="fas fa-robot me-2" style="color: #93032E;"></i>
-                    Assistant IA - Analyse intelligente
-                </h5>
-                <p class="small text-muted mb-0">Analyse automatique de vos programmes et réservations</p>
+                <h5 class="mb-1"><i class="fas fa-robot me-2" style="color: #93032E;"></i>Assistant IA — Analyse intelligente (Ollama)</h5>
+                <p class="small text-muted mb-0">Analyse automatique alimentée par Ollama • Alertes • Rapport financier</p>
             </div>
             <div class="d-flex gap-2">
                 <button class="btn-ai-report" id="openAIReportBtn">
-                    <i class="fas fa-chart-bar me-2"></i>
-                    💡 Rapport IA
-                    <span class="badge-ai-new" style="display: none;">New</span>
+                    <i class="fas fa-chart-bar me-2"></i>💡 Rapport IA
                 </button>
                 <button class="btn-ai-analyze" id="openAIAnalyzerBtn">
-                    <i class="fas fa-chart-line me-2"></i>
-                    Lancer l'analyse IA
+                    <i class="fas fa-chart-line me-2"></i>Lancer l'analyse IA
                     <span class="badge-ai" id="alertBadge" style="display: none;">0</span>
                 </button>
             </div>
@@ -327,12 +72,12 @@ document.addEventListener('click', function(event) {
     <p class="page-header-subtitle">Gérez l'ensemble de vos offres de voyage</p>
 </div>
 
-<!-- Barre de recherche dynamique -->
+<!-- Barre de recherche -->
 <div class="search-bar-wrapper mb-4">
     <div class="search-input-group">
         <i class="fas fa-search search-icon"></i>
-        <input type="text" id="searchInput" class="form-control search-input" 
-               placeholder="Rechercher par nom ou description..." 
+        <input type="text" id="searchInput" class="form-control search-input"
+               placeholder="Rechercher par nom ou description..."
                value="{{ search }}" autocomplete="off">
         <button id="clearSearch" class="clear-search-btn" style="display: {% if search %}flex{% else %}none{% endif %};">
             <i class="fas fa-times"></i>
@@ -371,9 +116,7 @@ document.addEventListener('click', function(event) {
                         {% if voyage.image %}
                             <img src="{{ asset('uploads/voyages/' ~ voyage.image) }}" class="voyage-thumbnail" alt="{{ voyage.nom }}">
                         {% else %}
-                            <div class="thumbnail-placeholder">
-                                <i class="fas fa-image"></i>
-                            </div>
+                            <div class="thumbnail-placeholder"><i class="fas fa-image"></i></div>
                         {% endif %}
                     </td>
                     <td class="voyage-name">{{ voyage.nom }}</td>
@@ -383,17 +126,11 @@ document.addEventListener('click', function(event) {
                     <td class="voyage-date">{{ voyage.dateCreation|date('d/m/Y') }}</td>
                     <td class="voyage-actions">
                         <div class="action-buttons">
-                            <a href="{{ path('admin_voyage_programmes', {'id': voyage.idV}) }}" class="action-btn programmes-btn" title="Voir les programmes">
-                                <i class="fas fa-calendar-week"></i>
-                            </a>
-                            <a href="{{ path('admin_voyage_edit', {'id': voyage.idV}) }}" class="action-btn edit-btn" title="Modifier">
-                                <i class="fas fa-edit"></i>
-                            </a>
+                            <a href="{{ path('admin_voyage_programmes', {'id': voyage.idV}) }}" class="action-btn programmes-btn" title="Voir les programmes"><i class="fas fa-calendar-week"></i></a>
+                            <a href="{{ path('admin_voyage_edit', {'id': voyage.idV}) }}" class="action-btn edit-btn" title="Modifier"><i class="fas fa-edit"></i></a>
                             <form method="post" action="{{ path('admin_voyage_delete', {'id': voyage.idV}) }}" style="display: inline-block;">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete_voyage_' ~ voyage.idV) }}">
-                                <button type="submit" class="action-btn delete-btn" onclick="return confirm('Supprimer ce voyage ?')" title="Supprimer">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
+                                <button type="submit" class="action-btn delete-btn" onclick="return confirm('Supprimer ce voyage ?')" title="Supprimer"><i class="fas fa-trash-alt"></i></button>
                             </form>
                         </div>
                     </td>
@@ -420,9 +157,7 @@ document.addEventListener('click', function(event) {
     <nav class="pagination-nav">
         <ul class="pagination" id="paginationList">
             <li class="page-item {% if current_page == 1 %}disabled{% endif %}">
-                <a class="page-link" href="#" data-page="{{ current_page - 1 }}">
-                    <i class="fas fa-chevron-left"></i>
-                </a>
+                <a class="page-link" href="#" data-page="{{ current_page - 1 }}"><i class="fas fa-chevron-left"></i></a>
             </li>
             {% for i in 1..total_pages %}
                 <li class="page-item {% if i == current_page %}active{% endif %}">
@@ -430,36 +165,33 @@ document.addEventListener('click', function(event) {
                 </li>
             {% endfor %}
             <li class="page-item {% if current_page == total_pages %}disabled{% endif %}">
-                <a class="page-link" href="#" data-page="{{ current_page + 1 }}">
-                    <i class="fas fa-chevron-right"></i>
-                </a>
+                <a class="page-link" href="#" data-page="{{ current_page + 1 }}"><i class="fas fa-chevron-right"></i></a>
             </li>
         </ul>
     </nav>
 </div>
 
 <!-- ============================================ -->
-<!-- OVERLAY IA ANALYZER - TO-DO LIST INTELLIGENTE -->
+<!-- OVERLAY IA ANALYZER -->
 <!-- ============================================ -->
 <div id="aiAnalyzerOverlay" class="ai-overlay">
     <div class="ai-overlay-content">
         <div class="ai-overlay-header">
             <div>
-                <h3><i class="fas fa-robot me-2"></i>Assistant IA - Tableau de bord intelligent</h3>
-                <p class="mb-0">Analyse automatique de vos voyages, programmes et réservations</p>
+                <h3><i class="fas fa-robot me-2"></i>Assistant IA — Tableau de bord intelligent</h3>
+                <p class="mb-0">Analyse Ollama de vos voyages, programmes et réservations</p>
             </div>
-            <button class="ai-close-btn" onclick="closeAIAnalyzer()">
-                <i class="fas fa-times"></i>
-            </button>
+            <button class="ai-close-btn" onclick="closeAIAnalyzer()"><i class="fas fa-times"></i></button>
         </div>
-        
         <div class="ai-overlay-body">
             <div id="aiLoading" class="ai-loading">
                 <div class="spinner"></div>
-                <p>Analyse en cours par l'IA...</p>
-                <small>L'IA examine vos programmes, réservations et performances</small>
+                <p>Analyse IA en cours (Ollama)...</p>
+                <small>L'IA examine vos programmes, réservations et capacités</small>
             </div>
-            
+
+            <div id="aiInsightBanner" class="ai-insight-banner" style="display:none;"></div>
+
             <div id="aiAlertsSection" class="ai-section" style="display: none;">
                 <div class="ai-section-header">
                     <i class="fas fa-bell"></i>
@@ -468,45 +200,41 @@ document.addEventListener('click', function(event) {
                 </div>
                 <div id="alertsList" class="alerts-list"></div>
             </div>
-            
+
             <div id="aiTasksSection" class="ai-section" style="display: none;">
                 <div class="ai-section-header">
                     <i class="fas fa-tasks"></i>
                     <h4>To-Do List intelligente</h4>
-                    <small class="text-muted">Actions recommandées par l'IA</small>
+                    <small class="text-muted">Actions recommandées • Todo → Doing → Done automatique</small>
                 </div>
-                
                 <div class="kanban-board">
                     <div class="kanban-column">
                         <div class="kanban-column-header todo-header">
-                            <i class="fas fa-clock"></i>
-                            <span>À faire</span>
+                            <i class="fas fa-clock"></i><span>À faire</span>
                             <span class="task-count" id="todoCount">0</span>
                         </div>
                         <div class="kanban-tasks" id="todoTasks"></div>
                     </div>
                     <div class="kanban-column">
                         <div class="kanban-column-header doing-header">
-                            <i class="fas fa-spinner fa-spin"></i>
-                            <span>En cours</span>
+                            <i class="fas fa-spinner fa-spin"></i><span>En cours</span>
                             <span class="task-count" id="doingCount">0</span>
                         </div>
                         <div class="kanban-tasks" id="doingTasks"></div>
                     </div>
                     <div class="kanban-column">
                         <div class="kanban-column-header done-header">
-                            <i class="fas fa-check-circle"></i>
-                            <span>Terminé</span>
+                            <i class="fas fa-check-circle"></i><span>Terminé</span>
                             <span class="task-count" id="doneCount">0</span>
                         </div>
                         <div class="kanban-tasks" id="doneTasks"></div>
                     </div>
                 </div>
             </div>
-            
+
             <div id="aiFooter" class="ai-footer" style="display: none;">
                 <i class="fas fa-history"></i>
-                Dernière analyse : <span id="lastAnalysisTime">-</span>
+                Dernière analyse Ollama : <span id="lastAnalysisTime">-</span>
                 <button class="btn-refresh-ai" onclick="runAIAnalysis()">
                     <i class="fas fa-sync-alt"></i> Réanalyser
                 </button>
@@ -516,82 +244,57 @@ document.addEventListener('click', function(event) {
 </div>
 
 <!-- ============================================ -->
-<!-- OVERLAY IA REPORT GENERATOR - RAPPORT HEBDOMADAIRE -->
+<!-- OVERLAY IA REPORT GENERATOR -->
 <!-- ============================================ -->
 <div id="aiReportOverlay" class="ai-overlay">
     <div class="ai-overlay-content report-overlay">
         <div class="ai-overlay-header">
             <div>
-                <h3><i class="fas fa-chart-bar me-2"></i>Rapport Hebdomadaire IA</h3>
-                <p class="mb-0">Analyse des performances des voyages et recommandations stratégiques</p>
+                <h3><i class="fas fa-chart-bar me-2"></i>Rapport Financier IA (Ollama)</h3>
+                <p class="mb-0">Analyse des performances • Recommandations stratégiques • 100% local</p>
             </div>
-            <button class="ai-close-btn" onclick="closeAIReport()">
-                <i class="fas fa-times"></i>
-            </button>
+            <button class="ai-close-btn" onclick="closeAIReport()"><i class="fas fa-times"></i></button>
         </div>
-        
         <div class="ai-overlay-body">
             <div id="reportLoading" class="ai-loading">
                 <div class="spinner"></div>
-                <p>Génération du rapport en cours...</p>
-                <small>L'IA analyse les performances de vos voyages</small>
+                <p>Génération du rapport Ollama en cours...</p>
+                <small>L'IA analyse les données financières de vos voyages</small>
             </div>
-            
+
             <div id="reportContent" style="display: none;">
                 <div class="report-header">
-                    <h2>TunisiaJourney - Rapport Hebdomadaire</h2>
+                    <h2>TunisiaJourney — Rapport Hebdomadaire</h2>
                     <p class="report-date-header" id="reportDate"></p>
                 </div>
-                
+
                 <div class="report-stats-grid" id="reportStats"></div>
-                
+
                 <div class="report-section">
-                    <div class="report-section-title">
-                        <i class="fas fa-trophy"></i> Meilleurs voyages
-                    </div>
+                    <div class="report-section-title"><i class="fas fa-trophy"></i> Meilleurs voyages</div>
                     <div class="report-table-container">
                         <table class="report-table" id="bestVoyagesTable">
-                            <thead>
-                                <tr>
-                                    <th>Voyage</th>
-                                    <th>Réservations</th>
-                                    <th>Participants</th>
-                                    <th>Occupation</th>
-                                    <th>Revenus</th>
-                                </tr>
-                            </thead>
+                            <thead><tr><th>Voyage</th><th>Réservations</th><th>Participants</th><th>Occupation</th><th>Revenus</th></tr></thead>
                             <tbody></tbody>
                         </table>
                     </div>
                 </div>
-                
+
                 <div class="report-section">
-                    <div class="report-section-title">
-                        <i class="fas fa-chart-line"></i> Voyages à améliorer
-                    </div>
+                    <div class="report-section-title"><i class="fas fa-chart-line"></i> Voyages à améliorer</div>
                     <div class="report-table-container">
                         <table class="report-table" id="worstVoyagesTable">
-                            <thead>
-                                <tr>
-                                    <th>Voyage</th>
-                                    <th>Réservations</th>
-                                    <th>Participants</th>
-                                    <th>Occupation</th>
-                                    <th>Revenus</th>
-                                </tr>
-                            </thead>
+                            <thead><tr><th>Voyage</th><th>Réservations</th><th>Participants</th><th>Occupation</th><th>Revenus</th></tr></thead>
                             <tbody></tbody>
                         </table>
                     </div>
                 </div>
-                
+
                 <div class="report-section">
-                    <div class="report-section-title">
-                        <i class="fas fa-brain"></i> Insights IA
-                    </div>
+                    <div class="report-section-title"><i class="fas fa-brain"></i> Insights IA Ollama</div>
                     <div class="ai-insights-box" id="aiInsights"></div>
                 </div>
-                
+
                 <div class="report-actions">
                     <button class="btn-download-pdf" id="downloadPDFBtn">
                         <i class="fas fa-file-pdf"></i> Télécharger en PDF
@@ -606,1277 +309,601 @@ document.addEventListener('click', function(event) {
 </div>
 
 <style>
-    /* ==================== STYLES ORIGINAUX CONSERVÉS ==================== */
-    .page-header-subtitle {
-        font-size: 0.9rem;
-        color: #93032E;
-        font-weight: 500;
-        margin: 0;
-    }
-    
-    .search-bar-wrapper {
-        background: white;
-        border-radius: 16px;
-        padding: 16px 20px;
-        border: 1px solid #F0E8DD;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 15px;
-    }
-    
-    .search-input-group {
-        position: relative;
-        flex: 1;
-        min-width: 250px;
-    }
-    
-    .search-icon {
-        position: absolute;
-        left: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #9CA3AF;
-        font-size: 0.9rem;
-    }
-    
-    .search-input {
-        width: 100%;
-        padding: 12px 40px 12px 40px;
-        border: 1px solid #E8DFD1;
-        border-radius: 40px;
-        font-size: 14px;
-        background: #FEF9F0;
-        transition: all 0.2s;
-    }
-    
-    .search-input:focus {
-        outline: none;
-        border-color: #93032E;
-        background: white;
-        box-shadow: 0 0 0 3px rgba(147,3,46,0.1);
-    }
-    
-    .clear-search-btn {
-        position: absolute;
-        right: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        background: none;
-        border: none;
-        color: #9CA3AF;
-        cursor: pointer;
-        padding: 5px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: color 0.2s;
-    }
-    
-    .clear-search-btn:hover {
-        color: #93032E;
-    }
-    
-    .search-info {
-        font-size: 0.85rem;
-        color: #9CA3AF;
-        white-space: nowrap;
-    }
-    
-    .search-info span {
-        color: #93032E;
-        font-weight: 600;
-    }
-    
-    .admin-table {
-        background: white;
-        border-radius: 20px;
-        border: 1px solid #F0E8DD;
-        overflow: hidden;
-    }
-    
-    .admin-table th {
-        background: #FEF9F0;
-        padding: 16px 20px;
-        font-size: 12px;
-        font-weight: 700;
-        color: #93032E;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        border-bottom: 1px solid #F0E8DD;
-    }
-    
-    .admin-table td {
-        padding: 16px 20px;
-        font-size: 13px;
-        border-bottom: 1px solid #F5F0E8;
-        color: #4A3B2F;
-        vertical-align: middle;
-    }
-    
-    .admin-table tr:hover td {
-        background: #FFF9F0;
-    }
-    
-    .voyage-thumbnail {
-        width: 70px;
-        height: 70px;
-        object-fit: cover;
-        border-radius: 12px;
-        border: 1px solid #F0E8DD;
-        transition: all 0.2s;
-    }
-    
-    .voyage-thumbnail:hover {
-        transform: scale(1.05);
-        border-color: #93032E;
-    }
-    
-    .thumbnail-placeholder {
-        width: 70px;
-        height: 70px;
-        background: #FEF9F0;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #E8DFD1;
-        font-size: 1.5rem;
-        border: 1px solid #F0E8DD;
-    }
-    
-    .voyage-name {
-        font-weight: 700;
-        color: #2C1810;
-        font-size: 0.95rem;
-    }
-    
-    .voyage-description-cell {
-        max-width: 350px;
-        color: #6B7280;
-        line-height: 1.5;
-        font-size: 0.85rem;
-    }
-    
-    .voyage-price {
-        font-weight: 700;
-        color: #93032E;
-        font-size: 1rem;
-    }
-    
-    .action-buttons {
-        display: flex;
-        gap: 8px;
-    }
-    
-    .action-btn {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s;
-        cursor: pointer;
-        border: none;
-        background: transparent;
-        font-size: 0.9rem;
-        text-decoration: none;
-    }
-    
-    .programmes-btn {
-        background: #FEF3C7;
-        color: #D97706;
-    }
-    
-    .programmes-btn:hover {
-        background: #F59E0B;
-        color: white;
-        transform: translateY(-2px);
-    }
-    
-    .edit-btn {
-        background: #EFF6FF;
-        color: #3B82F6;
-    }
-    
-    .edit-btn:hover {
-        background: #3B82F6;
-        color: white;
-        transform: translateY(-2px);
-    }
-    
-    .delete-btn {
-        background: #FEF2F2;
-        color: #EF4444;
-    }
-    
-    .delete-btn:hover {
-        background: #EF4444;
-        color: white;
-        transform: translateY(-2px);
-    }
-    
-    .btn-primary {
-        background: #93032E;
-        border: none;
-        padding: 10px 24px;
-        border-radius: 40px;
-        font-size: 13px;
-        font-weight: 600;
-        color: white;
-        transition: all 0.2s;
-    }
-    
-    .btn-primary:hover {
-        background: #6B0221;
-        transform: translateY(-2px);
-    }
-    
-    .pagination-wrapper {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 24px;
-        padding: 16px 0;
-    }
-    
-    .pagination-info {
-        font-size: 0.85rem;
-        color: #9CA3AF;
-    }
-    
-    .pagination-info strong {
-        color: #93032E;
-        font-weight: 600;
-    }
-    
-    .pagination {
-        margin: 0;
-        gap: 6px;
-    }
-    
-    .page-item {
-        list-style: none;
-    }
-    
-    .page-link {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        background: white;
-        border: 1px solid #E8DFD1;
-        color: #4A3B2F;
-        font-size: 0.85rem;
-        font-weight: 500;
-        transition: all 0.2s;
-        text-decoration: none;
-    }
-    
-    .page-link:hover {
-        background: #FFF9F0;
-        border-color: #93032E;
-        color: #93032E;
-    }
-    
-    .page-item.active .page-link {
-        background: #93032E;
-        border-color: #93032E;
-        color: white;
-    }
-    
-    .page-item.disabled .page-link {
-        background: #FEF9F0;
-        border-color: #F0E8DD;
-        color: #E8DFD1;
-        cursor: not-allowed;
-    }
-    
-    /* ==================== STYLES IA ANALYZER ==================== */
-    .ai-analyzer-header {
-        background: linear-gradient(135deg, #FFF9F0 0%, #FFF0E5 100%);
-        border-radius: 20px;
-        padding: 16px 24px;
-        border: 1px solid #F0E8DD;
-    }
-    
-    .btn-ai-analyze {
-        background: linear-gradient(135deg, #93032E, #6B0221);
-        border: none;
-        padding: 10px 24px;
-        border-radius: 40px;
-        color: white;
-        font-weight: 600;
-        font-size: 0.85rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .btn-ai-analyze:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(147,3,46,0.25);
-    }
-    
-    .btn-ai-report {
-        background: linear-gradient(135deg, #212E53, #0B162C);
-        border: none;
-        padding: 10px 24px;
-        border-radius: 40px;
-        color: white;
-        font-weight: 600;
-        font-size: 0.85rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .btn-ai-report:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(33,46,83,0.35);
-    }
-    
-    .badge-ai {
-        background: #EF4444;
-        color: white;
-        border-radius: 50%;
-        min-width: 20px;
-        height: 20px;
-        font-size: 0.65rem;
-        font-weight: 700;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0 5px;
-    }
-    
-    .badge-ai-new {
-        background: #10B981;
-        color: white;
-        border-radius: 20px;
-        padding: 2px 8px;
-        font-size: 0.6rem;
-        font-weight: 700;
-        margin-left: 6px;
-    }
-    
-    .ai-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(6px);
-        z-index: 9999;
-        display: none;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .ai-overlay.open {
-        display: flex;
-    }
-    
-    .ai-overlay-content {
-        background: white;
-        border-radius: 28px;
-        width: 90%;
-        max-width: 1100px;
-        max-height: 85vh;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        box-shadow: 0 25px 50px rgba(0,0,0,0.25);
-        animation: slideInUp 0.35s ease;
-    }
-    
-    .report-overlay {
-        max-width: 1200px;
-    }
-    
-    @keyframes slideInUp {
-        from { opacity: 0; transform: translateY(30px); }
-        to   { opacity: 1; transform: translateY(0); }
-    }
-    
-    .ai-overlay-header {
-        padding: 18px 24px;
-        background: linear-gradient(135deg, #93032E, #6B0221);
-        color: white;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .report-overlay .ai-overlay-header {
-        background: linear-gradient(135deg, #212E53, #0B162C);
-    }
-    
-    .ai-overlay-header h3 {
-        margin: 0;
-        font-family: 'Playfair Display', serif;
-        font-size: 1.3rem;
-    }
-    
-    .ai-overlay-header p {
-        font-size: 0.75rem;
-        opacity: 0.8;
-        margin-top: 4px;
-    }
-    
-    .ai-close-btn {
-        background: rgba(255,255,255,0.15);
-        border: none;
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        color: white;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    
-    .ai-close-btn:hover {
-        background: rgba(255,255,255,0.25);
-        transform: rotate(90deg);
-    }
-    
-    .ai-overlay-body {
-        flex: 1;
-        overflow-y: auto;
-        padding: 20px 24px;
-    }
-    
-    .ai-loading {
-        text-align: center;
-        padding: 50px 20px;
-    }
-    
-    .spinner {
-        width: 45px;
-        height: 45px;
-        border: 3px solid #F0E8DD;
-        border-top-color: #93032E;
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
-        margin: 0 auto 18px;
-    }
-    
-    @keyframes spin { to { transform: rotate(360deg); } }
-    
-    .ai-section { margin-bottom: 28px; }
-    
-    .ai-section-header {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 16px;
-        padding-bottom: 10px;
-        border-bottom: 2px solid #F0E8DD;
-    }
-    
-    .ai-section-header i  { font-size: 1.3rem; color: #93032E; }
-    .ai-section-header h4 { margin: 0; font-size: 1.1rem; font-weight: 600; color: #2C1810; }
-    
-    .alert-count {
-        background: #EF4444;
-        color: white;
-        border-radius: 20px;
-        padding: 2px 10px;
-        font-size: 0.7rem;
-        font-weight: 700;
-        margin-left: auto;
-    }
-    
-    .alerts-list { display: flex; flex-direction: column; gap: 10px; }
-    
-    .alert-item {
-        padding: 14px 18px;
-        border-radius: 14px;
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        border-left: 4px solid;
-    }
-    
-    .alert-item.danger  { background: #FEF2F2; border-left-color: #EF4444; }
-    .alert-item.warning { background: #FFFBEB; border-left-color: #F59E0B; }
-    .alert-item.info    { background: #EFF6FF; border-left-color: #3B82F6; }
-    
-    .alert-icon { font-size: 1.2rem; margin-top: 2px; }
-    .alert-content { flex: 1; }
-    .alert-message { font-weight: 600; color: #1F2937; margin-bottom: 4px; font-size: 0.85rem; }
-    .alert-action  { font-size: 0.72rem; color: #6B7280; }
-    
-    .alert-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-    .alert-tag {
-        font-size: 0.65rem;
-        padding: 2px 10px;
-        border-radius: 20px;
-        font-weight: 500;
-        background: rgba(147,3,46,0.08);
-        color: #93032E;
-    }
-    
-    .kanban-board {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 18px;
-        margin-top: 16px;
-    }
-    
-    .kanban-column {
-        background: #FEF9F0;
-        border-radius: 18px;
-        overflow: hidden;
-        border: 1px solid #F0E8DD;
-    }
-    
-    .kanban-column-header {
-        padding: 12px 14px;
-        font-weight: 600;
-        font-size: 0.8rem;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        border-bottom: 2px solid;
-    }
-    
-    .todo-header  { background: #FEF3C7; border-bottom-color: #F59E0B; color: #B45309; }
-    .doing-header { background: #EFF6FF; border-bottom-color: #3B82F6; color: #1E40AF; }
-    .done-header  { background: #D1FAE5; border-bottom-color: #10B981; color: #047857; }
-    
-    .task-count { margin-left: auto; background: rgba(0,0,0,0.08); padding: 2px 8px; border-radius: 20px; font-size: 0.65rem; }
-    
-    .kanban-tasks { min-height: 280px; max-height: 380px; overflow-y: auto; padding: 10px; }
-    
-    .task-card {
-        background: white;
-        border-radius: 12px;
-        padding: 12px;
-        margin-bottom: 8px;
-        cursor: grab;
-        transition: all 0.2s;
-        border: 1px solid #E8DFD1;
-        position: relative;
-    }
-    
-    .task-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 3px 10px rgba(0,0,0,0.06);
-        border-color: #93032E;
-    }
-    
-    .task-card.dragging { opacity: 0.5; cursor: grabbing; }
-    
-    .task-priority {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-    }
-    .task-priority.urgent { background: #EF4444; }
-    .task-priority.high   { background: #F59E0B; }
-    .task-priority.medium { background: #3B82F6; }
-    .task-priority.low    { background: #10B981; }
-    
-    .task-title       { font-weight: 600; color: #2C1810; font-size: 0.82rem; margin-bottom: 5px; padding-right: 12px; }
-    .task-description { font-size: 0.68rem; color: #6B7280; line-height: 1.35; }
-    
-    .task-actions { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
-    
-    .task-action-btn {
-        background: none;
-        border: none;
-        font-size: 0.65rem;
-        padding: 3px 8px;
-        border-radius: 20px;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    
-    .task-action-btn.move-todo  { background: #FEF3C7; color: #B45309; }
-    .task-action-btn.move-doing { background: #EFF6FF; color: #1E40AF; }
-    .task-action-btn.move-done  { background: #D1FAE5; color: #047857; }
-    .task-action-btn:hover { transform: scale(1.03); }
-    
-    .ai-footer {
-        margin-top: 20px;
-        padding-top: 14px;
-        border-top: 1px solid #F0E8DD;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        font-size: 0.7rem;
-        color: #9CA3AF;
-    }
-    
-    .btn-refresh-ai {
-        background: none;
-        border: 1px solid #E8DFD1;
-        padding: 6px 14px;
-        border-radius: 30px;
-        cursor: pointer;
-        transition: all 0.2s;
-        font-size: 0.7rem;
-    }
-    
-    .btn-refresh-ai:hover {
-        background: #93032E;
-        border-color: #93032E;
-        color: white;
-    }
-    
-    .no-alerts-placeholder {
-        text-align: center;
-        padding: 30px;
-        color: #9CA3AF;
-    }
-    .no-alerts-placeholder i { font-size: 2rem; color: #10B981; margin-bottom: 8px; }
-    
-    /* ==================== STYLES RAPPORT IA ==================== */
-    .report-header {
-        text-align: center;
-        padding: 20px 0;
-        border-bottom: 3px solid #A7001E;
-        margin-bottom: 25px;
-    }
-    
-    .report-header h2 {
-        color: #212E53;
-        margin: 0;
-        font-size: 1.5rem;
-    }
-    
-    .report-date-header {
-        color: #64748B;
-        font-size: 0.7rem;
-        margin-top: 8px;
-    }
-    
-    .report-stats-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 15px;
-        margin-bottom: 30px;
-    }
-    
-    .report-stat-card {
-        background: #F8FAFC;
-        padding: 15px;
-        border-radius: 12px;
-        text-align: center;
-        border-left: 4px solid #A7001E;
-    }
-    
-    .report-stat-value {
-        font-size: 24px;
-        font-weight: bold;
-        color: #212E53;
-    }
-    
-    .report-stat-label {
-        font-size: 9px;
-        color: #64748B;
-        margin-top: 5px;
-        text-transform: uppercase;
-        letter-spacing: 0.4px;
-        font-weight: 600;
-    }
-    
-    .report-section {
-        margin-bottom: 25px;
-    }
-    
-    .report-section-title {
-        font-size: 0.9rem;
-        font-weight: 700;
-        color: #212E53;
-        margin-bottom: 12px;
-        padding-bottom: 6px;
-        border-bottom: 2px solid #E2E8F0;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .report-table-container {
-        overflow-x: auto;
-    }
-    
-    .report-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.7rem;
-    }
-    
-    .report-table th {
-        background: #F1F5F9;
-        padding: 10px 12px;
-        text-align: left;
-        font-weight: 700;
-        color: #430C05;
-        font-size: 0.65rem;
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-    }
-    
-    .report-table td {
-        padding: 8px 12px;
-        border-bottom: 1px solid #E8EDF2;
-        font-size: 0.7rem;
-        color: #334155;
-    }
-    
-    .report-table tr:hover td {
-        background: #F8FAFC;
-    }
-    
-    .ai-insights-box {
-        background: #F8FAFC;
-        padding: 20px;
-        border-radius: 12px;
-        border-left: 3px solid #A7001E;
-        white-space: pre-line;
-        font-size: 0.7rem;
-        line-height: 1.55;
-        color: #334155;
-    }
-    
-    .report-actions {
-        display: flex;
-        gap: 15px;
-        justify-content: flex-end;
-        margin-top: 25px;
-        padding-top: 20px;
-        border-top: 1px solid #E2E8F0;
-    }
-    
-    .btn-download-pdf {
-        background: #A7001E;
-        border: none;
-        padding: 8px 18px;
-        border-radius: 8px;
-        color: white;
-        font-weight: 600;
-        font-size: 0.7rem;
-        cursor: pointer;
-        transition: all 0.2s;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .btn-download-pdf:hover {
-        background: #8B0018;
-        transform: translateY(-2px);
-    }
-    
-    .btn-refresh-report {
-        background: #212E53;
-        border: none;
-        padding: 8px 18px;
-        border-radius: 8px;
-        color: white;
-        font-weight: 600;
-        font-size: 0.7rem;
-        cursor: pointer;
-        transition: all 0.2s;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .btn-refresh-report:hover {
-        background: #0B162C;
-        transform: translateY(-2px);
-    }
-    
-    @media (max-width: 900px) {
-        .kanban-board { grid-template-columns: 1fr; gap: 14px; }
-        .ai-overlay-content { width: 95%; }
-        .report-stats-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-    
-    @media (max-width: 768px) {
-        .search-bar-wrapper { flex-direction: column; align-items: stretch; }
-        .search-info { text-align: center; }
-        .pagination-wrapper { flex-direction: column; gap: 16px; align-items: center; }
-        .voyage-description-cell { max-width: 200px; }
-        .d-flex.gap-2 { flex-direction: column; width: 100%; }
-        .btn-ai-analyze, .btn-ai-report { width: 100%; justify-content: center; }
-    }
+/* ==================== DISCORD ==================== */
+.discord-notification-bell { position: fixed; top: 80px; right: 20px; z-index: 1000; }
+.notification-icon { background: white; padding: 10px 14px; border-radius: 50px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s; border: 1px solid #E8DFD1; display: flex; align-items: center; gap: 5px; }
+.notification-icon:hover { transform: scale(1.05); box-shadow: 0 4px 15px rgba(88,101,242,0.2); border-color: #5865F2; }
+.notification-badge { position: absolute; top: -5px; right: -5px; background: #EF4444; color: white; border-radius: 50%; min-width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; padding: 0 4px; }
+.notification-panel { position: absolute; top: 50px; right: 0; width: 350px; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); border: 1px solid #E8DFD1; z-index: 1001; overflow: hidden; }
+.panel-header { padding: 12px 15px; color: white; display: flex; align-items: center; gap: 10px; }
+.panel-header strong { flex: 1; }
+.mark-read-btn { background: rgba(255,255,255,0.2); border: none; color: white; cursor: pointer; font-size: 11px; padding: 4px 10px; border-radius: 20px; }
+.panel-body { max-height: 400px; overflow-y: auto; }
+.notif-item { padding: 12px 15px; border-bottom: 1px solid #F0E8DD; display: flex; align-items: center; gap: 12px; }
+.notif-item.unread { background: #F0F2FF; border-left: 3px solid #5865F2; }
+.notif-icon { width: 32px; height: 32px; background: #E8EEFF; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.notif-content { flex: 1; }
+.notif-message { font-size: 12px; font-weight: 500; color: #333; }
+.notif-time { font-size: 10px; color: #9CA3AF; margin-top: 3px; }
+.notif-btn { font-size: 11px; color: #5865F2; text-decoration: none; background: #E8EEFF; padding: 4px 12px; border-radius: 15px; }
+.empty-notifications { padding: 40px 20px; text-align: center; color: #9CA3AF; }
+.empty-notifications i { font-size: 40px; margin-bottom: 10px; opacity: 0.5; }
+.panel-footer { padding: 8px; border-top: 1px solid #F0E8DD; text-align: center; background: #FAFAFA; font-size: 9px; color: #9CA3AF; }
+
+/* ==================== HEADER ==================== */
+.page-header-subtitle { font-size: 0.9rem; color: #93032E; font-weight: 500; margin: 0; }
+.ai-analyzer-header { background: linear-gradient(135deg, #FFF9F0 0%, #FFF0E5 100%); border-radius: 20px; padding: 16px 24px; border: 1px solid #F0E8DD; }
+.btn-ai-analyze { background: linear-gradient(135deg, #93032E, #6B0221); border: none; padding: 10px 24px; border-radius: 40px; color: white; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; }
+.btn-ai-analyze:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(147,3,46,0.25); }
+.btn-ai-report { background: linear-gradient(135deg, #212E53, #0B162C); border: none; padding: 10px 24px; border-radius: 40px; color: white; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; }
+.btn-ai-report:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(33,46,83,0.35); }
+.badge-ai { background: #EF4444; color: white; border-radius: 50%; min-width: 20px; height: 20px; font-size: 0.65rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; padding: 0 5px; }
+
+/* ==================== TABLEAU ==================== */
+.search-bar-wrapper { background: white; border-radius: 16px; padding: 16px 20px; border: 1px solid #F0E8DD; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+.search-input-group { position: relative; flex: 1; min-width: 250px; }
+.search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #9CA3AF; font-size: 0.9rem; }
+.search-input { width: 100%; padding: 12px 40px 12px 40px; border: 1px solid #E8DFD1; border-radius: 40px; font-size: 14px; background: #FEF9F0; transition: all 0.2s; }
+.search-input:focus { outline: none; border-color: #93032E; background: white; box-shadow: 0 0 0 3px rgba(147,3,46,0.1); }
+.clear-search-btn { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #9CA3AF; cursor: pointer; padding: 5px; display: flex; align-items: center; justify-content: center; }
+.search-info { font-size: 0.85rem; color: #9CA3AF; white-space: nowrap; }
+.search-info span { color: #93032E; font-weight: 600; }
+.admin-table { background: white; border-radius: 20px; border: 1px solid #F0E8DD; overflow: hidden; }
+.admin-table th { background: #FEF9F0; padding: 16px 20px; font-size: 12px; font-weight: 700; color: #93032E; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #F0E8DD; }
+.admin-table td { padding: 16px 20px; font-size: 13px; border-bottom: 1px solid #F5F0E8; color: #4A3B2F; vertical-align: middle; }
+.admin-table tr:hover td { background: #FFF9F0; }
+.voyage-thumbnail { width: 70px; height: 70px; object-fit: cover; border-radius: 12px; border: 1px solid #F0E8DD; transition: all 0.2s; }
+.voyage-thumbnail:hover { transform: scale(1.05); border-color: #93032E; }
+.thumbnail-placeholder { width: 70px; height: 70px; background: #FEF9F0; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #E8DFD1; font-size: 1.5rem; border: 1px solid #F0E8DD; }
+.voyage-name { font-weight: 700; color: #2C1810; font-size: 0.95rem; }
+.voyage-description-cell { max-width: 350px; color: #6B7280; line-height: 1.5; font-size: 0.85rem; }
+.voyage-price { font-weight: 700; color: #93032E; font-size: 1rem; }
+.action-buttons { display: flex; gap: 8px; }
+.action-btn { width: 36px; height: 36px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; cursor: pointer; border: none; background: transparent; font-size: 0.9rem; text-decoration: none; }
+.programmes-btn { background: #FEF3C7; color: #D97706; }
+.programmes-btn:hover { background: #F59E0B; color: white; transform: translateY(-2px); }
+.edit-btn { background: #EFF6FF; color: #3B82F6; }
+.edit-btn:hover { background: #3B82F6; color: white; transform: translateY(-2px); }
+.delete-btn { background: #FEF2F2; color: #EF4444; }
+.delete-btn:hover { background: #EF4444; color: white; transform: translateY(-2px); }
+.btn-primary { background: #93032E; border: none; padding: 10px 24px; border-radius: 40px; font-size: 13px; font-weight: 600; color: white; transition: all 0.2s; }
+.btn-primary:hover { background: #6B0221; transform: translateY(-2px); }
+.pagination-wrapper { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding: 16px 0; }
+.pagination-info { font-size: 0.85rem; color: #9CA3AF; }
+.pagination-info strong { color: #93032E; font-weight: 600; }
+.pagination { margin: 0; gap: 6px; }
+.page-item { list-style: none; }
+.page-link { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: white; border: 1px solid #E8DFD1; color: #4A3B2F; font-size: 0.85rem; font-weight: 500; transition: all 0.2s; text-decoration: none; }
+.page-link:hover { background: #FFF9F0; border-color: #93032E; color: #93032E; }
+.page-item.active .page-link { background: #93032E; border-color: #93032E; color: white; }
+.page-item.disabled .page-link { background: #FEF9F0; border-color: #F0E8DD; color: #E8DFD1; cursor: not-allowed; }
+
+/* ==================== AI OVERLAY ==================== */
+.ai-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); z-index: 9999; display: none; align-items: center; justify-content: center; }
+.ai-overlay.open { display: flex; }
+.ai-overlay-content { background: white; border-radius: 28px; width: 90%; max-width: 1100px; max-height: 85vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 25px 50px rgba(0,0,0,0.25); animation: slideInUp 0.35s ease; }
+.report-overlay { max-width: 1200px; }
+@keyframes slideInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+.ai-overlay-header { padding: 18px 24px; background: linear-gradient(135deg, #93032E, #6B0221); color: white; display: flex; justify-content: space-between; align-items: center; }
+.report-overlay .ai-overlay-header { background: linear-gradient(135deg, #212E53, #0B162C); }
+.ai-overlay-header h3 { margin: 0; font-size: 1.3rem; }
+.ai-overlay-header p { font-size: 0.75rem; opacity: 0.8; margin-top: 4px; }
+.ai-close-btn { background: rgba(255,255,255,0.15); border: none; width: 36px; height: 36px; border-radius: 50%; color: white; cursor: pointer; transition: all 0.2s; }
+.ai-close-btn:hover { background: rgba(255,255,255,0.25); transform: rotate(90deg); }
+.ai-overlay-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
+.ai-loading { text-align: center; padding: 50px 20px; }
+.spinner { width: 45px; height: 45px; border: 3px solid #F0E8DD; border-top-color: #93032E; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 18px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.ai-section { margin-bottom: 28px; }
+.ai-section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid #F0E8DD; }
+.ai-section-header i { font-size: 1.3rem; color: #93032E; }
+.ai-section-header h4 { margin: 0; font-size: 1.1rem; font-weight: 600; color: #2C1810; }
+.alert-count { background: #EF4444; color: white; border-radius: 20px; padding: 2px 10px; font-size: 0.7rem; font-weight: 700; margin-left: auto; }
+.alerts-list { display: flex; flex-direction: column; gap: 10px; }
+.alert-item { padding: 14px 18px; border-radius: 14px; display: flex; align-items: flex-start; gap: 12px; border-left: 4px solid; }
+.alert-item.danger { background: #FEF2F2; border-left-color: #EF4444; }
+.alert-item.warning { background: #FFFBEB; border-left-color: #F59E0B; }
+.alert-item.info { background: #EFF6FF; border-left-color: #3B82F6; }
+.alert-icon { font-size: 1.2rem; margin-top: 2px; }
+.alert-content { flex: 1; }
+.alert-message { font-weight: 600; color: #1F2937; margin-bottom: 4px; font-size: 0.85rem; }
+.alert-action { font-size: 0.72rem; color: #6B7280; }
+.alert-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.alert-tag { font-size: 0.65rem; padding: 2px 10px; border-radius: 20px; font-weight: 500; background: rgba(147,3,46,0.08); color: #93032E; }
+.alert-ai-insight { margin-top: 10px; padding: 10px; background: #F0F7FF; border-radius: 8px; font-size: 0.72rem; color: #1E40AF; border-left: 3px solid #3B82F6; white-space: pre-line; }
+
+/* Insight Ollama banner */
+.ai-insight-banner { background: linear-gradient(135deg, #EFF6FF, #DBEAFE); border: 1px solid #93C5FD; border-radius: 14px; padding: 14px 18px; margin-bottom: 18px; font-size: 0.78rem; color: #1E3A8A; white-space: pre-line; line-height: 1.6; }
+.ai-insight-banner strong { display: block; margin-bottom: 6px; font-size: 0.82rem; }
+
+/* Kanban */
+.kanban-board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 16px; }
+.kanban-column { background: #FEF9F0; border-radius: 18px; overflow: hidden; border: 1px solid #F0E8DD; }
+.kanban-column-header { padding: 12px 14px; font-weight: 600; font-size: 0.8rem; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid; }
+.todo-header { background: #FEF3C7; border-bottom-color: #F59E0B; color: #B45309; }
+.doing-header { background: #EFF6FF; border-bottom-color: #3B82F6; color: #1E40AF; }
+.done-header { background: #D1FAE5; border-bottom-color: #10B981; color: #047857; }
+.task-count { margin-left: auto; background: rgba(0,0,0,0.08); padding: 2px 8px; border-radius: 20px; font-size: 0.65rem; }
+.kanban-tasks { min-height: 280px; max-height: 380px; overflow-y: auto; padding: 10px; }
+.task-card { background: white; border-radius: 12px; padding: 12px; margin-bottom: 8px; cursor: grab; transition: all 0.2s; border: 1px solid #E8DFD1; position: relative; }
+.task-card:hover { transform: translateY(-2px); box-shadow: 0 3px 10px rgba(0,0,0,0.06); border-color: #93032E; }
+.task-card.done-card { opacity: 0.65; border-color: #10B981; }
+.task-priority { position: absolute; top: 10px; right: 10px; width: 8px; height: 8px; border-radius: 50%; }
+.task-priority.urgent { background: #EF4444; }
+.task-priority.high { background: #F59E0B; }
+.task-priority.medium { background: #3B82F6; }
+.task-priority.low { background: #10B981; }
+.task-title { font-weight: 600; color: #2C1810; font-size: 0.82rem; margin-bottom: 5px; padding-right: 12px; }
+.task-description { font-size: 0.68rem; color: #6B7280; line-height: 1.35; }
+.task-auto-done { font-size: 0.62rem; color: #047857; background: #D1FAE5; padding: 2px 8px; border-radius: 10px; display: inline-block; margin-top: 5px; }
+.task-actions { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+.task-action-btn { background: none; border: none; font-size: 0.65rem; padding: 3px 8px; border-radius: 20px; cursor: pointer; transition: all 0.2s; }
+.task-action-btn.move-todo { background: #FEF3C7; color: #B45309; }
+.task-action-btn.move-doing { background: #EFF6FF; color: #1E40AF; }
+.task-action-btn.move-done { background: #D1FAE5; color: #047857; }
+.task-action-btn:hover { transform: scale(1.03); }
+.ai-footer { margin-top: 20px; padding-top: 14px; border-top: 1px solid #F0E8DD; display: flex; align-items: center; justify-content: space-between; font-size: 0.7rem; color: #9CA3AF; }
+.btn-refresh-ai { background: none; border: 1px solid #E8DFD1; padding: 6px 14px; border-radius: 30px; cursor: pointer; transition: all 0.2s; font-size: 0.7rem; }
+.btn-refresh-ai:hover { background: #93032E; border-color: #93032E; color: white; }
+.no-alerts-placeholder { text-align: center; padding: 30px; color: #9CA3AF; }
+.no-alerts-placeholder i { font-size: 2rem; color: #10B981; margin-bottom: 8px; }
+
+/* ==================== RAPPORT ==================== */
+.report-header { text-align: center; padding: 20px 0; border-bottom: 3px solid #A7001E; margin-bottom: 25px; }
+.report-header h2 { color: #212E53; margin: 0; font-size: 1.5rem; }
+.report-date-header { color: #64748B; font-size: 0.7rem; margin-top: 8px; }
+.report-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
+.report-stat-card { background: #F8FAFC; padding: 15px; border-radius: 12px; text-align: center; border-left: 4px solid #A7001E; }
+.report-stat-value { font-size: 24px; font-weight: bold; color: #212E53; }
+.report-stat-label { font-size: 9px; color: #64748B; margin-top: 5px; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; }
+.report-section { margin-bottom: 25px; }
+.report-section-title { font-size: 0.9rem; font-weight: 700; color: #212E53; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 2px solid #E2E8F0; display: flex; align-items: center; gap: 8px; }
+.report-table-container { overflow-x: auto; }
+.report-table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
+.report-table th { background: #F1F5F9; padding: 10px 12px; text-align: left; font-weight: 700; color: #430C05; font-size: 0.65rem; text-transform: uppercase; }
+.report-table td { padding: 8px 12px; border-bottom: 1px solid #E8EDF2; font-size: 0.7rem; color: #334155; }
+.report-table tr:hover td { background: #F8FAFC; }
+.ai-insights-box { background: #F8FAFC; padding: 20px; border-radius: 12px; border-left: 3px solid #A7001E; white-space: pre-line; font-size: 0.72rem; line-height: 1.6; color: #334155; }
+.report-actions { display: flex; gap: 15px; justify-content: flex-end; margin-top: 25px; padding-top: 20px; border-top: 1px solid #E2E8F0; }
+.btn-download-pdf { background: #A7001E; border: none; padding: 8px 18px; border-radius: 8px; color: white; font-weight: 600; font-size: 0.7rem; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+.btn-download-pdf:hover { background: #8B0018; transform: translateY(-2px); }
+.btn-refresh-report { background: #212E53; border: none; padding: 8px 18px; border-radius: 8px; color: white; font-weight: 600; font-size: 0.7rem; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+.btn-refresh-report:hover { background: #0B162C; transform: translateY(-2px); }
+
+@media (max-width: 900px) { .kanban-board { grid-template-columns: 1fr; } .report-stats-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px) { .search-bar-wrapper { flex-direction: column; } .pagination-wrapper { flex-direction: column; gap: 16px; } .voyage-description-cell { max-width: 200px; } }
 </style>
 
 <script>
-    // ==================== IA ANALYZER ====================
-    let currentTasks = [];
-    let currentAlerts = [];
-    
-    document.getElementById('openAIAnalyzerBtn').addEventListener('click', function() {
-        document.getElementById('aiAnalyzerOverlay').classList.add('open');
-        runAIAnalysis();
-    });
-    
-    function closeAIAnalyzer() {
-        document.getElementById('aiAnalyzerOverlay').classList.remove('open');
-    }
-    
-    async function runAIAnalysis() {
-        document.getElementById('aiLoading').style.display = 'block';
-        document.getElementById('aiAlertsSection').style.display = 'none';
-        document.getElementById('aiTasksSection').style.display = 'none';
-        document.getElementById('aiFooter').style.display = 'none';
-        
-        try {
-            const response = await fetch('{{ path("admin_voyage_analyze") }}');
-            const data = await response.json();
-            
-            if (data.success) {
-                currentAlerts = data.alerts;
-                currentTasks = data.tasks;
-                
-                displayAlerts(data.alerts);
-                displayTasks(data.tasks);
-                
-                const alertBadge = document.getElementById('alertBadge');
-                if (data.alerts.length > 0) {
-                    alertBadge.style.display = 'inline-flex';
-                    alertBadge.textContent = data.alerts.length;
-                } else {
-                    alertBadge.style.display = 'none';
-                }
-                
-                if (data.last_analysis) {
-                    document.getElementById('lastAnalysisTime').textContent = data.last_analysis;
-                }
-                
-                document.getElementById('aiLoading').style.display = 'none';
-                document.getElementById('aiAlertsSection').style.display = 'block';
-                document.getElementById('aiTasksSection').style.display = 'block';
-                document.getElementById('aiFooter').style.display = 'flex';
-            }
-        } catch (error) {
-            console.error('Erreur:', error);
-            document.getElementById('aiLoading').innerHTML = '<div class="text-center text-danger"><i class="fas fa-exclamation-circle fa-3x"></i><p>Erreur lors de l\'analyse.</p></div>';
-        }
-    }
-    
-    function displayAlerts(alerts) {
-        const alertsList = document.getElementById('alertsList');
-        const alertCount = document.getElementById('alertCount');
-        
-        if (!alerts || alerts.length === 0) {
-            alertsList.innerHTML = '<div class="no-alerts-placeholder"><i class="fas fa-check-circle d-block"></i><strong>Tout va bien !</strong><p class="small mt-1">Aucune alerte critique détectée.</p></div>';
-            alertCount.textContent = '0';
-            return;
-        }
-        
-        alertCount.textContent = alerts.length;
-        
-        alertsList.innerHTML = alerts.map(alert => `
-            <div class="alert-item ${alert.type}">
-                <div class="alert-icon">
-                    <i class="fas ${alert.type === 'danger' ? 'fa-exclamation-triangle' : (alert.type === 'warning' ? 'fa-clock' : 'fa-info-circle')}"></i>
-                </div>
-                <div class="alert-content">
-                    <div class="alert-message">${escapeHtml(alert.message)}</div>
-                    <div class="alert-action">💡 ${escapeHtml(alert.action)}</div>
-                </div>
-            </div>
-        `).join('');
-    }
-    
-    function displayTasks(tasks) {
-        const todoTasks = tasks.filter(t => t.status === 'todo');
-        const doingTasks = tasks.filter(t => t.status === 'doing');
-        const doneTasks = tasks.filter(t => t.status === 'done');
-        
-        document.getElementById('todoCount').textContent = todoTasks.length;
-        document.getElementById('doingCount').textContent = doingTasks.length;
-        document.getElementById('doneCount').textContent = doneTasks.length;
-        
-        document.getElementById('todoTasks').innerHTML = renderTaskCards(todoTasks, 'todo');
-        document.getElementById('doingTasks').innerHTML = renderTaskCards(doingTasks, 'doing');
-        document.getElementById('doneTasks').innerHTML = renderTaskCards(doneTasks, 'done');
-        
-        setTimeout(initDragAndDrop, 100);
-    }
-    
-    function renderTaskCards(tasks, currentStatus) {
-        if (!tasks || tasks.length === 0) {
-            return '<div class="text-center text-muted py-3"><i class="fas fa-inbox"></i><p class="small mt-1">Aucune tâche</p></div>';
-        }
-        
-        return tasks.map(task => `
-            <div class="task-card" draggable="true" data-task-id="${task.id}" data-status="${currentStatus}">
-                <div class="task-priority ${task.priority}"></div>
-                <div class="task-title">${escapeHtml(task.title)}</div>
-                <div class="task-description">${escapeHtml(task.description)}</div>
-                <div class="task-actions">
-                    ${currentStatus !== 'todo' ? `<button class="task-action-btn move-todo" onclick="moveTask('${task.id}', 'todo')">📋 À faire</button>` : ''}
-                    ${currentStatus !== 'doing' ? `<button class="task-action-btn move-doing" onclick="moveTask('${task.id}', 'doing')">⚡ En cours</button>` : ''}
-                    ${currentStatus !== 'done' ? `<button class="task-action-btn move-done" onclick="moveTask('${task.id}', 'done')">✅ Terminé</button>` : ''}
-                </div>
-            </div>
-        `).join('');
-    }
-    
-    function escapeHtml(text) {
-        if (!text) return '';
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-    
-    async function moveTask(taskId, newStatus) {
-        try {
-            const formData = new URLSearchParams();
-            formData.append('status', newStatus);
-            
-            const response = await fetch('/admin/voyages/tasks/' + taskId + '/status', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: formData.toString()
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                const task = currentTasks.find(t => t.id === taskId);
-                if (task) { task.status = newStatus; displayTasks(currentTasks); }
-                showToast('Tâche déplacée', 'success');
-            }
-        } catch (error) {
-            console.error('Erreur:', error);
-            showToast('Erreur', 'error');
-        }
-    }
-    
-    function showToast(message, type) {
-        const toast = document.createElement('div');
-        toast.style.cssText = `
-            position: fixed; bottom: 20px; right: 20px;
-            background: ${type === 'success' ? '#10B981' : '#EF4444'};
-            color: white; padding: 10px 18px; border-radius: 10px;
-            z-index: 10000; font-size: 13px; animation: fadeInOut 3s ease;
-        `;
-        toast.innerHTML = message;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    }
-    
-    const styleToast = document.createElement('style');
-    styleToast.textContent = `@keyframes fadeInOut { 0% { opacity: 0; transform: translateX(20px); } 10% { opacity: 1; transform: translateX(0); } 90% { opacity: 1; } 100% { opacity: 0; transform: translateX(20px); } }`;
-    document.head.appendChild(styleToast);
-    
-    function initDragAndDrop() {
-        const taskCards = document.querySelectorAll('.task-card');
-        const columns = document.querySelectorAll('.kanban-tasks');
-        
-        taskCards.forEach(card => {
-            card.removeEventListener('dragstart', dragStart);
-            card.removeEventListener('dragend', dragEnd);
-            card.addEventListener('dragstart', dragStart);
-            card.addEventListener('dragend', dragEnd);
-        });
-        
-        columns.forEach(column => {
-            column.removeEventListener('dragover', dragOver);
-            column.removeEventListener('dragenter', dragEnter);
-            column.removeEventListener('dragleave', dragLeave);
-            column.removeEventListener('drop', drop);
-            column.addEventListener('dragover', dragOver);
-            column.addEventListener('dragenter', dragEnter);
-            column.addEventListener('dragleave', dragLeave);
-            column.addEventListener('drop', drop);
-        });
-    }
-    
-    let draggedTaskId = null;
-    
-    function dragStart(e) { draggedTaskId = this.getAttribute('data-task-id'); this.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; }
-    function dragEnd(e) { this.classList.remove('dragging'); draggedTaskId = null; }
-    function dragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
-    function dragEnter(e) { this.classList.add('drop-zone-active'); }
-    function dragLeave(e) { this.classList.remove('drop-zone-active'); }
-    
-    function drop(e) {
-        e.preventDefault();
-        this.classList.remove('drop-zone-active');
-        const columnId = this.id;
-        let newStatus = columnId === 'todoTasks' ? 'todo' : (columnId === 'doingTasks' ? 'doing' : 'done');
-        if (draggedTaskId) { moveTask(draggedTaskId, newStatus); }
-    }
-    
-    // ==================== IA REPORT GENERATOR ====================
-    let currentReport = null;
-    
-    document.getElementById('openAIReportBtn').addEventListener('click', function() {
-        document.getElementById('aiReportOverlay').classList.add('open');
-        generateReport();
-    });
-    
-    function closeAIReport() {
-        document.getElementById('aiReportOverlay').classList.remove('open');
-    }
-    
-    async function generateReport() {
-        document.getElementById('reportLoading').style.display = 'block';
-        document.getElementById('reportContent').style.display = 'none';
-        
-        try {
-            const response = await fetch('{{ path("admin_voyage_report_generate") }}', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            });
-            const data = await response.json();
-            
-            if (data.success) {
-                currentReport = data.report;
-                displayReport(currentReport);
-                document.getElementById('reportLoading').style.display = 'none';
-                document.getElementById('reportContent').style.display = 'block';
+// ==================== IA ANALYZER ====================
+let currentTasks  = [];
+let currentAlerts = [];
+
+document.getElementById('openAIAnalyzerBtn').addEventListener('click', function () {
+    document.getElementById('aiAnalyzerOverlay').classList.add('open');
+    runAIAnalysis();
+});
+
+function closeAIAnalyzer() {
+    document.getElementById('aiAnalyzerOverlay').classList.remove('open');
+}
+
+async function runAIAnalysis() {
+    document.getElementById('aiLoading').style.display         = 'block';
+    document.getElementById('aiAlertsSection').style.display   = 'none';
+    document.getElementById('aiTasksSection').style.display    = 'none';
+    document.getElementById('aiFooter').style.display          = 'none';
+    document.getElementById('aiInsightBanner').style.display   = 'none';
+
+    try {
+        const response = await fetch('{{ path("admin_voyage_analyze") }}');
+        const data     = await response.json();
+
+        if (data.success) {
+            currentAlerts = data.alerts;
+            currentTasks  = data.tasks;
+
+            displayAlerts(data.alerts);
+            displayTasks(data.tasks);
+
+            // Badge compteur
+            const alertBadge = document.getElementById('alertBadge');
+            if (data.alerts.length > 0) {
+                alertBadge.style.display = 'inline-flex';
+                alertBadge.textContent   = data.alerts.length;
             } else {
-                throw new Error(data.error || 'Erreur lors de la génération');
+                alertBadge.style.display = 'none';
             }
-        } catch (error) {
-            console.error('Erreur:', error);
-            document.getElementById('reportLoading').innerHTML = '<div class="text-center text-danger"><i class="fas fa-exclamation-circle fa-3x"></i><p>Erreur lors de la génération du rapport.</p><button class="btn btn-primary mt-3" onclick="generateReport()">Réessayer</button></div>';
+
+            if (data.last_analysis) {
+                document.getElementById('lastAnalysisTime').textContent = data.last_analysis;
+            }
+
+            document.getElementById('aiLoading').style.display       = 'none';
+            document.getElementById('aiAlertsSection').style.display = 'block';
+            document.getElementById('aiTasksSection').style.display  = 'block';
+            document.getElementById('aiFooter').style.display        = 'flex';
         }
+    } catch (error) {
+        console.error('Erreur:', error);
+        document.getElementById('aiLoading').innerHTML =
+            '<div class="text-center text-danger"><i class="fas fa-exclamation-circle fa-3x"></i><p>Erreur lors de l\'analyse.</p></div>';
     }
-    
-    function displayReport(report) {
-        document.getElementById('reportDate').innerHTML = `Généré le: ${report.generated_at}<br>Période: ${report.period.start} → ${report.period.end}`;
-        
-        const statsHtml = `
-            <div class="report-stat-card">
-                <div class="report-stat-value">${report.summary.total_voyages}</div>
-                <div class="report-stat-label">Total voyages</div>
+}
+
+function displayAlerts(alerts) {
+    const alertsList = document.getElementById('alertsList');
+    const alertCount = document.getElementById('alertCount');
+    const banner     = document.getElementById('aiInsightBanner');
+
+    if (!alerts || alerts.length === 0) {
+        alertsList.innerHTML = '<div class="no-alerts-placeholder"><i class="fas fa-check-circle d-block"></i><strong>Tout va bien !</strong><p class="small mt-1">Aucune alerte critique détectée.</p></div>';
+        alertCount.textContent = '0';
+        return;
+    }
+
+    alertCount.textContent = alerts.length;
+
+    // Afficher l'insight Ollama global s'il existe
+    const firstWithInsight = alerts.find(a => a.ai_insight && a.ai_insight.length > 10);
+    if (firstWithInsight) {
+        banner.style.display = 'block';
+        banner.innerHTML     = '<strong>🤖 Analyse Ollama IA :</strong>' + escapeHtml(firstWithInsight.ai_insight);
+    }
+
+    alertsList.innerHTML = alerts.map(alert => `
+        <div class="alert-item ${alert.type}">
+            <div class="alert-icon">
+                <i class="fas ${alert.type === 'danger' ? 'fa-exclamation-triangle' : (alert.type === 'warning' ? 'fa-clock' : 'fa-info-circle')}"></i>
             </div>
-            <div class="report-stat-card">
-                <div class="report-stat-value">${report.summary.total_reservations}</div>
-                <div class="report-stat-label">Réservations</div>
+            <div class="alert-content">
+                <div class="alert-message">${escapeHtml(alert.message)}</div>
+                <div class="alert-action">💡 ${escapeHtml(alert.action)}</div>
+                ${alert.idees && alert.idees.length > 0 ? `
+                <div class="alert-tags">
+                    ${alert.idees.slice(0, 4).map(i => `<span class="alert-tag">${escapeHtml(i)}</span>`).join('')}
+                </div>` : ''}
             </div>
-            <div class="report-stat-card">
-                <div class="report-stat-value">${report.summary.total_participants}</div>
-                <div class="report-stat-label">Participants</div>
+        </div>
+    `).join('');
+}
+
+function displayTasks(tasks) {
+    const todoTasks  = tasks.filter(t => t.status === 'todo');
+    const doingTasks = tasks.filter(t => t.status === 'doing');
+    const doneTasks  = tasks.filter(t => t.status === 'done');
+
+    document.getElementById('todoCount').textContent  = todoTasks.length;
+    document.getElementById('doingCount').textContent = doingTasks.length;
+    document.getElementById('doneCount').textContent  = doneTasks.length;
+
+    document.getElementById('todoTasks').innerHTML  = renderTaskCards(todoTasks,  'todo');
+    document.getElementById('doingTasks').innerHTML = renderTaskCards(doingTasks, 'doing');
+    document.getElementById('doneTasks').innerHTML  = renderTaskCards(doneTasks,  'done');
+
+    setTimeout(initDragAndDrop, 100);
+}
+
+function renderTaskCards(tasks, currentStatus) {
+    if (!tasks || tasks.length === 0) {
+        return '<div class="text-center text-muted py-3"><i class="fas fa-inbox"></i><p class="small mt-1">Aucune tâche</p></div>';
+    }
+
+    return tasks.map(task => {
+        const isAutoDone = currentStatus === 'done';
+        return `
+        <div class="task-card ${isAutoDone ? 'done-card' : ''}" draggable="true" data-task-id="${task.id}" data-status="${currentStatus}">
+            <div class="task-priority ${task.priority}"></div>
+            <div class="task-title">${escapeHtml(task.title)}</div>
+            <div class="task-description">${escapeHtml(task.description)}</div>
+            ${isAutoDone ? '<span class="task-auto-done">✅ Résolu automatiquement</span>' : ''}
+            <div class="task-actions">
+                ${currentStatus !== 'todo'   ? `<button class="task-action-btn move-todo"  onclick="moveTask('${task.id}', 'todo')">📋 À faire</button>` : ''}
+                ${currentStatus !== 'doing'  ? `<button class="task-action-btn move-doing" onclick="moveTask('${task.id}', 'doing')">⚡ En cours</button>` : ''}
+                ${currentStatus !== 'done'   ? `<button class="task-action-btn move-done"  onclick="moveTask('${task.id}', 'done')">✅ Terminé</button>` : ''}
             </div>
-            <div class="report-stat-card">
-                <div class="report-stat-value">${report.summary.avg_occupancy_rate}%</div>
-                <div class="report-stat-label">Taux d'occupation</div>
-            </div>
-        `;
-        document.getElementById('reportStats').innerHTML = statsHtml;
-        
-        // Meilleurs voyages
-        const bestTableBody = document.querySelector('#bestVoyagesTable tbody');
-        if (report.best_voyages && report.best_voyages.length > 0) {
-            bestTableBody.innerHTML = report.best_voyages.map(v => `
-                <tr>
-                    <td><strong>${escapeHtml(v.nom)}</strong><br><small>${escapeHtml((v.description || '').substring(0, 50))}...</small></td>
-                    <td>${v.total_reservations}</td>
-                    <td>${v.total_participants} / ${v.capacity}</td>
-                    <td><span class="badge-success">${v.occupancy_rate}%</span></td>
-                    <td class="revenue-cell"><strong>${formatCurrency(v.paid_revenue)}</strong></td>
-                </tr>
-            `).join('');
+        </div>`;
+    }).join('');
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+async function moveTask(taskId, newStatus) {
+    try {
+        const formData = new URLSearchParams();
+        formData.append('status', newStatus);
+
+        const response = await fetch('/admin/voyages/tasks/' + taskId + '/status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData.toString()
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            const task = currentTasks.find(t => t.id === taskId);
+            if (task) { task.status = newStatus; displayTasks(currentTasks); }
+            showToast('Tâche déplacée vers ' + newStatus, 'success');
+        }
+    } catch (error) {
+        showToast('Erreur', 'error');
+    }
+}
+
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.style.cssText = `position:fixed;bottom:20px;right:20px;background:${type==='success'?'#10B981':'#EF4444'};color:white;padding:10px 18px;border-radius:10px;z-index:10000;font-size:13px;animation:fadeInOut 3s ease;`;
+    toast.innerHTML = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+const styleToast = document.createElement('style');
+styleToast.textContent = `@keyframes fadeInOut{0%{opacity:0;transform:translateX(20px)}10%{opacity:1;transform:translateX(0)}90%{opacity:1}100%{opacity:0;transform:translateX(20px)}}`;
+document.head.appendChild(styleToast);
+
+function initDragAndDrop() {
+    document.querySelectorAll('.task-card').forEach(card => {
+        card.addEventListener('dragstart', function(e) { draggedTaskId = this.getAttribute('data-task-id'); this.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; });
+        card.addEventListener('dragend',   function()  { this.classList.remove('dragging'); draggedTaskId = null; });
+    });
+    document.querySelectorAll('.kanban-tasks').forEach(col => {
+        col.addEventListener('dragover',  e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
+        col.addEventListener('dragenter', function() { this.classList.add('drop-zone-active'); });
+        col.addEventListener('dragleave', function() { this.classList.remove('drop-zone-active'); });
+        col.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('drop-zone-active');
+            const map = { todoTasks: 'todo', doingTasks: 'doing', doneTasks: 'done' };
+            const newStatus = map[this.id];
+            if (draggedTaskId && newStatus) moveTask(draggedTaskId, newStatus);
+        });
+    });
+}
+
+let draggedTaskId = null;
+
+// ==================== IA REPORT GENERATOR ====================
+let currentReport = null;
+
+document.getElementById('openAIReportBtn').addEventListener('click', function () {
+    document.getElementById('aiReportOverlay').classList.add('open');
+    generateReport();
+});
+
+function closeAIReport() {
+    document.getElementById('aiReportOverlay').classList.remove('open');
+}
+
+async function generateReport() {
+    document.getElementById('reportLoading').style.display  = 'block';
+    document.getElementById('reportContent').style.display  = 'none';
+
+    try {
+        const response = await fetch('{{ path("admin_voyage_report_generate") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            currentReport = data.report;
+            displayReport(currentReport);
+            document.getElementById('reportLoading').style.display = 'none';
+            document.getElementById('reportContent').style.display = 'block';
         } else {
-            bestTableBody.innerHTML = '<tr><td colspan="5" class="text-center">Aucune donnée disponible</td></tr>';
+            throw new Error(data.error || 'Erreur lors de la génération');
         }
-        
-        // Voyages moins performants
-        const worstTableBody = document.querySelector('#worstVoyagesTable tbody');
-        if (report.worst_voyages && report.worst_voyages.length > 0) {
-            worstTableBody.innerHTML = report.worst_voyages.map(v => `
-                <tr>
-                    <td>${escapeHtml(v.nom)}<br><small>${escapeHtml((v.description || '').substring(0, 40))}</small></td>
-                    <td>${v.total_reservations}</td>
-                    <td>${v.total_participants} / ${v.capacity}</td>
-                    <td><span class="badge-warning">${v.occupancy_rate}%</span></td>
-                    <td>${formatCurrency(v.paid_revenue)}</td>
-                </tr>
-            `).join('');
-        } else {
-            worstTableBody.innerHTML = '<tr><td colspan="5" class="text-center">Aucune donnée disponible</td></tr>';
-        }
-        
-        document.getElementById('aiInsights').innerHTML = nl2br(escapeHtml(report.ai_insights));
+    } catch (error) {
+        document.getElementById('reportLoading').innerHTML =
+            '<div class="text-center text-danger"><i class="fas fa-exclamation-circle fa-3x"></i><p>Erreur lors de la génération du rapport.</p><button class="btn btn-primary mt-3" onclick="generateReport()">Réessayer</button></div>';
     }
-    
-    function formatCurrency(amount) {
-        return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount) + ' DT';
-    }
-    
-    function nl2br(str) {
-        return str.replace(/\n/g, '<br>');
-    }
-    
-    document.getElementById('downloadPDFBtn')?.addEventListener('click', async function() {
-        if (!currentReport) {
-            showToast('Générez d\'abord le rapport', 'error');
-            return;
-        }
-        
-        try {
-            const response = await fetch('{{ path("admin_voyage_report_pdf") }}', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ report: currentReport })
-            });
-            
-            if (response.ok) {
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `rapport_hebdomadaire_${new Date().toISOString().split('T')[0]}.pdf`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-                showToast('PDF téléchargé avec succès', 'success');
+}
+
+function displayReport(report) {
+    document.getElementById('reportDate').innerHTML =
+        `Généré le: ${report.generated_at}<br>Période: ${report.period.start} → ${report.period.end}`;
+
+    document.getElementById('reportStats').innerHTML = `
+        <div class="report-stat-card"><div class="report-stat-value">${report.summary.total_voyages}</div><div class="report-stat-label">Total voyages</div></div>
+        <div class="report-stat-card"><div class="report-stat-value">${report.summary.total_reservations}</div><div class="report-stat-label">Réservations</div></div>
+        <div class="report-stat-card"><div class="report-stat-value">${report.summary.total_participants}</div><div class="report-stat-label">Participants</div></div>
+        <div class="report-stat-card"><div class="report-stat-value">${report.summary.avg_occupancy_rate}%</div><div class="report-stat-label">Taux d'occupation</div></div>
+    `;
+
+    const bestTableBody = document.querySelector('#bestVoyagesTable tbody');
+    bestTableBody.innerHTML = (report.best_voyages && report.best_voyages.length > 0)
+        ? report.best_voyages.map(v => `
+            <tr>
+                <td><strong>${escapeHtml(v.nom)}</strong><br><small>${escapeHtml((v.description || '').substring(0, 50))}...</small></td>
+                <td>${v.total_reservations}</td>
+                <td>${v.total_participants} / ${v.capacity}</td>
+                <td>${v.occupancy_rate}%</td>
+                <td><strong>${formatCurrency(v.paid_revenue)}</strong></td>
+            </tr>`).join('')
+        : '<tr><td colspan="5" class="text-center">Aucune donnée disponible</td></tr>';
+
+    const worstTableBody = document.querySelector('#worstVoyagesTable tbody');
+    worstTableBody.innerHTML = (report.worst_voyages && report.worst_voyages.length > 0)
+        ? report.worst_voyages.map(v => `
+            <tr>
+                <td>${escapeHtml(v.nom)}</td>
+                <td>${v.total_reservations}</td>
+                <td>${v.total_participants} / ${v.capacity}</td>
+                <td>${v.occupancy_rate}%</td>
+                <td>${formatCurrency(v.paid_revenue)}</td>
+            </tr>`).join('')
+        : '<tr><td colspan="5" class="text-center">Aucune donnée disponible</td></tr>';
+
+    document.getElementById('aiInsights').innerHTML = nl2br(escapeHtml(report.ai_insights));
+}
+
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount) + ' DT';
+}
+
+function nl2br(str) { return str.replace(/\n/g, '<br>'); }
+
+document.getElementById('downloadPDFBtn')?.addEventListener('click', async function () {
+    if (!currentReport) { showToast('Générez d\'abord le rapport', 'error'); return; }
+    try {
+        const response = await fetch('{{ path("admin_voyage_report_pdf") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ report: currentReport })
+        });
+        if (response.ok) {
+            const blob = await response.blob();
+            const url  = window.URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            a.href     = url;
+            a.download = `rapport_hebdomadaire_${new Date().toISOString().split('T')[0]}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            showToast('PDF téléchargé avec succès', 'success');
+        } else { throw new Error('Erreur téléchargement'); }
+    } catch (error) { showToast('Erreur lors du téléchargement du PDF', 'error'); }
+});
+
+// ==================== PAGINATION & RECHERCHE ====================
+let searchTimeout;
+let currentPage = {{ current_page }};
+let isSearching = false;
+
+const searchInput    = document.getElementById('searchInput');
+const clearSearchBtn = document.getElementById('clearSearch');
+const searchSpinner  = document.getElementById('searchSpinner');
+
+function performSearch() {
+    const searchValue = searchInput.value;
+    isSearching = true;
+    searchSpinner.style.display = 'inline-block';
+
+    fetch(`{{ path('admin_voyage_index') }}?search=${encodeURIComponent(searchValue)}&page=${currentPage}&ajax=1`)
+        .then(r => r.json())
+        .then(data => {
+            let html = '';
+            if (data.voyages.length === 0) {
+                html = `<tr><td colspan="7" class="text-center py-5">
+                    <i class="fas fa-suitcase fa-3x mb-3" style="color:#E8DFD1;"></i>
+                    <p class="text-muted mb-0">Aucun voyage trouvé</p>
+                    <a href="{{ path('admin_voyage_new') }}" class="btn btn-primary mt-3">Créer un voyage</a>
+                </td></tr>`;
             } else {
-                throw new Error('Erreur lors du téléchargement');
+                for (const voyage of data.voyages) {
+                    html += `<tr class="voyage-row">
+                        <td>${voyage.image ? `<img src="{{ asset('uploads/voyages/') }}${voyage.image}" class="voyage-thumbnail" alt="${voyage.nom}">` : `<div class="thumbnail-placeholder"><i class="fas fa-image"></i></div>`}</td>
+                        <td class="voyage-name">${escapeHtml(voyage.nom)}</td>
+                        <td class="voyage-description-cell">${escapeHtml(voyage.description)}</td>
+                        <td class="voyage-capacity">${voyage.capacite} pers</td>
+                        <td class="voyage-price">${new Intl.NumberFormat('fr-FR').format(voyage.prix)} DT</td>
+                        <td class="voyage-date">${formatDate(voyage.dateCreation)}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="/admin/voyages/${voyage.idV}/programmes" class="action-btn programmes-btn" title="Voir les programmes"><i class="fas fa-calendar-week"></i></a>
+                                <a href="/admin/voyages/${voyage.idV}/edit" class="action-btn edit-btn" title="Modifier"><i class="fas fa-edit"></i></a>
+                                <form method="post" action="/admin/voyages/${voyage.idV}/delete" style="display:inline-block;">
+                                    <input type="hidden" name="_token" value="${data.csrf_token}">
+                                    <button type="submit" class="action-btn delete-btn" onclick="return confirm('Supprimer ce voyage ?')" title="Supprimer"><i class="fas fa-trash-alt"></i></button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>`;
+                }
             }
-        } catch (error) {
-            console.error('Erreur:', error);
-            showToast('Erreur lors du téléchargement du PDF', 'error');
-        }
+
+            document.getElementById('voyagesTableBody').innerHTML = html;
+            document.getElementById('resultCount').textContent    = data.total_count;
+            document.getElementById('paginationInfo').innerHTML   =
+                `Affichage de <strong>${data.voyages.length}</strong> sur <strong>${data.total_count}</strong> voyage(s)`;
+
+            let paginationHtml = `<li class="page-item ${data.current_page===1?'disabled':''}"><a class="page-link" href="#" data-page="${data.current_page-1}"><i class="fas fa-chevron-left"></i></a></li>`;
+            for (let i = 1; i <= data.total_pages; i++) {
+                paginationHtml += `<li class="page-item ${i===data.current_page?'active':''}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
+            }
+            paginationHtml += `<li class="page-item ${data.current_page===data.total_pages?'disabled':''}"><a class="page-link" href="#" data-page="${data.current_page+1}"><i class="fas fa-chevron-right"></i></a></li>`;
+            document.getElementById('paginationList').innerHTML = paginationHtml;
+            attachPaginationEvents();
+            searchSpinner.style.display = 'none';
+            isSearching = false;
+        })
+        .catch(() => { searchSpinner.style.display = 'none'; isSearching = false; });
+}
+
+function formatDate(dateString) {
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString('fr-FR');
+}
+
+function attachPaginationEvents() {
+    document.querySelectorAll('.page-link[data-page]').forEach(link => {
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+            const page = parseInt(this.getAttribute('data-page'));
+            if (page && !isNaN(page) && !this.parentElement.classList.contains('disabled') && !isSearching) {
+                currentPage = page;
+                performSearch();
+            }
+        });
     });
-    
-    // ==================== PAGINATION ET RECHERCHE ====================
-    let searchTimeout;
-    let currentPage = {{ current_page }};
-    let isSearching = false;
-    
-    const searchInput = document.getElementById('searchInput');
-    const clearSearchBtn = document.getElementById('clearSearch');
-    const searchSpinner = document.getElementById('searchSpinner');
-    const voyagesTableBody = document.getElementById('voyagesTableBody');
-    const resultCountSpan = document.getElementById('resultCount');
-    const paginationList = document.getElementById('paginationList');
-    const paginationInfo = document.getElementById('paginationInfo');
-    
-    function performSearch() {
-        const searchValue = searchInput.value;
-        isSearching = true;
-        searchSpinner.style.display = 'inline-block';
-        
-        fetch(`{{ path('admin_voyage_index') }}?search=${encodeURIComponent(searchValue)}&page=${currentPage}&ajax=1`)
-            .then(response => response.json())
-            .then(data => {
-                let html = '';
-                if (data.voyages.length === 0) {
-                    html = `<tr><td colspan="7" class="text-center py-5">
-                        <i class="fas fa-suitcase fa-3x mb-3" style="color: #E8DFD1;"></i>
-                        <p class="text-muted mb-0">Aucun voyage trouvé</p>
-                        <a href="{{ path('admin_voyage_new') }}" class="btn btn-primary mt-3">Créer un voyage</a>
-                    </td></tr>`;
-                } else {
-                    for (const voyage of data.voyages) {
-                        html += `<tr class="voyage-row">
-                            <td>${voyage.image ? `<img src="{{ asset('uploads/voyages/') }}${voyage.image}" class="voyage-thumbnail" alt="${voyage.nom}">` : `<div class="thumbnail-placeholder"><i class="fas fa-image"></i></div>`}</td>
-                            <td class="voyage-name">${escapeHtml(voyage.nom)}</td>
-                            <td class="voyage-description-cell">${escapeHtml(voyage.description)}</td>
-                            <td class="voyage-capacity">${voyage.capacite} pers</td>
-                            <td class="voyage-price">${new Intl.NumberFormat('fr-FR').format(voyage.prix)} DT</td>
-                            <td class="voyage-date">${formatDate(voyage.dateCreation)}</td>
-                            <td>
-                                <div class="action-buttons">
-                                    <a href="/admin/voyages/${voyage.idV}/programmes" class="action-btn programmes-btn" title="Voir les programmes"><i class="fas fa-calendar-week"></i></a>
-                                    <a href="/admin/voyages/${voyage.idV}/edit" class="action-btn edit-btn" title="Modifier"><i class="fas fa-edit"></i></a>
-                                    <form method="post" action="/admin/voyages/${voyage.idV}/delete" style="display: inline-block;">
-                                        <input type="hidden" name="_token" value="${data.csrf_token}">
-                                        <button type="submit" class="action-btn delete-btn" onclick="return confirm('Supprimer ce voyage ?')" title="Supprimer"><i class="fas fa-trash-alt"></i></button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>`;
-                    }
-                }
-                
-                voyagesTableBody.innerHTML = html;
-                resultCountSpan.textContent = data.total_count;
-                paginationInfo.innerHTML = `Affichage de <strong>${data.voyages.length}</strong> sur <strong>${data.total_count}</strong> voyage(s)`;
-                
-                let paginationHtml = '';
-                paginationHtml += `<li class="page-item ${data.current_page === 1 ? 'disabled' : ''}"><a class="page-link" href="#" data-page="${data.current_page - 1}"><i class="fas fa-chevron-left"></i></a></li>`;
-                for (let i = 1; i <= data.total_pages; i++) {
-                    paginationHtml += `<li class="page-item ${i === data.current_page ? 'active' : ''}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
-                }
-                paginationHtml += `<li class="page-item ${data.current_page === data.total_pages ? 'disabled' : ''}"><a class="page-link" href="#" data-page="${data.current_page + 1}"><i class="fas fa-chevron-right"></i></a></li>`;
-                
-                paginationList.innerHTML = paginationHtml;
-                attachPaginationEvents();
-                searchSpinner.style.display = 'none';
-                isSearching = false;
-            })
-            .catch(error => {
-                console.error('Erreur:', error);
-                searchSpinner.style.display = 'none';
-                isSearching = false;
-            });
-    }
-    
-    function formatDate(dateString) {
-        if (!dateString) return '';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('fr-FR');
-    }
-    
-    function attachPaginationEvents() {
-        document.querySelectorAll('.page-link[data-page]').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const page = parseInt(this.getAttribute('data-page'));
-                if (page && !isNaN(page) && !this.parentElement.classList.contains('disabled') && !isSearching) {
-                    currentPage = page;
-                    performSearch();
-                }
-            });
-        });
-    }
-    
-    if (searchInput) {
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            currentPage = 1;
-            if (this.value.length > 2 || this.value.length === 0) {
-                searchTimeout = setTimeout(performSearch, 500);
-            }
-            clearSearchBtn.style.display = this.value.length > 0 ? 'flex' : 'none';
-        });
-    }
-    
-    if (clearSearchBtn) {
-        clearSearchBtn.addEventListener('click', function() {
-            searchInput.value = '';
-            performSearch();
-        });
-    }
-    
-    attachPaginationEvents();
-    
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            if (document.getElementById('aiAnalyzerOverlay').classList.contains('open')) {
-                closeAIAnalyzer();
-            }
-            if (document.getElementById('aiReportOverlay').classList.contains('open')) {
-                closeAIReport();
-            }
+}
+
+if (searchInput) {
+    searchInput.addEventListener('input', function () {
+        clearTimeout(searchTimeout);
+        currentPage = 1;
+        if (this.value.length > 2 || this.value.length === 0) {
+            searchTimeout = setTimeout(performSearch, 500);
         }
+        clearSearchBtn.style.display = this.value.length > 0 ? 'flex' : 'none';
     });
+}
+
+if (clearSearchBtn) {
+    clearSearchBtn.addEventListener('click', function () { searchInput.value = ''; performSearch(); });
+}
+
+attachPaginationEvents();
+
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+        if (document.getElementById('aiAnalyzerOverlay').classList.contains('open')) closeAIAnalyzer();
+        if (document.getElementById('aiReportOverlay').classList.contains('open'))   closeAIReport();
+    }
+});
+
+// Discord panel
+let discordPanelVisible = false;
+function toggleDiscordNotifications() {
+    const panel = document.getElementById('discordNotificationPanel');
+    discordPanelVisible = !discordPanelVisible;
+    panel.style.display = discordPanelVisible ? 'block' : 'none';
+}
+function markAllAsRead() {
+    fetch('{{ path("admin_discord_mark_read") }}', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                document.querySelectorAll('.notif-item').forEach(i => i.classList.remove('unread'));
+                const badge = document.querySelector('.notification-badge');
+                if (badge) badge.style.display = 'none';
+            }
+        });
+}
+document.addEventListener('click', function (e) {
+    const container = document.querySelector('.discord-notification-bell');
+    if (container && !container.contains(e.target) && discordPanelVisible) {
+        document.getElementById('discordNotificationPanel').style.display = 'none';
+        discordPanelVisible = false;
+    }
+});
 </script>
+
 {% endblock %}

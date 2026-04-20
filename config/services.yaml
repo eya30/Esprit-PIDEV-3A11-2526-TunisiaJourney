@@ -10,6 +10,12 @@ parameters:
     uploads_voyages_directory: '%kernel.project_dir%/public/uploads/voyages'
     uploads_programmes_directory: '%kernel.project_dir%/public/uploads/programmes'
     imgbb_api_key: '%env(IMGBB_API_KEY)%'
+    recaptcha_site_key: '%env(RECAPTCHA_SITE_KEY)%'
+    recaptcha_secret_key: '%env(RECAPTCHA_SECRET_KEY)%'
+    FACE_API_KEY: '%env(FACE_API_KEY)%'
+    FACE_API_SECRET: '%env(FACE_API_SECRET)%'
+    brevo_api_key: '%env(BREVO_API_KEY)%'
+    brevo_sender_email: '%env(BREVO_SENDER_EMAIL)%'
 
 services:
     _defaults:
@@ -46,4 +52,3 @@ services:
     App\EventListener\DiscordNewReservationListener:
         tags:
             - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
- 
