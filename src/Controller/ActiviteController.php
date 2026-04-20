@@ -107,14 +107,29 @@ class ActiviteController extends AbstractController
         ]);
     }
 
+    
+// ── Remplace uniquement la méthode newAvis dans ActiviteController ──
+
     #[Route('/{IDAct}/avis', name: 'app_avis_new', methods: ['POST'])]
     public function newAvis(
         Request                $request,
         Activite               $activite,
         EntityManagerInterface $entityManager
     ): Response {
+        // ── Récupérer l'utilisateur connecté ──
+        /** @var \App\Entity\User|null $user */
+        $user = $this->getUser();
+
+        if (!$user) {
+            $this->addFlash('error', 'Vous devez être connecté pour laisser un avis.');
+            return $this->redirectToRoute('app_activite_show', ['IDAct' => $activite->getIDAct()]);
+        }
+
         $avis = new AvisAct();
         $avis->setActivite($activite);
+
+        // ── Nom = Prénom + Nom de l'utilisateur connecté ──
+        $avis->setNom($user->getPrenom() . ' ' . $user->getNom());
 
         $form = $this->createForm(AvisActType::class, $avis);
         $form->handleRequest($request);

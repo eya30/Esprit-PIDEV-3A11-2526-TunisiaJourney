@@ -145,7 +145,9 @@ class ReservationActController extends AbstractController
         CodePromoRepository $codePromoRepository,
         int                 $IDAct
     ): Response {
-
+        /** @var \App\Entity\User|null $user */
+         $user   = $this->getUser();
+        $userId = $user instanceof \App\Entity\User ? $user->getId() : null;
         $activite = $connection->fetchAssociative(
             "SELECT * FROM Activite WHERE IDAct = ?",
             [$IDAct]
@@ -163,6 +165,11 @@ class ReservationActController extends AbstractController
 
         $errors = [];
         $old    = ['nom' => '', 'prenom' => '', 'email' => '', 'telephone' => '', 'nombrePlaces' => ''];
+        if ($user instanceof \App\Entity\User) {
+            $old['nom']    = $user->getNom();
+            $old['prenom'] = $user->getPrenom();
+            $old['email']  = $user->getEmail();
+         }
 
         if ($request->isMethod('POST')) {
 
@@ -222,7 +229,7 @@ class ReservationActController extends AbstractController
                     $connection->executeStatement(
                         "INSERT INTO ReservationAct (id, IDAct, Nom, Prenom, email, telephone, DateReservation, NombrePlaces, Prix)
                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                        ['36', $IDAct, $nom, $prenom, $email, $telephone, date('Y-m-d'), $nombrePlaces, round($prixTotal, 2)]
+                        [$userId, $IDAct, $nom, $prenom, $email, $telephone, date('Y-m-d'), $nombrePlaces, round($prixTotal, 2)]
                     );
 
                     $IDRes = (int) $connection->lastInsertId();
@@ -250,7 +257,7 @@ class ReservationActController extends AbstractController
                 $connection->executeStatement(
                     "INSERT INTO ReservationAct (id, IDAct, Nom, Prenom, email, telephone, DateReservation, NombrePlaces, Prix)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    ['36', $IDAct, $nom, $prenom, $email, $telephone, date('Y-m-d'), $nombrePlaces, round($prixTotal, 2)]
+                    [$userId, $IDAct, $nom, $prenom, $email, $telephone, date('Y-m-d'), $nombrePlaces, round($prixTotal, 2)]
                 );
 
                 $IDRes = (int) $connection->lastInsertId();

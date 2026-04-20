@@ -12,14 +12,27 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/api/favoris')]
 class FavoriController extends AbstractController
 {
-    // ID utilisateur fixe (à remplacer plus tard par $this->getUser()->getId())
-    private const USER_ID = 36;
+    /**
+     * Retourne l'ID de l'utilisateur connecté.
+     * Renvoie une JsonResponse 401 si non connecté (à intercepter dans les actions).
+     */
+    private function getUserId(): int|JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return new JsonResponse(['success' => false, 'message' => 'Non authentifié'], 401);
+        }
+        return $user->getId();
+    }
 
     // ── Lister tous les favoris de l'utilisateur ─────────────────────────────
 
     #[Route('', name: 'api_favoris_list', methods: ['GET'])]
     public function list(Connection $connection): JsonResponse
     {
+        $userId = $this->getUserId();
+        if ($userId instanceof JsonResponse) return $userId;
+
         $favoris = $connection->fetchAllAssociative(
             "SELECT f.idfav, f.type, f.IDEv, f.IDAct, f.created_at,
                     e.Titre   AS titre_ev,
@@ -33,39 +46,38 @@ class FavoriController extends AbstractController
              LEFT JOIN Activite  a ON a.IDAct = f.IDAct
              WHERE f.id = ?
              ORDER BY f.created_at DESC",
-            [self::USER_ID]
+            [$userId]
         );
 
         $result = [];
         foreach ($favoris as $fav) {
             if ($fav['type'] === 'evenement') {
                 $result[] = [
-                    'idfav'      => $fav['idfav'],
-                    'type'       => 'evenement',
-                    'id'         => $fav['IDEv'],
-                    'titre'      => $fav['titre_ev'] ?? '',
-                    'sousTitre'  => $fav['lieu_ev'] ?? '',
-                    'image'      => $fav['image_ev']
+                    'idfav'         => $fav['idfav'],
+                    'type'          => 'evenement',
+                    'id'            => $fav['IDEv'],
+                    'titre'         => $fav['titre_ev'] ?? '',
+                    'sousTitre'     => $fav['lieu_ev'] ?? '',
+                    'image'         => $fav['image_ev']
                         ? '/uploads/evenements/' . basename($fav['image_ev'])
                         : 'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=400',
                     'urlDetails'    => '/evenement/' . $fav['IDEv'],
                     'urlActivites'  => '/evenement/' . $fav['IDEv'] . '/activites',
                 ];
             } else {
-                // On récupère IDEv de l'activité pour construire le lien activités
-                $actRow = $connection->fetchAssociative(
+                $actRow  = $connection->fetchAssociative(
                     "SELECT IDEv FROM Activite WHERE IDAct = ?",
                     [$fav['IDAct']]
                 );
                 $idEvAct = $actRow['IDEv'] ?? null;
 
                 $result[] = [
-                    'idfav'      => $fav['idfav'],
-                    'type'       => 'activite',
-                    'id'         => $fav['IDAct'],
-                    'titre'      => $fav['titre_act'] ?? '',
-                    'sousTitre'  => $fav['TypeActivite'] ?? '',
-                    'image'      => $fav['image_act']
+                    'idfav'         => $fav['idfav'],
+                    'type'          => 'activite',
+                    'id'            => $fav['IDAct'],
+                    'titre'         => $fav['titre_act'] ?? '',
+                    'sousTitre'     => $fav['TypeActivite'] ?? '',
+                    'image'         => $fav['image_act']
                         ? '/uploads/activites/' . basename($fav['image_act'])
                         : 'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=400',
                     'urlDetails'    => '/activite/' . $fav['IDAct'],
@@ -82,7 +94,10 @@ class FavoriController extends AbstractController
     #[Route('/check', name: 'api_favoris_check', methods: ['GET'])]
     public function check(Request $request, Connection $connection): JsonResponse
     {
-        $type  = $request->query->get('type');   // 'evenement' ou 'activite'
+        $userId = $this->getUserId();
+        if ($userId instanceof JsonResponse) return $userId;
+
+        $type  = $request->query->get('type');
         $refId = (int) $request->query->get('id');
 
         if (!in_array($type, ['evenement', 'activite']) || $refId <= 0) {
@@ -92,7 +107,7 @@ class FavoriController extends AbstractController
         $col   = $type === 'evenement' ? 'IDEv' : 'IDAct';
         $count = $connection->fetchOne(
             "SELECT COUNT(*) FROM favori WHERE id = ? AND type = ? AND $col = ?",
-            [self::USER_ID, $type, $refId]
+            [$userId, $type, $refId]
         );
 
         return new JsonResponse(['isFavori' => (int)$count > 0]);
@@ -103,9 +118,12 @@ class FavoriController extends AbstractController
     #[Route('/ids', name: 'api_favoris_ids', methods: ['GET'])]
     public function ids(Connection $connection): JsonResponse
     {
+        $userId = $this->getUserId();
+        if ($userId instanceof JsonResponse) return $userId;
+
         $rows = $connection->fetchAllAssociative(
             "SELECT type, IDEv, IDAct FROM favori WHERE id = ?",
-            [self::USER_ID]
+            [$userId]
         );
 
         $evenements = [];
@@ -129,6 +147,9 @@ class FavoriController extends AbstractController
     #[Route('/add', name: 'api_favoris_add', methods: ['POST'])]
     public function add(Request $request, Connection $connection): JsonResponse
     {
+        $userId = $this->getUserId();
+        if ($userId instanceof JsonResponse) return $userId;
+
         $data  = json_decode($request->getContent(), true) ?? [];
         $type  = $data['type']  ?? null;
         $refId = (int)($data['id'] ?? 0);
@@ -141,12 +162,12 @@ class FavoriController extends AbstractController
             if ($type === 'evenement') {
                 $connection->executeStatement(
                     "INSERT IGNORE INTO favori (id, type, IDEv)  VALUES (?, 'evenement', ?)",
-                    [self::USER_ID, $refId]
+                    [$userId, $refId]
                 );
             } else {
                 $connection->executeStatement(
                     "INSERT IGNORE INTO favori (id, type, IDAct) VALUES (?, 'activite', ?)",
-                    [self::USER_ID, $refId]
+                    [$userId, $refId]
                 );
             }
             return new JsonResponse(['success' => true, 'action' => 'added']);
@@ -160,6 +181,9 @@ class FavoriController extends AbstractController
     #[Route('/remove', name: 'api_favoris_remove', methods: ['POST'])]
     public function remove(Request $request, Connection $connection): JsonResponse
     {
+        $userId = $this->getUserId();
+        if ($userId instanceof JsonResponse) return $userId;
+
         $data  = json_decode($request->getContent(), true) ?? [];
         $type  = $data['type']  ?? null;
         $refId = (int)($data['id'] ?? 0);
@@ -172,7 +196,7 @@ class FavoriController extends AbstractController
             $col = $type === 'evenement' ? 'IDEv' : 'IDAct';
             $connection->executeStatement(
                 "DELETE FROM favori WHERE id = ? AND type = ? AND $col = ?",
-                [self::USER_ID, $type, $refId]
+                [$userId, $type, $refId]
             );
             return new JsonResponse(['success' => true, 'action' => 'removed']);
         } catch (\Exception $e) {
@@ -185,6 +209,9 @@ class FavoriController extends AbstractController
     #[Route('/toggle', name: 'api_favoris_toggle', methods: ['POST'])]
     public function toggle(Request $request, Connection $connection): JsonResponse
     {
+        $userId = $this->getUserId();
+        if ($userId instanceof JsonResponse) return $userId;
+
         $data  = json_decode($request->getContent(), true) ?? [];
         $type  = $data['type']  ?? null;
         $refId = (int)($data['id'] ?? 0);
@@ -196,28 +223,26 @@ class FavoriController extends AbstractController
         $col   = $type === 'evenement' ? 'IDEv' : 'IDAct';
         $count = (int)$connection->fetchOne(
             "SELECT COUNT(*) FROM favori WHERE id = ? AND type = ? AND $col = ?",
-            [self::USER_ID, $type, $refId]
+            [$userId, $type, $refId]
         );
 
         try {
             if ($count > 0) {
-                // Supprimer
                 $connection->executeStatement(
                     "DELETE FROM favori WHERE id = ? AND type = ? AND $col = ?",
-                    [self::USER_ID, $type, $refId]
+                    [$userId, $type, $refId]
                 );
                 return new JsonResponse(['success' => true, 'action' => 'removed', 'isFavori' => false]);
             } else {
-                // Ajouter
                 if ($type === 'evenement') {
                     $connection->executeStatement(
                         "INSERT IGNORE INTO favori (id, type, IDEv)  VALUES (?, 'evenement', ?)",
-                        [self::USER_ID, $refId]
+                        [$userId, $refId]
                     );
                 } else {
                     $connection->executeStatement(
                         "INSERT IGNORE INTO favori (id, type, IDAct) VALUES (?, 'activite', ?)",
-                        [self::USER_ID, $refId]
+                        [$userId, $refId]
                     );
                 }
                 return new JsonResponse(['success' => true, 'action' => 'added', 'isFavori' => true]);

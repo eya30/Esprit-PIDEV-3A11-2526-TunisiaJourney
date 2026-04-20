@@ -17,17 +17,15 @@
         --dark-gray: #2C3E50;
     }
 
-    /* ══════════════════════════════════════
-       HERO — correction image de fond
-       Cause : background-attachment:fixed
-       échoue sur Safari mobile et certains
-       navigateurs avec backdrop-filter actif.
-       Solution : image en <img> absolu + overlay.
-    ══════════════════════════════════════ */
+    /* Hero Section */
     .hero {
         position: relative;
         height: 95vh;
         min-height: 700px;
+        background-image: linear-gradient(rgba(227,27,35,0.2), rgba(245,202,195,0.3)), url('https://switchmed.eu/wp-content/uploads/2020/04/tunisia-1.jpg');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -36,51 +34,34 @@
         overflow: hidden;
     }
 
-    /* Image de fond en élément absolu — toujours rendue */
-    .hero-bg {
+    .hero::before {
+        content: '';
         position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: center;
-        z-index: 0;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.3) 100%);
     }
 
-    /* Dégradé coloré par-dessus l'image */
-    .hero-overlay {
+    .hero::after {
+        content: '';
         position: absolute;
-        inset: 0;
-        background: linear-gradient(rgba(227,27,35,0.25), rgba(245,202,195,0.30));
-        z-index: 1;
-    }
-
-    /* Vignette sombre sur les bords */
-    .hero-vignette {
-        position: absolute;
-        inset: 0;
-        background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.32) 100%);
-        z-index: 2;
-    }
-
-    /* Fondu bas vers la couleur sable */
-    .hero-fade {
-        position: absolute;
-        bottom: 0; left: 0; right: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
         height: 150px;
         background: linear-gradient(to top, var(--tunisia-sand), transparent);
         pointer-events: none;
-        z-index: 3;
     }
 
     .hero-content {
         position: relative;
-        z-index: 4;
+        z-index: 2;
         max-width: 950px;
         padding: 4rem;
-        background: rgba(0,0,0,0.30);
+        background: rgba(0,0,0,0.3);
         backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
         border-radius: 60px;
         border: 1px solid rgba(255,255,255,0.3);
         box-shadow: 0 30px 80px rgba(0,0,0,0.4);
@@ -89,7 +70,7 @@
 
     @keyframes fadeInUp {
         from { opacity: 0; transform: translateY(50px); }
-        to   { opacity: 1; transform: translateY(0); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
     .hero h1 {
@@ -134,6 +115,7 @@
         color: white;
     }
 
+    /* Section Titles */
     .section-title {
         text-align: center;
         font-family: 'Cormorant Garamond', serif;
@@ -162,6 +144,7 @@
         opacity: 0.8;
     }
 
+    /* Cards */
     .card-custom {
         background: white;
         border-radius: 24px;
@@ -187,18 +170,23 @@
     .card-img::after {
         content: '';
         position: absolute;
-        bottom: 0; left: 0; right: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
         height: 80px;
         background: linear-gradient(to top, white, transparent);
         opacity: 0;
         transition: opacity 0.4s ease;
     }
 
-    .card-custom:hover .card-img::after { opacity: 1; }
+    .card-custom:hover .card-img::after {
+        opacity: 1;
+    }
 
     .card-badge {
         position: absolute;
-        top: 15px; right: 15px;
+        top: 15px;
+        right: 15px;
         background: linear-gradient(135deg, var(--tunisia-red), #F5CAC3);
         color: white;
         padding: 6px 15px;
@@ -216,9 +204,13 @@
         transition: transform 0.7s cubic-bezier(0.2, 0.9, 0.4, 1.1);
     }
 
-    .card-custom:hover .card-img img { transform: scale(1.08); }
+    .card-custom:hover .card-img img {
+        transform: scale(1.08);
+    }
 
-    .card-content { padding: 1.8rem; }
+    .card-content {
+        padding: 1.8rem;
+    }
 
     .card-title {
         font-family: 'Cormorant Garamond', serif;
@@ -229,7 +221,9 @@
         transition: color 0.3s ease;
     }
 
-    .card-custom:hover .card-title { color: #F5CAC3; }
+    .card-custom:hover .card-title {
+        color: #F5CAC3;
+    }
 
     .card-location {
         color: var(--tunisia-orange);
@@ -263,7 +257,10 @@
     .btn-card::before {
         content: '';
         position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
         background: var(--tunisia-red);
         transform: scaleX(0);
         transform-origin: left;
@@ -271,13 +268,17 @@
         z-index: -1;
     }
 
-    .btn-card:hover::before { transform: scaleX(1); }
+    .btn-card:hover::before {
+        transform: scaleX(1);
+    }
+
     .btn-card:hover {
         color: white;
         border-color: var(--tunisia-red);
         transform: translateY(-2px);
     }
 
+    /* Service Cards */
     .service-card {
         background: white;
         border-radius: 24px;
@@ -293,21 +294,27 @@
     .service-card::before {
         content: '';
         position: absolute;
-        top: 0; left: 0; right: 0;
+        top: 0;
+        left: 0;
+        right: 0;
         height: 4px;
         background: linear-gradient(90deg, var(--tunisia-red), #F5CAC3);
         transform: scaleX(0);
         transition: transform 0.4s ease;
     }
 
-    .service-card:hover::before { transform: scaleX(1); }
+    .service-card:hover::before {
+        transform: scaleX(1);
+    }
+
     .service-card:hover {
         transform: translateY(-8px);
         box-shadow: 0 20px 40px rgba(227,27,35,0.15);
     }
 
     .service-icon {
-        width: 90px; height: 90px;
+        width: 90px;
+        height: 90px;
         background: linear-gradient(135deg, var(--tunisia-red), #F5CAC3);
         border-radius: 50%;
         display: flex;
@@ -329,7 +336,9 @@
         box-shadow: 0 12px 30px rgba(227,27,35,0.3);
     }
 
-    .service-card:hover .service-icon i { transform: scale(1.1); }
+    .service-card:hover .service-icon i {
+        transform: scale(1.1);
+    }
 
     .service-title {
         font-family: 'Cormorant Garamond', serif;
@@ -339,6 +348,7 @@
         margin-bottom: 0.8rem;
     }
 
+    /* Newsletter */
     .newsletter {
         background: linear-gradient(135deg, var(--tunisia-red) 0%, #F5CAC3 100%);
         padding: 4rem;
@@ -352,8 +362,10 @@
     .newsletter::before {
         content: '';
         position: absolute;
-        top: -50%; right: -20%;
-        width: 400px; height: 400px;
+        top: -50%;
+        right: -20%;
+        width: 400px;
+        height: 400px;
         background: rgba(255,255,255,0.1);
         border-radius: 50%;
         animation: float 8s ease-in-out infinite;
@@ -421,24 +433,8 @@
 {% endblock %}
 
 {% block body %}
-
-{# ══════════════════════════════════════════════════════
-   HERO — l'image est un <img> absolu, pas un background CSS.
-   Cela garantit son affichage sur tous les navigateurs.
-══════════════════════════════════════════════════════ #}
+<!-- HERO SECTION -->
 <section class="hero">
-    {# Image de fond : chargée comme élément HTML, jamais bloquée #}
-    <img
-        class="hero-bg"
-        src="https://switchmed.eu/wp-content/uploads/2020/04/tunisia-1.jpg?auto=compress&cs=tinysrgb&w=1600"
-        alt="Tunisie paysage"
-        loading="eager"
-        fetchpriority="high"
-    >
-    <div class="hero-overlay"></div>
-    <div class="hero-vignette"></div>
-    <div class="hero-fade"></div>
-
     <div class="hero-content">
         <h1>Tunisie, Terre de Lumière</h1>
         <p>Entre mer turquoise et sable doré, découvrez un pays où chaque sourire est une invitation et chaque paysage un poème.</p>
@@ -451,117 +447,91 @@
     <div class="container">
         <h2 class="section-title">Voyages en Tunisie</h2>
         <p class="section-subtitle">Découvrez les trésors cachés de notre belle Tunisie</p>
-        
-        {% if voyages is defined and voyages|length > 0 %}
-            <div class="row">
-                {% for voyage in voyages %}
-                <div class="col-md-4">
-                    <div class="card-custom">
-                        <div class="card-img">
-                            {% if voyage.image is defined and voyage.image %}
-                                <img src="{{ asset('uploads/voyages/' ~ voyage.image) }}" alt="{{ voyage.nom }}">
-                            {% else %}
-                                <img src="https://images.pexels.com/photos/1450353/pexels-photo-1450353.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Voyage Tunisie">
-                            {% endif %}
-                            <span class="card-badge">Populaire</span>
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">{{ voyage.nom }}</h3>
-                            <p class="card-location"><i class="fas fa-map-marker-alt"></i> Tunisie</p>
-                            <p class="card-desc">{{ voyage.description|slice(0, 150) }}</p>
-                            <a href="#" class="btn-card">Découvrir</a>
-                        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <div class="card-img">
+                        <img src="https://media.istockphoto.com/id/1178164847/photo/blue-and-white-arabic-cafe-against-the-sea-in-sidi-bou-said-seascape-mountains-and-palm-trees.jpg?s=612x612&w=0&k=20&c=6wBvw3sL_b73JMZ96zug0DAi-SCXEEueMu6pKX61XAE=" alt="Sidi Bou Said">
+                        <span class="card-badge">Populaire</span>
                     </div>
-                </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="card-custom">
-                        <div class="card-img">
-                            <img src="https://media.istockphoto.com/id/1178164847/photo/blue-and-white-arabic-cafe-against-the-sea-in-sidi-bou-said-seascape-mountains-and-palm-trees.jpg?s=612x612&w=0&k=20&c=6wBvw3sL_b73JMZ96zug0DAi-SCXEEueMu6pKX61XAE=" alt="Sidi Bou Said">
-                            <span class="card-badge">Populaire</span>
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Sidi Bou Said</h3>
-                            <p class="card-location"><i class="fas fa-map-marker-alt"></i> Carthage</p>
-                            <p class="card-desc">Le joyau bleu et blanc perché au-dessus de la mer, un lieu d'inspiration pour les artistes du monde entier.</p>
-                            <a href="#" class="btn-card">Découvrir</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card-custom">
-                        <div class="card-img">
-                            <img src="https://images.pexels.com/photos/16563665/pexels-photo-16563665.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Djerba">
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Djerba</h3>
-                            <p class="card-location"><i class="fas fa-map-marker-alt"></i> Île de Djerba</p>
-                            <p class="card-desc">L'île aux palmiers, où les plages de sable fin rencontrent une culture millénaire.</p>
-                            <a href="#" class="btn-card">Découvrir</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card-custom">
-                        <div class="card-img">
-                            <img src="https://images.pexels.com/photos/35976808/pexels-photo-35976808.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Sahara">
-                            <span class="card-badge">Aventure</span>
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Sahara Tunisien</h3>
-                            <p class="card-location"><i class="fas fa-map-marker-alt"></i> Douz / Tozeur</p>
-                            <p class="card-desc">Les dunes infinies, des couchers de soleil magiques, des nuits inoubliables sous les étoiles.</p>
-                            <a href="#" class="btn-card">Découvrir</a>
-                        </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Sidi Bou Said</h3>
+                        <p class="card-location"><i class="fas fa-map-marker-alt"></i> Carthage</p>
+                        <p class="card-desc">Le joyau bleu et blanc perché au-dessus de la mer, un lieu d'inspiration pour les artistes du monde entier.</p>
+                        <a href="#" class="btn-card">Découvrir</a>
                     </div>
                 </div>
             </div>
-            <div class="row mt-4">
-                <div class="col-md-4">
-                    <div class="card-custom">
-                        <div class="card-img">
-                            <img src="https://media.istockphoto.com/id/2178100446/photo/archaeological-site-of-carthage-tunisia.jpg?s=612x612&w=0&k=20&c=v-OhT9Sp6w1CjEbnNpglfmAQRNbbOByWogaBjasOX2g=" alt="Carthage">
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Carthage</h3>
-                            <p class="card-location"><i class="fas fa-map-marker-alt"></i> Carthage</p>
-                            <p class="card-desc">Vestiges de l'antique cité punique et romaine, classée au patrimoine mondial de l'UNESCO.</p>
-                            <a href="#" class="btn-card">Découvrir</a>
-                        </div>
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <div class="card-img">
+                        <img src="https://images.pexels.com/photos/16563665/pexels-photo-16563665.jpeg?_gl=1*ip1lfx*_ga*MTM5NTY1OTg2Mi4xNzcxMzIyNjYx*_ga_8JE65Q40S6*czE3NzQ1MTM0ODgkbzQkZzEkdDE3NzQ1MTM3OTIkajUzJGwwJGgw" alt="Djerba">
                     </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card-custom">
-                        <div class="card-img">
-                            <img src="https://images.pexels.com/photos/35284188/pexels-photo-35284188.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Tozeur">
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Tozeur</h3>
-                            <p class="card-location"><i class="fas fa-map-marker-alt"></i> Tozeur</p>
-                            <p class="card-desc">La porte du désert, avec ses oasis luxuriantes, ses palmeraies et son architecture unique en briques.</p>
-                            <a href="#" class="btn-card">Découvrir</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card-custom">
-                        <div class="card-img">
-                            <img src="https://images.pexels.com/photos/891125/pexels-photo-891125.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Monastir">
-                            <span class="card-badge">Nouveau</span>
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Monastir</h3>
-                            <p class="card-location"><i class="fas fa-map-marker-alt"></i> Monastir</p>
-                            <p class="card-desc">Ville balnéaire historique avec son ribat médiéval et ses plages de rêve.</p>
-                            <a href="#" class="btn-card">Découvrir</a>
-                        </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Djerba</h3>
+                        <p class="card-location"><i class="fas fa-map-marker-alt"></i> Île de Djerba</p>
+                        <p class="card-desc">L'île aux palmiers, où les plages de sable fin rencontrent une culture millénaire.</p>
+                        <a href="#" class="btn-card">Découvrir</a>
                     </div>
                 </div>
             </div>
-        {% endif %}
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <div class="card-img">
+                        <img src="https://images.pexels.com/photos/35976808/pexels-photo-35976808.jpeg?_gl=1*fh6day*_ga*MTM5NTY1OTg2Mi4xNzcxMzIyNjYx*_ga_8JE65Q40S6*czE3NzQ1MTM0ODgkbzQkZzEkdDE3NzQ1MTQwMjUkajIzJGwwJGgw" alt="Sahara">
+                        <span class="card-badge">Aventure</span>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Sahara Tunisien</h3>
+                        <p class="card-location"><i class="fas fa-map-marker-alt"></i> Douz / Tozeur</p>
+                        <p class="card-desc">Les dunes infinies, des couchers de soleil magiques, des nuits inoubliables sous les étoiles.</p>
+                        <a href="#" class="btn-card">Découvrir</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <div class="card-img">
+                        <img src="https://media.istockphoto.com/id/2178100446/photo/archaeological-site-of-carthage-tunisia.jpg?s=612x612&w=0&k=20&c=v-OhT9Sp6w1CjEbnNpglfmAQRNbbOByWogaBjasOX2g=" alt="Carthage">
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Carthage</h3>
+                        <p class="card-location"><i class="fas fa-map-marker-alt"></i> Carthage</p>
+                        <p class="card-desc">Vestiges de l'antique cité punique et romaine, classée au patrimoine mondial de l'UNESCO.</p>
+                        <a href="#" class="btn-card">Découvrir</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <div class="card-img">
+                        <img src="https://images.pexels.com/photos/35284188/pexels-photo-35284188.jpeg?_gl=1*1r4adwm*_ga*MTM5NTY1OTg2Mi4xNzcxMzIyNjYx*_ga_8JE65Q40S6*czE3NzQ1MTM0ODgkbzQkZzEkdDE3NzQ1MTQxODMkajUxJGwwJGgw" alt="Tozeur">
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Tozeur</h3>
+                        <p class="card-location"><i class="fas fa-map-marker-alt"></i> Tozeur</p>
+                        <p class="card-desc">La porte du désert, avec ses oasis luxuriantes, ses palmeraies et son architecture unique en briques.</p>
+                        <a href="#" class="btn-card">Découvrir</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <div class="card-img">
+                        <img src="https://images.pexels.com/photos/891125/pexels-photo-891125.jpeg?_gl=1*5m8w99*_ga*MTM5NTY1OTg2Mi4xNzcxMzIyNjYx*_ga_8JE65Q40S6*czE3NzQ1MTM0ODgkbzQkZzEkdDE3NzQ1MTQyNDYkajUyJGwwJGgw" alt="Monastir">
+                        <span class="card-badge">Nouveau</span>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Monastir</h3>
+                        <p class="card-location"><i class="fas fa-map-marker-alt"></i> Monastir</p>
+                        <p class="card-desc">Ville balnéaire historique avec son ribat médiéval et ses plages de rêve.</p>
+                        <a href="#" class="btn-card">Découvrir</a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 
@@ -825,19 +795,8 @@
     </div>
 </section>
 
-<!-- NEWSLETTER SECTION -->
-<section class="py-5">
-    <div class="container">
-        <div class="newsletter text-center">
-            <h3>Recevez nos offres exclusives</h3>
-            <p style="color: white; margin-bottom: 1.5rem;">Inscrivez-vous à notre newsletter et recevez nos meilleures offres</p>
-            <div>
-                <input type="email" class="newsletter-input" placeholder="Votre adresse email">
-                <button class="btn-subscribe">S'abonner</button>
-            </div>
-        </div>
-    </div>
-</section>
+
+
 {% endblock %}
 
 {% block javascripts %}

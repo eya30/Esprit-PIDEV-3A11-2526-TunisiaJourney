@@ -202,7 +202,7 @@
                                 <span class="badge-status {% if reservation.statutPaiement == 'payé' %}badge-success{% else %}badge-pending{% endif %}">
                                     {{ reservation.statutPaiement|default('En attente') }}
                                 </span>
-                            </td>
+                             </td>
                          </tr>
                         {% else %}
                          <tr>
@@ -218,17 +218,21 @@
 {% endblock %}
 
 {% block javascripts %}
+{% set week_data = stats.reservations_week is defined ? stats.reservations_week : '[12,19,15,17,24,28,22]' %}
+{% set month_data = stats.reservations_month is defined ? stats.reservations_month : '[45,52,48,60,55,70,65,72,68,80,85,78,90,88,95,92,100,98,105,110,108,115,120,118,125,130,128,135,140,138]' %}
+{% set year_data = stats.reservations_year is defined ? stats.reservations_year : '[120,145,168,190,210,245,278,310,345,380,420,450]' %}
+
 <script>
-    // Données réelles des réservations par jour (à remplacer par vos données)
+    // Données réelles des réservations par jour
     const reservationsData = {
-        week: [{{ stats.reservations_week|default('[12,19,15,17,24,28,22]')|raw }}],
-        month: [{{ stats.reservations_month|default('[45,52,48,60,55,70,65,72,68,80,85,78,90,88,95,92,100,98,105,110,108,115,120,118,125,130,128,135,140,138]')|raw }}],
-        year: [{{ stats.reservations_year|default('[120,145,168,190,210,245,278,310,345,380,420,450]')|raw }}]
+        week: {{ week_data|raw }},
+        month: {{ month_data|raw }},
+        year: {{ year_data|raw }}
     };
     
     const labels = {
         week: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
-        month: Array.from({length: 30}, (_, i) => i + 1),
+        month: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30],
         year: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']
     };
     
@@ -279,4 +283,4 @@
     
     initChart();
 </script>
-{% endblock %} 
+{% endblock %}

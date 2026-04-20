@@ -390,7 +390,7 @@
                     <div class="field-row">
                         <div class="field-label"><i class="fas fa-user"></i> Nom :</div>
                         <div class="field-input-wrap">
-                            <input type="text" name="nom" id="field-nom" class="field-input" placeholder="Votre nom" autocomplete="off">
+                            <input type="text" name="nom" id="field-nom" class="field-input" placeholder="Votre nom" autocomplete="off" value="{{ old.nom }}">
                             <div class="field-error" id="error-nom"><i class="fas fa-exclamation-circle"></i><span></span></div>
                         </div>
                     </div>
@@ -398,7 +398,7 @@
                     <div class="field-row">
                         <div class="field-label"><i class="fas fa-user"></i> Prénom :</div>
                         <div class="field-input-wrap">
-                            <input type="text" name="prenom" id="field-prenom" class="field-input" placeholder="Votre prénom" autocomplete="off">
+                            <input type="text" name="prenom" id="field-prenom" class="field-input" placeholder="Votre prénom" autocomplete="off" value="{{ old.prenom }}">
                             <div class="field-error" id="error-prenom"><i class="fas fa-exclamation-circle"></i><span></span></div>
                         </div>
                     </div>
@@ -414,7 +414,7 @@
                     <div class="field-row">
                         <div class="field-label"><i class="fas fa-envelope"></i> Email :</div>
                         <div class="field-input-wrap">
-                            <input type="text" name="email" id="field-email" class="field-input" placeholder="exemple@domaine.com" autocomplete="off">
+                            <input type="text" name="email" id="field-email" class="field-input" placeholder="exemple@domaine.com" autocomplete="off" value="{{ old.email }}">
                             <div class="field-error" id="error-email"><i class="fas fa-exclamation-circle"></i><span></span></div>
                         </div>
                     </div>
