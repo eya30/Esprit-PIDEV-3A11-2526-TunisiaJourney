@@ -5,7 +5,7 @@
 namespace App\Controller\Api;
 
 use App\Repository\CommandeRepository;
-use App\Service\OllamaService;
+use App\Service\OllamaEService;
 use App\Service\WhatsAppService;           // ← AJOUT
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,7 +26,7 @@ class TrackingController extends AbstractController
 
     public function __construct(
         private CacheInterface         $cache,
-        private OllamaService          $ollama,
+        private OllamaEService          $ollama,
         private EntityManagerInterface $em,
         private WhatsAppService        $whatsApp,  // ← AJOUT
     ) {}

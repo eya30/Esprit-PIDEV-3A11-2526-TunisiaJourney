@@ -5,7 +5,7 @@ namespace App\Service;
 use Doctrine\DBAL\Connection;
 use GuzzleHttp\Client;
 
-class GeminiAIService
+class GeminiEAIService
 {
     private $apiKey;
     private $client;
@@ -71,7 +71,7 @@ class GeminiAIService
             
             $prompt = $this->getSystemPrompt() . "\n\n" . $context . "\n\nQuestion de l'utilisateur : " . $question;
             
-            $response = $this->client->post("models/gemini-2.0-flash-exp:generateContent?key={$this->apiKey}", [
+         $response = $this->client->post("models/gemini-2.0-flash:generateContent?key={$this->apiKey}",  [
                 'json' => [
                     'contents' => [
                         [

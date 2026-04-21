@@ -6,7 +6,7 @@ namespace App\Service;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Psr\Log\LoggerInterface;
 
-class OllamaService
+class OllamaEService
 {
     private const OLLAMA_URL = 'http://localhost:11434/api/generate';
     private const MODEL = 'llama3';

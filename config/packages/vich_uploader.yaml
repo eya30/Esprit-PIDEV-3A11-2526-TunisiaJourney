@@ -1,0 +1,10 @@
+vich_uploader:
+    db_driver: orm
+    
+    mappings:
+        avis_images:
+            uri_prefix: /uploads/avis
+            upload_destination: '%kernel.project_dir%/public/uploads/avis'
+            namer: Vich\UploaderBundle\Naming\UniqidNamer
+            delete_on_remove: true
+            delete_on_update: true

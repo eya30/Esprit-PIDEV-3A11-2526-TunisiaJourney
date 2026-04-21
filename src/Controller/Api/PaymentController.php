@@ -5,7 +5,7 @@ namespace App\Controller\Api;
 use App\Entity\Commande;
 use App\Entity\CommandeProduit;
 use App\Repository\CommandeProduitRepository;
-use App\Service\StripeService;
+use App\Service\StripeeService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,7 +20,7 @@ class PaymentController extends AbstractController
     #[Route('/paiement/creer-session', name: 'app_payment_create_session', methods: ['POST'])]
     public function createCheckoutSession(
         Request $request,
-        StripeService $stripeService,
+        StripeeService $stripeeService,
         CommandeProduitRepository $cpRepo
     ): JsonResponse {
         try {
@@ -69,7 +69,7 @@ class PaymentController extends AbstractController
                 UrlGeneratorInterface::ABSOLUTE_URL
             );
 
-            $stripeSession = $stripeService->createCheckoutSession($items, $successUrl, $cancelUrl);
+            $stripeSession = $stripeeService->createCheckoutSession($items, $successUrl, $cancelUrl);
 
             return $this->json(['url' => $stripeSession->url]);
 

@@ -23,7 +23,7 @@
     .form-label-custom i { color:var(--tunisia-orange); margin-right:6px; width:16px; }
     .input-custom { width:100%; padding:11px 20px; border:2px solid #F5CAC3; border-radius:25px; background:white; font-size:0.92rem; color:var(--dark-gray); font-family:'Montserrat',sans-serif; transition:all 0.3s ease; box-sizing:border-box; }
     .input-custom:focus { outline:none; border-color:var(--tunisia-red); box-shadow:0 0 0 3px rgba(227,27,35,0.1); }
-    
+
     input[type="hidden"] { display: none !important; }
 
     select.input-custom { appearance:auto; cursor:pointer; }
@@ -76,7 +76,7 @@
     /* Boutons */
     .btn-back { display:inline-flex; align-items:center; gap:8px; background:transparent; border:2px solid var(--tunisia-red); color:var(--tunisia-red); padding:10px 24px; border-radius:30px; font-weight:600; font-size:0.9rem; font-family:'Montserrat',sans-serif; text-decoration:none; transition:all 0.3s ease; margin-bottom:2rem; }
     .btn-back:hover { background:var(--tunisia-red); color:white; transform:translateY(-2px); }
-    
+
     /* Options de paiement */
     .payment-options {
         display: flex;
@@ -120,7 +120,7 @@
         font-size: 1.5rem;
         color: var(--tunisia-orange);
     }
-    
+
     .btn-stripe { width:100%; background:linear-gradient(135deg, #635BFF, #0A2540); color:white; border:none; padding:14px; border-radius:30px; font-weight:700; font-size:1rem; font-family:'Montserrat',sans-serif; cursor:pointer; transition:all 0.3s ease; margin-top:1rem; }
     .btn-stripe:hover { transform:translateY(-2px); box-shadow:0 10px 25px rgba(99,91,255,0.4); }
     .btn-stripe:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
@@ -148,7 +148,7 @@
             </ul>
         </div>
     {% endif %}
-    
+
     {% for label, messages in app.flashes %}
         {% for message in messages %}
             <div class="alert alert-{{ label }}" style="border-radius:15px;">{{ message }}</div>
@@ -177,7 +177,7 @@
                 <div class="row g-4">
                     <div class="col-lg-7">
                         <div class="form-card">
-                            {{ form_start(form) }}
+                            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
 
                             <div class="form-section-label">
                                 <i class="fas fa-truck"></i> Livraison
@@ -185,7 +185,7 @@
 
                             <div class="mb-3 autocomplete-container">
                                 <label class="form-label-custom"><i class="fas fa-map-marker-alt"></i> Adresse de livraison</label>
-                                <input type="text" 
+                                <input type="text"
                                        id="adresse-input"
                                        name="{{ form.AdresseLiv.vars.full_name }}"
                                        class="input-custom"
@@ -198,7 +198,7 @@
 
                             <div class="mb-3">
                                 <label class="form-label-custom"><i class="fas fa-mail-bulk"></i> Code postal</label>
-                                {{ form_widget(form.CodePostal, {'attr': {'class': 'input-custom', 'placeholder': '1000'}}) }}
+                                {{ form_widget(form.CodePostal, {'attr': {'class': 'input-custom', 'placeholder': '1000', 'required': false}}) }}
                                 {{ form_errors(form.CodePostal) }}
                             </div>
 
@@ -243,23 +243,36 @@
                             <h4><i class="fas fa-shopping-bag me-2" style="color:var(--tunisia-orange);"></i> Votre commande</h4>
 
                             {% for item in items %}
-                            <div class="recap-item">
-                                {% if item.produit.image %}
-                                    <img src="{{ asset('uploads/produits/' ~ item.produit.image) }}" alt="{{ item.produit.titre }}">
-                                {% else %}
-                                    <div class="recap-item-placeholder"><i class="fas fa-box"></i></div>
-                                {% endif %}
-                                <div class="recap-item-name">
-                                    {{ item.produit.titre }}
-                                    <div class="recap-item-qty">× {{ item.quantite }}</div>
+                                <div class="recap-item">
+                                    {% if item.produit.image %}
+                                        <img src="{{ asset('uploads/produits/' ~ item.produit.image) }}" alt="{{ item.produit.titre }}">
+                                    {% else %}
+                                        <div class="recap-item-placeholder"><i class="fas fa-box"></i></div>
+                                    {% endif %}
+                                    <div class="recap-item-name">
+                                        {{ item.produit.titre }}
+                                        <div class="recap-item-qty">× {{ item.quantite }}</div>
+                                    </div>
+                                    <div class="recap-item-prix">{{ (item.produit.prix * item.quantite)|number_format(2, ',', ' ') }} TND</div>
                                 </div>
-                                <div class="recap-item-prix">{{ item.sousTotal|number_format(2, ',', ' ') }} TND</div>
-                            </div>
                             {% endfor %}
 
-                            <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:#6c757d;padding:0.8rem 0 0;">
+                            {# Affichage du sous-total et de la remise si applicable #}
+                            <div style="display:flex; justify-content:space-between; font-size:0.85rem; color:#6c757d; padding:0.8rem 0 0;">
+                                <span>Sous-total</span>
+                                <span>{{ totalInitial|number_format(2, ',', ' ') }} TND</span>
+                            </div>
+
+                            {% if remise > 0 %}
+                                <div style="display:flex; justify-content:space-between; font-size:0.85rem; color:var(--tunisia-red); padding:0.2rem 0 0;">
+                                    <span><i class="fas fa-tag me-1"></i> Remise 10% (≥ 100 DT)</span>
+                                    <span style="font-weight:600;">- {{ remise|number_format(2, ',', ' ') }} TND</span>
+                                </div>
+                            {% endif %}
+
+                            <div style="display:flex; justify-content:space-between; font-size:0.85rem; color:#6c757d; padding:0.4rem 0 0;">
                                 <span><i class="fas fa-truck me-1" style="color:var(--tunisia-orange);"></i> Livraison</span>
-                                <span style="color:#10B981;font-weight:600;">Gratuite</span>
+                                <span style="color:#10B981; font-weight:600;">Gratuite</span>
                             </div>
 
                             <div class="recap-total-row">
@@ -277,37 +290,24 @@
 
 {% block javascripts %}
 {{ parent() }}
-
 <script src="https://js.stripe.com/v3/"></script>
-
 <script>
 // AUTOCOMPLETION D'ADRESSE
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Initialisation autocomplétion...');
-    
     const inputAdresse = document.getElementById('adresse-input');
     const suggestionsBox = document.getElementById('adresse-suggestions');
-    
-    if (!inputAdresse) {
-        console.error('Champ adresse non trouvé');
-        return;
-    }
-    
+    if (!inputAdresse) return;
     let timeoutId;
-    
     async function searchAddresses(query) {
         if (query.length < 2) {
             suggestionsBox.style.display = 'none';
             return;
         }
-        
         suggestionsBox.innerHTML = '<li style="text-align:center; padding:12px; color:#999;"><i class="fas fa-spinner fa-spin"></i> Recherche...</li>';
         suggestionsBox.style.display = 'block';
-        
         try {
             const response = await fetch('/api/adresse/autocomplete?query=' + encodeURIComponent(query));
             const data = await response.json();
-            
             if (data && data.length > 0) {
                 suggestionsBox.innerHTML = '';
                 data.forEach(address => {
@@ -328,25 +328,18 @@ document.addEventListener('DOMContentLoaded', function() {
             suggestionsBox.innerHTML = '<li style="text-align:center; padding:12px; color:#E31B23;">Erreur de connexion</li>';
         }
     }
-    
     inputAdresse.addEventListener('input', function(e) {
         clearTimeout(timeoutId);
         timeoutId = setTimeout(() => searchAddresses(e.target.value.trim()), 500);
     });
-    
     document.addEventListener('click', function(e) {
         if (!inputAdresse.contains(e.target) && !suggestionsBox.contains(e.target)) {
             suggestionsBox.style.display = 'none';
         }
     });
-    
-    console.log('Autocomplétion prête !');
 });
 
-// ============================================
 // GESTION DES MODES DE PAIEMENT
-// ============================================
-
 document.addEventListener('DOMContentLoaded', function() {
     const stripe = Stripe('{{ stripe_public_key }}');
     const stripeButton = document.getElementById('stripe-payment-btn');
@@ -356,59 +349,27 @@ document.addEventListener('DOMContentLoaded', function() {
     const modePaiementInput = document.getElementById('mode_paiement');
     const adresseInput = document.getElementById('adresse-input');
     const codePostalInput = document.querySelector('input[name="{{ form.CodePostal.vars.full_name }}"]');
-    
-    // Gérer le changement de mode de paiement
+
     paymentMethods.forEach(radio => {
         radio.addEventListener('change', function() {
             if (this.value === 'carte') {
-                // Mode Stripe
                 stripeContainer.style.display = 'block';
                 submitLivraison.style.display = 'none';
                 modePaiementInput.value = 'carte_bancaire';
             } else {
-                // Mode Livraison
                 stripeContainer.style.display = 'none';
                 submitLivraison.style.display = 'block';
                 modePaiementInput.value = 'livraison';
             }
         });
     });
-    
-    // Valider l'adresse
-    function validateAddress() {
-        const adresse = adresseInput ? adresseInput.value.trim() : '';
-        const codePostal = codePostalInput ? codePostalInput.value.trim() : '';
-        
-        if (!adresse || adresse.length < 5) {
-            alert('⚠️ Veuillez entrer une adresse de livraison valide.');
-            if (adresseInput) adresseInput.focus();
-            return false;
-        }
-        
-        if (!codePostal || codePostal.length < 3) {
-            alert('⚠️ Veuillez entrer un code postal valide.');
-            if (codePostalInput) codePostalInput.focus();
-            return false;
-        }
-        
-        return true;
-    }
-    
-    // Paiement Stripe
+
     if (stripeButton) {
         stripeButton.addEventListener('click', async function() {
-            if (!validateAddress()) {
-                return;
-            }
-            
             stripeButton.disabled = true;
             const originalText = stripeButton.innerHTML;
             stripeButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Préparation...';
-            
             try {
-                const totalText = document.getElementById('total-montant').innerText;
-                const totalAmount = parseFloat(totalText.replace(' TND', '').replace(',', '.'));
-                
                 const items = [
                     {% for item in items %}
                     {
@@ -419,32 +380,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     {% endfor %}
                 ];
-                
                 const response = await fetch('/paiement/creer-session', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         items: items,
                         adresse: adresseInput.value,
                         codePostal: codePostalInput ? codePostalInput.value : ''
                     })
                 });
-                
-                if (!response.ok) {
-                    const error = await response.text();
-                    throw new Error('Erreur serveur: ' + response.status);
-                }
-                
+                if (!response.ok) throw new Error('Erreur serveur: ' + response.status);
                 const session = await response.json();
-                
-                if (session.url) {
-                    window.location.href = session.url;
-                } else {
-                    throw new Error('URL de paiement non reçue');
-                }
-                
+                if (session.url) window.location.href = session.url;
+                else throw new Error('URL de paiement non reçue');
             } catch (error) {
                 console.error('Erreur paiement:', error);
                 alert('❌ Erreur: ' + error.message);
@@ -453,8 +401,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
-    console.log('Paiement prêt !');
 });
 </script>
 {% endblock %}

@@ -18,7 +18,6 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/panier')]
 class PanierController extends AbstractController
 {
-    
     // ── Afficher le panier ──────────────────────────────────────────────────
     #[Route('/', name: 'app_panier_index')]
     public function index(CommandeProduitRepository $cpRepo): Response
@@ -96,7 +95,6 @@ class PanierController extends AbstractController
         } else {
             $this->addFlash('success', '« ' . $produit->getTitre() . ' » ajouté au panier.');
         }
-         
 
         return $this->redirectToRoute('app_produit_index');
     }
@@ -175,98 +173,85 @@ class PanierController extends AbstractController
     }
 
     // ── Finaliser la commande ────────────────────────────────────────────────
-    // 👇 AJOUTEZ StripeService COMME PARAMÈTRE ICI
     #[Route('/checkout', name: 'app_panier_checkout')]
-    public function checkout(
-        Request $request,
-        CommandeProduitRepository $cpRepo,
-        EntityManagerInterface $em,
-        StripeService $stripeService  // 👈 AJOUTEZ CETTE LIGNE
-    ): Response {
-        if (!$this->getUser()) {
-            return $this->redirectToRoute('app_login');
-        }
-
-        /** @var \App\Entity\User $user */
-        $user  = $this->getUser();
-        $items = $cpRepo->findPanierByUser($user);
-
-        if (empty($items)) {
-            $this->addFlash('error', 'Votre panier est vide.');
-            return $this->redirectToRoute('app_panier_index');
-        }
-
-        // Vérifier stock pour chaque article avant de valider
-        $erreurs = [];
-        foreach ($items as $item) {
-            $produit = $item->getProduit();
-            if (!$produit->isCommandable($item->getQuantite())) {
-                if ($produit->isEnRupture()) {
-                    $erreurs[] = '« ' . $produit->getTitre() . ' » est en rupture de stock.';
-                } else {
-                    $erreurs[] = '« ' . $produit->getTitre() . ' » : stock insuffisant (disponible : ' . $produit->getStock() . ').';
-                }
-            }
-        }
-
-        if (!empty($erreurs)) {
-            foreach ($erreurs as $erreur) {
-                $this->addFlash('danger', $erreur);
-            }
-            return $this->redirectToRoute('app_panier_index');
-        }
-
-        $total = $cpRepo->getTotalPanier($user);
-
-        $commande = new Commande();
-        $commande->setDateC(new \DateTime());
-        $commande->setStatut('En attente');
-        $commande->setTotal($total);
-        $commande->setQuantite(array_sum(array_map(fn($i) => $i->getQuantite(), $items)));
-        $commande->setUser($user);
-
-        $form = $this->createForm(CommandeType::class, $commande);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $em->persist($commande);
-            $em->flush();
-
-            $alertesStock = [];
-            foreach ($items as $item) {
-                $produit  = $item->getProduit();
-                $quantite = $item->getQuantite();
-
-                $produit->decrementStock($quantite);
-
-                if ($produit->isStockFaible()) {
-                    $alertesStock[] = '⚠️ « ' . $produit->getTitre() . ' » : stock faible (' . $produit->getStock() . ' restant(s)).';
-                }
-
-                if ($produit->needsReappro() && $produit->getStock() === 0) {
-                    $alertesStock[] = '🔴 « ' . $produit->getTitre() . ' » : réapprovisionnement recommandé !';
-                }
-
-                $item->setCommande($commande);
-                $item->setIsPanier(false);
-                $item->setUser(null);
-            }
-
-            $em->flush();
-
-            foreach ($alertesStock as $alerte) {
-                $this->addFlash('stock_alerte', $alerte);
-            }
-
-            $this->addFlash('success', 'Commande passée avec succès ! 🎉');
-            return $this->redirectToRoute('app_commande_index');
-        }
-
-        return $this->render('panier/checkout.html.twig', [
-            'form'  => $form->createView(),
-            'items' => $items,
-            'total' => $total,
-            'stripe_public_key' => $stripeService->getPublicKey(), // 👈 MAINTENANT ÇA FONCTIONNE
-        ]);
+public function checkout(
+    Request $request,
+    CommandeProduitRepository $cpRepo,
+    EntityManagerInterface $em,
+    StripeService $stripeService
+): Response {
+    if (!$this->getUser()) {
+        return $this->redirectToRoute('app_login');
     }
+
+    /** @var \App\Entity\User $user */
+    $user  = $this->getUser();
+    $items = $cpRepo->findPanierByUser($user);
+
+    if (empty($items)) {
+        $this->addFlash('error', 'Votre panier est vide.');
+        return $this->redirectToRoute('app_panier_index');
+    }
+
+    // Vérifier stock
+    $erreurs = [];
+    foreach ($items as $item) {
+        $produit = $item->getProduit();
+        if (!$produit->isCommandable($item->getQuantite())) {
+            $erreurs[] = '« ' . $produit->getTitre() . ' » : stock insuffisant.';
+        }
+    }
+    if (!empty($erreurs)) {
+        foreach ($erreurs as $erreur) {
+            $this->addFlash('danger', $erreur);
+        }
+        return $this->redirectToRoute('app_panier_index');
+    }
+
+    // Calcul du total initial
+    $totalInitial = $cpRepo->getTotalPanier($user);
+    $remise = 0;
+
+    // ✅ Remise automatique : 10% si total > 100 DT
+    if ($totalInitial > 100) {
+        $remise = $totalInitial * 0.10;
+    }
+    $totalFinal = $totalInitial - $remise;
+
+    // Création de la commande (le total enregistré est le total après remise)
+    $commande = new Commande();
+    $commande->setDateC(new \DateTime());
+    $commande->setStatut('En attente');
+    $commande->setTotal($totalFinal);
+    $commande->setQuantite(array_sum(array_map(fn($i) => $i->getQuantite(), $items)));
+    $commande->setUser($user);
+
+    $form = $this->createForm(CommandeType::class, $commande);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        $em->persist($commande);
+        $em->flush();
+
+        foreach ($items as $item) {
+            $item->getProduit()->decrementStock($item->getQuantite());
+            $item->setCommande($commande);
+            $item->setIsPanier(false);
+            $item->setUser(null);
+        }
+        $em->flush();
+
+        $this->addFlash('success', 'Commande passée avec succès ! 🎉');
+        return $this->redirectToRoute('app_commande_index');
+    }
+
+    return $this->render('panier/checkout.html.twig', [
+        'form'          => $form->createView(),
+        'items'         => $items,
+        'totalInitial'  => $totalInitial,
+        'remise'        => $remise,
+        'total'         => $totalFinal,
+        'stripe_public_key' => $stripeService->getPublicKey(),
+    ]);
+}
 }

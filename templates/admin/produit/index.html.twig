@@ -1,4 +1,3 @@
-
 {% extends 'admin/base_admin.html.twig' %}
 {% block title %}Gestion des Produits{% endblock %}
 {% block page_title %}Liste des produits{% endblock %}
@@ -8,6 +7,33 @@
     <p class="page-header-subtitle">Gérez l'ensemble de vos produits artisanaux</p>
 </div>
 
+{# ─── Notification stock faible / réapprovisionnement ─── #}
+{% if produitsReappro is defined and produitsReappro|length > 0 %}
+    <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert" style="border-left: 6px solid #dc3545; background: #fff3cd; border-radius: 16px;">
+        <div class="d-flex align-items-center">
+            <div class="me-3">
+                <i class="fas fa-exclamation-triangle fa-2x" style="color: #dc3545;"></i>
+            </div>
+            <div>
+                <strong class="me-2">⚠️ Attention :</strong> Certains produits ont un stock très faible.
+                <br>
+                <small>Liste des produits nécessitant un réapprovisionnement :</small>
+                <ul class="mb-0 mt-1">
+                    {% for produit in produitsReappro %}
+                        <li>
+                            <strong>{{ produit.titre }}</strong> – stock restant : {{ produit.stock }} unité(s)
+                            <a href="{{ path('admin_produit_edit', {'id': produit.idPR}) }}" class="ms-2" style="color: #dc3545;">
+                                <i class="fas fa-edit"></i> Réapprovisionner
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+{% endif %}
+
 <div class="d-flex justify-content-end mb-4" style="gap: 12px;">
     <a href="{{ path('admin_produit_new') }}" class="btn btn-primary">
         <i class="fas fa-plus me-2"></i> Nouveau produit
@@ -16,7 +42,8 @@
         <i class="fas fa-shopping-bag me-2"></i> Gérer les commandes
     </a>
 </div>
- {# ══ Barre de Recherche et Filtres ══ #}
+
+{# ══ Barre de Recherche et Filtres ══ #}
 <div class="search-container mb-4">
     <form action="{{ path('admin_produit_index') }}" method="get" class="d-flex align-items-center">
         <div class="input-group" style="background: white; border-radius: 40px; border: 1px solid #F0E8DD; padding: 5px 15px;">
@@ -25,7 +52,6 @@
                    class="form-control border-0 shadow-none" 
                    placeholder="Rechercher par titre, catégorie ou description..."
                    style="font-size: 14px;">
-            {# On garde les paramètres de tri actuels quand on recherche #}
             <input type="hidden" name="sort" value="{{ currentSort }}">
             <input type="hidden" name="direction" value="{{ currentDirection }}">
         </div>
@@ -34,18 +60,15 @@
 
 <div class="admin-table">
     <table class="table">
-       {# Remplace tes entêtes de tableau <th> par ceci #}
-<thead>
-    <tr>
-        <th>IMAGE</th>
-        <th>{{ knp_pagination_sortable(produits, 'TITRE', 'p.titre') }}</th>
-        <th>DESCRIPTION</th>
-        <th>{{ knp_pagination_sortable(produits, 'CATÉGORIE', 'p.categorie') }}</th>
-        <th>{{ knp_pagination_sortable(produits, 'STOCK', 'p.stock') }}</th>
-        <th>PRIX</th>
-        <th>ACTIONS</th>
-    </tr>
-</thead>
+        <thead>
+            <tr>
+                <th>IMAGE</th>
+                <th>{{ knp_pagination_sortable(produits, 'TITRE', 'p.titre') }}</th>
+                <th>DESCRIPTION</th>
+                <th>{{ knp_pagination_sortable(produits, 'CATÉGORIE', 'p.categorie') }}</th>
+                <th>{{ knp_pagination_sortable(produits, 'STOCK', 'p.stock') }}</th>
+                <th>PRIX</th>
+                <th>ACTIONS</th>
             </tr>
         </thead>
         <tbody>
@@ -71,19 +94,7 @@
                         {% endif %}
                     </td>
                     <td>{{ produit.stock ?? 0 }}</td>
-                    <td>{{ produit.poids ?? '—' }} g</td>
                     <td class="produit-price">{{ produit.prix|number_format(0, ',', ' ') }} TND</td>
-                    <td>
-                        {% if produit.disponibilite %}
-                            <span class="badge-dispo badge-stock">
-                                <i class="fas fa-check-circle me-1"></i> En stock
-                            </span>
-                        {% else %}
-                            <span class="badge-dispo badge-rupture">
-                                <i class="fas fa-times-circle me-1"></i> Rupture
-                            </span>
-                        {% endif %}
-                    </td>
                     <td>
                         <div class="action-buttons">
                             <a href="{{ path('admin_produit_edit', {'id': produit.idPR}) }}"
@@ -104,7 +115,7 @@
                 </tr>
             {% else %}
                 <tr>
-                    <td colspan="9" class="text-center py-5">
+                    <td colspan="7" class="text-center py-5">
                         <i class="fas fa-store fa-3x mb-3" style="color: #E8DFD1;"></i>
                         <p class="text-muted mb-0">Aucun produit trouvé</p>
                         <a href="{{ path('admin_produit_new') }}" class="btn btn-primary mt-3">
@@ -116,22 +127,20 @@
         </tbody>
     </table>
 </div>
-{# ... après </table> et </div> ... #}
-{# ══ Bloc de Pagination ══ #}
+
+{# ══ Pagination ══ #}
 <div class="pagination-wrapper">
     <div class="pagination-info">
         Affichage de <strong>{{ produits|length }}</strong> sur <strong>{{ produits.getTotalItemCount }}</strong> produit(s)
     </div>
     <nav class="pagination-nav">
         <ul class="pagination">
-            {# Flèche précédente #}
             <li class="page-item {{ produits.getCurrentPageNumber == 1 ? 'disabled' : '' }}">
                 <a class="page-link" href="{{ produits.getCurrentPageNumber > 1 ? path('admin_produit_index', {page: produits.getCurrentPageNumber - 1, q: lastSearch, sort: currentSort, direction: currentDirection}) : '#' }}">
                     <i class="fas fa-chevron-left"></i>
                 </a>
             </li>
 
-            {# Boucle sur les pages #}
             {% for page in 1..produits.getPageCount %}
                 <li class="page-item {{ page == produits.getCurrentPageNumber ? 'active' : '' }}">
                     <a class="page-link" href="{{ path('admin_produit_index', {page: page, q: lastSearch, sort: currentSort, direction: currentDirection}) }}">
@@ -140,7 +149,6 @@
                 </li>
             {% endfor %}
 
-            {# Flèche suivante #}
             <li class="page-item {{ produits.getCurrentPageNumber == produits.getPageCount ? 'disabled' : '' }}">
                 <a class="page-link" href="{{ produits.getCurrentPageNumber < produits.getPageCount ? path('admin_produit_index', {page: produits.getCurrentPageNumber + 1, q: lastSearch, sort: currentSort, direction: currentDirection}) : '#' }}">
                     <i class="fas fa-chevron-right"></i>
@@ -166,7 +174,7 @@
     }
 
     .pagination-info strong {
-        color: #DC3545; /* rouge */
+        color: #DC3545;
         font-weight: 600;
     }
 
@@ -183,10 +191,10 @@
         justify-content: center;
         width: 40px;
         height: 40px;
-        border-radius: 50% !important;  /* forme ronde */
+        border-radius: 50% !important;
         background: white;
-        border: 1px solid #DC3545;      /* bordure rouge */
-        color: #DC3545;                 /* texte rouge */
+        border: 1px solid #DC3545;
+        color: #DC3545;
         font-size: 14px;
         font-weight: 600;
         transition: all 0.2s ease;
@@ -215,7 +223,6 @@
         transform: none;
     }
 
-    /* Adaptation responsive (comme ta camarade) */
     @media (max-width: 768px) {
         .pagination-wrapper {
             flex-direction: column;
@@ -223,8 +230,8 @@
             align-items: center;
         }
     }
-</style>
-<style>
+
+    /* Styles existants */
     .page-header-subtitle { font-size: 0.9rem; color: #93032E; font-weight: 500; margin: 0; }
     .admin-table { background: white; border-radius: 20px; border: 1px solid #F0E8DD; overflow-x: auto; }
     .admin-table .table { margin-bottom: 0; min-width: 1000px; }

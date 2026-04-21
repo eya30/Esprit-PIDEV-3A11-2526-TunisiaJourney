@@ -5,7 +5,7 @@ namespace App\Service;
 use Stripe\Stripe;
 use Stripe\Checkout\Session;
 
-class StripeService
+class StripeeService
 {
     private string $secretKey;
     private string $publicKey;

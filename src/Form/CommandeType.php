@@ -32,9 +32,8 @@ public function buildForm(FormBuilderInterface $builder, array $options): void
         ->add('ModePaiement', ChoiceType::class, [
             'label'   => false,
             'choices' => [
-                'Carte bancaire'          => 'Carte bancaire',
-                'Virement'                => 'Virement',
-                'Paiement à la livraison' => 'Paiement à la livraison',
+                'Paiement à la livraison' => 'livraison', // Doit être 'livraison'
+              'Carte Bancaire' => 'carte_bancaire',
             ],
         ])
         // ON RETIRE DateC, Statut et Total d'ici car on les gère dans le contrôleur !
