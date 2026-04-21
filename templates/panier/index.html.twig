@@ -1,157 +1,513 @@
 {% extends 'base.html.twig' %}
-{% block title %}Mon Panier - TunisiaJourney{% endblock %}
+
+{% block title %}Mon Panier — TunisiaJourney{% endblock %}
 
 {% block stylesheets %}
 <style>
     :root {
-        --tunisia-red: #E31B23; --tunisia-orange: #FF6B35;
-        --tunisia-sand: #FDF5E6; --tunisia-soft: #F5CAC3; --dark-gray: #2C3E50;
+        --tunisia-red: #E31B23;
+        --tunisia-orange: #FF6B35;
+        --tunisia-sand: #FDF5E6;
+        --tunisia-soft: #F5CAC3;
+        --dark-gray: #2C3E50;
     }
-    .hero {
-        position: relative; height: 35vh; min-height: 240px;
+
+    body { background: var(--tunisia-sand); }
+
+    .panier-hero {
+        position: relative;
+        height: 35vh;
+        min-height: 260px;
         background-image: linear-gradient(rgba(227,27,35,0.22), rgba(245,202,195,0.32)),
             url('https://switchmed.eu/wp-content/uploads/2020/04/tunisia-1.jpg');
-        background-size: cover; background-position: center; background-attachment: fixed;
-        display: flex; align-items: center; justify-content: center;
-        text-align: center; color: white; overflow: hidden;
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: white;
+        overflow: hidden;
     }
-    .hero::before { content:''; position:absolute; inset:0; background:radial-gradient(circle at center,transparent 0%,rgba(0,0,0,0.28) 100%); }
-    .hero-content { position:relative; z-index:2; max-width:700px; padding:2rem; animation:fadeInUp 1s cubic-bezier(0.2,0.9,0.4,1.1); }
-    @keyframes fadeInUp { from{opacity:0;transform:translateY(40px)} to{opacity:1;transform:translateY(0)} }
-    .hero h1 { font-family:'Cormorant Garamond',serif; font-size:2.8rem; font-weight:700; margin-bottom:0.6rem; text-shadow:3px 3px 12px rgba(0,0,0,0.5); color:#F5CAC3; letter-spacing:2px; }
-    .hero p { font-size:1rem; font-weight:300; line-height:1.7; color:rgba(255,255,255,0.92); }
 
-    .section-title { text-align:center; font-family:'Cormorant Garamond',serif; font-size:2.2rem; font-weight:700; color:var(--tunisia-red); margin-bottom:0.5rem; }
-    .section-title:after { content:'✦ ✦ ✦'; display:block; color:#F5CAC3; font-size:1rem; margin-top:0.5rem; letter-spacing:12px; }
-    .section-subtitle { text-align:center; color:var(--dark-gray); font-size:0.9rem; margin-bottom:2rem; font-style:italic; opacity:0.75; }
+    .panier-hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.28) 100%);
+        z-index: 0;
+    }
 
-    /* Panier card */
-    .panier-card { background:white; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.07); overflow:hidden; }
-    .panier-item { display:flex; align-items:center; gap:1.2rem; padding:1.2rem 1.5rem; border-bottom:1px solid #FDF5E6; transition:background 0.2s; }
-    .panier-item:last-child { border-bottom:none; }
-    .panier-item:hover { background:#FFFBF5; }
-    .panier-item img { width:80px; height:80px; object-fit:cover; border-radius:14px; border:2px solid #F5CAC3; flex-shrink:0; }
-    .panier-item-placeholder { width:80px; height:80px; background:#FEF9F0; border-radius:14px; display:flex; align-items:center; justify-content:center; color:#F5CAC3; font-size:2rem; flex-shrink:0; border:2px solid #F5CAC3; }
-    .panier-item-info { flex:1; }
-    .panier-item-info h5 { font-family:'Cormorant Garamond',serif; font-size:1.2rem; font-weight:700; color:var(--tunisia-red); margin-bottom:0.2rem; }
-    .panier-item-info .prix-unit { font-size:0.85rem; color:#6c757d; }
+    .panier-hero > * { position: relative; z-index: 1; }
 
-    /* Quantité */
-    .qty-control { display:flex; align-items:center; gap:0.5rem; }
-    .qty-btn { width:30px; height:30px; border-radius:50%; border:2px solid #F5CAC3; background:white; color:var(--tunisia-red); font-size:1rem; font-weight:700; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s; text-decoration:none; line-height:1; }
-    .qty-btn:hover { background:var(--tunisia-red); color:white; border-color:var(--tunisia-red); }
-    .qty-value { font-weight:700; font-size:1rem; color:var(--dark-gray); min-width:24px; text-align:center; }
-    .sous-total { font-weight:800; font-size:1.05rem; color:var(--tunisia-red); white-space:nowrap; min-width:100px; text-align:right; }
-    .btn-remove { width:34px; height:34px; border-radius:10px; background:#FEF2F2; color:#EF4444; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s; text-decoration:none; flex-shrink:0; }
-    .btn-remove:hover { background:#EF4444; color:white; transform:translateY(-2px); }
+    .panier-hero h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 3px 3px 12px rgba(0,0,0,0.5);
+        color: #F5CAC3;
+        letter-spacing: 2px;
+    }
 
-    /* Récap */
-    .recap-card { background:white; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.07); padding:1.8rem; position:sticky; top:100px; }
-    .recap-card h4 { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:700; color:var(--dark-gray); margin-bottom:1.2rem; padding-bottom:0.8rem; border-bottom:2px solid #F5CAC3; }
-    .recap-ligne { display:flex; justify-content:space-between; font-size:0.9rem; color:#6c757d; margin-bottom:0.7rem; }
-    .recap-total { display:flex; justify-content:space-between; align-items:center; padding-top:1rem; margin-top:0.5rem; border-top:2px solid #F5CAC3; }
-    .recap-total .label { font-weight:700; font-size:1rem; color:var(--dark-gray); }
-    .recap-total .montant { font-weight:800; font-size:1.4rem; color:var(--tunisia-red); }
+    .panier-hero p {
+        font-size: 1rem;
+        font-weight: 300;
+        color: rgba(255,255,255,0.92);
+    }
 
-    .btn-checkout { display:block; width:100%; text-align:center; background:linear-gradient(135deg,var(--tunisia-red),var(--tunisia-orange)); color:white; border:none; padding:13px; border-radius:30px; font-weight:700; font-size:1rem; font-family:'Montserrat',sans-serif; text-decoration:none; cursor:pointer; transition:all 0.3s ease; margin-top:1.2rem; }
-    .btn-checkout:hover { background:linear-gradient(135deg,var(--tunisia-orange),var(--tunisia-red)); transform:translateY(-2px); box-shadow:0 8px 20px rgba(227,27,35,0.35); color:white; }
-    .btn-vider { display:block; width:100%; text-align:center; background:transparent; border:2px solid #EF4444; color:#EF4444; padding:10px; border-radius:30px; font-weight:600; font-size:0.9rem; font-family:'Montserrat',sans-serif; text-decoration:none; cursor:pointer; transition:all 0.3s ease; margin-top:0.8rem; }
-    .btn-vider:hover { background:#EF4444; color:white; }
-    .btn-continuer { display:inline-flex; align-items:center; gap:8px; background:transparent; border:2px solid var(--tunisia-red); color:var(--tunisia-red); padding:10px 24px; border-radius:30px; font-weight:600; font-size:0.9rem; font-family:'Montserrat',sans-serif; text-decoration:none; transition:all 0.3s ease; margin-bottom:2rem; }
-    .btn-continuer:hover { background:var(--tunisia-red); color:white; transform:translateY(-2px); }
+    .page-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: var(--tunisia-red);
+        text-align: center;
+        margin: 2rem 0 0.3rem;
+    }
+    .page-diamonds {
+        text-align: center;
+        color: var(--tunisia-soft);
+        letter-spacing: 8px;
+        font-size: 0.9rem;
+        margin-bottom: 2rem;
+    }
 
-    .empty-panier { text-align:center; padding:4rem 2rem; background:white; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.07); }
-    .empty-panier i { font-size:4rem; color:#F5CAC3; margin-bottom:1rem; display:block; }
-    .empty-panier p { color:#6c757d; font-size:1.05rem; margin-bottom:1.5rem; }
+    .panier-layout {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 1.5rem;
+        align-items: start;
+    }
+    @media (max-width: 900px) {
+        .panier-layout { grid-template-columns: 1fr; }
+    }
 
-    @media(max-width:768px) { .hero h1{font-size:2rem;} .panier-item{flex-wrap:wrap;} .recap-card{position:static;margin-top:1.5rem;} }
+    .panier-items-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.07);
+        overflow: hidden;
+    }
+
+    .panier-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.2rem 1.5rem;
+        border-bottom: 1px solid #F5F0E8;
+        transition: background 0.2s;
+    }
+    .panier-item:last-child { border-bottom: none; }
+    .panier-item:hover { background: #FFF9F0; }
+
+    .item-img {
+        width: 80px;
+        height: 80px;
+        border-radius: 14px;
+        object-fit: cover;
+        border: 1px solid #F0E8DD;
+        flex-shrink: 0;
+    }
+    .item-img-placeholder {
+        width: 80px; height: 80px; border-radius: 14px;
+        background: #FEF9F0; display: flex; align-items: center;
+        justify-content: center; color: #E8DFD1; font-size: 1.8rem;
+        border: 1px solid #F0E8DD; flex-shrink: 0;
+    }
+
+    .item-info { flex: 1; min-width: 0; }
+    .item-name {
+        font-weight: 700; color: var(--dark-gray);
+        font-size: 0.95rem; margin-bottom: 2px;
+    }
+    .item-price-unit {
+        font-size: 0.8rem; color: #9CA3AF;
+    }
+    .item-subtotal {
+        font-weight: 800; color: var(--tunisia-red);
+        font-size: 1rem; margin-left: 4px;
+    }
+
+    .qty-controls {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        background: #F5F0E8;
+        border-radius: 30px;
+        padding: 3px;
+    }
+    .qty-btn {
+        width: 32px; height: 32px; border-radius: 50%;
+        border: none; background: white;
+        color: var(--dark-gray); font-weight: 700;
+        cursor: pointer; font-size: 1rem; line-height: 1;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.2s;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    .qty-btn:hover {
+        background: var(--tunisia-red);
+        color: white;
+        transform: scale(1.1);
+    }
+    .qty-value {
+        width: 36px; text-align: center;
+        font-weight: 700; font-size: 0.95rem; color: var(--dark-gray);
+    }
+
+    .btn-delete {
+        width: 36px; height: 36px; border-radius: 10px;
+        background: #FEF2F2; color: #EF4444; border: none;
+        cursor: pointer; display: flex; align-items: center;
+        justify-content: center; transition: all 0.2s;
+        flex-shrink: 0;
+    }
+    .btn-delete:hover { background: #EF4444; color: white; transform: translateY(-2px); }
+
+    .recap-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.07);
+        overflow: hidden;
+        position: sticky;
+        top: 100px;
+    }
+    .recap-header {
+        background: linear-gradient(135deg, var(--tunisia-sand), #fff);
+        padding: 1.2rem 1.5rem;
+        border-bottom: 1px solid #F0E8DD;
+        display: flex; align-items: center; gap: 8px;
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.2rem; font-weight: 700; color: var(--dark-gray);
+    }
+    .recap-header i { color: var(--tunisia-orange); }
+    .recap-body { padding: 1.5rem; }
+
+    .recap-line {
+        display: flex; justify-content: space-between;
+        align-items: center; margin-bottom: 10px;
+        font-size: 0.88rem; color: var(--dark-gray);
+    }
+    .recap-line span:first-child { color: #6B7280; }
+    .recap-line.livraison span:last-child { color: #16A34A; font-weight: 700; }
+
+    .recap-divider { border: none; border-top: 1px solid #F0E8DD; margin: 1rem 0; }
+
+    .recap-total {
+        display: flex; justify-content: space-between;
+        align-items: center; margin-bottom: 1.5rem;
+    }
+    .recap-total-label { font-weight: 700; color: var(--dark-gray); font-size: 0.95rem; }
+    .recap-total-value { font-weight: 800; color: var(--tunisia-red); font-size: 1.5rem; }
+
+    .btn-checkout {
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        width: 100%; padding: 14px;
+        background: linear-gradient(135deg, var(--tunisia-red), var(--tunisia-orange));
+        color: white; border: none; border-radius: 30px;
+        font-weight: 700; font-size: 1rem; cursor: pointer;
+        text-decoration: none; transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(227,27,35,0.3);
+        margin-bottom: 10px;
+    }
+    .btn-checkout:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(227,27,35,0.4);
+        color: white;
+    }
+
+    .btn-vider {
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        width: 100%; padding: 11px;
+        background: white; color: var(--tunisia-red);
+        border: 2px solid var(--tunisia-red); border-radius: 30px;
+        font-weight: 600; font-size: 0.88rem; cursor: pointer;
+        text-decoration: none; transition: all 0.2s;
+    }
+    .btn-vider:hover { background: #FEF2F2; }
+
+    .btn-back {
+        background: white; border: 2px solid var(--dark-gray);
+        color: var(--dark-gray); padding: 8px 20px;
+        border-radius: 30px; font-weight: 600; font-size: 0.88rem;
+        text-decoration: none; display: inline-flex;
+        align-items: center; gap: 7px; transition: all 0.2s;
+    }
+    .btn-back:hover { border-color: var(--tunisia-red); color: var(--tunisia-red); }
+
+    .items-count {
+        background: var(--tunisia-sand); color: var(--dark-gray);
+        padding: 4px 12px; border-radius: 20px;
+        font-size: 0.8rem; font-weight: 600;
+        display: inline-flex; align-items: center; gap: 5px;
+    }
+
+    .empty-state {
+        text-align: center; padding: 5rem 2rem;
+        background: white; border-radius: 20px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.07);
+    }
+    .empty-state i { font-size: 3.5rem; color: var(--tunisia-soft); margin-bottom: 1rem; }
+    .empty-state p { color: #9CA3AF; margin-bottom: 1.5rem; font-size: 1rem; }
+
+    .btn-boutique {
+        background: linear-gradient(135deg, var(--tunisia-red), var(--tunisia-orange));
+        color: white; padding: 12px 28px; border-radius: 30px;
+        font-weight: 700; text-decoration: none;
+        display: inline-flex; align-items: center; gap: 8px;
+        transition: all 0.3s; box-shadow: 0 4px 15px rgba(227,27,35,0.3);
+    }
+    .btn-boutique:hover { transform: translateY(-2px); color: white; box-shadow: 0 8px 20px rgba(227,27,35,0.4); }
+    
+    .cart-currency-selector {
+        margin-left: 15px;
+    }
+    #cartCurrencySelect {
+        cursor: pointer;
+        transition: all 0.3s;
+        padding: 6px 12px;
+        border-radius: 20px;
+        border: 2px solid #F5CAC3;
+        background: white;
+        font-size: 0.8rem;
+    }
+    #cartCurrencySelect:hover {
+        border-color: #E31B23;
+    }
+    @media (max-width: 768px) {
+        .cart-currency-selector {
+            margin-left: 0;
+            margin-top: 10px;
+        }
+        .d-flex.justify-content-between.align-items-center.mb-3 {
+            flex-wrap: wrap;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block body %}
-<section class="hero">
-    <div class="hero-content">
+
+<div class="panier-hero">
+    <div>
         <h1>Mon Panier</h1>
-        <p>Vérifiez vos articles avant de passer commande.</p>
+        <p>Vos sélections pour un voyage authentique en Tunisie</p>
     </div>
-</section>
+</div>
 
-<section class="py-5" style="background:var(--tunisia-sand);">
-    <div class="container">
-        <h2 class="section-title">Votre Panier</h2>
-        <p class="section-subtitle">{{ items|length }} article(s) sélectionné(s)</p>
+<div class="container py-4">
 
-        <a href="{{ path('app_produit_index') }}" class="btn-continuer">
-            <i class="fas fa-arrow-left"></i> Continuer mes achats
-        </a>
+    <h1 class="page-title">Mon Panier</h1>
+    <div class="page-diamonds">✦ ✦ ✦</div>
 
-        {% if items is empty %}
-            <div class="empty-panier">
-                <i class="fas fa-shopping-basket"></i>
-                <p>Votre panier est vide.<br>Découvrez nos produits artisanaux tunisiens !</p>
-                <a href="{{ path('app_produit_index') }}" class="btn-continuer">
-                    <i class="fas fa-store me-1"></i> Aller à la boutique
-                </a>
-            </div>
-        {% else %}
-            <div class="row g-4">
-                <!-- Articles -->
-                <div class="col-lg-8">
-                    <div class="panier-card">
-                        {% for item in items %}
-                        <div class="panier-item">
-                            {% if item.produit.image %}
-                                <img src="{{ asset('uploads/produits/' ~ item.produit.image) }}" alt="{{ item.produit.titre }}">
-                            {% else %}
-                                <div class="panier-item-placeholder"><i class="fas fa-box"></i></div>
-                            {% endif %}
-                            <div class="panier-item-info">
-                                <h5>{{ item.produit.titre }}</h5>
-                                <div class="prix-unit">{{ item.produit.prix|number_format(2, ',', ' ') }} TND / unité</div>
-                            </div>
-                            <div class="qty-control">
-                                <a href="{{ path('app_panier_update', {id: item.produit.idPR, quantite: item.quantite - 1}) }}" class="qty-btn">−</a>
-                                <span class="qty-value">{{ item.quantite }}</span>
-                                <a href="{{ path('app_panier_update', {id: item.produit.idPR, quantite: item.quantite + 1}) }}" class="qty-btn">+</a>
-                            </div>
-                            <div class="sous-total">{{ item.sousTotal|number_format(2, ',', ' ') }} TND</div>
-                            <a href="{{ path('app_panier_remove', {id: item.produit.idPR}) }}" class="btn-remove" title="Retirer">
-                                <i class="fas fa-trash-alt"></i>
-                            </a>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
+    {% if items is empty %}
+        <div class="empty-state">
+            <i class="fas fa-shopping-cart"></i>
+            <p>Votre panier est actuellement vide.</p>
+            <a href="{{ path('app_produit_index') }}" class="btn-boutique">
+                <i class="fas fa-store"></i> Découvrir nos produits
+            </a>
+        </div>
+    {% else %}
 
-                <!-- Récapitulatif -->
-                <div class="col-lg-4">
-                    <div class="recap-card">
-                        <h4><i class="fas fa-receipt me-2" style="color:var(--tunisia-orange);"></i> Récapitulatif</h4>
-                        {% for item in items %}
-                        <div class="recap-ligne">
-                            <span>{{ item.produit.titre }} × {{ item.quantite }}</span>
-                            <span>{{ item.sousTotal|number_format(2, ',', ' ') }} TND</span>
-                        </div>
-                        {% endfor %}
-                        <div class="recap-ligne" style="margin-top:0.5rem;">
-                            <span><i class="fas fa-truck me-1" style="color:var(--tunisia-orange);"></i> Livraison</span>
-                            <span style="color:#10B981;font-weight:600;">Gratuite</span>
-                        </div>
-                        <div class="recap-total">
-                            <span class="label">Total</span>
-                            <span class="montant">{{ total|number_format(2, ',', ' ') }} TND</span>
-                        </div>
-                        <a href="{{ path('app_panier_checkout') }}" class="btn-checkout">
-                            <i class="fas fa-lock me-2"></i> Passer la commande
-                        </a>
-                        <a href="{{ path('app_panier_clear') }}" class="btn-vider"
-                           onclick="return confirm('Vider tout le panier ?')">
-                            <i class="fas fa-trash me-1"></i> Vider le panier
-                        </a>
-                    </div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <a href="{{ path('app_produit_index') }}" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Continuer mes achats
+            </a>
+            <div class="d-flex align-items-center">
+                <span class="items-count me-3">
+                    <i class="fas fa-shopping-basket" style="color:var(--tunisia-orange)"></i>
+                    {{ items|length }} article(s)
+                </span>
+                <div class="cart-currency-selector">
+                    <select id="cartCurrencySelect">
+                        <option value="TND">🇹🇳 TND (Dinar)</option>
+                        <option value="EUR">🇪🇺 EUR (Euro)</option>
+                        <option value="USD">🇺🇸 USD (Dollar)</option>
+                        <option value="GBP">🇬🇧 GBP (Livre)</option>
+                    </select>
                 </div>
             </div>
-        {% endif %}
-    </div>
-</section>
+        </div>
+
+        <div class="panier-layout">
+
+            <div class="panier-items-card">
+                {% for item in items %}
+                    <div class="panier-item">
+                        {% if item.produit.image %}
+                            <img src="{{ asset('uploads/produits/' ~ item.produit.image) }}"
+                                 class="item-img" alt="{{ item.produit.titre }}">
+                        {% else %}
+                            <div class="item-img-placeholder"><i class="fas fa-image"></i></div>
+                        {% endif %}
+
+                        <div class="item-info">
+                            <div class="item-name">{{ item.produit.titre }}</div>
+                            <div class="item-price-unit">
+                                <span class="item-unit-price" data-price="{{ item.produit.prix }}">{{ item.produit.prix|number_format(2, ',', ' ') }} TND</span> / unité
+                                {% if item.taille %}
+                                    — <span style="color:var(--tunisia-orange); font-weight:600;">Taille {{ item.taille }}</span>
+                                {% endif %}
+                                —
+                                <span class="item-subtotal" data-tnd="{{ item.produit.prix * item.quantite }}">
+                                    {{ (item.produit.prix * item.quantite)|number_format(2, ',', ' ') }} TND
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="qty-controls">
+                            <form method="post"
+                                  action="{{ path('app_panier_update', {id: item.produit.idPR}) }}"
+                                  style="display:inline;">
+                                <input type="hidden" name="quantite" value="{{ item.quantite - 1 }}">
+                                <button type="submit" class="qty-btn" title="Diminuer">−</button>
+                            </form>
+
+                            <span class="qty-value">{{ item.quantite }}</span>
+
+                            <form method="post"
+                                  action="{{ path('app_panier_update', {id: item.produit.idPR}) }}"
+                                  style="display:inline;">
+                                <input type="hidden" name="quantite" value="{{ item.quantite + 1 }}">
+                                <button type="submit" class="qty-btn" title="Augmenter">+</button>
+                            </form>
+                        </div>
+
+                        <a href="{{ path('app_panier_remove', {id: item.produit.idPR}) }}"
+                           class="btn-delete"
+                           onclick="return confirm('Supprimer « {{ item.produit.titre|e('html_attr') }} » du panier ?')"
+                           title="Supprimer">
+                            <i class="fas fa-trash-alt"></i>
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="recap-card">
+                <div class="recap-header">
+                    <i class="fas fa-receipt"></i> Récapitulatif
+                </div>
+                <div class="recap-body">
+                    {% for item in items %}
+                        <div class="recap-line">
+                            <span>
+                                {{ item.produit.titre }}
+                                {% if item.taille %}<small style="color:var(--tunisia-orange);">({{ item.taille }})</small>{% endif %}
+                                × {{ item.quantite }}
+                            </span>
+                            <span class="recap-line-price" data-tnd="{{ item.produit.prix * item.quantite }}">{{ (item.produit.prix * item.quantite)|number_format(2, ',', ' ') }} TND</span>
+                        </div>
+                    {% endfor %}
+
+                    <div class="recap-line livraison">
+                        <span><i class="fas fa-truck me-1"></i> Livraison</span>
+                        <span>Gratuite</span>
+                    </div>
+
+                    <hr class="recap-divider">
+
+                    <div class="recap-total">
+                        <span class="recap-total-label">Total à payer</span>
+                        <span class="recap-total-value" data-tnd="{{ total }}">{{ total|number_format(2, ',', ' ') }} TND</span>
+                    </div>
+
+                    <a href="{{ path('app_panier_checkout') }}" class="btn-checkout">
+                        <i class="fas fa-lock"></i> Passer la commande
+                    </a>
+
+                    <a href="{{ path('app_panier_clear') }}"
+                       class="btn-vider"
+                       onclick="return confirm('Vider tout le panier ?')">
+                        <i class="fas fa-trash"></i> Vider le panier
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+
+<script>
+// Conversion de devises dans le panier
+document.addEventListener('DOMContentLoaded', function() {
+    
+    const rates = {
+        'EUR': 3.30,
+        'USD': 3.05,
+        'GBP': 3.85
+    };
+    
+    const symbols = {
+        'EUR': '€',
+        'USD': '$',
+        'GBP': '£',
+        'TND': 'DT'
+    };
+    
+    function formatPrice(amount, currency) {
+        if (currency === 'TND') {
+            return amount.toFixed(3).replace('.', ',') + ' DT';
+        }
+        return symbols[currency] + ' ' + amount.toFixed(2).replace('.', ',');
+    }
+    
+    function convertPrice(priceTND, targetCurrency) {
+        if (targetCurrency === 'TND') return priceTND;
+        return priceTND / rates[targetCurrency];
+    }
+    
+    const savedCurrency = localStorage.getItem('preferredCurrency') || 'TND';
+    
+    const currencySelect = document.getElementById('cartCurrencySelect');
+    if (currencySelect) {
+        currencySelect.value = savedCurrency;
+    }
+    
+    function updateCartPrices(currency) {
+        document.querySelectorAll('.recap-line-price, .item-subtotal').forEach(el => {
+            const originalTND = parseFloat(el.getAttribute('data-tnd'));
+            if (originalTND && !isNaN(originalTND)) {
+                const converted = convertPrice(originalTND, currency);
+                el.innerHTML = formatPrice(converted, currency);
+            }
+        });
+        
+        const totalEl = document.querySelector('.recap-total-value');
+        if (totalEl) {
+            const originalTND = parseFloat(totalEl.getAttribute('data-tnd'));
+            if (originalTND && !isNaN(originalTND)) {
+                const converted = convertPrice(originalTND, currency);
+                totalEl.innerHTML = formatPrice(converted, currency);
+            }
+        }
+        
+        document.querySelectorAll('.item-unit-price').forEach(el => {
+            const originalTND = parseFloat(el.getAttribute('data-price'));
+            if (originalTND && !isNaN(originalTND)) {
+                const converted = convertPrice(originalTND, currency);
+                el.innerHTML = formatPrice(converted, currency);
+            }
+        });
+        
+        localStorage.setItem('preferredCurrency', currency);
+    }
+    
+    if (savedCurrency !== 'TND') {
+        updateCartPrices(savedCurrency);
+    }
+    
+    if (currencySelect) {
+        currencySelect.addEventListener('change', function() {
+            updateCartPrices(this.value);
+        });
+    }
+});
+</script>
 {% endblock %}

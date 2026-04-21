@@ -5,58 +5,399 @@
 {% block stylesheets %}
 <style>
     :root {
-        --tunisia-red: #E31B23; --tunisia-orange: #FF6B35;
-        --tunisia-sand: #FDF5E6; --tunisia-soft: #F5CAC3; --dark-gray: #2C3E50;
+        --tunisia-red: #E31B23;
+        --tunisia-orange: #FF6B35;
+        --tunisia-sand: #FDF5E6;
+        --tunisia-soft: #F5CAC3;
+        --dark-gray: #2C3E50;
     }
-    .hero { position:relative; height:70vh; min-height:500px; background-image:linear-gradient(rgba(227,27,35,0.2),rgba(245,202,195,0.3)),url('https://switchmed.eu/wp-content/uploads/2020/04/tunisia-1.jpg'); background-size:cover; background-position:center; background-attachment:fixed; display:flex; align-items:center; justify-content:center; text-align:center; color:white; overflow:hidden; }
-    .hero-content { position:relative; z-index:2; max-width:800px; padding:3rem; animation:fadeInUp 1.2s cubic-bezier(0.2,0.9,0.4,1.1); }
-    @keyframes fadeInUp { from{opacity:0;transform:translateY(50px)} to{opacity:1;transform:translateY(0)} }
-    .hero h1 { font-family:'Cormorant Garamond',serif; font-size:4rem; font-weight:700; margin-bottom:1rem; text-shadow:3px 3px 12px rgba(0,0,0,0.5); color:#F5CAC3; letter-spacing:2px; }
-    
-    /* Barre de filtres */
-    .filters-bar { background:white; padding:1.5rem 2rem; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.08); margin-bottom:2rem; display:flex; flex-wrap:wrap; gap:1.5rem; align-items:center; justify-content:center; }
-    .filter-group { display:flex; align-items:center; gap:0.5rem; }
-    .filter-group label { font-weight:600; color:var(--dark-gray); font-size:0.9rem; }
-    .filter-select, .search-input { padding:10px 18px; border:2px solid var(--tunisia-soft); border-radius:25px; background:white; font-size:0.9rem; transition:all 0.3s; }
-    .filter-select:focus, .search-input:focus { outline:none; border-color:var(--tunisia-red); }
+    .hero {
+        position: relative;
+        height: 70vh;
+        min-height: 500px;
+        background-image: linear-gradient(rgba(227,27,35,0.2), rgba(245,202,195,0.3)), url('https://switchmed.eu/wp-content/uploads/2020/04/tunisia-1.jpg');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: white;
+        overflow: hidden;
+    }
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 800px;
+        padding: 3rem;
+        animation: fadeInUp 1.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(50px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .hero h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 4rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-shadow: 3px 3px 12px rgba(0,0,0,0.5);
+        color: #F5CAC3;
+        letter-spacing: 2px;
+    }
+    .hero p {
+        font-size: 1rem;
+        font-weight: 300;
+        color: rgba(255,255,255,0.92);
+    }
 
-    /* Custom Category Select */
-    .custom-select-wrapper { position: relative; width: 220px; cursor: pointer; }
-    .custom-select-trigger { 
-        padding: 10px 20px; border: 2px solid var(--tunisia-soft); border-radius: 25px; 
-        background: white; display: flex; align-items: center; justify-content: space-between;
-        font-weight: 600; color: var(--dark-gray); font-size: 0.9rem;
+    .filters-bar {
+        background: white;
+        padding: 1.5rem 2rem;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        align-items: center;
+        justify-content: center;
+    }
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .filter-group label {
+        font-weight: 600;
+        color: var(--dark-gray);
+        font-size: 0.9rem;
+    }
+    .filter-select, .search-input {
+        padding: 10px 18px;
+        border: 2px solid var(--tunisia-soft);
+        border-radius: 25px;
+        background: white;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+    }
+    .filter-select:focus, .search-input:focus {
+        outline: none;
+        border-color: var(--tunisia-red);
+    }
+
+    .custom-select-wrapper {
+        position: relative;
+        width: 220px;
+        cursor: pointer;
+    }
+    .custom-select-trigger {
+        padding: 10px 20px;
+        border: 2px solid var(--tunisia-soft);
+        border-radius: 25px;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-weight: 600;
+        color: var(--dark-gray);
+        font-size: 0.9rem;
     }
     .custom-options {
-        position: absolute; top: 110%; left: 0; right: 0; background: white;
-        border-radius: 15px; border: 2px solid var(--tunisia-soft); box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        z-index: 100; opacity: 0; visibility: hidden; transition: all 0.3s;
+        position: absolute;
+        top: 110%;
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 15px;
+        border: 2px solid var(--tunisia-soft);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        z-index: 100;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
     }
-    .custom-select-wrapper.open .custom-options { opacity: 1; visibility: visible; }
-    .custom-option { padding: 10px 20px; transition: 0.3s; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; }
-    .custom-option:hover { background: var(--tunisia-sand); color: var(--tunisia-red); }
-    .custom-option.selected { background: var(--tunisia-red); color: white; }
+    .custom-select-wrapper.open .custom-options {
+        opacity: 1;
+        visibility: visible;
+    }
+    .custom-option {
+        padding: 10px 20px;
+        transition: 0.3s;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .custom-option:hover {
+        background: var(--tunisia-sand);
+        color: var(--tunisia-red);
+    }
+    .custom-option.selected {
+        background: var(--tunisia-red);
+        color: white;
+    }
 
-    /* Cards */
-    .card-custom { background:white; border-radius:24px; overflow:hidden; box-shadow:0 15px 35px rgba(0,0,0,0.1); transition:all 0.4s; margin-bottom:30px; }
-    .card-custom:hover { transform:translateY(-10px); }
-    .card-img { height:260px; overflow:hidden; position:relative; }
-    .card-img img { width:100%; height:100%; object-fit:cover; }
-    .badge-cat-card { position:absolute; top:15px; left:15px; padding:5px 12px; border-radius:20px; font-size:0.75rem; font-weight:700; background:rgba(227,27,35,0.9); color:white; }
-    .card-content { padding:1.5rem; }
-    .card-title { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:700; color:var(--tunisia-red); }
-    .card-price { font-size:1.3rem; font-weight:800; color:var(--tunisia-red); margin: 10px 0; }
-    
-    .btn-commander { display:block; width:100%; text-align:center; background:linear-gradient(135deg,var(--tunisia-red),var(--tunisia-orange)); color:white; padding:12px; border-radius:30px; font-weight:700; text-decoration:none; }
-    .btn-panier { background:var(--dark-gray); color:white; padding:12px 25px; border-radius:30px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:8px; transition:0.3s; }
-    .btn-panier:hover { background:var(--tunisia-red); color:white; }
+    /* Boutons Panier et Commandes */
+    .btn-group-header {
+        display: flex;
+        gap: 12px;
+        margin-left: auto;
+    }
+    .btn-panier {
+        background: var(--dark-gray);
+        color: white;
+        padding: 10px 22px;
+        border-radius: 30px;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: 0.3s;
+    }
+    .btn-panier:hover {
+        background: var(--tunisia-red);
+        color: white;
+        transform: translateY(-2px);
+    }
+    .btn-commandes {
+        background: linear-gradient(135deg, #2C3E50, #1a2a3a);
+        color: white;
+        padding: 10px 22px;
+        border-radius: 30px;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        border: 1px solid rgba(255,255,255,0.15);
+    }
+    .btn-commandes:hover {
+        background: linear-gradient(135deg, var(--tunisia-red), var(--tunisia-orange));
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(227,27,35,0.3);
+        color: white;
+    }
 
-    @media(max-width:768px) { .filters-bar { flex-direction: column; align-items: stretch; } .custom-select-wrapper { width: 100%; } }
+    .card-custom {
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        transition: all 0.4s;
+        margin-bottom: 30px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .card-custom:hover {
+        transform: translateY(-10px);
+    }
+    .card-img {
+        height: 260px;
+        overflow: hidden;
+        position: relative;
+    }
+    .card-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s;
+    }
+    .card-custom:hover .card-img img {
+        transform: scale(1.05);
+    }
+    .badge-cat-card {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        background: rgba(227,27,35,0.9);
+        color: white;
+        z-index: 2;
+    }
+    .card-content {
+        padding: 1.5rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    .card-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--tunisia-red);
+        margin-bottom: 0.5rem;
+    }
+    .card-description {
+        font-size: 0.85rem;
+        color: #6c757d;
+        line-height: 1.5;
+        margin-bottom: 1rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-height: 60px;
+    }
+    .card-price {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: var(--tunisia-red);
+        margin: 10px 0;
+    }
+    .btn-commander {
+        display: block;
+        width: 100%;
+        text-align: center;
+        background: linear-gradient(135deg, var(--tunisia-red), var(--tunisia-orange));
+        color: white;
+        padding: 12px;
+        border-radius: 30px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.3s;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        margin-top: auto;
+    }
+    .btn-commander:hover {
+        background: linear-gradient(135deg, var(--tunisia-orange), var(--tunisia-red));
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    /* Sélecteur de tailles */
+    .taille-selector {
+        margin-bottom: 10px;
+    }
+    .taille-label {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--dark-gray);
+        display: block;
+        margin-bottom: 6px;
+    }
+    .taille-badges {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-bottom: 6px;
+    }
+    .taille-badge {
+        padding: 5px 13px;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        border: 2px solid #dee2e6;
+        color: var(--dark-gray);
+        cursor: pointer;
+        transition: all 0.2s;
+        user-select: none;
+        background: white;
+    }
+    .taille-badge:hover {
+        border-color: var(--tunisia-red);
+        color: var(--tunisia-red);
+    }
+    .taille-badge.selected {
+        background: linear-gradient(135deg, var(--tunisia-red), var(--tunisia-orange));
+        color: white;
+        border-color: transparent;
+        box-shadow: 0 3px 10px rgba(227,27,35,0.3);
+    }
+    .taille-error {
+        font-size: 0.78rem;
+        color: #dc3545;
+        display: none;
+        margin-bottom: 6px;
+    }
+
+    /* Pagination */
+    .pagination-wrap {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 3rem;
+        flex-wrap: wrap;
+    }
+    .pagination-wrap a,
+    .pagination-wrap span {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: white;
+        color: var(--dark-gray);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.09);
+        transition: all 0.3s;
+        border: 2px solid transparent;
+    }
+    .pagination-wrap a:hover {
+        background: var(--tunisia-red);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(227,27,35,0.3);
+    }
+    .pagination-wrap span.current {
+        background: linear-gradient(135deg, var(--tunisia-red), var(--tunisia-orange));
+        color: white;
+        box-shadow: 0 6px 16px rgba(227,27,35,0.3);
+    }
+    .pagination-wrap span.disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+    }
+    .pagination-info {
+        text-align: center;
+        margin-top: 1rem;
+        color: #6c757d;
+        font-size: 0.85rem;
+        font-style: italic;
+    }
+
+    @media (max-width: 768px) {
+        .filters-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .custom-select-wrapper {
+            width: 100%;
+        }
+        .btn-group-header {
+            margin-left: 0;
+            width: 100%;
+            justify-content: center;
+        }
+        .hero h1 {
+            font-size: 2rem;
+        }
+        .hero {
+            height: 50vh;
+            min-height: 300px;
+        }
+        .card-description {
+            -webkit-line-clamp: 2;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block body %}
-
 <section class="hero">
     <div class="hero-content">
         <h1>Boutique Artisanale</h1>
@@ -66,61 +407,72 @@
 
 <section class="py-5" style="background:var(--tunisia-sand);">
     <div class="container">
-       <div class="filters-bar">
-    <div class="filter-group">
-        <input type="text" class="search-input" id="searchInput" placeholder="Rechercher...">
-    </div>
 
-    <div class="filter-group">
-        <label>Catégorie :</label>
-        <div class="custom-select-wrapper" id="catSelector">
-            <div class="custom-select-trigger">
-                <span><i class="fas fa-th-large me-2"></i>Toutes</span>
-                <i class="fas fa-chevron-down arrow"></i>
+        <div class="filters-bar">
+            <div class="filter-group">
+                <input type="text" class="search-input" id="searchInput"
+                       placeholder="Rechercher..." value="{{ search }}">
             </div>
-            <div class="custom-options">
-                <div class="custom-option selected" data-cat="all"><i class="fas fa-th-large"></i> Toutes</div>
-                <div class="custom-option" data-cat="Artisanat"><i class="fas fa-hammer"></i> Artisanat</div>
-                <div class="custom-option" data-cat="Bijoux"><i class="fas fa-gem"></i> Bijoux</div>
-                <div class="custom-option" data-cat="Vêtements"><i class="fas fa-tshirt"></i> Vêtements</div>
-                <div class="custom-option" data-cat="Décoration"><i class="fas fa-couch"></i> Décoration</div>
-                <div class="custom-option" data-cat="Alimentaire"><i class="fas fa-utensils"></i> Alimentaire</div>
+            <div class="filter-group">
+                <label>Catégorie :</label>
+                <div class="custom-select-wrapper" id="catSelector">
+                    <div class="custom-select-trigger">
+                        <span><i class="fas fa-th-large me-2"></i>{{ cat ?: 'Toutes' }}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="custom-options">
+                        <div class="custom-option {{ cat == '' ? 'selected' : '' }}" data-cat="">
+                            <i class="fas fa-th-large"></i> Toutes
+                        </div>
+                        <div class="custom-option {{ cat == 'Artisanat' ? 'selected' : '' }}" data-cat="Artisanat">
+                            <i class="fas fa-hammer"></i> Artisanat
+                        </div>
+                        <div class="custom-option {{ cat == 'Bijoux' ? 'selected' : '' }}" data-cat="Bijoux">
+                            <i class="fas fa-gem"></i> Bijoux
+                        </div>
+                        <div class="custom-option {{ cat == 'Vêtements' ? 'selected' : '' }}" data-cat="Vêtements">
+                            <i class="fas fa-tshirt"></i> Vêtements
+                        </div>
+                        <div class="custom-option {{ cat == 'Décoration' ? 'selected' : '' }}" data-cat="Décoration">
+                            <i class="fas fa-couch"></i> Décoration
+                        </div>
+                        <div class="custom-option {{ cat == 'Alimentaire' ? 'selected' : '' }}" data-cat="Alimentaire">
+                            <i class="fas fa-utensils"></i> Alimentaire
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="filter-group">
+                <label>Trier par :</label>
+                <select class="filter-select" id="triFilter">
+                    <option value="default">Par défaut</option>
+                    <option value="prix-asc">Prix croissant</option>
+                    <option value="prix-desc">Prix décroissant</option>
+                    <option value="nom-asc">Nom (A-Z)</option>
+                </select>
+            </div>
+
+            <div class="btn-group-header">
+                <a href="{{ path('app_panier_index') }}" class="btn-panier">
+                    <i class="fas fa-shopping-cart"></i> Mon panier
+                </a>
+                <a href="{{ path('app_commande_index') }}" class="btn-commandes">
+                    <i class="fas fa-receipt"></i> Mes commandes
+                </a>
             </div>
         </div>
-    </div>
 
-    <div class="filter-group">
-        <label>Budget :</label>
-        <select class="filter-select" id="priceFilter">
-            <option value="all">Tous prix</option>
-            <option value="0-50">0 - 50 TND</option>
-            <option value="50-100">50 - 100 TND</option>
-            <option value="100+">100+ TND</option>
-        </select>
-    </div>
-
-    <div class="filter-group">
-        <label>Trier par :</label>
-        <select class="filter-select" id="triFilter">
-            <option value="default">Par défaut</option>
-            <option value="prix-asc">Prix croissant</option>
-            <option value="prix-desc">Prix décroissant</option>
-            <option value="nom-asc">Nom (A-Z)</option>
-        </select>
-    </div>
-    
-    <a href="{{ path('app_panier_index') }}" class="btn-panier">
-        <i class="fas fa-shopping-cart"></i> Mon panier
-    </a>
-</div>
+        <p class="pagination-info">
+            Affichage de {{ produits.currentPageNumber }} / {{ produits.pageCount }} page(s)
+            — {{ produits.totalItemCount }} produit(s) au total
+        </p>
 
         <div class="row" id="produitsGrid">
             {% for produit in produits %}
-                <div class="col-md-4 produit-item" 
-                     data-titre="{{ produit.titre|lower }}" 
-                     data-prix="{{ produit.prix }}" 
-                     data-cat="{{ produit.categorie }}"
-                     data-dispo="{{ produit.disponibilite ? '1' : '0' }}">
+                <div class="col-md-4 col-lg-3 produit-item mb-4"
+                     data-titre="{{ produit.titre|lower }}"
+                     data-prix="{{ produit.prix }}"
+                     data-cat="{{ produit.categorie }}">
                     <div class="card-custom">
                         <div class="card-img">
                             <img src="{{ asset('uploads/produits/' ~ produit.image) }}" alt="{{ produit.titre }}">
@@ -128,82 +480,369 @@
                         </div>
                         <div class="card-content">
                             <h3 class="card-title">{{ produit.titre }}</h3>
-                            <div class="card-price">{{ produit.prix }} TND</div>
-                            <a href="{{ path('app_panier_ajouter', {id: produit.idPR}) }}" class="btn-commander">Ajouter au panier</a>
+                            
+                            <div class="card-description">
+                                {{ produit.description|slice(0, 120) }}{% if produit.description|length > 120 %}...{% endif %}
+                            </div>
+                            
+                            <div class="card-price">{{ produit.prix|number_format(2, ',', ' ') }} TND</div>
+
+                            {% if produit.categorie == 'Vêtements' %}
+                                <div class="taille-selector">
+                                    <span class="taille-label"><i class="fas fa-tshirt me-1"></i> Choisir une taille :</span>
+                                    <div class="taille-badges" id="tailles-{{ produit.idPR }}">
+                                        {% for taille in ['XS', 'S', 'M', 'L', 'XL'] %}
+                                            <span class="taille-badge" data-taille="{{ taille }}">{{ taille }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    <small class="taille-error" id="err-{{ produit.idPR }}">
+                                        ⚠ Veuillez choisir une taille
+                                    </small>
+                                </div>
+                                <button class="btn-commander btn-add-vetement"
+                                        data-id="{{ produit.idPR }}"
+                                        data-url="/panier/add/{{ produit.idPR }}">
+                                    <i class="fas fa-cart-plus me-2"></i> Ajouter au panier
+                                </button>
+                            {% else %}
+                                <a href="/panier/add/{{ produit.idPR }}" class="btn-commander">
+                                    <i class="fas fa-shopping-cart me-2"></i> Ajouter au panier
+                                </a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
+            {% else %}
+                <div class="col-12 text-center py-5">
+                    <i class="fas fa-store-slash fa-3x mb-3" style="color:#F5CAC3;"></i>
+                    <p style="color:#6c757d;">Aucun produit trouvé.</p>
+                </div>
             {% endfor %}
         </div>
+
+        {% if produits.pageCount > 1 %}
+        <div class="pagination-wrap">
+            {% if produits.currentPageNumber > 1 %}
+                <a href="{{ path('app_produit_index', {page: produits.currentPageNumber - 1, q: search, cat: cat}) }}">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            {% else %}
+                <span class="disabled"><i class="fas fa-chevron-left"></i></span>
+            {% endif %}
+
+            {% for i in 1..produits.pageCount %}
+                {% if i == produits.currentPageNumber %}
+                    <span class="current">{{ i }}</span>
+                {% elseif i == 1 or i == produits.pageCount or (i >= produits.currentPageNumber - 2 and i <= produits.currentPageNumber + 2) %}
+                    <a href="{{ path('app_produit_index', {page: i, q: search, cat: cat}) }}">{{ i }}</a>
+                {% elseif i == produits.currentPageNumber - 3 or i == produits.currentPageNumber + 3 %}
+                    <span>…</span>
+                {% endif %}
+            {% endfor %}
+
+            {% if produits.currentPageNumber < produits.pageCount %}
+                <a href="{{ path('app_produit_index', {page: produits.currentPageNumber + 1, q: search, cat: cat}) }}">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            {% else %}
+                <span class="disabled"><i class="fas fa-chevron-right"></i></span>
+            {% endif %}
+        </div>
+        {% endif %}
+
     </div>
 </section>
 {% endblock %}
 
 {% block javascripts %}
-<script>
-    let activeCat = 'all';
+{{ parent() }}
 
-    // Gestion de l'ouverture du menu catégorie
+<script>
+    // ============================================
+    // GESTION DES FILTRES
+    // ============================================
+    let activeCat = '{{ cat }}';
+
     const selector = document.getElementById('catSelector');
-    selector.addEventListener('click', (e) => {
-        e.stopPropagation();
-        selector.classList.toggle('open');
-    });
+    if (selector) {
+        selector.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selector.classList.toggle('open');
+        });
+    }
 
     document.querySelectorAll('.custom-option').forEach(option => {
         option.addEventListener('click', function() {
-            document.querySelector('.custom-option.selected').classList.remove('selected');
+            document.querySelector('.custom-option.selected')?.classList.remove('selected');
             this.classList.add('selected');
-            selector.querySelector('.custom-select-trigger span').innerHTML = this.innerHTML;
+            const triggerSpan = document.querySelector('.custom-select-trigger span');
+            if (triggerSpan) triggerSpan.innerHTML = this.innerHTML;
             activeCat = this.dataset.cat;
             applyFilters();
         });
     });
 
     function applyFilters() {
-        const search = document.getElementById('searchInput').value.toLowerCase();
-        const price = document.getElementById('priceFilter').value;
-        const tri = document.getElementById('triFilter').value;
+        const search = document.getElementById('searchInput')?.value.toLowerCase() || '';
+        const tri = document.getElementById('triFilter')?.value || 'default';
         const grid = document.getElementById('produitsGrid');
         const items = Array.from(document.querySelectorAll('.produit-item'));
 
-        // 1. Filtrage
         items.forEach(item => {
             const titre = item.dataset.titre;
-            const p = parseFloat(item.dataset.prix);
             const c = item.dataset.cat;
-
-            let isVisible = titre.includes(search);
-            if (activeCat !== 'all' && c !== activeCat) isVisible = false;
-            if (price === '0-50' && p > 50) isVisible = false;
-            if (price === '50-100' && (p <= 50 || p > 100)) isVisible = false;
-            if (price === '100+' && p <= 100) isVisible = false;
-
-            item.style.display = isVisible ? 'block' : 'none';
+            let ok = titre.includes(search);
+            if (activeCat && c !== activeCat) ok = false;
+            item.style.display = ok ? 'block' : 'none';
         });
 
-        // 2. Tri des éléments visibles
         const visibles = items.filter(i => i.style.display !== 'none');
-        
         visibles.sort((a, b) => {
             const pA = parseFloat(a.dataset.prix), pB = parseFloat(b.dataset.prix);
             const nA = a.dataset.titre, nB = b.dataset.titre;
-
             if (tri === 'prix-asc') return pA - pB;
             if (tri === 'prix-desc') return pB - pA;
             if (tri === 'nom-asc') return nA.localeCompare(nB);
             return 0;
         });
-
-        // Réinjection dans la grille
         visibles.forEach(i => grid.appendChild(i));
     }
 
-    // Écouteurs
-    document.getElementById('searchInput').addEventListener('input', applyFilters);
-    document.getElementById('priceFilter').addEventListener('change', applyFilters);
-    document.getElementById('triFilter').addEventListener('change', applyFilters);
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                window.location.href = '{{ path('app_produit_index') }}?q=' + encodeURIComponent(this.value) + '&cat=' + encodeURIComponent(activeCat);
+            }
+        });
+        searchInput.addEventListener('input', applyFilters);
+    }
 
-    window.onclick = () => selector.classList.remove('open');
+    const triFilter = document.getElementById('triFilter');
+    if (triFilter) triFilter.addEventListener('change', applyFilters);
+
+    window.onclick = () => {
+        if (selector) selector.classList.remove('open');
+    };
+
+    // ============================================
+    // ✅ SÉLECTION DE TAILLE POUR VÊTEMENTS (VERSION REDIRECTION SIMPLE)
+    // ============================================
+    
+    document.querySelectorAll('.taille-badges').forEach(container => {
+        container.querySelectorAll('.taille-badge').forEach(badge => {
+            badge.addEventListener('click', function() {
+                container.querySelectorAll('.taille-badge').forEach(b => b.classList.remove('selected'));
+                this.classList.add('selected');
+                
+                // Cacher l'erreur si une taille est sélectionnée
+                const productId = this.closest('.card-content')?.querySelector('.btn-add-vetement')?.dataset.id;
+                if (productId) {
+                    const errEl = document.getElementById('err-' + productId);
+                    if (errEl) errEl.style.display = 'none';
+                }
+            });
+        });
+    });
+
+    // ✅ AJOUT AU PANIER AVEC TAILLE (REDIRECTION SIMPLE - PAS D'AJAX)
+    document.querySelectorAll('.btn-add-vetement').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const id = this.dataset.id;
+            const url = this.dataset.url;
+            const selected = document.querySelector('#tailles-' + id + ' .taille-badge.selected');
+            const errEl = document.getElementById('err-' + id);
+            
+            // Vérifier si une taille est sélectionnée
+            if (!selected) {
+                if (errEl) errEl.style.display = 'block';
+                return;
+            }
+            
+            if (errEl) errEl.style.display = 'none';
+            const taille = selected.dataset.taille;
+            
+            // ✅ Redirection simple avec la taille en paramètre GET
+            window.location.href = url + '?taille=' + encodeURIComponent(taille);
+        });
+    });
+
+    // ============================================
+    // CONVERSION DE DEVISES SUR LA PAGE LISTE
+    // ============================================
+    
+    let currentCurrency = localStorage.getItem('preferredCurrency') || 'EUR';
+    let currentRates = {};
+    
+    async function fetchExchangeRates() {
+        try {
+            const response = await fetch('/api/currency/rates');
+            const data = await response.json();
+            if (data.success) {
+                currentRates = data.rates;
+                return true;
+            }
+        } catch (error) {
+            console.error('Erreur chargement taux:', error);
+        }
+        return false;
+    }
+    
+    function convertPrice(priceTND, currency) {
+        if (currency === 'TND' || !currentRates[currency]) {
+            return { amount: priceTND, formatted: priceTND.toFixed(3).replace('.', ',') + ' TND' };
+        }
+        
+        const rate = currentRates[currency].to_tnd;
+        const converted = priceTND / rate;
+        
+        let symbol = '';
+        let formatted = '';
+        
+        switch(currency) {
+            case 'EUR':
+                symbol = '€';
+                formatted = symbol + ' ' + converted.toFixed(2).replace('.', ',');
+                break;
+            case 'USD':
+                symbol = '$';
+                formatted = symbol + ' ' + converted.toFixed(2).replace('.', ',');
+                break;
+            case 'GBP':
+                symbol = '£';
+                formatted = symbol + ' ' + converted.toFixed(2).replace('.', ',');
+                break;
+            default:
+                formatted = converted.toFixed(3).replace('.', ',') + ' ' + currency;
+        }
+        
+        return { amount: converted, formatted: formatted };
+    }
+    
+    async function updateAllPrices() {
+        const priceElements = document.querySelectorAll('.card-price');
+        
+        for (const element of priceElements) {
+            const originalPrice = parseFloat(element.getAttribute('data-original-price'));
+            
+            if (originalPrice && !isNaN(originalPrice)) {
+                const converted = convertPrice(originalPrice, currentCurrency);
+                element.innerHTML = converted.formatted;
+                element.setAttribute('data-converted-currency', currentCurrency);
+            }
+        }
+        
+        const selectedLabel = document.getElementById('selectedCurrencyLabel');
+        if (selectedLabel) {
+            const symbols = { EUR: '🇪🇺 Euro', USD: '🇺🇸 Dollar', GBP: '🇬🇧 Livre' };
+            selectedLabel.innerHTML = `${symbols[currentCurrency]} → TND`;
+        }
+    }
+    
+    function addCurrencySelector() {
+        const filtersBar = document.querySelector('.filters-bar');
+        if (!filtersBar) return;
+        
+        if (document.querySelector('.currency-selector-wrapper')) return;
+        
+        const currencyHtml = `
+            <div class="currency-selector-wrapper" style="position: relative;">
+                <button id="currencySelectorBtn" style="background: white; border: 2px solid #F5CAC3; border-radius: 30px; padding: 8px 18px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-exchange-alt" style="color: #E31B23;"></i>
+                    <span id="selectedCurrencyLabel">🇪🇺 Euro → TND</span>
+                    <i class="fas fa-chevron-down" style="font-size: 12px;"></i>
+                </button>
+                <div id="currencySelectorDropdown" style="position: absolute; top: 100%; right: 0; background: white; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); min-width: 200px; display: none; z-index: 1000; margin-top: 5px;">
+                    <div class="currency-opt" data-currency="EUR" style="padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #f0e8dd;">
+                        <i class="fas fa-euro-sign"></i> 🇪🇺 Euro (EUR) → TND
+                    </div>
+                    <div class="currency-opt" data-currency="USD" style="padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #f0e8dd;">
+                        <i class="fas fa-dollar-sign"></i> 🇺🇸 Dollar US (USD) → TND
+                    </div>
+                    <div class="currency-opt" data-currency="GBP" style="padding: 12px 15px; cursor: pointer;">
+                        <i class="fas fa-pound-sign"></i> 🇬🇧 Livre Sterling (GBP) → TND
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        filtersBar.insertAdjacentHTML('beforeend', currencyHtml);
+        
+        const selectorBtn = document.getElementById('currencySelectorBtn');
+        const dropdown = document.getElementById('currencySelectorDropdown');
+        
+        if (selectorBtn) {
+            selectorBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            });
+        }
+        
+        document.querySelectorAll('.currency-opt').forEach(opt => {
+            opt.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const currency = opt.dataset.currency;
+                currentCurrency = currency;
+                localStorage.setItem('preferredCurrency', currency);
+                dropdown.style.display = 'none';
+                
+                await fetchExchangeRates();
+                updateAllPrices();
+            });
+        });
+        
+        document.addEventListener('click', () => {
+            if (dropdown) dropdown.style.display = 'none';
+        });
+    }
+    
+    function initOriginalPrices() {
+        const priceElements = document.querySelectorAll('.card-price');
+        priceElements.forEach(element => {
+            const priceText = element.innerText;
+            const match = priceText.match(/([\d\s,]+)\s*(?:TND|DT)/);
+            if (match) {
+                const originalPrice = parseFloat(match[1].replace(/\s/g, '').replace(',', '.'));
+                if (!isNaN(originalPrice)) {
+                    element.setAttribute('data-original-price', originalPrice);
+                }
+            }
+        });
+    }
+    
+    (async function() {
+        await fetchExchangeRates();
+        initOriginalPrices();
+        addCurrencySelector();
+        
+        const savedCurrency = localStorage.getItem('preferredCurrency');
+        if (savedCurrency && savedCurrency !== 'EUR') {
+            currentCurrency = savedCurrency;
+            await fetchExchangeRates();
+            updateAllPrices();
+        }
+    })();
 </script>
+
+<style>
+.currency-opt:hover {
+    background: #FEF9F0;
+    color: #E31B23;
+}
+.currency-selector-wrapper {
+    margin-left: auto;
+}
+@media (max-width: 768px) {
+    .currency-selector-wrapper {
+        margin-left: 0;
+        width: 100%;
+    }
+    #currencySelectorBtn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
 {% endblock %}

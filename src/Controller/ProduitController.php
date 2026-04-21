@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controller;
 
 use App\Entity\Produit;
@@ -6,68 +7,127 @@ use App\Form\ProduitType;
 use App\Repository\ProduitRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\{Request, Response};
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\String\Slugger\SluggerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/produit')]
 class ProduitController extends AbstractController
 {
-    #[Route('/', name: 'app_produit_index')]
-    public function index(ProduitRepository $repo): Response
-    {
+    // ✅ Liste avec pagination
+    #[Route('/', name: 'app_produit_index', methods: ['GET'])]
+    public function index(
+        Request $request,
+        ProduitRepository $repo,
+        PaginatorInterface $paginator
+    ): Response {
+        $search = $request->query->get('q', '');
+        $cat    = $request->query->get('cat', '');
+
+        // Requête de base
+        $qb = $repo->createQueryBuilder('p')
+            ->orderBy('p.idPR', 'DESC');
+
+        if ($search) {
+            $qb->andWhere('p.titre LIKE :q OR p.description LIKE :q')
+               ->setParameter('q', '%' . $search . '%');
+        }
+
+        if ($cat) {
+            $qb->andWhere('p.categorie = :cat')
+               ->setParameter('cat', $cat);
+        }
+
+        // ✅ Pagination — 6 produits par page
+        $produits = $paginator->paginate(
+            $qb->getQuery(),
+            $request->query->getInt('page', 1),
+            6
+        );
+
         return $this->render('produit/index.html.twig', [
-            'produits' => $repo->findAll()
+            'produits' => $produits,
+            'search'   => $search,
+            'cat'      => $cat,
         ]);
     }
 
-    #[Route('/nouveau', name: 'app_produit_new')]
-    public function new(Request $request, EntityManagerInterface $em): Response
+    // Nouveau produit
+    #[Route('/nouveau', name: 'app_produit_new', methods: ['GET', 'POST'])]
+    public function new(Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
+        /** @var \App\Entity\User $user */
+        $user    = $this->getUser();
         $produit = new Produit();
-        $form = $this->createForm(ProduitType::class, $produit);
+        $form    = $this->createForm(ProduitType::class, $produit);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-    // CHANGE CETTE LIGNE :
-        $file = $form->get('imageFile')->getData(); // Utilise 'imageFile'
+            $file = $form->get('imageFile')->getData();
             if ($file) {
-                $fileName = uniqid().'.'.$file->guessExtension();
-                $file->move($this->getParameter('kernel.project_dir').'/public/uploads/produits', $fileName);
+                $safeFilename = $slugger->slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
+                $fileName     = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
+                $file->move($this->getParameter('produits_directory'), $fileName);
                 $produit->setImage($fileName);
             }
+
+            $produit->setUser($user);
             $em->persist($produit);
             $em->flush();
+
+            $this->addFlash('success', 'Produit ajouté avec succès !');
             return $this->redirectToRoute('app_produit_index');
         }
 
-        return $this->render('produit/form.html.twig', [
-            'form' => $form->createView(),
-            'action' => 'Ajouter'
+        return $this->render('produit/_form.html.twig', [
+            'form'    => $form->createView(),
+            'produit' => $produit,
         ]);
     }
 
-    #[Route('/{id}/modifier', name: 'app_produit_edit')]
-    public function edit(Produit $produit, Request $request, EntityManagerInterface $em): Response
+    // Modifier
+    #[Route('/{idPR}/modifier', name: 'app_produit_edit', methods: ['GET', 'POST'])]
+    public function edit(Produit $produit, Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
         $form = $this->createForm(ProduitType::class, $produit);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $file = $form->get('imageFile')->getData();
+            if ($file) {
+                $safeFilename = $slugger->slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
+                $fileName     = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
+                $file->move($this->getParameter('produits_directory'), $fileName);
+                $produit->setImage($fileName);
+            }
+
             $em->flush();
+            $this->addFlash('success', 'Produit modifié avec succès !');
             return $this->redirectToRoute('app_produit_index');
         }
 
-        return $this->render('produit/form.html.twig', [
-            'form' => $form->createView(),
-            'action' => 'Modifier'
+        return $this->render('produit/_form.html.twig', [
+            'form'    => $form->createView(),
+            'produit' => $produit,
         ]);
     }
 
-    #[Route('/{id}/supprimer', name: 'app_produit_delete')]
-    public function delete(Produit $produit, EntityManagerInterface $em): Response
+    // Supprimer
+    #[Route('/{idPR}/supprimer', name: 'app_produit_delete', methods: ['POST'])]
+    public function delete(Request $request, Produit $produit, EntityManagerInterface $em): Response
     {
-        $em->remove($produit);
-        $em->flush();
+        if ($this->isCsrfTokenValid('delete' . $produit->getIdPR(), $request->request->get('_token'))) {
+            $em->remove($produit);
+            $em->flush();
+            $this->addFlash('success', 'Produit supprimé.');
+        }
+
         return $this->redirectToRoute('app_produit_index');
     }
 }

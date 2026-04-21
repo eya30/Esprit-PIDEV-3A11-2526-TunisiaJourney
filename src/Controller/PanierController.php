@@ -1,27 +1,36 @@
 <?php
+
 namespace App\Controller;
 
 use App\Entity\Commande;
 use App\Entity\CommandeProduit;
-use App\Entity\Produit;
 use App\Form\CommandeType;
+use App\Service\StripeService; 
 use App\Repository\CommandeRepository;
+use App\Repository\CommandeProduitRepository;
 use App\Repository\ProduitRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\{Request, Response};
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/panier')]
 class PanierController extends AbstractController
 {
+    
     // ── Afficher le panier ──────────────────────────────────────────────────
     #[Route('/', name: 'app_panier_index')]
-    public function index(SessionInterface $session, ProduitRepository $repo): Response
+    public function index(CommandeProduitRepository $cpRepo): Response
     {
-        $panier = $session->get('panier', []);
-        [$items, $total] = $this->buildItems($panier, $repo);
+        if (!$this->getUser()) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        /** @var \App\Entity\User $user */
+        $user  = $this->getUser();
+        $items = $cpRepo->findPanierByUser($user);
+        $total = $cpRepo->getTotalPanier($user);
 
         return $this->render('panier/index.html.twig', [
             'items' => $items,
@@ -30,102 +39,226 @@ class PanierController extends AbstractController
     }
 
     // ── Ajouter au panier ───────────────────────────────────────────────────
-    #[Route('/ajouter/{id}', name: 'app_panier_add')]
-    public function add(Produit $produit, SessionInterface $session): Response
-    {
-        $panier = $session->get('panier', []);
-        $id     = $produit->getId();
-        $panier[$id] = ($panier[$id] ?? 0) + 1;
-        $session->set('panier', $panier);
+    #[Route('/add/{id}', name: 'app_panier_add')]
+    public function add(
+        int $id,
+        ProduitRepository $produitRepo,
+        CommandeProduitRepository $cpRepo,
+        EntityManagerInterface $em
+    ): Response {
+        if (!$this->getUser()) {
+            return $this->redirectToRoute('app_login');
+        }
 
-        $this->addFlash('success', '« ' . $produit->getTitre() . ' » ajouté au panier !');
+        /** @var \App\Entity\User $user */
+        $user    = $this->getUser();
+        $produit = $produitRepo->find($id);
+
+        if (!$produit) {
+            $this->addFlash('danger', 'Produit introuvable.');
+            return $this->redirectToRoute('app_produit_index');
+        }
+
+        if (!$produit->isDisponibilite()) {
+            $this->addFlash('warning', '« ' . $produit->getTitre() . ' » est indisponible.');
+            return $this->redirectToRoute('app_produit_index');
+        }
+
+        if ($produit->isEnRupture()) {
+            $this->addFlash('danger', '« ' . $produit->getTitre() . ' » est en rupture de stock.');
+            return $this->redirectToRoute('app_produit_index');
+        }
+
+        $item        = $cpRepo->findPanierItem($user, $id);
+        $nouvelleQte = ($item ? $item->getQuantite() : 0) + 1;
+
+        if (!$produit->isCommandable($nouvelleQte)) {
+            $this->addFlash('warning', 'Stock insuffisant. Seulement ' . $produit->getStock() . ' unité(s) disponible(s).');
+            return $this->redirectToRoute('app_produit_index');
+        }
+
+        if ($item) {
+            $item->setQuantite($nouvelleQte);
+        } else {
+            $item = new CommandeProduit();
+            $item->setUser($user);
+            $item->setProduit($produit);
+            $item->setQuantite(1);
+            $item->setIsPanier(true);
+            $item->setCommande(null);
+            $em->persist($item);
+        }
+
+        $em->flush();
+
+        if ($produit->isStockFaible()) {
+            $this->addFlash('warning', '⚠️ « ' . $produit->getTitre() . ' » ajouté — stock faible (' . $produit->getStock() . ' restant(s)).');
+        } else {
+            $this->addFlash('success', '« ' . $produit->getTitre() . ' » ajouté au panier.');
+        }
+         
+
         return $this->redirectToRoute('app_produit_index');
     }
 
-    // ── Mettre à jour la quantité ───────────────────────────────────────────
-    #[Route('/modifier/{id}/{quantite}', name: 'app_panier_update')]
-    public function update(int $id, int $quantite, SessionInterface $session): Response
-    {
-        $panier = $session->get('panier', []);
-        if ($quantite <= 0) {
-            unset($panier[$id]);
-        } else {
-            $panier[$id] = $quantite;
+    // ── Modifier la quantité ─────────────────────────────────────────────────
+    #[Route('/modifier/{id}', name: 'app_panier_update', methods: ['POST'])]
+    public function update(
+        int $id,
+        Request $request,
+        CommandeProduitRepository $cpRepo,
+        ProduitRepository $produitRepo,
+        EntityManagerInterface $em
+    ): Response {
+        if (!$this->getUser()) {
+            return $this->redirectToRoute('app_login');
         }
-        $session->set('panier', $panier);
+
+        /** @var \App\Entity\User $user */
+        $user     = $this->getUser();
+        $quantite = (int) $request->request->get('quantite', 1);
+        $item     = $cpRepo->findPanierItem($user, $id);
+
+        if ($item) {
+            if ($quantite <= 0) {
+                $em->remove($item);
+            } else {
+                $produit = $produitRepo->find($id);
+                if ($produit && !$produit->isCommandable($quantite)) {
+                    $this->addFlash('warning', 'Stock insuffisant. Maximum : ' . $produit->getStock() . ' unité(s).');
+                    return $this->redirectToRoute('app_panier_index');
+                }
+                $item->setQuantite($quantite);
+            }
+            $em->flush();
+        }
+
         return $this->redirectToRoute('app_panier_index');
     }
 
-    // ── Supprimer un article ────────────────────────────────────────────────
+    // ── Supprimer un article ─────────────────────────────────────────────────
     #[Route('/supprimer/{id}', name: 'app_panier_remove')]
-    public function remove(int $id, SessionInterface $session): Response
+    public function remove(int $id, CommandeProduitRepository $cpRepo, EntityManagerInterface $em): Response
     {
-        $panier = $session->get('panier', []);
-        unset($panier[$id]);
-        $session->set('panier', $panier);
-        $this->addFlash('success', 'Article retiré du panier.');
+        if (!$this->getUser()) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $item = $cpRepo->findPanierItem($user, $id);
+
+        if ($item) {
+            $em->remove($item);
+            $em->flush();
+            $this->addFlash('success', 'Article retiré du panier.');
+        }
+
         return $this->redirectToRoute('app_panier_index');
     }
 
-    // ── Vider le panier ─────────────────────────────────────────────────────
+    // ── Vider le panier ──────────────────────────────────────────────────────
     #[Route('/vider', name: 'app_panier_clear')]
-    public function clear(SessionInterface $session): Response
+    public function clear(CommandeProduitRepository $cpRepo, EntityManagerInterface $em): Response
     {
-        $session->set('panier', []);
+        if (!$this->getUser()) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $cpRepo->clearPanier($user);
+        $em->flush();
+
         $this->addFlash('success', 'Panier vidé.');
         return $this->redirectToRoute('app_panier_index');
     }
 
-    // ── Finaliser la commande ───────────────────────────────────────────────
-    #[Route('/valider', name: 'app_panier_checkout')]
+    // ── Finaliser la commande ────────────────────────────────────────────────
+    // 👇 AJOUTEZ StripeService COMME PARAMÈTRE ICI
+    #[Route('/checkout', name: 'app_panier_checkout')]
     public function checkout(
         Request $request,
-        SessionInterface $session,
-        ProduitRepository $repo,
-        EntityManagerInterface $em
+        CommandeProduitRepository $cpRepo,
+        EntityManagerInterface $em,
+        StripeService $stripeService  // 👈 AJOUTEZ CETTE LIGNE
     ): Response {
-        $panier = $session->get('panier', []);
+        if (!$this->getUser()) {
+            return $this->redirectToRoute('app_login');
+        }
 
-        if (empty($panier)) {
+        /** @var \App\Entity\User $user */
+        $user  = $this->getUser();
+        $items = $cpRepo->findPanierByUser($user);
+
+        if (empty($items)) {
             $this->addFlash('error', 'Votre panier est vide.');
             return $this->redirectToRoute('app_panier_index');
         }
 
-        [$items, $total] = $this->buildItems($panier, $repo);
+        // Vérifier stock pour chaque article avant de valider
+        $erreurs = [];
+        foreach ($items as $item) {
+            $produit = $item->getProduit();
+            if (!$produit->isCommandable($item->getQuantite())) {
+                if ($produit->isEnRupture()) {
+                    $erreurs[] = '« ' . $produit->getTitre() . ' » est en rupture de stock.';
+                } else {
+                    $erreurs[] = '« ' . $produit->getTitre() . ' » : stock insuffisant (disponible : ' . $produit->getStock() . ').';
+                }
+            }
+        }
+
+        if (!empty($erreurs)) {
+            foreach ($erreurs as $erreur) {
+                $this->addFlash('danger', $erreur);
+            }
+            return $this->redirectToRoute('app_panier_index');
+        }
+
+        $total = $cpRepo->getTotalPanier($user);
 
         $commande = new Commande();
         $commande->setDateC(new \DateTime());
         $commande->setStatut('En attente');
         $commande->setTotal($total);
-        // Quantite globale = somme des quantités
-        $commande->setQuantite(array_sum($panier));
+        $commande->setQuantite(array_sum(array_map(fn($i) => $i->getQuantite(), $items)));
+        $commande->setUser($user);
 
         $form = $this->createForm(CommandeType::class, $commande);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Recalcul total côté serveur
-            [, $totalServeur] = $this->buildItems($panier, $repo);
-            $commande->setTotal($totalServeur);
-
             $em->persist($commande);
+            $em->flush();
 
-            // Créer les lignes commande_produit
-            foreach ($panier as $idProduit => $quantite) {
-                $produit = $repo->find($idProduit);
-                if ($produit) {
-                    $ligne = new CommandeProduit();
-                    $ligne->setCommande($commande);
-                    $ligne->setProduit($produit);
-                    $ligne->setQuantite($quantite);
-                    $em->persist($ligne);
+            $alertesStock = [];
+            foreach ($items as $item) {
+                $produit  = $item->getProduit();
+                $quantite = $item->getQuantite();
+
+                $produit->decrementStock($quantite);
+
+                if ($produit->isStockFaible()) {
+                    $alertesStock[] = '⚠️ « ' . $produit->getTitre() . ' » : stock faible (' . $produit->getStock() . ' restant(s)).';
                 }
+
+                if ($produit->needsReappro() && $produit->getStock() === 0) {
+                    $alertesStock[] = '🔴 « ' . $produit->getTitre() . ' » : réapprovisionnement recommandé !';
+                }
+
+                $item->setCommande($commande);
+                $item->setIsPanier(false);
+                $item->setUser(null);
             }
 
             $em->flush();
-            $session->set('panier', []);
 
-            $this->addFlash('success', 'Commande passée avec succès ! Merci pour votre achat. 🎉');
+            foreach ($alertesStock as $alerte) {
+                $this->addFlash('stock_alerte', $alerte);
+            }
+
+            $this->addFlash('success', 'Commande passée avec succès ! 🎉');
             return $this->redirectToRoute('app_commande_index');
         }
 
@@ -133,41 +266,7 @@ class PanierController extends AbstractController
             'form'  => $form->createView(),
             'items' => $items,
             'total' => $total,
+            'stripe_public_key' => $stripeService->getPublicKey(), // 👈 MAINTENANT ÇA FONCTIONNE
         ]);
-    }
-
-    // ── Liste des commandes ─────────────────────────────────────────────────
-    #[Route('/commandes', name: 'app_commande_index')]
-    public function commandes(CommandeRepository $repo): Response
-    {
-        return $this->render('panier/commandes.html.twig', [
-            'commandes' => $repo->findAll(),
-        ]);
-    }
-
-    // ── Supprimer une commande ──────────────────────────────────────────────
-    #[Route('/commandes/{id}/supprimer', name: 'app_commande_delete', methods: ['POST'])]
-    public function deleteCommande(Commande $commande, EntityManagerInterface $em): Response
-    {
-        $em->remove($commande);
-        $em->flush();
-        $this->addFlash('success', 'Commande supprimée.');
-        return $this->redirectToRoute('app_commande_index');
-    }
-
-    // ── Helper : construire les items depuis la session ─────────────────────
-    private function buildItems(array $panier, ProduitRepository $repo): array
-    {
-        $items = [];
-        $total = 0;
-        foreach ($panier as $idProduit => $quantite) {
-            $produit = $repo->find($idProduit);
-            if ($produit) {
-                $sousTotal = $produit->getPrix() * $quantite;
-                $items[]   = ['produit' => $produit, 'quantite' => $quantite, 'sousTotal' => $sousTotal];
-                $total    += $sousTotal;
-            }
-        }
-        return [$items, $total];
     }
 }
