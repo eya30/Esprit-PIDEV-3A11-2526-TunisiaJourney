@@ -1,0 +1,316 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ evenement.Titre }} - TunisiaJourney{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .evenement-container {
+        display: flex;
+        gap: 0;
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        border: 1px solid #F0E8DD;
+        box-shadow: 0 4px 24px rgba(38,70,83,0.08);
+        min-height: 480px;
+        margin-bottom: 5rem;
+    }
+
+    .evenement-image {
+        flex: 1.1;
+        min-width: 0;
+        background: #FEF9F0;
+        position: relative;
+        display: flex;
+        align-items: stretch;
+    }
+
+    .evenement-image img {
+        width: 88%;
+        height: 69%;
+        object-fit: cover;
+        display: block;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 18px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    }
+
+    .evenement-image-placeholder {
+        width: 88%;
+        height: 82%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #E8DFD1;
+        font-size: 3rem;
+        background: #F0E8DD;
+        border-radius: 18px;
+    }
+
+    .evenement-info {
+        flex: 1.2;
+        padding: 2rem 2.5rem 2rem 2.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    /* Titre principal */
+    .evenement-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.6rem;
+        font-weight: 800;
+        color: #264653;
+        margin-bottom: 2rem;
+        line-height: 1.2;
+        letter-spacing: -0.5px;
+    }
+
+    /* Description */
+    .evenement-description {
+        color: #111111;
+        line-height: 1.85;
+        font-size: 1.05rem;
+        margin-bottom: 2.5rem;
+    }
+
+    /* Info rows */
+    .evenement-infos {
+        background: #F8F4F0;
+        border-radius: 16px;
+        padding: 1.4rem 1.8rem;
+        margin-bottom: 2.2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .info-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #E8DFD1;
+        gap: 1rem;
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #7D2E3E;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 180px;
+    }
+
+    .info-label i {
+        color: #7D2E3E;
+        width: 18px;
+        text-align: center;
+        font-size: 1rem;
+    }
+
+    .info-value {
+        color: #1a1a1a;
+        font-weight: 500;
+        font-size: 1rem;
+        text-align: right;
+    }
+
+    /* Section activités */
+    .activites-section {
+        margin-bottom: 2.2rem;
+    }
+
+    .activites-section h3 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #264653;
+        margin-bottom: 1rem;
+    }
+
+    .activite-item {
+        padding: 0.9rem 1.1rem;
+        margin-bottom: 0.7rem;
+        background: #F8F4F0;
+        border-radius: 12px;
+        transition: all 0.2s;
+        cursor: pointer;
+        border: 1px solid #F0E8DD;
+    }
+
+    .activite-item:hover {
+        background: #F0E8DD;
+        transform: translateX(4px);
+    }
+
+    .activite-name {
+        font-weight: 700;
+        color: #264653;
+        font-size: 0.95rem;
+        margin-bottom: 4px;
+    }
+
+    .activite-type {
+        font-size: 0.7rem;
+        color: #7D2E3E;
+        background: rgba(125,46,62,0.1);
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 20px;
+        margin-top: 2px;
+    }
+
+    .activite-horaire {
+        font-size: 0.75rem;
+        color: #9CA3AF;
+        margin-top: 4px;
+    }
+
+    .activite-prix {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #7D2E3E;
+        margin-top: 4px;
+    }
+
+    /* Bouton voir toutes */
+    .btn-all-activites {
+        background: #264653;
+        color: white;
+        border: none;
+        padding: 13px 32px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        align-self: flex-start;
+        letter-spacing: 0.2px;
+        box-shadow: 0 4px 14px rgba(38,70,83,0.25);
+        text-decoration: none;
+        margin-top: 0.5rem;
+    }
+
+    .btn-all-activites:hover {
+        background: #1a3340;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(38,70,83,0.35);
+        color: white;
+        text-decoration: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .evenement-container  { flex-direction: column; }
+        .evenement-image      { min-height: 320px; }
+        .evenement-info       { padding: 1.5rem; }
+        .evenement-title      { font-size: 1.7rem; }
+        .info-row             { flex-direction: column; align-items: flex-start; gap: 3px; }
+        .info-value           { text-align: left; }
+        .info-label           { min-width: unset; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+
+    <div class="evenement-container">
+        <!-- Image -->
+        <div class="evenement-image">
+            {% if evenement.Image %}
+                <img src="{{ asset('uploads/evenements/' ~ evenement.Image|split('/')|last) }}" alt="{{ evenement.Titre }}">
+            {% else %}
+                <div class="evenement-image-placeholder">
+                    <i class="fas fa-calendar-star"></i>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Infos -->
+        <div class="evenement-info">
+
+            <!-- Titre -->
+            <h1 class="evenement-title">{{ evenement.Titre }}</h1>
+
+            <!-- Description -->
+            <div class="evenement-description">
+                {{ evenement.Description }}
+            </div>
+
+            <!-- Données structurées -->
+            <div class="evenement-infos">
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-calendar-check"></i> Date de début</span>
+                    <span class="info-value">{{ evenement.DateDebut|date('d/m/Y') }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-calendar-times"></i> Date de fin</span>
+                    <span class="info-value">{{ evenement.DateFin|date('d/m/Y') }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-map-marker-alt"></i> Lieu</span>
+                    <span class="info-value">{{ evenement.Lieu }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-users"></i> Capacité max</span>
+                    <span class="info-value">{{ evenement.CapaciteMax }} personnes</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-user-tie"></i> Organisateur</span>
+                    <span class="info-value">{{ evenement.Organisateur ?: 'Non spécifié' }}</span>
+                </div>
+            </div>
+
+            <!-- Activités disponibles -->
+            {% if activites is defined and activites|length > 0 %}
+            <div class="activites-section">
+                <h3><i class="fas fa-star" style="color:#7D2E3E; margin-right:6px;"></i>Activités disponibles</h3>
+                {% for activite in activites|slice(0, 3) %}
+                    <div class="activite-item" onclick="window.location.href='{{ path('app_activite_show', {'IDAct': activite.IDAct}) }}'">
+                        <div class="activite-name">{{ activite.Titre }}</div>
+                        <span class="activite-type">{{ activite.TypeActivite }}</span>
+                        <div class="activite-horaire">
+                            <i class="far fa-clock"></i> {{ activite.HeureDebut }} &bull; {{ activite.Duree }}
+                        </div>
+                        <div class="activite-prix">
+                            {{ activite.Prix|number_format(2, ',', ' ') }} TND / personne
+                        </div>
+                    </div>
+                {% endfor %}
+
+                {% if activites|length > 3 %}
+                    <a href="{{ path('app_evenement_activites', {'IDEv': evenement.IDEv}) }}" class="btn-all-activites">
+                        Voir toutes les activités ({{ activites|length }})<i class="fas fa-arrow-right"></i>
+                    </a>
+                {% endif %}
+            </div>
+            {% else %}
+                <p class="text-muted" style="margin-bottom: 2rem;">Aucune activité disponible pour cet événement.</p>
+            {% endif %}
+
+            <!-- Bouton retour -->
+            <a href="{{ path('app_evenement_index') }}" class="btn-all-activites">
+                <i class="fas fa-arrow-left"></i> Retour aux événements
+            </a>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

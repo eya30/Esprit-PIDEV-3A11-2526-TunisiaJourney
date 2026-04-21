@@ -1,24 +1,37 @@
 <?php
 namespace App\Controller\Admin;
+
 use Symfony\Component\HttpFoundation\Request;
 use App\Entity\Commande;
 use App\Repository\CommandeRepository;
+use App\Service\WhatsAppService;
 use Doctrine\ORM\EntityManagerInterface;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/admin/commande')]
 class AdminCommandeController extends AbstractController
 {
     // ── Liste des commandes ──────────────────────────────────────────────
     #[Route('/', name: 'admin_commande_index')]
-    public function index(CommandeRepository $repo): Response
+    public function index(CommandeRepository $repo, Request $request, PaginatorInterface $paginator): Response
     {
+        $query = $repo->createQueryBuilder('c')
+            ->orderBy('c.id', 'DESC')
+            ->getQuery();
+
+        $pagination = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            10
+        );
+
         return $this->render('admin/commande/index.html.twig', [
-            'commandes' => $repo->findBy([], ['id' => 'DESC']),
+            'commandes' => $pagination,
         ]);
     }
 
@@ -38,17 +51,14 @@ class AdminCommandeController extends AbstractController
     {
         $commandes = $repo->findBy([], ['id' => 'DESC']);
 
-        // Calculer le CA total
         $caTotal = array_reduce($commandes, fn($c, $cmd) => $c + ($cmd->getTotal() ?? 0), 0);
 
-        // ── Générer le HTML du PDF ───────────────────────────────────────
         $html = $this->renderView('admin/commande/pdf.html.twig', [
             'commandes' => $commandes,
             'caTotal'   => $caTotal,
             'date'      => new \DateTime(),
         ]);
 
-        // ── Configurer Dompdf ────────────────────────────────────────────
         $options = new Options();
         $options->set('isHtml5ParserEnabled', true);
         $options->set('isRemoteEnabled', false);
@@ -59,7 +69,6 @@ class AdminCommandeController extends AbstractController
         $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
 
-        // ── Retourner le PDF en téléchargement ───────────────────────────
         $filename = 'commandes_' . date('Y-m-d') . '.pdf';
 
         return new Response(
@@ -71,27 +80,52 @@ class AdminCommandeController extends AbstractController
             ]
         );
     }
-    // ── Modifier une commande ───────────────────────────────────────────
-#[Route('/{id}/modifier', name: 'admin_commande_edit', methods: ['GET', 'POST'])]
-public function edit(Commande $commande, Request $request, EntityManagerInterface $em): Response
-{
-    // Si le formulaire est soumis (cas du formulaire HTML que tu as fourni)
-    if ($request->isMethod('POST')) {
-        $commande->setQuantite((int)$request->request->get('quantite'));
-        $commande->setTotal((float)$request->request->get('total'));
-        $commande->setStatut($request->request->get('statut'));
-        $commande->setAdresseLiv($request->request->get('adresse'));
-        $commande->setCodePostal($request->request->get('cp'));
-        $commande->setModePaiement($request->request->get('paiement'));
 
-        $em->flush();
-        $this->addFlash('success', 'La commande #' . $commande->getId() . ' a été mise à jour.');
-        return $this->redirectToRoute('admin_commande_index');
+    // ── Modifier une commande ────────────────────────────────────────────
+    #[Route('/{id}/modifier', name: 'admin_commande_edit', methods: ['GET', 'POST'])]
+    public function edit(
+        Commande               $commande,
+        Request                $request,
+        EntityManagerInterface $em,
+        WhatsAppService        $whatsApp   // ✅ AJOUT
+    ): Response {
+        if ($request->isMethod('POST')) {
+
+            // ✅ Sauvegarder l'ancien statut AVANT le flush
+            $ancienStatut = $commande->getStatut();
+
+            $ancienneQte  = $commande->getQuantite() ?: 1;
+            $nouvelleQte  = (int) $request->request->get('quantite', $ancienneQte);
+            $prixUnitaire = $commande->getTotal() / $ancienneQte;
+
+            $commande->setQuantite($nouvelleQte);
+            $commande->setTotal($prixUnitaire * $nouvelleQte);
+            $commande->setStatut($request->request->get('statut'));
+            $commande->setAdresseLiv($request->request->get('adresse'));
+
+            $em->flush();
+
+            // ✅ Envoyer WhatsApp si le statut VIENT DE PASSER à "Livrée"
+            $nouveauStatut = $commande->getStatut();
+            if ($nouveauStatut === 'Livrée' && $ancienStatut !== 'Livrée') {
+                $user = $commande->getUser();
+                if ($user && $user->getTelephone()) {
+                    $whatsApp->sendLivreurArrive(
+                        $user->getTelephone(),
+                        $user->getNom(),
+                        $user->getPrenom(),
+                        $commande->getId()
+                    );
+                }
+            }
+
+            $this->addFlash('success', 'Commande #' . $commande->getId() . ' mise à jour.');
+            return $this->redirectToRoute('admin_commande_index');
+        }
+
+        return $this->render('admin/commande/form.html.twig', [
+            'commande' => $commande,
+            'action'   => 'Modifier',
+        ]);
     }
-
-    return $this->render('admin/commande/form.html.twig', [
-        'commande' => $commande,
-        'action'   => 'Modifier'
-    ]);
-}
 }

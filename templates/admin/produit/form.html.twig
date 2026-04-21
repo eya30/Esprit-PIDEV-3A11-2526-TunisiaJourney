@@ -16,7 +16,7 @@
                 <div class="input-group-custom">
                     <i class="fas fa-tag"></i>
                     {{ form_widget(form.titre, {
-                        'attr': {'class': 'form-control', 'placeholder': 'Ex : Tapis berbère, Poterie de Nabeul...'}
+                        'attr': {'class': 'form-control', 'placeholder': 'Ex : Tapis berbère, Poterie de Nabeul...', 'id': 'produit_titre'}
                     }) }}
                 </div>
                 {% if form_errors(form.titre) %}
@@ -26,10 +26,21 @@
 
             <div class="form-group">
                 <label class="form-label">Description</label>
+                <div class="mb-2" style="display: flex; gap: 10px;">
+                    <button type="button" id="generate-description-btn" class="btn-ai" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; padding: 8px 16px; border-radius: 40px; font-size: 12px; font-weight: 600; color: white; cursor: pointer;">
+                        <i class="fab fa-google me-1"></i> ✨ Générer description avec IA
+                    </button>
+                    <button type="button" id="generate-seo-btn" class="btn-ai" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border: none; padding: 8px 16px; border-radius: 40px; font-size: 12px; font-weight: 600; color: white; cursor: pointer;">
+                        <i class="fab fa-google me-1"></i> 🔍 Générer description SEO
+                    </button>
+                    <button type="button" id="generate-keywords-btn" class="btn-ai" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border: none; padding: 8px 16px; border-radius: 40px; font-size: 12px; font-weight: 600; color: white; cursor: pointer;">
+                        <i class="fab fa-google me-1"></i> 🏷️ Suggérer mots-clés
+                    </button>
+                </div>
                 <div class="input-group-custom">
                     <i class="fas fa-align-left"></i>
                     {{ form_widget(form.description, {
-                        'attr': {'class': 'form-control', 'rows': 5, 'placeholder': "Décrivez l'article : matériaux, origine, histoire..."}
+                        'attr': {'class': 'form-control', 'rows': 5, 'placeholder': "Décrivez l'article : matériaux, origine, histoire...", 'id': 'produit_description'}
                     }) }}
                 </div>
                 {% if form_errors(form.description) %}
@@ -42,7 +53,7 @@
                 <div class="input-group-custom">
                     <i class="fas fa-th-large"></i>
                     {{ form_widget(form.categorie, {
-                        'attr': {'class': 'form-control form-select'}
+                        'attr': {'class': 'form-control form-select', 'id': 'produit_categorie'}
                     }) }}
                 </div>
                 {% if form_errors(form.categorie) %}
@@ -127,7 +138,6 @@
                     <p>Cliquez ou glissez une image ici</p>
                     <small>JPG, PNG (max. 2 Mo)</small>
                     
-                    {# ✅ CORRECTION ICI : form.imageFile au lieu de form.image #}
                     {{ form_widget(form.imageFile, {
                         'attr': {
                             'id': 'imageInput',
@@ -230,6 +240,22 @@
     .input-group-custom .form-control:focus {
         box-shadow: none;
         outline: none;
+    }
+
+    /* Animation pour les boutons IA */
+    .btn-ai {
+        transition: all 0.3s ease;
+    }
+    
+    .btn-ai:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    
+    .btn-ai:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
     }
 
     /* Image courante */
@@ -360,60 +386,262 @@
 </style>
 
 <script>
+    // Gestion de l'upload d'image
     const uploadArea = document.getElementById('uploadArea');
-   const imageInput = document.getElementById('imageInput');    
-const imagePreview = document.getElementById('imagePreview');
+    const imageInput = document.getElementById('imageInput');    
+    const imagePreview = document.getElementById('imagePreview');
 
-    // L'input transparent couvre toute la zone — pas besoin de click()
-    // Il suffit d'écouter le changement pour afficher la prévisualisation
-
-    imageInput.addEventListener('change', function (e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                imagePreview.innerHTML =
-                    '<img src="' + e.target.result + '" class="image-preview" style="max-width:200px; max-height:150px; border-radius:12px; border:1px solid #E8DFD1; margin-top:12px;">' +
-                    '<p style="font-size:11px; color:#9CA3AF; margin-top:6px;">' + file.name + '</p>';
-                // Garder la zone visible mais changer son apparence
-                uploadArea.style.borderColor = '#93032E';
-                uploadArea.style.background = '#FFF5F0';
-            };
-            reader.readAsDataURL(file);
-        }
-    });
+    if (imageInput) {
+        imageInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    if (imagePreview) {
+                        imagePreview.innerHTML =
+                            '<img src="' + e.target.result + '" class="image-preview" style="max-width:200px; max-height:150px; border-radius:12px; border:1px solid #E8DFD1; margin-top:12px;">' +
+                            '<p style="font-size:11px; color:#9CA3AF; margin-top:6px;">' + file.name + '</p>';
+                    }
+                    if (uploadArea) {
+                        uploadArea.style.borderColor = '#93032E';
+                        uploadArea.style.background = '#FFF5F0';
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
 
     // Drag & drop
-    uploadArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadArea.style.borderColor = '#93032E';
-        uploadArea.style.background = '#FFF5F0';
-    });
+    if (uploadArea) {
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#93032E';
+            uploadArea.style.background = '#FFF5F0';
+        });
 
-    uploadArea.addEventListener('dragleave', () => {
-        uploadArea.style.borderColor = '#E8DFD1';
-        uploadArea.style.background = '#FEF9F0';
-    });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = '#E8DFD1';
+            uploadArea.style.background = '#FEF9F0';
+        });
 
-    uploadArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        const file = e.dataTransfer.files[0];
-        if (file && file.type.startsWith('image/')) {
-            // Transférer les fichiers vers l'input
-            const dt = new DataTransfer();
-            dt.items.add(file);
-            imageInput.files = dt.files;
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                if (imageInput) imageInput.files = dt.files;
 
-            const reader = new FileReader();
-            reader.onload = function (ev) {
-                imagePreview.innerHTML =
-                    '<img src="' + ev.target.result + '" class="image-preview" style="max-width:200px; max-height:150px; border-radius:12px; border:1px solid #E8DFD1; margin-top:12px;">' +
-                    '<p style="font-size:11px; color:#9CA3AF; margin-top:6px;">' + file.name + '</p>';
-                uploadArea.style.borderColor = '#93032E';
-                uploadArea.style.background = '#FFF5F0';
-            };
-            reader.readAsDataURL(file);
+                const reader = new FileReader();
+                reader.onload = function (ev) {
+                    if (imagePreview) {
+                        imagePreview.innerHTML =
+                            '<img src="' + ev.target.result + '" class="image-preview" style="max-width:200px; max-height:150px; border-radius:12px; border:1px solid #E8DFD1; margin-top:12px;">' +
+                            '<p style="font-size:11px; color:#9CA3AF; margin-top:6px;">' + file.name + '</p>';
+                    }
+                    if (uploadArea) {
+                        uploadArea.style.borderColor = '#93032E';
+                        uploadArea.style.background = '#FFF5F0';
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // ============================================
+    // INTEGRATION GEMINI AI - VERSION CORRIGÉE
+    // ============================================
+    
+    // Attendre que tout le DOM soit chargé
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM chargé - Initialisation Gemini');
+        
+        // Récupérer les éléments avec vérification
+        const titreInput = document.getElementById('produit_titre');
+        const descriptionTextarea = document.getElementById('produit_description');
+        const categorieSelect = document.getElementById('produit_categorie');
+        
+        // Vérifier que les éléments existent
+        if (!titreInput) {
+            console.error('❌ Champ titre non trouvé (id: produit_titre)');
         }
+        if (!descriptionTextarea) {
+            console.error('❌ Champ description non trouvé (id: produit_description)');
+        }
+        
+        // BOUTON 1: Générer description standard
+        const generateBtn = document.getElementById('generate-description-btn');
+        if (generateBtn) {
+            console.log('✅ Bouton génération trouvé');
+            generateBtn.addEventListener('click', async function() {
+                console.log('Clic sur générer description');
+                
+                const productName = titreInput ? titreInput.value.trim() : '';
+                
+                if (!productName) {
+                    alert('⚠️ Veuillez d\'abord entrer le nom du produit');
+                    if (titreInput) titreInput.focus();
+                    return;
+                }
+                
+                // Désactiver le bouton
+                generateBtn.disabled = true;
+                const originalText = generateBtn.innerHTML;
+                generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Génération en cours...';
+                
+                try {
+                    console.log('Envoi requête pour:', productName);
+                    
+                    const response = await fetch('/api/gemini/generer-description', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            productName: productName,
+                            category: categorieSelect ? categorieSelect.value : '',
+                            material: '',
+                            origin: ''
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    console.log('Réponse reçue:', data);
+                    
+                    if (data.success && data.description && descriptionTextarea) {
+                        descriptionTextarea.value = data.description;
+                        // Animation de succès
+                        descriptionTextarea.style.transition = 'all 0.3s';
+                        descriptionTextarea.style.borderColor = '#10B981';
+                        descriptionTextarea.style.backgroundColor = '#F0FDF4';
+                        setTimeout(() => {
+                            descriptionTextarea.style.borderColor = '';
+                            descriptionTextarea.style.backgroundColor = '';
+                        }, 2000);
+                        alert('✅ Description générée avec succès !');
+                    } else {
+                        alert('❌ Erreur: ' + (data.error || 'Génération échouée'));
+                    }
+                    
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    alert('❌ Erreur de connexion au service Gemini. Vérifiez que le serveur est démarré.');
+                } finally {
+                    generateBtn.disabled = false;
+                    generateBtn.innerHTML = originalText;
+                }
+            });
+        } else {
+            console.error('❌ Bouton generate-description-btn non trouvé');
+        }
+        
+        // BOUTON 2: Générer description SEO
+        const seoBtn = document.getElementById('generate-seo-btn');
+        if (seoBtn) {
+            console.log('✅ Bouton SEO trouvé');
+            seoBtn.addEventListener('click', async function() {
+                const productName = titreInput ? titreInput.value.trim() : '';
+                
+                if (!productName) {
+                    alert('⚠️ Veuillez d\'abord entrer le nom du produit');
+                    if (titreInput) titreInput.focus();
+                    return;
+                }
+                
+                seoBtn.disabled = true;
+                const originalText = seoBtn.innerHTML;
+                seoBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Génération SEO...';
+                
+                try {
+                    const response = await fetch('/api/gemini/generer-seo', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            productName: productName,
+                            category: categorieSelect ? categorieSelect.value : ''
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success && data.seoDescription && descriptionTextarea) {
+                        const currentDesc = descriptionTextarea.value;
+                        const newDesc = data.seoDescription + (currentDesc ? '\n\n' + currentDesc : '');
+                        descriptionTextarea.value = newDesc;
+                        
+                        descriptionTextarea.style.transition = 'all 0.3s';
+                        descriptionTextarea.style.borderColor = '#10B981';
+                        descriptionTextarea.style.backgroundColor = '#F0FDF4';
+                        setTimeout(() => {
+                            descriptionTextarea.style.borderColor = '';
+                            descriptionTextarea.style.backgroundColor = '';
+                        }, 2000);
+                        alert('✅ Description SEO générée !');
+                    } else {
+                        alert('❌ Erreur: ' + (data.error || 'Génération échouée'));
+                    }
+                    
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    alert('❌ Erreur de connexion');
+                } finally {
+                    seoBtn.disabled = false;
+                    seoBtn.innerHTML = originalText;
+                }
+            });
+        }
+        
+        // BOUTON 3: Suggérer mots-clés
+        const keywordsBtn = document.getElementById('generate-keywords-btn');
+        if (keywordsBtn) {
+            console.log('✅ Bouton mots-clés trouvé');
+            keywordsBtn.addEventListener('click', async function() {
+                const productName = titreInput ? titreInput.value.trim() : '';
+                
+                if (!productName) {
+                    alert('⚠️ Veuillez d\'abord entrer le nom du produit');
+                    if (titreInput) titreInput.focus();
+                    return;
+                }
+                
+                keywordsBtn.disabled = true;
+                const originalText = keywordsBtn.innerHTML;
+                keywordsBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Génération mots-clés...';
+                
+                try {
+                    const response = await fetch('/api/gemini/suggerer-mots-cles', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            productName: productName
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success && data.keywords) {
+                        alert('🏷️ Mots-clés suggérés pour référencement :\n\n' + data.keywords.join(', '));
+                    } else {
+                        alert('❌ Erreur: ' + (data.error || 'Génération échouée'));
+                    }
+                    
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    alert('❌ Erreur de connexion');
+                } finally {
+                    keywordsBtn.disabled = false;
+                    keywordsBtn.innerHTML = originalText;
+                }
+            });
+        }
+        
+        console.log('✅ Initialisation Gemini terminée');
     });
 </script>
 {% endblock %}

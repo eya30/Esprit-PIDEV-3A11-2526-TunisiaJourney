@@ -103,6 +103,109 @@
     </table>
 </div>
 
+
+<!-- Pagination (rouge & ronde) -->
+<div class="pagination-wrapper">
+    <div class="pagination-info">
+        Affichage de <strong>{{ commandes|length }}</strong> sur <strong>{{ commandes.getTotalItemCount }}</strong> commande(s)
+    </div>
+    <nav class="pagination-nav">
+        <ul class="pagination">
+            {# Flèche précédente #}
+            <li class="page-item {{ commandes.getCurrentPageNumber == 1 ? 'disabled' : '' }}">
+                <a class="page-link" href="{{ commandes.getCurrentPageNumber > 1 ? path('admin_commande_index', {page: commandes.getCurrentPageNumber - 1}) : '#' }}">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
+
+            {# Boucle sur les pages #}
+            {% for page in 1..commandes.getPageCount %}
+                <li class="page-item {{ page == commandes.getCurrentPageNumber ? 'active' : '' }}">
+                    <a class="page-link" href="{{ path('admin_commande_index', {page: page}) }}">
+                        {{ page }}
+                    </a>
+                </li>
+            {% endfor %}
+
+            {# Flèche suivante #}
+            <li class="page-item {{ commandes.getCurrentPageNumber == commandes.getPageCount ? 'disabled' : '' }}">
+                <a class="page-link" href="{{ commandes.getCurrentPageNumber < commandes.getPageCount ? path('admin_commande_index', {page: commandes.getCurrentPageNumber + 1}) : '#' }}">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<!-- Total général (adapté à la pagination : calcule sur la page courante ou sur toutes ? Je garde toutes les commandes via le repo) -->
+
+
+<style>
+    /* ─────────── Pagination ronde rouge (identique à produits) ─────────── */
+    .pagination-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 30px;
+        padding: 16px 0;
+    }
+    .pagination-info {
+        font-size: 0.85rem;
+        color: #9CA3AF;
+    }
+    .pagination-info strong {
+        color: #DC3545;
+        font-weight: 600;
+    }
+    .pagination {
+        margin: 0;
+        gap: 8px;
+        display: flex;
+        list-style: none;
+    }
+    .page-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50% !important;
+        background: white;
+        border: 1px solid #DC3545;
+        color: #DC3545;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+    .page-link:hover {
+        background: #FFF0F0;
+        border-color: #B02A37;
+        color: #B02A37;
+        transform: translateY(-2px);
+    }
+    .page-item.active .page-link {
+        background: #DC3545 !important;
+        border-color: #DC3545 !important;
+        color: white !important;
+        box-shadow: 0 4px 10px rgba(220,53,69,0.3);
+    }
+    .page-item.disabled .page-link {
+        background: #FEF9F0;
+        border-color: #F0E8DD;
+        color: #E8DFD1;
+        cursor: not-allowed;
+        transform: none;
+    }
+    @media (max-width: 768px) {
+        .pagination-wrapper {
+            flex-direction: column;
+            gap: 16px;
+            align-items: center;
+        }
+    }
+</style>
+
 <!-- Total général -->
 {% if commandes|length > 0 %}
 <div class="total-general">

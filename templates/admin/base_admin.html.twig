@@ -545,7 +545,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ path('admin_voyage_index') }}" class="nav-link {% if app.request.get('_route') starts with 'admin_voyage' %}active{% endif %}">
                         <i class="fas fa-suitcase"></i> Voyages
                     </a>
                 </li>
@@ -555,18 +555,17 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ path('admin_evenement_index') }}" class="nav-link {% if app.request.get('_route') starts with 'admin_activite' %}active{% endif %}">
                         <i class="fas fa-calendar-alt"></i> Événements
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ path('admin_produit_index') }}" class="nav-link">
-    <i class="fas fa-box"></i>
-    <span>Produits</span>
-</a>
+                  <a href="{{ path('admin_produit_index') }}" class="nav-link {% if app.request.get('_route') starts with 'admin_produit' %}active{% endif %}">
+                     <i class="fas fa-box"></i> Produits
+                 </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ path('admin_users_index') }}" class="nav-link {% if app.request.get('_route') starts with 'admin_users' %}active{% endif %}">
                         <i class="fas fa-users"></i> Utilisateurs
                     </a>
                 </li>
@@ -578,9 +577,12 @@
             </ul>
             
             <div class="sidebar-footer">
-                <a href="#" class="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i> Déconnexion
-                </a>
+                <form method="post" action="{{ path('app_logout') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('logout') }}">
+                    <button type="submit" class="logout-btn" style="width:100%;border:none;cursor:pointer;font-family:'Inter',sans-serif;">
+                        <i class="fas fa-arrow-right-from-bracket"></i> Déconnexion
+                    </button>
+                </form>
             </div>
         </aside>
         
@@ -593,9 +595,15 @@
                 <h2 class="page-title">{% block page_title %}Administration{% endblock %}</h2>
                 <div class="user-info">
                     <div class="user-avatar">
-                        <i class="fas fa-user"></i>
+                        {% if app.user %}
+                            {{ app.user.prenom|slice(0,1)|upper }}{{ app.user.nom|slice(0,1)|upper }}
+                        {% else %}
+                            <i class="fas fa-user"></i>
+                        {% endif %}
                     </div>
-                    <span>Admin</span>
+                    <span>
+                        {% if app.user %}{{ app.user.prenom }} {{ app.user.nom }}{% else %}Admin{% endif %}
+                    </span>
                 </div>
             </div>
             

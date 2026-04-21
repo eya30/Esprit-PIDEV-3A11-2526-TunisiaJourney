@@ -24,12 +24,40 @@
     .input-custom { width:100%; padding:11px 20px; border:2px solid #F5CAC3; border-radius:25px; background:white; font-size:0.92rem; color:var(--dark-gray); font-family:'Montserrat',sans-serif; transition:all 0.3s ease; box-sizing:border-box; }
     .input-custom:focus { outline:none; border-color:var(--tunisia-red); box-shadow:0 0 0 3px rgba(227,27,35,0.1); }
     
-    /* Correction du champ CSRF "1" */
     input[type="hidden"] { display: none !important; }
 
     select.input-custom { appearance:auto; cursor:pointer; }
     .form-divider { height:1px; background:linear-gradient(to right,transparent,#F5CAC3,transparent); margin:1.5rem 0; }
     .field-error { color:var(--tunisia-red); font-size:0.8rem; margin-top:4px; padding-left:12px; }
+
+    /* Autocomplete styles */
+    .autocomplete-container { position: relative; }
+    #adresse-suggestions {
+        display: none;
+        position: absolute;
+        top: calc(100% + 5px);
+        left: 0;
+        right: 0;
+        z-index: 9999;
+        background: white;
+        border: 2px solid #F5CAC3;
+        border-radius: 0 0 20px 20px;
+        max-height: 250px;
+        overflow-y: auto;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    #adresse-suggestions li {
+        padding: 12px 20px;
+        cursor: pointer;
+        border-bottom: 1px solid #f0e8dd;
+        transition: background 0.2s;
+        color: var(--dark-gray);
+    }
+    #adresse-suggestions li:last-child { border-bottom: none; }
+    #adresse-suggestions li:hover { background: #FEF9F0; color: var(--tunisia-red); }
 
     /* Récap commande */
     .recap-card { background:white; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.07); padding:1.5rem; position:sticky; top:100px; }
@@ -48,6 +76,54 @@
     /* Boutons */
     .btn-back { display:inline-flex; align-items:center; gap:8px; background:transparent; border:2px solid var(--tunisia-red); color:var(--tunisia-red); padding:10px 24px; border-radius:30px; font-weight:600; font-size:0.9rem; font-family:'Montserrat',sans-serif; text-decoration:none; transition:all 0.3s ease; margin-bottom:2rem; }
     .btn-back:hover { background:var(--tunisia-red); color:white; transform:translateY(-2px); }
+    
+    /* Options de paiement */
+    .payment-options {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    .payment-method-card {
+        background: white;
+        border: 2px solid #F5CAC3;
+        border-radius: 20px;
+        padding: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    .payment-method-card:hover {
+        border-color: var(--tunisia-orange);
+        background: #FEF9F0;
+    }
+    .payment-method-card.selected {
+        border-color: var(--tunisia-red);
+        background: #FFF5F0;
+    }
+    .payment-method-card input[type="radio"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        accent-color: var(--tunisia-red);
+    }
+    .payment-method-card label {
+        flex: 1;
+        cursor: pointer;
+        font-weight: 600;
+        color: var(--dark-gray);
+        margin: 0;
+    }
+    .payment-method-card i {
+        font-size: 1.5rem;
+        color: var(--tunisia-orange);
+    }
+    
+    .btn-stripe { width:100%; background:linear-gradient(135deg, #635BFF, #0A2540); color:white; border:none; padding:14px; border-radius:30px; font-weight:700; font-size:1rem; font-family:'Montserrat',sans-serif; cursor:pointer; transition:all 0.3s ease; margin-top:1rem; }
+    .btn-stripe:hover { transform:translateY(-2px); box-shadow:0 10px 25px rgba(99,91,255,0.4); }
+    .btn-stripe:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
     .btn-submit { width:100%; background:linear-gradient(135deg,var(--tunisia-red),var(--tunisia-orange)); color:white; border:none; padding:14px; border-radius:30px; font-weight:700; font-size:1rem; font-family:'Montserrat',sans-serif; cursor:pointer; transition:all 0.3s ease; margin-top:1rem; }
     .btn-submit:hover { background:linear-gradient(135deg,var(--tunisia-orange),var(--tunisia-red)); transform:translateY(-2px); box-shadow:0 10px 25px rgba(227,27,35,0.4); }
 
@@ -107,9 +183,16 @@
                                 <i class="fas fa-truck"></i> Livraison
                             </div>
 
-                            <div class="mb-3">
+                            <div class="mb-3 autocomplete-container">
                                 <label class="form-label-custom"><i class="fas fa-map-marker-alt"></i> Adresse de livraison</label>
-                                {{ form_widget(form.AdresseLiv, {'attr': {'class': 'input-custom', 'placeholder': '12 Rue de la Médina, Tunis'}}) }}
+                                <input type="text" 
+                                       id="adresse-input"
+                                       name="{{ form.AdresseLiv.vars.full_name }}"
+                                       class="input-custom"
+                                       placeholder="Ex: Avenue Habib Bourguiba, Tunis"
+                                       autocomplete="off"
+                                       value="{{ form.AdresseLiv.vars.value }}">
+                                <ul id="adresse-suggestions"></ul>
                                 {{ form_errors(form.AdresseLiv) }}
                             </div>
 
@@ -121,20 +204,36 @@
 
                             <div class="form-divider"></div>
 
-                            <div class="mb-3">
-                                <label class="form-label-custom"><i class="fas fa-credit-card"></i> Mode de paiement</label>
-                                {{ form_widget(form.ModePaiement, {'attr': {'class': 'input-custom'}}) }}
-                                {{ form_errors(form.ModePaiement) }}
+                            <div class="form-section-label">
+                                <i class="fas fa-credit-card"></i> Mode de paiement
                             </div>
 
-                            <button type="submit" class="btn-submit">
+                            <div class="payment-options">
+                                <div class="payment-method-card" data-method="livraison">
+                                    <input type="radio" name="payment_method" id="payment_livraison" value="livraison" checked>
+                                    <i class="fas fa-money-bill-wave"></i>
+                                    <label for="payment_livraison">Paiement à la livraison (espèces)</label>
+                                </div>
+                                <div class="payment-method-card" data-method="carte">
+                                    <input type="radio" name="payment_method" id="payment_carte" value="carte">
+                                    <i class="fab fa-stripe"></i>
+                                    <label for="payment_carte">Carte bancaire (Stripe)</label>
+                                </div>
+                            </div>
+
+                            <input type="hidden" id="mode_paiement" name="{{ form.ModePaiement.vars.full_name }}" value="livraison">
+
+                            <div id="stripe-button-container" style="display: none;">
+                                <button type="button" id="stripe-payment-btn" class="btn-stripe">
+                                    <i class="fab fa-stripe me-2"></i> Payer par Carte Bancaire
+                                </button>
+                            </div>
+
+                            <button type="submit" id="submit-livraison" class="btn-submit">
                                 <i class="fas fa-check-circle me-2"></i> Confirmer la commande
                             </button>
 
-                            {# Rendu manuel du jeton CSRF pour éviter l'affichage parasite #}
                             {{ form_widget(form._token) }}
-
-                            {# Fermeture propre sans rendu automatique du reste #}
                             {{ form_end(form, {'render_rest': false}) }}
                         </div>
                     </div>
@@ -165,7 +264,7 @@
 
                             <div class="recap-total-row">
                                 <span class="label">Total à payer</span>
-                                <span class="montant">{{ total|number_format(2, ',', ' ') }} TND</span>
+                                <span class="montant" id="total-montant">{{ total|number_format(2, ',', ' ') }} TND</span>
                             </div>
                         </div>
                     </div>
@@ -174,4 +273,188 @@
         </div>
     </div>
 </section>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+
+<script src="https://js.stripe.com/v3/"></script>
+
+<script>
+// AUTOCOMPLETION D'ADRESSE
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Initialisation autocomplétion...');
+    
+    const inputAdresse = document.getElementById('adresse-input');
+    const suggestionsBox = document.getElementById('adresse-suggestions');
+    
+    if (!inputAdresse) {
+        console.error('Champ adresse non trouvé');
+        return;
+    }
+    
+    let timeoutId;
+    
+    async function searchAddresses(query) {
+        if (query.length < 2) {
+            suggestionsBox.style.display = 'none';
+            return;
+        }
+        
+        suggestionsBox.innerHTML = '<li style="text-align:center; padding:12px; color:#999;"><i class="fas fa-spinner fa-spin"></i> Recherche...</li>';
+        suggestionsBox.style.display = 'block';
+        
+        try {
+            const response = await fetch('/api/adresse/autocomplete?query=' + encodeURIComponent(query));
+            const data = await response.json();
+            
+            if (data && data.length > 0) {
+                suggestionsBox.innerHTML = '';
+                data.forEach(address => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<i class="fas fa-map-marker-alt" style="margin-right:10px; color:#FF6B35;"></i>${address}`;
+                    li.onclick = () => {
+                        inputAdresse.value = address;
+                        suggestionsBox.style.display = 'none';
+                    };
+                    suggestionsBox.appendChild(li);
+                });
+            } else {
+                suggestionsBox.innerHTML = '<li style="text-align:center; padding:12px; color:#999;">Aucune adresse trouvée</li>';
+                setTimeout(() => { suggestionsBox.style.display = 'none'; }, 2000);
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+            suggestionsBox.innerHTML = '<li style="text-align:center; padding:12px; color:#E31B23;">Erreur de connexion</li>';
+        }
+    }
+    
+    inputAdresse.addEventListener('input', function(e) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => searchAddresses(e.target.value.trim()), 500);
+    });
+    
+    document.addEventListener('click', function(e) {
+        if (!inputAdresse.contains(e.target) && !suggestionsBox.contains(e.target)) {
+            suggestionsBox.style.display = 'none';
+        }
+    });
+    
+    console.log('Autocomplétion prête !');
+});
+
+// ============================================
+// GESTION DES MODES DE PAIEMENT
+// ============================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    const stripe = Stripe('{{ stripe_public_key }}');
+    const stripeButton = document.getElementById('stripe-payment-btn');
+    const submitLivraison = document.getElementById('submit-livraison');
+    const stripeContainer = document.getElementById('stripe-button-container');
+    const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
+    const modePaiementInput = document.getElementById('mode_paiement');
+    const adresseInput = document.getElementById('adresse-input');
+    const codePostalInput = document.querySelector('input[name="{{ form.CodePostal.vars.full_name }}"]');
+    
+    // Gérer le changement de mode de paiement
+    paymentMethods.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'carte') {
+                // Mode Stripe
+                stripeContainer.style.display = 'block';
+                submitLivraison.style.display = 'none';
+                modePaiementInput.value = 'carte_bancaire';
+            } else {
+                // Mode Livraison
+                stripeContainer.style.display = 'none';
+                submitLivraison.style.display = 'block';
+                modePaiementInput.value = 'livraison';
+            }
+        });
+    });
+    
+    // Valider l'adresse
+    function validateAddress() {
+        const adresse = adresseInput ? adresseInput.value.trim() : '';
+        const codePostal = codePostalInput ? codePostalInput.value.trim() : '';
+        
+        if (!adresse || adresse.length < 5) {
+            alert('⚠️ Veuillez entrer une adresse de livraison valide.');
+            if (adresseInput) adresseInput.focus();
+            return false;
+        }
+        
+        if (!codePostal || codePostal.length < 3) {
+            alert('⚠️ Veuillez entrer un code postal valide.');
+            if (codePostalInput) codePostalInput.focus();
+            return false;
+        }
+        
+        return true;
+    }
+    
+    // Paiement Stripe
+    if (stripeButton) {
+        stripeButton.addEventListener('click', async function() {
+            if (!validateAddress()) {
+                return;
+            }
+            
+            stripeButton.disabled = true;
+            const originalText = stripeButton.innerHTML;
+            stripeButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Préparation...';
+            
+            try {
+                const totalText = document.getElementById('total-montant').innerText;
+                const totalAmount = parseFloat(totalText.replace(' TND', '').replace(',', '.'));
+                
+                const items = [
+                    {% for item in items %}
+                    {
+                        name: "{{ item.produit.titre|escape('js') }}",
+                        price: {{ item.produit.prix }},
+                        quantity: {{ item.quantite }},
+                        description: ""
+                    },
+                    {% endfor %}
+                ];
+                
+                const response = await fetch('/paiement/creer-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        items: items,
+                        adresse: adresseInput.value,
+                        codePostal: codePostalInput ? codePostalInput.value : ''
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.text();
+                    throw new Error('Erreur serveur: ' + response.status);
+                }
+                
+                const session = await response.json();
+                
+                if (session.url) {
+                    window.location.href = session.url;
+                } else {
+                    throw new Error('URL de paiement non reçue');
+                }
+                
+            } catch (error) {
+                console.error('Erreur paiement:', error);
+                alert('❌ Erreur: ' + error.message);
+                stripeButton.disabled = false;
+                stripeButton.innerHTML = originalText;
+            }
+        });
+    }
+    
+    console.log('Paiement prêt !');
+});
+</script>
 {% endblock %}

@@ -1,5 +1,5 @@
-{% extends 'admin/base_admin.html.twig' %}
 
+{% extends 'admin/base_admin.html.twig' %}
 {% block title %}Gestion des Produits{% endblock %}
 {% block page_title %}Liste des produits{% endblock %}
 
@@ -16,20 +16,36 @@
         <i class="fas fa-shopping-bag me-2"></i> Gérer les commandes
     </a>
 </div>
+ {# ══ Barre de Recherche et Filtres ══ #}
+<div class="search-container mb-4">
+    <form action="{{ path('admin_produit_index') }}" method="get" class="d-flex align-items-center">
+        <div class="input-group" style="background: white; border-radius: 40px; border: 1px solid #F0E8DD; padding: 5px 15px;">
+            <span class="text-muted"><i class="fas fa-search"></i></span>
+            <input type="text" name="q" value="{{ lastSearch }}" 
+                   class="form-control border-0 shadow-none" 
+                   placeholder="Rechercher par titre, catégorie ou description..."
+                   style="font-size: 14px;">
+            {# On garde les paramètres de tri actuels quand on recherche #}
+            <input type="hidden" name="sort" value="{{ currentSort }}">
+            <input type="hidden" name="direction" value="{{ currentDirection }}">
+        </div>
+    </form>
+</div>
 
 <div class="admin-table">
     <table class="table">
-        <thead>
-            <tr>
-                <th style="width: 100px">IMAGE</th>
-                <th style="width: 160px">TITRE</th>
-                <th>DESCRIPTION</th>
-                <th style="width: 110px">CATÉGORIE</th>
-                <th style="width: 70px">STOCK</th>
-                <th style="width: 70px">POIDS</th>
-                <th style="width: 100px">PRIX</th>
-                <th style="width: 110px">DISPO</th>
-                <th style="width: 130px">ACTIONS</th>
+       {# Remplace tes entêtes de tableau <th> par ceci #}
+<thead>
+    <tr>
+        <th>IMAGE</th>
+        <th>{{ knp_pagination_sortable(produits, 'TITRE', 'p.titre') }}</th>
+        <th>DESCRIPTION</th>
+        <th>{{ knp_pagination_sortable(produits, 'CATÉGORIE', 'p.categorie') }}</th>
+        <th>{{ knp_pagination_sortable(produits, 'STOCK', 'p.stock') }}</th>
+        <th>PRIX</th>
+        <th>ACTIONS</th>
+    </tr>
+</thead>
             </tr>
         </thead>
         <tbody>
@@ -100,7 +116,114 @@
         </tbody>
     </table>
 </div>
+{# ... après </table> et </div> ... #}
+{# ══ Bloc de Pagination ══ #}
+<div class="pagination-wrapper">
+    <div class="pagination-info">
+        Affichage de <strong>{{ produits|length }}</strong> sur <strong>{{ produits.getTotalItemCount }}</strong> produit(s)
+    </div>
+    <nav class="pagination-nav">
+        <ul class="pagination">
+            {# Flèche précédente #}
+            <li class="page-item {{ produits.getCurrentPageNumber == 1 ? 'disabled' : '' }}">
+                <a class="page-link" href="{{ produits.getCurrentPageNumber > 1 ? path('admin_produit_index', {page: produits.getCurrentPageNumber - 1, q: lastSearch, sort: currentSort, direction: currentDirection}) : '#' }}">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
 
+            {# Boucle sur les pages #}
+            {% for page in 1..produits.getPageCount %}
+                <li class="page-item {{ page == produits.getCurrentPageNumber ? 'active' : '' }}">
+                    <a class="page-link" href="{{ path('admin_produit_index', {page: page, q: lastSearch, sort: currentSort, direction: currentDirection}) }}">
+                        {{ page }}
+                    </a>
+                </li>
+            {% endfor %}
+
+            {# Flèche suivante #}
+            <li class="page-item {{ produits.getCurrentPageNumber == produits.getPageCount ? 'disabled' : '' }}">
+                <a class="page-link" href="{{ produits.getCurrentPageNumber < produits.getPageCount ? path('admin_produit_index', {page: produits.getCurrentPageNumber + 1, q: lastSearch, sort: currentSort, direction: currentDirection}) : '#' }}">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<style>
+    /* ─────────── Pagination ronde rouge ─────────── */
+    .pagination-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 30px;
+        padding: 16px 0;
+    }
+
+    .pagination-info {
+        font-size: 0.85rem;
+        color: #9CA3AF;
+    }
+
+    .pagination-info strong {
+        color: #DC3545; /* rouge */
+        font-weight: 600;
+    }
+
+    .pagination {
+        margin: 0;
+        gap: 8px;
+        display: flex;
+        list-style: none;
+    }
+
+    .page-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50% !important;  /* forme ronde */
+        background: white;
+        border: 1px solid #DC3545;      /* bordure rouge */
+        color: #DC3545;                 /* texte rouge */
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .page-link:hover {
+        background: #FFF0F0;
+        border-color: #B02A37;
+        color: #B02A37;
+        transform: translateY(-2px);
+    }
+
+    .page-item.active .page-link {
+        background: #DC3545 !important;
+        border-color: #DC3545 !important;
+        color: white !important;
+        box-shadow: 0 4px 10px rgba(220,53,69,0.3);
+    }
+
+    .page-item.disabled .page-link {
+        background: #FEF9F0;
+        border-color: #F0E8DD;
+        color: #E8DFD1;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* Adaptation responsive (comme ta camarade) */
+    @media (max-width: 768px) {
+        .pagination-wrapper {
+            flex-direction: column;
+            gap: 16px;
+            align-items: center;
+        }
+    }
+</style>
 <style>
     .page-header-subtitle { font-size: 0.9rem; color: #93032E; font-weight: 500; margin: 0; }
     .admin-table { background: white; border-radius: 20px; border: 1px solid #F0E8DD; overflow-x: auto; }

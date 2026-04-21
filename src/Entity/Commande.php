@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Entity;
 
 use App\Repository\CommandeRepository;
@@ -17,58 +18,75 @@ class Commande
     #[ORM\Column(name: 'IDCO')]
     private ?int $id = null;
 
+    // ✅ Propriétés en camelCase — le name: mappe vers la vraie colonne BDD
     #[ORM\Column(name: 'Quantite', nullable: true)]
     #[Assert\Positive(message: "La quantité doit être supérieure à zéro.")]
-    private ?int $Quantite = 1; // Valeur par défaut
+    private ?int $quantite = 1;
 
-    #[ORM\Column(name: 'DateC', type: Types::DATE_MUTABLE)]
-    private ?\DateTimeInterface $DateC = null;
+    #[ORM\Column(name: 'DateC', type: Types::DATE_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $dateC = null;
 
     #[ORM\Column(name: 'Statut', length: 30, nullable: true)]
-    private ?string $Statut = 'En attente';
+    private ?string $statut = 'En attente';
 
     #[ORM\Column(name: 'Total', nullable: true)]
-    private ?float $Total = 0.0;
+    private ?float $total = 0.0;
 
     #[ORM\Column(name: 'AdresseLiv', length: 255, nullable: true)]
     #[Assert\NotBlank(message: "L'adresse est obligatoire.")]
     #[Assert\Length(min: 5, minMessage: "L'adresse est trop courte.")]
-    private ?string $AdresseLiv = null;
+    private ?string $adresseLiv = null;
 
     #[ORM\Column(name: 'CodePostal', length: 10, nullable: true)]
     #[Assert\NotBlank(message: "Le code postal est obligatoire.")]
     #[Assert\Regex(pattern: "/^\d{4,10}$/", message: "Le code postal est invalide.")]
-    private ?string $CodePostal = null;
+    private ?string $codePostal = null;
 
     #[ORM\Column(name: 'ModePaiement', length: 50, nullable: true)]
     #[Assert\NotBlank(message: "Le mode de paiement est obligatoire.")]
-    private ?string $ModePaiement = null;
+    private ?string $modePaiement = null;
+
+    // ✅ Relation User
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: true)]
+    private ?User $user = null;
 
     #[ORM\OneToMany(mappedBy: 'commande', targetEntity: CommandeProduit::class, cascade: ['persist', 'remove'])]
     private Collection $lignes;
 
     public function __construct()
     {
-        $this->lignes = new ArrayCollection();
-        $this->DateC = new \DateTime(); // Date auto
-        $this->Statut = 'En attente';   // Statut auto
+        $this->lignes   = new ArrayCollection();
+        $this->dateC    = new \DateTime();
+        $this->statut   = 'En attente';
     }
 
     public function getId(): ?int { return $this->id; }
-    public function getQuantite(): ?int { return $this->Quantite; }
-    public function setQuantite(?int $Quantite): self { $this->Quantite = $Quantite; return $this; }
-    public function getDateC(): ?\DateTimeInterface { return $this->DateC; }
-    public function setDateC(?\DateTimeInterface $DateC): self { $this->DateC = $DateC; return $this; }
-    public function getStatut(): ?string { return $this->Statut; }
-    public function setStatut(?string $Statut): self { $this->Statut = $Statut; return $this; }
-    public function getTotal(): ?float { return $this->Total; }
-    public function setTotal(?float $Total): self { $this->Total = $Total; return $this; }
-    public function getAdresseLiv(): ?string { return $this->AdresseLiv; }
-    public function setAdresseLiv(?string $AdresseLiv): self { $this->AdresseLiv = $AdresseLiv; return $this; }
-    public function getCodePostal(): ?string { return $this->CodePostal; }
-    public function setCodePostal(?string $CodePostal): self { $this->CodePostal = $CodePostal; return $this; }
-    public function getModePaiement(): ?string { return $this->ModePaiement; }
-    public function setModePaiement(?string $ModePaiement): self { $this->ModePaiement = $ModePaiement; return $this; }
+
+    public function getQuantite(): ?int { return $this->quantite; }
+    public function setQuantite(?int $quantite): self { $this->quantite = $quantite; return $this; }
+
+    public function getDateC(): ?\DateTimeInterface { return $this->dateC; }
+    public function setDateC(?\DateTimeInterface $dateC): self { $this->dateC = $dateC; return $this; }
+
+    public function getStatut(): ?string { return $this->statut; }
+    public function setStatut(?string $statut): self { $this->statut = $statut; return $this; }
+
+    public function getTotal(): ?float { return $this->total; }
+    public function setTotal(?float $total): self { $this->total = $total; return $this; }
+
+    public function getAdresseLiv(): ?string { return $this->adresseLiv; }
+    public function setAdresseLiv(?string $adresseLiv): self { $this->adresseLiv = $adresseLiv; return $this; }
+
+    public function getCodePostal(): ?string { return $this->codePostal; }
+    public function setCodePostal(?string $codePostal): self { $this->codePostal = $codePostal; return $this; }
+
+    public function getModePaiement(): ?string { return $this->modePaiement; }
+    public function setModePaiement(?string $modePaiement): self { $this->modePaiement = $modePaiement; return $this; }
+
+    public function getUser(): ?User { return $this->user; }
+    public function setUser(?User $user): self { $this->user = $user; return $this; }
+
     public function getLignes(): Collection { return $this->lignes; }
 
     public function addLigne(CommandeProduit $ligne): self

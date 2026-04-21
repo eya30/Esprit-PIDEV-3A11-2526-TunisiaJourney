@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controller\Admin;
 
 use App\Entity\Produit;
@@ -9,15 +10,34 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/admin/produit')]
 class AdminProduitController extends AbstractController
 {
-    #[Route('/', name: 'admin_produit_index')]
-    public function index(ProduitRepository $repo): Response
+    #[Route('', name: 'admin_produit_index')]
+    public function index(ProduitRepository $repo, Request $request, PaginatorInterface $paginator): Response
     {
+        $searchTerm = $request->query->get('q', null);
+        $cat        = $request->query->get('category', null);
+        $sortBy     = $request->query->get('sort', 'p.idPR');
+        $direction  = $request->query->get('direction', 'desc');
+
+        $pagination = $paginator->paginate(
+            $repo->getQueryForPagination($searchTerm, $cat, $sortBy, $direction),
+            $request->query->getInt('page', 1),
+            10
+        );
+
+        // ✅ Produits nécessitant réapprovisionnement
+        $produitsReappro = $repo->findNeedsReappro();
+
         return $this->render('admin/produit/index.html.twig', [
-            'produits' => $repo->findAll(),
+            'produits'        => $pagination,
+            'lastSearch'      => $searchTerm,
+            'currentSort'     => $sortBy,
+            'currentDirection'=> $direction,
+            'produitsReappro' => $produitsReappro, // ✅ Suggestions réappro
         ]);
     }
 
@@ -25,7 +45,7 @@ class AdminProduitController extends AbstractController
     public function new(Request $request, EntityManagerInterface $em): Response
     {
         $produit = new Produit();
-        $form = $this->createForm(ProduitType::class, $produit);
+        $form    = $this->createForm(ProduitType::class, $produit);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -72,30 +92,20 @@ class AdminProduitController extends AbstractController
         return $this->redirectToRoute('admin_produit_index');
     }
 
-    // ── Helper : gestion de l'upload image ──────────────────────────────
     private function handleImage($form, Produit $produit): void
     {
         $file = $form->get('imageFile')->getData();
-
-        if (!$file) {
-            return;
-        }
+        if (!$file) return;
 
         $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/produits';
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
-        // Créer le dossier s'il n'existe pas
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0777, true);
-        }
-
-        // Supprimer l'ancienne image si elle existe
         $ancienneImage = $produit->getImage();
         if ($ancienneImage && file_exists($uploadDir . '/' . $ancienneImage)) {
             unlink($uploadDir . '/' . $ancienneImage);
         }
 
-        $extension = $file->guessExtension() ?? 'jpg';
-        $fileName  = uniqid('produit_') . '.' . $extension;
+        $fileName = uniqid('produit_') . '.' . ($file->guessExtension() ?? 'jpg');
         $file->move($uploadDir, $fileName);
         $produit->setImage($fileName);
     }

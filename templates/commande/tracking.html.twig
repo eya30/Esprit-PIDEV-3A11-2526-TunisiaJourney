@@ -1,0 +1,456 @@
+{% extends 'base.html.twig' %}
+{% block title %}Tracking IA — Commande #{{ commande.id }} — TunisiaJourney{% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --red:#E31B23; --orange:#FF6B35; --sand:#FDF5E6; --sand2:#F5EDD8;
+    --soft:#F5CAC3; --dark:#1A1A2E; --dark2:#2C3E50; --green:#10B981;
+    --blue:#3B82F6; --purple:#8B5CF6; --gold:#F59E0B;
+}
+*,*::before,*::after{box-sizing:border-box;}
+body{background:var(--sand);font-family:'DM Sans',sans-serif;color:var(--dark2);margin:0;}
+.page-wrap{max-width:1200px;margin:0 auto;padding:1.5rem 1rem 4rem;}
+
+/* HERO */
+.hero-header{
+    background:linear-gradient(135deg,#1A1A2E 0%,#E31B23 55%,#FF6B35 100%);
+    border-radius:28px;padding:2rem 2.5rem;color:white;margin-bottom:1.5rem;
+    position:relative;overflow:hidden;
+    box-shadow:0 20px 60px rgba(227,27,35,0.35);
+}
+.hero-header::before{
+    content:'';position:absolute;top:-60px;right:-60px;
+    width:280px;height:280px;background:rgba(255,255,255,0.04);border-radius:50%;
+}
+.hero-header::after{
+    content:'';position:absolute;bottom:-40px;left:32%;
+    width:180px;height:180px;background:rgba(255,255,255,0.03);border-radius:50%;
+}
+.hero-top{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;position:relative;z-index:2;}
+.hero-title{font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:700;margin:0 0 .3rem;letter-spacing:.5px;}
+.hero-meta{font-size:.85rem;opacity:.8;font-weight:300;margin-bottom:.5rem;max-width:600px;line-height:1.5;}
+.hero-badges{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:.5rem;}
+.badge-statut{
+    background:rgba(255,255,255,.18);padding:8px 20px;border-radius:25px;
+    font-weight:700;font-size:.9rem;border:2px solid rgba(255,255,255,.35);
+    backdrop-filter:blur(10px);transition:all .3s;
+}
+.live-pill{
+    display:inline-flex;align-items:center;gap:7px;
+    background:rgba(16,185,129,.2);border:2px solid rgba(16,185,129,.5);
+    padding:6px 14px;border-radius:25px;font-size:.78rem;font-weight:700;
+    letter-spacing:1px;text-transform:uppercase;
+}
+.live-dot{width:8px;height:8px;background:#4ade80;border-radius:50%;animation:liveBlink 1.2s ease-in-out infinite;}
+@keyframes liveBlink{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.3;transform:scale(.6);}}
+.btn-back{
+    display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);
+    color:white;padding:9px 18px;border-radius:25px;font-size:.85rem;font-weight:600;
+    text-decoration:none;border:1.5px solid rgba(255,255,255,.25);transition:all .25s;
+}
+.btn-back:hover{background:rgba(255,255,255,.25);color:white;}
+.last-update{font-size:.72rem;opacity:.6;margin-top:4px;font-weight:300;}
+
+/* GRID */
+.main-grid{display:grid;grid-template-columns:360px 1fr;gap:1.5rem;align-items:start;}
+@media(max-width:960px){.main-grid{grid-template-columns:1fr;}}
+
+/* CARDS */
+.card{background:white;border-radius:20px;box-shadow:0 8px 32px rgba(0,0,0,.08);padding:1.4rem 1.6rem;margin-bottom:1.4rem;}
+.card-title{
+    font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:700;color:var(--dark);
+    margin-bottom:1.1rem;padding-bottom:.6rem;border-bottom:2px solid var(--sand2);
+    display:flex;align-items:center;gap:8px;
+}
+.card-title i{color:var(--orange);font-size:1rem;}
+
+/* PROGRESSION */
+.prog-track{background:#F3F4F6;border-radius:12px;height:12px;overflow:hidden;margin-bottom:6px;}
+.prog-fill{
+    height:100%;border-radius:12px;
+    background:linear-gradient(90deg,var(--red),var(--orange));
+    transition:width 2.5s cubic-bezier(.4,0,.2,1);
+    position:relative;
+}
+.prog-fill::after{
+    content:'';position:absolute;top:0;right:0;width:20px;height:100%;
+    background:rgba(255,255,255,.35);animation:shimmer 1.5s ease-in-out infinite;
+}
+@keyframes shimmer{0%,100%{opacity:0;}50%{opacity:1;}}
+.prog-pct{font-size:.8rem;color:#6B7280;text-align:right;margin-bottom:1.2rem;font-weight:500;}
+
+/* TIMELINE */
+.timeline{position:relative;padding-left:34px;}
+.timeline::before{
+    content:'';position:absolute;left:13px;top:0;bottom:0;
+    width:2px;background:linear-gradient(to bottom,var(--green),var(--sand2));
+}
+.tl-step{position:relative;padding-bottom:1.3rem;}
+.tl-step:last-child{padding-bottom:0;}
+.tl-dot{
+    position:absolute;left:-34px;top:1px;width:28px;height:28px;border-radius:50%;
+    background:#E5E7EB;border:3px solid white;display:flex;align-items:center;justify-content:center;
+    font-size:.62rem;color:#9CA3AF;box-shadow:0 2px 8px rgba(0,0,0,.08);transition:all .5s ease;z-index:2;
+}
+.tl-step.done .tl-dot{background:var(--green);color:white;box-shadow:0 3px 12px rgba(16,185,129,.4);}
+.tl-step.active .tl-dot{
+    background:linear-gradient(135deg,var(--red),var(--orange));color:white;
+    animation:tlPulse 1.8s ease-in-out infinite;box-shadow:0 4px 16px rgba(227,27,35,.45);
+}
+@keyframes tlPulse{0%,100%{box-shadow:0 0 0 0 rgba(227,27,35,.35);}50%{box-shadow:0 0 0 9px rgba(227,27,35,0);}}
+.tl-label{font-size:.88rem;font-weight:600;color:#9CA3AF;transition:color .4s;line-height:1.3;}
+.tl-step.done .tl-label{color:var(--green);}
+.tl-step.active .tl-label{color:var(--red);font-size:.92rem;}
+.tl-date{font-size:.72rem;color:#CBD5E1;margin-top:2px;}
+
+/* METEO + TRAFIC */
+.ctx-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.4rem;}
+.ctx-card{background:white;border-radius:16px;padding:1rem;box-shadow:0 8px 24px rgba(0,0,0,.06);text-align:center;}
+.ctx-icon{font-size:1.8rem;margin-bottom:4px;}
+.ctx-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.8px;color:#9CA3AF;font-weight:600;margin-bottom:3px;}
+.ctx-value{font-size:.92rem;font-weight:700;color:var(--dark2);}
+.ctx-detail{font-size:0.65rem; color:#6B7280; margin-top:4px;}
+
+/* CARTE IA */
+.ai-card{
+    background:linear-gradient(135deg,#1A1A2E,#2D1B69);
+    border-radius:20px;padding:1.4rem 1.6rem;color:white;
+    margin-bottom:1.4rem;position:relative;overflow:hidden;
+    box-shadow:0 12px 40px rgba(26,26,46,.35);
+}
+.ai-card::before{
+    content:'';position:absolute;top:-30px;right:-30px;
+    width:140px;height:140px;
+    background:radial-gradient(circle,rgba(139,92,246,.25) 0%,transparent 70%);
+}
+.ai-card-title{
+    font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700;
+    margin-bottom:1rem;display:flex;align-items:center;gap:8px;opacity:.95;
+}
+.ai-badge{
+    background:linear-gradient(135deg,#7C3AED,#EC4899);
+    padding:3px 10px;border-radius:12px;font-size:.65rem;font-weight:700;
+    letter-spacing:1px;text-transform:uppercase;
+}
+.ai-eta-big{
+    font-size:2.4rem;font-weight:700;font-family:'Cormorant Garamond',serif;
+    margin-bottom:.3rem;line-height:1;
+    background:linear-gradient(90deg,#ffffff,#F5CAC3);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.ai-eta-label{font-size:.75rem;opacity:.6;margin-bottom:.9rem;font-weight:400;}
+.ai-message{
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+    border-radius:14px;padding:.9rem 1rem;font-size:.88rem;font-style:italic;
+    line-height:1.6;opacity:.92;min-height:44px;
+}
+.ai-source{font-size:.68rem;opacity:.4;margin-top:.5rem;text-align:right;}
+
+/* TRAJET */
+.trajet-row{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #F5EDD8;}
+.trajet-row:last-child{border-bottom:none;}
+.trajet-ico{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.88rem;}
+.ico-dep{background:#D1FAE5;color:var(--green);}
+.ico-liv{background:#DBEAFE;color:var(--blue);}
+.ico-dest{background:#FEE2E2;color:var(--red);}
+.trajet-info strong{display:block;font-size:.8rem;font-weight:700;color:var(--dark);}
+.trajet-info span{font-size:.75rem;color:#6B7280;}
+.dist-badge{
+    background:linear-gradient(135deg,#EFF6FF,#DBEAFE);border:2px solid #BFDBFE;
+    border-radius:14px;padding:.8rem 1.1rem;
+    display:flex;justify-content:space-between;align-items:center;margin-top:.8rem;
+}
+.dist-lbl{font-size:.78rem;color:var(--blue);font-weight:600;}
+.dist-val{font-size:1.1rem;font-weight:800;color:#1D4ED8;}
+
+/* CARTE */
+.map-wrap{border-radius:24px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.12);position:relative;}
+#tracking-map{width:100%;height:520px;}
+.map-loader{
+    position:absolute;inset:0;background:rgba(255,255,255,.9);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:12px;z-index:10;border-radius:24px;font-size:.9rem;color:var(--dark2);
+}
+.map-loader .spinner{
+    width:38px;height:38px;border:3px solid #F5CAC3;
+    border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+.map-legend{display:flex;gap:1.2rem;flex-wrap:wrap;margin-top:.8rem;font-size:.78rem;color:#6B7280;padding:0 4px;}
+.legend-item{display:flex;align-items:center;gap:6px;}
+.ldot{width:11px;height:11px;border-radius:50%;flex-shrink:0;}
+.ldot.g{background:var(--green);} .ldot.b{background:var(--blue);} .ldot.r{background:var(--red);}
+.btn-refresh{
+    display:inline-flex;align-items:center;gap:8px;background:white;
+    border:2px solid var(--sand2);color:var(--dark2);padding:8px 18px;border-radius:25px;
+    font-size:.82rem;font-weight:600;cursor:pointer;transition:all .25s;margin-top:.8rem;
+    font-family:'DM Sans',sans-serif;
+}
+.btn-refresh:hover{border-color:var(--red);color:var(--red);}
+.btn-refresh.spinning i{animation:spin .8s linear infinite;}
+@media(max-width:600px){.hero-title{font-size:1.6rem;}.ai-eta-big{font-size:1.8rem;}#tracking-map{height:320px;}}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="page-wrap">
+    <div class="hero-header">
+        <div class="hero-top">
+            <div>
+                <h1 class="hero-title"><i class="fas fa-satellite-dish me-2"></i> Tracking IA</h1>
+                <p class="hero-meta">Commande #{{ commande.id }} · {{ commande.dateC|date('d/m/Y') }} · {{ commande.adresseLiv }}</p>
+                <div class="hero-badges">
+                    <span class="live-pill"><span class="live-dot"></span> Live</span>
+                    <span class="badge-statut" id="heroStatut"><i class="fas fa-circle-notch fa-spin me-1"></i> Chargement…</span>
+                </div>
+                <div class="last-update"><i class="fas fa-sync-alt me-1"></i> Mis à jour : <span id="lastUpdate">—</span></div>
+            </div>
+            <a href="{{ path('app_commande_index') }}" class="btn-back"><i class="fas fa-arrow-left"></i> Mes commandes</a>
+        </div>
+    </div>
+
+    <div class="main-grid">
+        <div>
+            <div class="card">
+                <div class="card-title"><i class="fas fa-chart-line"></i> Progression</div>
+                <div class="prog-track"><div class="prog-fill" id="progBar" style="width:0%"></div></div>
+                <div class="prog-pct" id="progPct">0%</div>
+                <div class="timeline" id="timeline">
+                    <div style="text-align:center;color:#9CA3AF;padding:1rem 0;"><i class="fas fa-spinner fa-spin"></i></div>
+                </div>
+            </div>
+
+            <div class="ctx-grid">
+                <div class="ctx-card">
+                    <div class="ctx-icon" id="meteoIcon">⏳</div>
+                    <div class="ctx-label">MÉTÉO</div>
+                    <div class="ctx-value" id="meteoLabel">…</div>
+                </div>
+                <div class="ctx-card">
+                    <div class="ctx-icon" id="traficIcon">⏳</div>
+                    <div class="ctx-label">TRAFIC</div>
+                    <div class="ctx-value" id="traficLabel">…</div>
+                    <div class="ctx-detail" id="traficDetail"></div>
+                </div>
+            </div>
+
+            <div class="ai-card">
+                <div class="ai-card-title"><i class="fas fa-brain"></i> Prédiction IA <span class="ai-badge">Ollama</span></div>
+                <div class="ai-eta-big" id="iaEta">—</div>
+                <div class="ai-eta-label">ETA estimé par l'IA</div>
+                <div class="ai-message" id="iaMessage"><i class="fas fa-spinner fa-spin"></i> Analyse en cours…</div>
+                <div class="ai-source" id="iaSource"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fas fa-route"></i> Trajet</div>
+                <div class="trajet-row">
+                    <div class="trajet-ico ico-dep"><i class="fas fa-warehouse"></i></div>
+                    <div class="trajet-info"><strong>Point de départ</strong><span id="addrDep">—</span></div>
+                </div>
+                <div class="trajet-row">
+                    <div class="trajet-ico ico-liv"><i class="fas fa-truck"></i></div>
+                    <div class="trajet-info"><strong>Livreur (temps réel)</strong><span id="addrLiv">En attente…</span></div>
+                </div>
+                <div class="trajet-row">
+                    <div class="trajet-ico ico-dest"><i class="fas fa-home"></i></div>
+                    <div class="trajet-info"><strong>Votre adresse</strong><span id="addrDest">—</span></div>
+                </div>
+                <div class="dist-badge">
+                    <span class="dist-lbl"><i class="fas fa-road me-1"></i> Distance restante</span>
+                    <span class="dist-val" id="distRest">— km</span>
+                </div>
+                <button class="btn-refresh" id="btnRefresh" onclick="poll(true)"><i class="fas fa-sync-alt"></i> Actualiser</button>
+            </div>
+        </div>
+
+        <div>
+            <div class="map-wrap">
+                <div id="tracking-map"></div>
+                <div class="map-loader" id="mapLoader">
+                    <div class="spinner"></div>Chargement de la carte…
+                </div>
+            </div>
+            <div class="map-legend">
+                <div class="legend-item"><div class="ldot g"></div> Entrepôt Tunis</div>
+                <div class="legend-item"><div class="ldot b"></div> Livreur (live)</div>
+                <div class="legend-item"><div class="ldot r"></div> Votre adresse</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const COMMANDE_ID = {{ commande.id }};
+const API_URL     = `/api/tracking/${COMMANDE_ID}`;
+const POLL_MS     = 3000;
+const ANIM_MS     = 2800;
+
+let map, mDep, mLiv, mDest, lineTotal, lineDone;
+let rafId = null, pollingId = null;
+
+function mkIcon(bg, cls) {
+    return L.divIcon({
+        className: '',
+        html: `<div style="background:${bg};width:40px;height:40px;
+                    border-radius:50% 50% 50% 0;transform:rotate(-45deg);
+                    border:3px solid white;box-shadow:0 6px 18px rgba(0,0,0,.28);
+                    display:flex;align-items:center;justify-content:center;">
+                 <i class="${cls}" style="transform:rotate(45deg);color:white;font-size:15px;"></i>
+               </div>`,
+        iconSize:[40,40], iconAnchor:[20,40], popupAnchor:[0,-44],
+    });
+}
+const ICO_DEP = mkIcon('#10B981','fas fa-warehouse');
+const ICO_LIV = mkIcon('#3B82F6','fas fa-truck');
+const ICO_DST = mkIcon('#E31B23','fas fa-home');
+
+function initMap(lat, lng) {
+    if (map) return;
+    map = L.map('tracking-map',{zoomControl:true}).setView([lat,lng],11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+        attribution:'© OpenStreetMap', maxZoom:18,
+    }).addTo(map);
+    document.getElementById('mapLoader').style.display = 'none';
+}
+
+function updateMap(d) {
+    const dep=d.depart, dest=d.destination, liv=d.livreur;
+    initMap((dep.lat+dest.lat)/2, (dep.lng+dest.lng)/2);
+
+    if (!mDep) {
+        mDep = L.marker([dep.lat,dep.lng],{icon:ICO_DEP}).addTo(map)
+            .bindPopup(`<b>🏭 ${dep.label}</b>`);
+    }
+    if (!mDest) {
+        mDest = L.marker([dest.lat,dest.lng],{icon:ICO_DST}).addTo(map)
+            .bindPopup(`<b>🏠 ${dest.label}</b>`);
+        map.fitBounds(L.latLngBounds([dep.lat,dep.lng],[dest.lat,dest.lng]).pad(.28));
+    }
+    if (!lineTotal) {
+        lineTotal = L.polyline([[dep.lat,dep.lng],[dest.lat,dest.lng]],{
+            color:'#E31B23',weight:2.5,dashArray:'7,5',opacity:.4,
+        }).addTo(map);
+    }
+    if (lineDone) map.removeLayer(lineDone);
+    lineDone = L.polyline([[dep.lat,dep.lng],[liv.lat,liv.lng]],{
+        color:'#3B82F6',weight:4.5,opacity:.85,
+    }).addTo(map);
+
+    const target = L.latLng(liv.lat, liv.lng);
+    if (!mLiv) {
+        mLiv = L.marker([liv.lat,liv.lng],{icon:ICO_LIV}).addTo(map)
+            .bindPopup('<b>🚚 Livreur en route</b><br>Mise à jour toutes les 3s');
+    } else {
+        animateLivreur(mLiv.getLatLng(), target);
+    }
+    document.getElementById('addrLiv').textContent =
+        `${liv.lat.toFixed(5)}, ${liv.lng.toFixed(5)}`;
+}
+
+function animateLivreur(from, to) {
+    if (rafId) cancelAnimationFrame(rafId);
+    const t0=performance.now(), dLat=to.lat-from.lat, dLng=to.lng-from.lng;
+    function step(now) {
+        const raw=Math.min((now-t0)/ANIM_MS,1);
+        const ease=raw<.5?4*raw*raw*raw:1-Math.pow(-2*raw+2,3)/2;
+        mLiv.setLatLng([from.lat+dLat*ease, from.lng+dLng*ease]);
+        if (raw<1) rafId=requestAnimationFrame(step);
+        else rafId=null;
+    }
+    rafId=requestAnimationFrame(step);
+}
+
+function renderTimeline(etapes) {
+    document.getElementById('timeline').innerHTML = etapes.map(e=>`
+        <div class="tl-step ${e.done?'done':''} ${e.active?'active':''}">
+            <div class="tl-dot"><i class="fas ${e.icon}"></i></div>
+            <div class="tl-label">${e.label}</div>
+            ${e.date?`<div class="tl-date"><i class="fas fa-calendar-alt me-1"></i>${e.date}</div>`:''}
+        </div>
+    `).join('');
+}
+
+function formatEta(h) {
+    if (h===0) return 'Livré ✓';
+    if (h<1/60) return '< 1 min';
+    if (h<1) return `${Math.round(h*60)} min`;
+    const hh=Math.floor(h), mm=Math.round((h-hh)*60);
+    return mm>0?`${hh}h ${mm}min`:`${hh}h`;
+}
+
+async function poll(manual=false) {
+    const btn=document.getElementById('btnRefresh');
+    if (manual) btn.classList.add('spinning');
+    try {
+        const res=await fetch(API_URL+'?_='+Date.now());
+        const d=await res.json();
+        if (!res.ok) { console.error('[Tracking]',d.error); return; }
+
+        const icons={'En attente':'fa-clock','Confirmée':'fa-check','En préparation':'fa-box-open',
+            'En cours':'fa-truck','Expédiée':'fa-shipping-fast','Livrée':'fa-home','Annulée':'fa-times'};
+        document.getElementById('heroStatut').innerHTML=
+            `<i class="fas ${icons[d.statut]||'fa-circle'} me-1"></i> ${d.statut}`;
+
+        document.getElementById('progBar').style.width=d.progression+'%';
+        document.getElementById('progPct').textContent=d.progression.toFixed(1)+'%';
+
+        renderTimeline(d.etapes);
+
+        document.getElementById('meteoIcon').textContent=d.meteo.icon;
+        document.getElementById('meteoLabel').textContent=d.meteo.label;
+        document.getElementById('meteoLabel').style.color=d.meteo.color;
+
+        document.getElementById('traficIcon').textContent=d.trafic.icon;
+        document.getElementById('traficLabel').textContent=d.trafic.label;
+        document.getElementById('traficLabel').style.color=d.trafic.color;
+        
+        // Affichage du détail du trafic
+        if (d.trafic.detail) {
+            document.getElementById('traficDetail').textContent = d.trafic.detail;
+        } else {
+            document.getElementById('traficDetail').textContent = '';
+        }
+
+        document.getElementById('iaEta').textContent=formatEta(d.ia.eta_hours);
+        document.getElementById('iaMessage').textContent=d.ia.message;
+        document.getElementById('iaSource').textContent=
+            d.ia.source==='ollama'?'🤖 Powered by Ollama llama3':'⚙️ Calcul classique (Ollama off)';
+
+        document.getElementById('addrDep').textContent=d.depart.label;
+        document.getElementById('addrDest').textContent=d.destination.label;
+        document.getElementById('distRest').textContent=d.distance_restante+' km';
+        document.getElementById('lastUpdate').textContent=new Date().toLocaleTimeString('fr-FR');
+
+        updateMap(d);
+
+        if (d.statut==='Livrée'||d.statut==='Annulée') {
+            clearInterval(pollingId); pollingId=null;
+        }
+    } catch(e) {
+        console.error('[Tracking] Erreur réseau:',e);
+        document.getElementById('heroStatut').innerHTML=
+            '<i class="fas fa-exclamation-triangle me-1"></i> Connexion perdue…';
+    } finally {
+        if (manual) btn.classList.remove('spinning');
+    }
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+    poll();
+    pollingId=setInterval(poll,POLL_MS);
+});
+window.addEventListener('beforeunload',function(){
+    if(pollingId) clearInterval(pollingId);
+    if(rafId) cancelAnimationFrame(rafId);
+});
+</script>
+{% endblock %}

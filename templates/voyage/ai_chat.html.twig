@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Assistant Voyage{% endblock %}
+
+{% block body %}
+<h2>Parle avec notre assistant TunisiaJourney 🤖</h2>
+
+<input type="text" id="question" placeholder="Pose ta question ici..." style="width:70%">
+<button id="sendBtn">Envoyer</button>
+<button id="micBtn">🎤</button>
+
+<div id="response" style="margin-top:20px; font-weight:bold;"></div>
+
+<script>
+const questionInput = document.getElementById('question');
+const sendBtn = document.getElementById('sendBtn');
+const responseDiv = document.getElementById('response');
+const micBtn = document.getElementById('micBtn');
+
+sendBtn.addEventListener('click', sendQuestion);
+
+function sendQuestion() {
+    const question = questionInput.value.trim();
+    if (!question) return;
+
+    fetch('{{ path("app_ai_ask") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'question=' + encodeURIComponent(question)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.answer) {
+            responseDiv.textContent = data.answer;
+            speakAnswer(data.answer);
+        } else if (data.error) {
+            responseDiv.textContent = 'Erreur: ' + data.error;
+        }
+    });
+}
+
+// Fonction Text-to-Speech
+function speakAnswer(text) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    speechSynthesis.speak(utterance);
+}
+
+// Reconnaissance vocale (speech-to-text)
+micBtn.addEventListener('click', () => {
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'fr-FR';
+    recognition.start();
+
+    recognition.onresult = function(event) {
+        const speechResult = event.results[0][0].transcript;
+        questionInput.value = speechResult;
+        sendQuestion();
+    };
+});
+</script>
+{% endblock %}
