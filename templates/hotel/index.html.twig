@@ -1,0 +1,630 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TunisiaJourney - Découvrez nos Hôtels{% endblock %}
+
+{% block stylesheets %}
+<style>
+    :root {
+        --tunisia-red: #E31B23;
+        --tunisia-dark-red: #C41E3A;
+        --tunisia-orange: #FF6B35;
+        --tunisia-gold: #FFD700;
+        --tunisia-blue: #0054A6;
+        --tunisia-sand: #FDF5E6;
+        --tunisia-cream: #FEF9E6;
+        --dark-gray: #2C3E50;
+    }
+
+    .hero {
+        position: relative;
+        height: 65vh;
+        min-height: 500px;
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: white;
+        overflow: hidden;
+    }
+
+    .hero-bg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        z-index: 1;
+        filter: brightness(0.7);
+    }
+
+    .hero::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 150px;
+        background: linear-gradient(to top, var(--tunisia-sand), transparent);
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 3;
+        max-width: 800px;
+        padding: 2.5rem;
+        animation: fadeInUp 1.2s ease;
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(50px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        text-shadow: 3px 3px 15px rgba(0,0,0,0.5);
+        color: #F5CAC3;
+    }
+
+    .hero p {
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        font-weight: 400;
+        line-height: 1.8;
+    }
+
+    .btn-hero {
+        background: linear-gradient(135deg, #E31B23, #FF6B35);
+        color: white;
+        padding: 12px 35px;
+        border-radius: 50px;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 25px rgba(227,27,35,0.4);
+    }
+
+    .btn-hero:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(227,27,35,0.5);
+        color: white;
+    }
+
+    .section-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .section-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: var(--tunisia-red);
+        margin-bottom: 0.5rem;
+    }
+
+    .section-title:after {
+        content: '';
+        display: block;
+        width: 60px;
+        height: 3px;
+        background: linear-gradient(90deg, var(--tunisia-red), var(--tunisia-orange));
+        margin: 12px auto 0;
+        border-radius: 3px;
+    }
+
+    .section-subtitle {
+        text-align: center;
+        color: var(--dark-gray);
+        font-size: 1rem;
+        margin-top: 1.5rem;
+        font-style: italic;
+        opacity: 0.7;
+    }
+
+    /* Filters Bar */
+    .filters-bar {
+        background: white;
+        padding: 1.8rem 2rem;
+        border-radius: 20px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+        margin-bottom: 3rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.2rem;
+        align-items: flex-end;
+        justify-content: center;
+        border: 1px solid rgba(227,27,35,0.1);
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        min-width: 160px;
+    }
+
+    .filter-group label {
+        font-weight: 600;
+        color: var(--dark-gray);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .filter-select, .search-input {
+        padding: 12px 16px;
+        border: 2px solid #F0E8DD;
+        border-radius: 12px;
+        background: #FEF9F0;
+        font-size: 0.9rem;
+        color: var(--dark-gray);
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+    .search-input {
+        min-width: 220px;
+    }
+
+    .filter-select:focus, .search-input:focus {
+        outline: none;
+        border-color: var(--tunisia-red);
+        background: white;
+        box-shadow: 0 0 0 3px rgba(227,27,35,0.1);
+    }
+
+    .btn-filter {
+        background: linear-gradient(135deg, var(--tunisia-red), var(--tunisia-orange));
+        color: white;
+        padding: 12px 28px;
+        border-radius: 12px;
+        border: none;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+        height: 48px;
+        margin-top: 24px;
+    }
+
+    .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(227,27,35,0.4);
+    }
+
+    .btn-reset {
+        background: transparent;
+        border: 2px solid #E8DFD1;
+        color: #4A3B2F;
+        padding: 12px 28px;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        height: 48px;
+        margin-top: 24px;
+    }
+
+    .btn-reset:hover {
+        border-color: var(--tunisia-red);
+        color: var(--tunisia-red);
+        background: #FFF9F0;
+    }
+
+    /* Hotels Grid */
+    .hotels-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 30px;
+    }
+
+    .hotel-card {
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+        transition: all 0.4s ease;
+        position: relative;
+    }
+
+    .hotel-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 25px 50px rgba(227,27,35,0.15);
+    }
+
+    .card-image {
+        height: 240px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .hotel-card:hover .card-image img {
+        transform: scale(1.08);
+    }
+
+    .card-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: linear-gradient(135deg, #E31B23, #FF6B35);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.7rem;
+        z-index: 2;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .card-badge.promo {
+        background: linear-gradient(135deg, #10B981, #34D399);
+        right: auto;
+        left: 15px;
+    }
+
+    .status-badge {
+        position: absolute;
+        bottom: 15px;
+        left: 15px;
+        background: rgba(0,0,0,0.7);
+        backdrop-filter: blur(5px);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        z-index: 2;
+    }
+
+    .status-disponible {
+        background: rgba(16,185,129,0.9);
+    }
+
+    .status-indisponible {
+        background: rgba(239,68,68,0.9);
+    }
+
+    .card-content {
+        padding: 1.5rem;
+    }
+
+    .card-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--tunisia-red);
+        margin-bottom: 0.5rem;
+    }
+
+    .card-location {
+        color: var(--tunisia-orange);
+        font-size: 0.85rem;
+        margin-bottom: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .stars {
+        margin-bottom: 0.8rem;
+    }
+
+    .stars i {
+        color: #FFD700;
+        font-size: 0.85rem;
+        margin-right: 2px;
+    }
+
+    .stars i.far {
+        color: #E8DFD1;
+    }
+
+    .card-description {
+        color: #6B7280;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+        font-size: 0.85rem;
+    }
+
+    .card-price {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--tunisia-red);
+        margin-bottom: 1rem;
+    }
+
+    .card-price small {
+        font-size: 0.7rem;
+        font-weight: 400;
+        color: #9CA3AF;
+    }
+
+    .btn-details {
+        display: inline-block;
+        background: transparent;
+        border: 2px solid var(--tunisia-red);
+        color: var(--tunisia-red);
+        padding: 10px 0;
+        width: 100%;
+        border-radius: 40px;
+        font-weight: 600;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.3s ease;
+        font-size: 0.85rem;
+        cursor: pointer;
+    }
+
+    .btn-details:hover {
+        background: var(--tunisia-red);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .no-results {
+        text-align: center;
+        padding: 4rem;
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #F0E8DD;
+        grid-column: 1 / -1;
+    }
+
+    .no-results i {
+        font-size: 3rem;
+        color: #E8DFD1;
+        margin-bottom: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .hero h1 { font-size: 2rem; }
+        .hero-content { padding: 1.5rem; margin: 0 1rem; }
+        .section-title { font-size: 2rem; }
+        .filters-bar { flex-direction: column; align-items: stretch; }
+        .filter-group { width: 100%; }
+        .btn-filter, .btn-reset { margin-top: 0; width: 100%; }
+        .hotels-grid { grid-template-columns: 1fr; gap: 20px; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<section class="hero">
+    <img class="hero-bg" src="https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg?auto=compress&cs=tinysrgb&w=1600" alt="Hôtels en Tunisie">
+    <div class="hero-content">
+        <h1>🏨 Hôtels d'Exception</h1>
+        <p>Découvrez notre sélection des plus beaux hôtels de Tunisie</p>
+        <a href="#hotels" class="btn-hero">Explorer les hôtels</a>
+    </div>
+</section>
+
+<section id="hotels" class="py-5">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Nos Hôtels</h2>
+            <p class="section-subtitle">Des établissements d'exception pour tous vos voyages</p>
+        </div>
+
+        <div class="filters-bar">
+            <div class="filter-group">
+                <label><i class="fas fa-search"></i> Recherche</label>
+                <input type="text" class="search-input" id="searchInput" placeholder="Nom ou ville...">
+            </div>
+            <div class="filter-group">
+                <label><i class="fas fa-star"></i> Étoiles</label>
+                <select class="filter-select" id="starsFilter">
+                    <option value="all">Toutes les étoiles</option>
+                    <option value="5">⭐⭐⭐⭐⭐ 5 étoiles</option>
+                    <option value="4">⭐⭐⭐⭐ 4 étoiles</option>
+                    <option value="3">⭐⭐⭐ 3 étoiles</option>
+                    <option value="2">⭐⭐ 2 étoiles</option>
+                    <option value="1">⭐ 1 étoile</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label><i class="fas fa-city"></i> Ville</label>
+                <select class="filter-select" id="cityFilter">
+                    <option value="all">Toutes les villes</option>
+                    {% set cities = [] %}
+                    {% for hotel in hotels %}
+                        {% if hotel.ville not in cities %}
+                            {% set cities = cities|merge([hotel.ville]) %}
+                            <option value="{{ hotel.ville|lower }}">{{ hotel.ville }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label><i class="fas fa-tag"></i> Promotion</label>
+                <select class="filter-select" id="promoFilter">
+                    <option value="all">Tous les hôtels</option>
+                    <option value="yes">En promotion 🔥</option>
+                    <option value="no">Sans promotion</option>
+                </select>
+            </div>
+            <button class="btn-filter" id="filterBtn">Appliquer</button>
+            <button class="btn-reset" id="resetBtn">Réinitialiser</button>
+        </div>
+
+        <div class="hotels-grid" id="hotelsGrid">
+            {% for hotel in hotels %}
+                <div class="hotel-card" 
+                     data-id="{{ hotel.idH }}" 
+                     data-name="{{ hotel.nom|lower }}" 
+                     data-ville="{{ hotel.ville|lower }}" 
+                     data-price="{{ hotel.prix_nuit|default(0) }}" 
+                     data-stars="{{ hotel.etoiles }}"
+                     data-promo="{% if hotel.promotion > 0 %}yes{% else %}no{% endif %}"
+                     data-status="{{ hotel.status }}">
+                    <div class="card-image">
+                        <img src="{{ hotel.image ? asset('uploads/hotels/' ~ hotel.image) : 'https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg?auto=compress&cs=tinysrgb&w=800' }}" alt="{{ hotel.nom }}" loading="lazy">
+                        <span class="card-badge">{{ hotel.etoiles }} étoiles</span>
+                        {% if hotel.promotion > 0 %}
+                            <span class="card-badge promo">-{{ hotel.promotion }}% PROMO</span>
+                        {% endif %}
+                        <span class="status-badge {% if hotel.status == 'disponible' %}status-disponible{% else %}status-indisponible{% endif %}">
+                            {% if hotel.status == 'disponible' %}
+                                ✓ Disponible
+                            {% else %}
+                                ✗ Indisponible
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">{{ hotel.nom }}</h3>
+                        <div class="card-location">
+                            <i class="fas fa-map-marker-alt"></i> {{ hotel.ville }}
+                        </div>
+                        <div class="stars">
+                            {% for i in 1..hotel.etoiles %}
+                                <i class="fas fa-star"></i>
+                            {% endfor %}
+                            {% for i in hotel.etoiles+1..5 %}
+                                <i class="far fa-star"></i>
+                            {% endfor %}
+                        </div>
+                        <p class="card-description">{{ hotel.description|slice(0, 120) }}{% if hotel.description|length > 120 %}...{% endif %}</p>
+                        <div class="card-price">
+                            À partir de {{ hotel.prix_nuit|default(80)|number_format(0, ',', ' ') }} € <small>/nuit</small>
+                        </div>
+                        <a href="{{ path('app_hotel_show', {'idH': hotel.idH}) }}" class="btn-details">
+                            Voir les détails <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+            {% else %}
+                <div class="no-results">
+                    <i class="fas fa-hotel fa-3x"></i>
+                    <h4 class="mt-3">Aucun hôtel trouvé</h4>
+                    <p class="text-muted">Nous n'avons pas trouvé d'hôtel correspondant à vos critères.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<script>
+    // Éléments DOM
+    const searchInput = document.getElementById('searchInput');
+    const starsFilter = document.getElementById('starsFilter');
+    const cityFilter = document.getElementById('cityFilter');
+    const promoFilter = document.getElementById('promoFilter');
+    const filterBtn = document.getElementById('filterBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const hotelsGrid = document.getElementById('hotelsGrid');
+
+    let debounceTimeout;
+
+    // Fonction de filtrage
+    function applyFilters() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const stars = starsFilter.value;
+        const city = cityFilter.value;
+        const promo = promoFilter.value;
+
+        let visibleCount = 0;
+
+        document.querySelectorAll('.hotel-card').forEach(card => {
+            const name = card.dataset.name || '';
+            const ville = card.dataset.ville || '';
+            const price = parseInt(card.dataset.price) || 0;
+            const hotelStars = parseInt(card.dataset.stars) || 0;
+            const hotelPromo = card.dataset.promo || 'no';
+            
+            let show = true;
+            
+            // Filtre par recherche (nom + ville)
+            if (searchTerm && !name.includes(searchTerm) && !ville.includes(searchTerm)) {
+                show = false;
+            }
+            
+            // Filtre par étoiles
+            if (show && stars !== 'all') {
+                if (hotelStars != stars) show = false;
+            }
+            
+            // Filtre par ville
+            if (show && city !== 'all') {
+                if (ville !== city) show = false;
+            }
+            
+            // Filtre par promotion
+            if (show && promo !== 'all') {
+                if (promo === 'yes' && hotelPromo !== 'yes') show = false;
+                if (promo === 'no' && hotelPromo === 'yes') show = false;
+            }
+            
+            card.style.display = show ? '' : 'none';
+            if (show) visibleCount++;
+        });
+
+        // Afficher message si aucun résultat
+        const existingMsg = document.getElementById('noResultMsg');
+        if (visibleCount === 0 && !existingMsg && document.querySelectorAll('.hotel-card').length > 0) {
+            const msg = document.createElement('div');
+            msg.id = 'noResultMsg';
+            msg.className = 'no-results';
+            msg.innerHTML = `
+                <i class="fas fa-hotel fa-3x"></i>
+                <h4 class="mt-3">Aucun hôtel trouvé</h4>
+                <p class="text-muted">Aucun hôtel ne correspond à vos critères de recherche.</p>
+            `;
+            hotelsGrid.appendChild(msg);
+        } else if (existingMsg && visibleCount > 0) {
+            existingMsg.remove();
+        }
+    }
+
+    // Réinitialiser tous les filtres
+    function resetFilters() {
+        searchInput.value = '';
+        starsFilter.value = 'all';
+        cityFilter.value = 'all';
+        promoFilter.value = 'all';
+        applyFilters();
+    }
+
+    // Debounce pour la recherche
+    function debouncedSearch() {
+        clearTimeout(debounceTimeout);
+        debounceTimeout = setTimeout(applyFilters, 300);
+    }
+
+    // Événements
+    filterBtn.addEventListener('click', applyFilters);
+    resetBtn.addEventListener('click', resetFilters);
+    searchInput.addEventListener('input', debouncedSearch);
+    starsFilter.addEventListener('change', applyFilters);
+    cityFilter.addEventListener('change', applyFilters);
+    promoFilter.addEventListener('change', applyFilters);
+
+    // Animation au scroll
+    window.addEventListener('scroll', () => {
+        const navbar = document.querySelector('.navbar');
+        if (window.scrollY > 50) {
+            navbar.classList.add('scrolled');
+        } else {
+            navbar.classList.remove('scrolled');
+        }
+    });
+
+    // Initialisation
+    applyFilters();
+</script>
+{% endblock %}

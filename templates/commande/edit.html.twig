@@ -1,0 +1,296 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier la commande #{{ commande.id }} — TunisiaJourney{% endblock %}
+
+{% block stylesheets %}
+<style>
+    :root {
+        --tunisia-red: #E31B23;
+        --tunisia-orange: #FF6B35;
+        --tunisia-sand: #FDF5E6;
+        --tunisia-soft: #F5CAC3;
+        --dark-gray: #2C3E50;
+    }
+
+    body { background: var(--tunisia-sand); }
+
+    /* ── Header ── */
+    .page-header {
+        background: linear-gradient(135deg, var(--tunisia-red), #C41E3A, var(--tunisia-orange));
+        padding: 3rem 0 2rem;
+        text-align: center;
+        color: white;
+    }
+    .page-header h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.5rem;
+        color: var(--tunisia-soft);
+        letter-spacing: 2px;
+        margin: 0 0 0.5rem;
+    }
+    .page-header p {
+        color: rgba(255,255,255,0.75);
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    /* ── Notice ── */
+    .edit-notice {
+        background: #FEF3C7;
+        border: 1px solid #F59E0B;
+        border-radius: 14px;
+        padding: 12px 20px;
+        color: #92400E;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 1.5rem;
+    }
+
+    /* ── Card formulaire ── */
+    .form-card {
+        background: white;
+        border-radius: 28px;
+        padding: 2.5rem 3rem;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.09);
+        margin-bottom: 2rem;
+    }
+
+    .form-section-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--dark-gray);
+        margin-bottom: 1.2rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #F5CAC3;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .form-section-title i { color: var(--tunisia-orange); }
+
+    .form-label-custom {
+        display: block;
+        font-weight: 600;
+        font-size: 0.88rem;
+        color: var(--dark-gray);
+        margin-bottom: 0.4rem;
+    }
+    .form-label-custom i { color: var(--tunisia-orange); margin-right: 6px; width: 16px; }
+
+    .input-custom {
+        width: 100%;
+        padding: 11px 20px;
+        border: 2px solid #F5CAC3;
+        border-radius: 25px;
+        background: white;
+        font-size: 0.92rem;
+        color: var(--dark-gray);
+        font-family: inherit;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+    }
+    .input-custom:focus {
+        outline: none;
+        border-color: var(--tunisia-red);
+        box-shadow: 0 0 0 3px rgba(227,27,35,0.1);
+    }
+    .input-custom::placeholder { color: #bbb; font-style: italic; }
+    select.input-custom { appearance: auto; cursor: pointer; }
+
+    .field-error {
+        color: var(--tunisia-red);
+        font-size: 0.8rem;
+        margin-top: 4px;
+        padding-left: 12px;
+    }
+
+    .form-divider {
+        height: 1px;
+        background: linear-gradient(to right, transparent, #F5CAC3, transparent);
+        margin: 1.8rem 0;
+    }
+
+    /* ── Résumé commande (readonly) ── */
+    .commande-recap {
+        background: linear-gradient(135deg, #FEF9F0, #FDF5E6);
+        border: 2px solid #F5CAC3;
+        border-radius: 20px;
+        padding: 1.2rem 1.5rem;
+        margin-bottom: 1.5rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1rem;
+    }
+    .recap-item small {
+        display: block;
+        font-size: 0.75rem;
+        color: #9CA3AF;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+    .recap-item strong {
+        font-size: 0.95rem;
+        color: var(--dark-gray);
+    }
+    .recap-item .montant { color: var(--tunisia-red); font-size: 1.1rem; }
+
+    /* ── Boutons ── */
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: transparent;
+        border: 2px solid var(--dark-gray);
+        color: var(--dark-gray);
+        padding: 10px 24px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .btn-back:hover { border-color: var(--tunisia-red); color: var(--tunisia-red); }
+
+    .btn-submit {
+        width: 100%;
+        background: linear-gradient(135deg, var(--tunisia-red), var(--tunisia-orange));
+        color: white;
+        border: none;
+        padding: 14px;
+        border-radius: 30px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .btn-submit:hover {
+        background: linear-gradient(135deg, var(--tunisia-orange), var(--tunisia-red));
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(227,27,35,0.4);
+    }
+
+    @media (max-width: 768px) {
+        .form-card { padding: 1.5rem 1.2rem; }
+        .commande-recap { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+
+<div class="page-header">
+    <h1><i class="fas fa-edit me-2" style="font-size:1.8rem;"></i>Modifier la commande</h1>
+    <p>Commande #{{ commande.id }} — Passée le {{ commande.dateC|date('d/m/Y') }}</p>
+</div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <a href="{{ path('app_commande_show', {id: commande.id}) }}" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Retour au détail
+                </a>
+            </div>
+
+            <div class="edit-notice">
+                <i class="fas fa-pencil-alt fa-lg"></i>
+                Vous pouvez modifier l'adresse de livraison et le mode de paiement tant que la commande est <strong>En attente</strong>.
+            </div>
+
+            {# Résumé de la commande (lecture seule) #}
+         {# Résumé de la commande (lecture seule) #}
+<div class="commande-recap">
+    <div class="recap-item">
+        <small><i class="fas fa-hashtag me-1"></i> Commande</small>
+        <strong>#{{ commande.id }}</strong>
+    </div>
+    <div class="recap-item">
+        <small><i class="fas fa-box me-1"></i> Articles</small>
+        <strong>{{ commande.lignes|length }} article(s)</strong>   {# ← CORRECTION ICI #}
+    </div>
+    <div class="recap-item">
+        <small><i class="fas fa-receipt me-1"></i> Total</small>
+        <strong class="montant">{{ commande.total|number_format(2, ',', ' ') }} TND</strong>
+    </div>
+</div>
+
+            <div class="form-card">
+                {{ form_start(form) }}
+
+                    {# ── Livraison ── #}
+                    <div class="form-section-title">
+                        <i class="fas fa-truck"></i> Livraison
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label-custom">
+                            <i class="fas fa-map-marker-alt"></i> Adresse de livraison
+                        </label>
+                        {{ form_widget(form.AdresseLiv, {
+                            'attr': {'class': 'input-custom', 'placeholder': 'Ex : 12 Rue de la Médina, Tunis'}
+                        }) }}
+                        {% if form_errors(form.AdresseLiv) %}
+                            <div class="field-error">{{ form_errors(form.AdresseLiv) }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label-custom">
+                            <i class="fas fa-mail-bulk"></i> Code postal
+                        </label>
+                        {{ form_widget(form.CodePostal, {
+                            'attr': {'class': 'input-custom', 'placeholder': 'Ex : 1000'}
+                        }) }}
+                        {% if form_errors(form.CodePostal) %}
+                            <div class="field-error">{{ form_errors(form.CodePostal) }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-divider"></div>
+
+                    {# ── Paiement ── #}
+                    <div class="form-section-title">
+                        <i class="fas fa-credit-card"></i> Paiement
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label-custom">
+                            <i class="fas fa-wallet"></i> Mode de paiement
+                        </label>
+                        {{ form_widget(form.ModePaiement, {
+                            'attr': {'class': 'input-custom'}
+                        }) }}
+                        {% if form_errors(form.ModePaiement) %}
+                            <div class="field-error">{{ form_errors(form.ModePaiement) }}</div>
+                        {% endif %}
+                    </div>
+
+                    {# Champs cachés non modifiables #}
+                    <div style="display:none;">
+                        {% if form.Statut is defined %}{{ form_widget(form.Statut) }}{% endif %}
+                        {% if form.Total is defined %}{{ form_widget(form.Total) }}{% endif %}
+                        {% if form.DateC is defined %}{{ form_widget(form.DateC) }}{% endif %}
+                        {% if form.Quantite is defined %}{{ form_widget(form.Quantite) }}{% endif %}
+                    </div>
+
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-save"></i> Enregistrer les modifications
+                    </button>
+
+                {{ form_end(form) }}
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

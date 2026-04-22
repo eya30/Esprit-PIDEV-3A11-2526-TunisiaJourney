@@ -1,0 +1,248 @@
+{# templates/user/2fa_check.html.twig #}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TunisiaJourney — Vérification 2FA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --rouge: #A0231F; --rouge-vif: #C0392B;
+      --nuit: #1A2E4A; --sable-cl: #FDF6EC; --blanc: #FFFFFF; --gris: #A0A0A0;
+    }
+    html, body { height: 100%; font-family: 'DM Sans', sans-serif; }
+
+    .auth-wrapper { width: 100vw; height: 100vh; display: flex; overflow: hidden; background: var(--blanc); }
+
+    /* Overlay gauche — même style que auth.html.twig */
+    .auth-overlay {
+      width: 45%; height: 100%;
+      background: linear-gradient(150deg, #C94040 0%, #A0231F 45%, #2A1010 100%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 40px 30px; text-align: center; position: relative; overflow: hidden;
+    }
+    .overlay-circles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+    .overlay-circles span { position: absolute; border-radius: 50%; background: rgba(255,255,255,.07); animation: floatCircle linear infinite; }
+    .overlay-circles span:nth-child(1) { width:200px;height:200px;top:-60px;left:-60px;animation-duration:8s; }
+    .overlay-circles span:nth-child(2) { width:140px;height:140px;top:60%;left:60%;animation-duration:11s;animation-delay:-3s; }
+    .overlay-circles span:nth-child(3) { width:90px;height:90px;top:30%;left:10%;animation-duration:7s;animation-delay:-1.5s; }
+    .overlay-circles span:nth-child(4) { width:60px;height:60px;top:70%;left:20%;animation-duration:9s;animation-delay:-4s; }
+    .overlay-circles span:nth-child(5) { width:110px;height:110px;top:10%;left:55%;animation-duration:13s;animation-delay:-2s; }
+    @keyframes floatCircle {
+      0%   { transform: translate(0,0) scale(1); }
+      25%  { transform: translate(18px,-22px) scale(1.06); }
+      50%  { transform: translate(-12px,16px) scale(.94); }
+      75%  { transform: translate(20px,8px) scale(1.03); }
+      100% { transform: translate(0,0) scale(1); }
+    }
+    .overlay-logo-ring {
+      width: 110px; height: 110px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,.35); background: rgba(255,255,255,.1);
+      display: flex; align-items: center; justify-content: center; margin-bottom: 18px;
+      overflow: hidden; animation: pulseLogo 4s ease-in-out infinite; position: relative; z-index: 1;
+    }
+    .overlay-logo-ring img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; }
+    @keyframes pulseLogo {
+      0%,100% { box-shadow: 0 0 0 6px rgba(255,255,255,.06); }
+      50%      { box-shadow: 0 0 0 10px rgba(255,255,255,.10); }
+    }
+    .overlay-brand { position: relative; z-index: 1; margin-bottom: 20px; }
+    .overlay-brand .brand-main { font-family: 'Playfair Display', serif; color: var(--blanc); font-size: 2.6rem; font-weight: 700; display: block; animation: pulseBrand 3.5s ease-in-out infinite; }
+    .overlay-brand .brand-sub  { color: rgba(255,255,255,.7); font-size: .8rem; letter-spacing: 1.5px; display: block; margin-top: 4px; }
+    @keyframes pulseBrand { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.08); opacity: .82; } }
+
+    /* Icône shield animée */
+    .shield-anim {
+      position: relative; z-index: 1; margin-bottom: 20px;
+      width: 80px; height: 80px; background: rgba(255,255,255,.15); border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      animation: floatShield 3s ease-in-out infinite;
+    }
+    @keyframes floatShield { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    .shield-anim svg { width: 40px; height: 40px; color: white; }
+
+    .overlay-title { font-family: 'Playfair Display', serif; color: var(--blanc); font-size: 1.7rem; line-height: 1.3; margin-bottom: 10px; position: relative; z-index: 1; }
+    .overlay-desc  { color: rgba(255,255,255,.75); font-size: .85rem; line-height: 1.6; position: relative; z-index: 1; }
+
+    /* Panneau droit */
+    .auth-form-panel { width: 55%; height: 100%; display: flex; flex-direction: column; justify-content: center; padding: 70px 70px; }
+
+    .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--gris); font-size: .8rem; text-decoration: none; margin-bottom: 36px; transition: color .2s; }
+    .back-link:hover { color: var(--rouge); }
+    .back-link svg { width: 14px; height: 14px; }
+
+    h1 { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--nuit); margin-bottom: 4px; }
+    .form-subtitle { color: var(--rouge); font-size: .95rem; margin-bottom: 28px; }
+
+    /* Champ code OTP style PIN */
+    .otp-hint { font-size: .85rem; color: var(--gris); margin-bottom: 16px; line-height: 1.5; }
+    .otp-hint strong { color: var(--nuit); }
+
+    .otp-input-wrap { position: relative; margin-bottom: 8px; }
+    .otp-input {
+      width: 100%; padding: 18px 20px; border: 2px solid #E0E0E0; border-radius: 14px;
+      font-family: 'DM Sans', sans-serif; font-size: 1.8rem; font-weight: 700;
+      color: var(--nuit); background: var(--sable-cl); outline: none;
+      letter-spacing: 12px; text-align: center;
+      transition: border-color .22s, background .22s, box-shadow .22s;
+    }
+    .otp-input:focus {
+      border-color: var(--rouge); background: var(--blanc);
+      box-shadow: 0 0 0 4px rgba(160,35,31,.08);
+    }
+    .otp-input.shake { animation: shake .45s ease; }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%      { transform: translateX(-8px); }
+      40%      { transform: translateX(8px); }
+      60%      { transform: translateX(-5px); }
+      80%      { transform: translateX(5px); }
+    }
+
+    /* Timer 30s */
+    .otp-timer { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; font-size: .8rem; color: var(--gris); }
+    .timer-circle {
+      width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+      background: conic-gradient(var(--rouge) 0deg, #E0E0E0 0deg);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .72rem; font-weight: 700; color: var(--rouge);
+      transition: background .1s;
+    }
+
+    .btn-primary {
+      width: 100%; padding: 14px;
+      background: linear-gradient(90deg, var(--rouge) 0%, var(--rouge-vif) 100%);
+      color: var(--blanc); border: none; border-radius: 50px;
+      font-family: 'DM Sans', sans-serif; font-size: 1.05rem; font-weight: 600;
+      cursor: pointer; box-shadow: 0 5px 16px rgba(160,35,31,.3);
+      transition: transform .18s, box-shadow .18s;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(160,35,31,.42); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+    .alert { padding: 11px 14px; border-radius: 10px; font-size: .84rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .alert-error { background: #FDECEA; color: var(--rouge-vif); border-left: 4px solid var(--rouge-vif); }
+
+    @media (max-width: 680px) {
+      .auth-overlay { display: none; }
+      .auth-form-panel { width: 100%; padding: 40px 28px; }
+    }
+  </style>
+</head>
+<body>
+<div class="auth-wrapper">
+
+  {# Overlay gauche #}
+  <div class="auth-overlay">
+    <div class="overlay-circles"><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="overlay-logo-ring">
+      <img src="{{ asset('images/logo.png') }}" alt="TunisiaJourney" referrerpolicy="no-referrer">
+    </div>
+    <div class="overlay-brand">
+      <span class="brand-main">Tunisia<span style="opacity:.75">Journey</span></span>
+      <span class="brand-sub">DÉCOUVREZ LA TUNISIE</span>
+    </div>
+    <div class="shield-anim">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <polyline points="9 12 11 14 15 10"/>
+      </svg>
+    </div>
+    <h2 class="overlay-title">Double<br>authentification</h2>
+    <p class="overlay-desc">Votre compte est protégé par<br>une couche de sécurité supplémentaire.</p>
+  </div>
+
+  {# Panneau droit #}
+  <div class="auth-form-panel">
+    <a href="{{ path('app_login') }}" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      Retour à la connexion
+    </a>
+
+    <h1>Vérification 2FA</h1>
+    <p class="form-subtitle">Saisissez le code de votre application</p>
+
+    {% for msg in app.flashes('2fa_error') %}
+      <div class="alert alert-error">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        {{ msg }}
+      </div>
+    {% endfor %}
+
+    <p class="otp-hint">
+      Ouvrez <strong>Google Authenticator</strong> sur votre téléphone<br>
+      et entrez le code à 6 chiffres affiché pour <strong>TunisiaJourney</strong>.
+    </p>
+
+    <form method="POST" action="{{ path('app_2fa_check') }}" id="otpForm">
+      <div class="otp-input-wrap">
+        <input type="text" name="code" id="otpInput" class="otp-input"
+               maxlength="6" placeholder="000000"
+               inputmode="numeric" pattern="[0-9]*"
+               autocomplete="one-time-code" autofocus>
+      </div>
+
+      {# Timer visuel 30s #}
+      <div class="otp-timer">
+        <div class="timer-circle" id="timerCircle">
+          <span id="timerCount">30</span>
+        </div>
+        <span>Le code change toutes les 30 secondes</span>
+      </div>
+
+      <button type="submit" class="btn-primary" id="submitBtn">
+        Vérifier le code
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+// ── Auto-submit quand 6 chiffres saisis ──
+const otpInput  = document.getElementById('otpInput');
+const otpForm   = document.getElementById('otpForm');
+const submitBtn = document.getElementById('submitBtn');
+
+otpInput.addEventListener('input', function() {
+  this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
+  if (this.value.length === 6) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Vérification…';
+    otpForm.submit();
+  }
+});
+
+// ── Timer 30s synchronisé avec TOTP ──
+function updateTimer() {
+  const now    = Math.floor(Date.now() / 1000);
+  const remain = 30 - (now % 30);
+  const pct    = (remain / 30) * 360;
+
+  document.getElementById('timerCount').textContent = remain;
+  document.getElementById('timerCircle').style.background =
+    `conic-gradient(#A0231F ${pct}deg, #E0E0E0 ${pct}deg)`;
+
+  if (remain <= 5) {
+    document.getElementById('timerCount').style.color = '#E53935';
+  } else {
+    document.getElementById('timerCount').style.color = '#A0231F';
+  }
+}
+
+updateTimer();
+setInterval(updateTimer, 1000);
+
+// ── Shake si erreur ──
+{% for msg in app.flashes('2fa_error') %}
+  otpInput.classList.add('shake');
+  setTimeout(() => otpInput.classList.remove('shake'), 450);
+  otpInput.value = '';
+  otpInput.focus();
+{% endfor %}
+</script>
+</body>
+</html>

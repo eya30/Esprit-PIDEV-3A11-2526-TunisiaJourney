@@ -1,0 +1,389 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ produit.titre }} - TunisiaJourney{% endblock %}
+
+{% block stylesheets %}
+<style>
+    :root {
+        --tunisia-red: #E31B23;
+        --tunisia-orange: #FF6B35;
+        --tunisia-sand: #FDF5E6;
+        --tunisia-soft: #F5CAC3;
+        --dark-gray: #2C3E50;
+    }
+
+    .hero-produit {
+        background: linear-gradient(135deg, var(--tunisia-red), var(--tunisia-orange));
+        padding: 3rem 0;
+        color: white;
+        text-align: center;
+    }
+    .hero-produit h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    .hero-produit p {
+        opacity: 0.9;
+        font-size: 1rem;
+    }
+
+    .detail-card {
+        background: white;
+        border-radius: 28px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+        overflow: hidden;
+        margin: -2rem 0 3rem;
+    }
+    .detail-image {
+        width: 100%;
+        height: 400px;
+        object-fit: cover;
+    }
+    .detail-content {
+        padding: 2rem;
+    }
+    .detail-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--tunisia-red);
+        margin-bottom: 0.5rem;
+    }
+    .detail-category {
+        display: inline-block;
+        background: var(--tunisia-soft);
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        color: var(--dark-gray);
+        margin-bottom: 1rem;
+    }
+    .detail-price {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--tunisia-red);
+        margin: 1rem 0;
+    }
+    .detail-description {
+        color: #4a5568;
+        line-height: 1.7;
+        margin: 1.5rem 0;
+    }
+    .detail-stock {
+        padding: 10px 15px;
+        border-radius: 12px;
+        margin: 1rem 0;
+        display: inline-block;
+    }
+    .stock-disponible {
+        background: #d1fae5;
+        color: #065f46;
+    }
+    .stock-rupture {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    .btn-add-cart {
+        background: linear-gradient(135deg, var(--tunisia-red), var(--tunisia-orange));
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 40px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        width: 100%;
+        margin-top: 1rem;
+    }
+    .btn-add-cart:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(227,27,35,0.4);
+    }
+
+    /* Widget conversion devise */
+    .currency-widget {
+        background: linear-gradient(135deg, #f8f9fa, #fff);
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        border: 2px solid var(--tunisia-soft);
+    }
+    .currency-widget h4 {
+        font-family: 'Cormorant Garamond', serif;
+        color: var(--tunisia-red);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .currency-input-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+    .currency-input-group input,
+    .currency-input-group select {
+        flex: 1;
+        padding: 12px 16px;
+        border: 2px solid #e9ecef;
+        border-radius: 14px;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+    }
+    .currency-input-group input:focus,
+    .currency-input-group select:focus {
+        outline: none;
+        border-color: var(--tunisia-red);
+    }
+    .currency-result {
+        background: var(--tunisia-sand);
+        padding: 15px;
+        border-radius: 14px;
+        text-align: center;
+        margin-top: 1rem;
+    }
+    .currency-result .converted-amount {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--tunisia-red);
+    }
+    .currency-rate-info {
+        font-size: 0.75rem;
+        color: #6c757d;
+        margin-top: 10px;
+        text-align: center;
+    }
+    .quick-convert-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+    }
+    .quick-convert-btn {
+        background: white;
+        border: 2px solid var(--tunisia-soft);
+        border-radius: 30px;
+        padding: 8px 16px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .quick-convert-btn:hover {
+        border-color: var(--tunisia-red);
+        color: var(--tunisia-red);
+    }
+
+    @media (max-width: 768px) {
+        .detail-image { height: 250px; }
+        .detail-content { padding: 1.5rem; }
+        .currency-input-group { flex-direction: column; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<section class="hero-produit">
+    <div class="container">
+        <h1>{{ produit.titre }}</h1>
+        <p>Découvrez l'authenticité de l'artisanat tunisien</p>
+    </div>
+</section>
+
+<div class="container">
+    <div class="detail-card">
+        <div class="row g-0">
+            <div class="col-md-6">
+                <img src="{{ asset('uploads/produits/' ~ produit.image) }}" 
+                     class="detail-image" 
+                     alt="{{ produit.titre }}">
+            </div>
+            <div class="col-md-6">
+                <div class="detail-content">
+                    <span class="detail-category">
+                        <i class="fas fa-tag me-1"></i> {{ produit.categorie }}
+                    </span>
+                    <h1 class="detail-title">{{ produit.titre }}</h1>
+                    
+                    <div class="detail-price" id="product-price" data-price="{{ produit.prix }}">
+                        {{ produit.prix|number_format(3, ',', ' ') }} TND
+                    </div>
+
+                    <div class="detail-stock {{ produit.disponibilite and produit.stock > 0 ? 'stock-disponible' : 'stock-rupture' }}">
+                        <i class="fas fa-{{ produit.disponibilite and produit.stock > 0 ? 'check-circle' : 'times-circle' }} me-2"></i>
+                        {% if produit.disponibilite and produit.stock > 0 %}
+                            En stock ({{ produit.stock }} unités)
+                        {% else %}
+                            Rupture de stock
+                        {% endif %}
+                    </div>
+
+                    <div class="detail-description">
+                        <strong>Description :</strong><br>
+                        {{ produit.description|nl2br }}
+                    </div>
+
+                    <!-- ✅ WIDGET CONVERSION DE DEVISES -->
+                    <div class="currency-widget">
+                        <h4>
+                            <i class="fas fa-exchange-alt"></i> 
+                            Conversion de devises
+                        </h4>
+                        
+                        <div class="currency-input-group">
+                            <input type="number" 
+                                   id="amountInput" 
+                                   value="{{ produit.prix }}" 
+                                   step="0.001"
+                                   placeholder="Montant en TND">
+                            <select id="currencySelect">
+                                <option value="EUR">💶 Euro (EUR)</option>
+                                <option value="USD">💵 Dollar US (USD)</option>
+                                <option value="GBP">💷 Livre Sterling (GBP)</option>
+                            </select>
+                        </div>
+
+                        <div class="quick-convert-buttons">
+                            <button class="quick-convert-btn" data-currency="EUR">🇪🇺 Convertir en Euros</button>
+                            <button class="quick-convert-btn" data-currency="USD">🇺🇸 Convertir en Dollars</button>
+                            <button class="quick-convert-btn" data-currency="GBP">🇬🇧 Convertir en Livres</button>
+                        </div>
+
+                        <div class="currency-result" id="conversionResult">
+                            <i class="fas fa-sync-alt fa-spin"></i> Entrez un montant pour convertir
+                        </div>
+                        
+                        <div class="currency-rate-info" id="rateInfo">
+                            Taux de change actualisés quotidiennement
+                        </div>
+                    </div>
+
+                    <form method="post" action="{{ path('app_panier_add', {'id': produit.idPR}) }}">
+                        <button type="submit" class="btn-add-cart" 
+                                {% if not produit.disponibilite or produit.stock <= 0 %}disabled{% endif %}>
+                            <i class="fas fa-shopping-cart me-2"></i>
+                            {% if produit.disponibilite and produit.stock > 0 %}
+                                Ajouter au panier
+                            {% else %}
+                                Indisponible
+                            {% endif %}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Éléments du DOM
+    const amountInput = document.getElementById('amountInput');
+    const currencySelect = document.getElementById('currencySelect');
+    const conversionResult = document.getElementById('conversionResult');
+    const rateInfo = document.getElementById('rateInfo');
+    const quickButtons = document.querySelectorAll('.quick-convert-btn');
+    
+    // Variable pour stocker le taux actuel
+    let currentRate = null;
+    let currentTargetCurrency = 'EUR';
+    
+    // Fonction pour effectuer la conversion
+    async function convertCurrency() {
+        let amount = parseFloat(amountInput.value);
+        const targetCurrency = currencySelect.value;
+        currentTargetCurrency = targetCurrency;
+        
+        if (isNaN(amount) || amount <= 0) {
+            conversionResult.innerHTML = `
+                <i class="fas fa-exclamation-triangle"></i> 
+                Veuillez entrer un montant valide
+            `;
+            return;
+        }
+        
+        // Afficher chargement
+        conversionResult.innerHTML = `
+            <i class="fas fa-spinner fa-spin"></i> 
+            Conversion en cours...
+        `;
+        
+        try {
+            // Appel API pour convertir TND → devise choisie
+            const response = await fetch(`/api/currency/convert?amount=${amount}&from=TND&to=${targetCurrency}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                // Afficher le résultat
+                conversionResult.innerHTML = `
+                    <div style="margin-bottom: 5px;">
+                                        <span style="font-size: 0.9rem; color: #6c757d;">
+                            ${amount.toFixed(3)} TND =
+                        </span>
+                        <div class="converted-amount">
+                            ${data.to.formatted}
+                        </div>
+                    </div>
+                    <div style="font-size: 0.85rem; color: #2c3e50;">
+                        Taux: 1 TND = ${(1/data.rate).toFixed(4)} ${targetCurrency}
+                    </div>
+                `;
+                
+                // Mettre à jour les infos taux
+                rateInfo.innerHTML = `
+                    <i class="fas fa-chart-line"></i> 
+                    Taux actualisé: 1 ${targetCurrency} = ${data.rate.toFixed(4)} TND
+                    <br><small>Dernière mise à jour: ${data.date}</small>
+                `;
+                
+                currentRate = data.rate;
+            } else {
+                conversionResult.innerHTML = `
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    Erreur: ${data.error || 'Conversion impossible'}
+                `;
+            }
+            
+        } catch (error) {
+            console.error('Erreur conversion:', error);
+            conversionResult.innerHTML = `
+                <i class="fas fa-times-circle"></i> 
+                Erreur de connexion. Veuillez réessayer.
+            `;
+        }
+    }
+    
+    // Écouter les changements
+    amountInput.addEventListener('input', convertCurrency);
+    currencySelect.addEventListener('change', convertCurrency);
+    
+    // Boutons de conversion rapide
+    quickButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const currency = this.dataset.currency;
+            currencySelect.value = currency;
+            convertCurrency();
+        });
+    });
+    
+    // Convertir au chargement de la page
+    convertCurrency();
+    
+    // Mettre à jour la conversion quand la page devient visible (si l'utilisateur revient)
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            convertCurrency();
+        }
+    });
+    
+    // Rafraîchir toutes les 5 minutes (optionnel)
+    setInterval(convertCurrency, 300000);
+});
+</script>
+{% endblock %}

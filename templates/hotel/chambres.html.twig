@@ -1,0 +1,415 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Chambres - {{ hotel.nom }}{% endblock %}
+
+{% block stylesheets %}
+<style>
+    :root {
+        --tunisia-red: #E31B23;
+        --tunisia-blue: #0054A6;
+        --tunisia-blue-light: #E8F0FE;
+        --tunisia-sand: #FDF5E6;
+        --dark-gray: #2C3E50;
+    }
+
+    .back-arrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--tunisia-red);
+        text-decoration: none;
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .back-arrow:hover {
+        transform: translateX(-5px);
+        color: var(--tunisia-orange);
+    }
+
+    .page-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--tunisia-red);
+        margin-bottom: 0.5rem;
+    }
+
+    .hotel-subtitle {
+        color: var(--tunisia-orange);
+        margin-bottom: 2rem;
+        font-size: 1rem;
+    }
+
+    .chambre-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transition: all 0.4s ease;
+        margin-bottom: 30px;
+    }
+
+    .chambre-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(227,27,35,0.2);
+    }
+
+    .chambre-img {
+        height: 220px;
+        overflow: hidden;
+    }
+
+    .chambre-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .chambre-card:hover .chambre-img img {
+        transform: scale(1.05);
+    }
+
+    .chambre-content {
+        padding: 1.5rem;
+    }
+
+    .chambre-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--tunisia-blue);
+        margin-bottom: 0.5rem;
+    }
+
+    .chambre-info {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        font-size: 0.85rem;
+        color: #6c757d;
+        flex-wrap: wrap;
+    }
+
+    .chambre-info i {
+        color: var(--tunisia-red);
+        margin-right: 5px;
+    }
+
+    .chambre-desc {
+        color: #6c757d;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .chambre-price {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: var(--tunisia-red);
+        margin-bottom: 1rem;
+    }
+
+    .chambre-price small {
+        font-size: 0.8rem;
+        font-weight: 400;
+        color: #6c757d;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 0.5rem;
+    }
+
+    .btn-details {
+        flex: 1;
+        background: transparent;
+        border: 2px solid var(--tunisia-red);
+        color: var(--tunisia-red);
+        padding: 8px 0;
+        border-radius: 25px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        transition: all 0.3s ease;
+        font-size: 0.85rem;
+    }
+
+    .btn-details:hover {
+        background: var(--tunisia-red);
+        color: white;
+    }
+
+    .btn-reserve {
+        flex: 1;
+        background: var(--tunisia-blue);
+        color: white;
+        border: none;
+        padding: 8px 0;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-reserve:hover {
+        background: #00408a;
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal.active {
+        display: flex;
+    }
+    
+    .modal-content {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        max-width: 480px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #E8DFD1;
+    }
+    
+    .modal-header h3 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--tunisia-blue);
+        margin: 0;
+    }
+    
+    .close-modal {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #9CA3AF;
+    }
+    
+    .close-modal:hover {
+        color: var(--tunisia-red);
+    }
+    
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-group label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--dark-gray);
+        margin-bottom: 0.3rem;
+    }
+    
+    .form-group input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #E8DFD1;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+    }
+    
+    .form-group input:focus {
+        outline: none;
+        border-color: var(--tunisia-blue);
+    }
+    
+    .form-group input.error {
+        border-color: #EF4444;
+        background: #FEF2F2;
+    }
+    
+    .error-message {
+        color: #EF4444;
+        font-size: 0.7rem;
+        margin-top: 0.2rem;
+        display: none;
+    }
+    
+    .error-message.show {
+        display: block;
+    }
+    
+    .btn-submit {
+        width: 100%;
+        background: var(--tunisia-blue);
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 0.5rem;
+    }
+    
+    .btn-submit:hover {
+        background: #00408a;
+    }
+    
+    .btn-submit:disabled {
+        background: #9CA3AF;
+        cursor: not-allowed;
+    }
+    
+    /* Toast de confirmation */
+    .success-toast {
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: #10B981;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        z-index: 1100;
+        animation: slideInRight 0.3s ease, fadeOut 0.3s ease 3.7s forwards;
+        font-size: 0.9rem;
+    }
+    
+    .error-toast {
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: #EF4444;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        z-index: 1100;
+        animation: slideInRight 0.3s ease, fadeOut 0.3s ease 3.7s forwards;
+        font-size: 0.9rem;
+    }
+    
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes fadeOut {
+        to { opacity: 0; visibility: hidden; }
+    }
+    
+    .success-toast i, .error-toast i {
+        font-size: 1.2rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem;
+        background: white;
+        border-radius: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .page-title { font-size: 1.5rem; }
+        .chambre-img { height: 180px; }
+        .btn-group { flex-direction: column; gap: 8px; }
+        .modal-content { padding: 1.5rem; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <a href="{{ path('app_hotel_show', {'idH': hotel.idH}) }}" class="back-arrow">
+        <i class="fas fa-arrow-left"></i> Retour à l'hôtel
+    </a>
+    
+    <h1 class="page-title">{{ hotel.nom }}</h1>
+    <p class="hotel-subtitle">{{ hotel.ville }} - {{ hotel.adresse }}</p>
+
+    <div class="row">
+        {% for chambre in chambres %}
+            <div class="col-md-6 col-lg-4">
+                <div class="chambre-card">
+                    <div class="chambre-img">
+                        {% if chambre.image %}
+                            <img src="{{ asset('uploads/chambres/' ~ chambre.image|replace({' ': '%20'})) }}" alt="Chambre n°{{ chambre.num }}">
+                        {% else %}
+                            <img src="https://images.pexels.com/photos/271618/pexels-photo-271618.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Chambre n°{{ chambre.num }}">
+                        {% endif %}
+                    </div>
+                    <div class="chambre-content">
+                        <h3 class="chambre-title">Chambre n°{{ chambre.num }}</h3>
+                        <div class="chambre-info">
+                            <span><i class="fas fa-bed"></i> {{ chambre.type }}</span>
+                            <span><i class="fas fa-users"></i> {{ chambre.capacite_max }} personnes</span>
+                            {% if chambre.status == 'disponible' %}
+                                <span class="text-success"><i class="fas fa-check-circle"></i> Disponible</span>
+                            {% else %}
+                                <span class="text-danger"><i class="fas fa-times-circle"></i> Indisponible</span>
+                            {% endif %}
+                        </div>
+                        <p class="chambre-desc">{{ chambre.description|slice(0, 100) }}{% if chambre.description|length > 100 %}...{% endif %}</p>
+                        <div class="chambre-price">
+                            {{ chambre.prix_nuit|number_format(2, ',', ' ') }} <small>€ / nuit</small>
+                        </div>
+                        <div class="btn-group">
+                            <a href="{{ path('app_chambre_show', {'idCh': chambre.idCh}) }}" class="btn-details">
+                                Détails
+                            </a>
+                            <a href="{{ path('app_chambre_show', {'idCh': chambre.idCh}) }}?reserve=1" class="btn-reserve">
+                                Réserver
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <div class="empty-state">
+                    <i class="fas fa-bed fa-3x mb-3" style="color: #E8DFD1;"></i>
+                    <h3>Aucune chambre disponible</h3>
+                    <p>Aucune chambre n'est proposée pour cet hôtel pour le moment.</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+{# Le formulaire de réservation est accessible depuis la page de détail de la chambre (app_chambre_show)
+   Pour éviter du JavaScript et des champs non souhaités ici, on redirige l'utilisateur vers la page de la chambre
+   où le formulaire a été rendu sans JS et avec les validations côté serveur. #}
+{% endblock %}

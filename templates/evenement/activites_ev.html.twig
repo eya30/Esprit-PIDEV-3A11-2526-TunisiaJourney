@@ -1,0 +1,641 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Activités - {{ evenement.Titre }}{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    :root {
+        --tunisia-red:  #E31B23;
+        --tunisia-blue: #0054A6;
+        --tunisia-sand: #FDF5E6;
+        --dark-gray:    #2C3E50;
+        --gold:         #F5A623;
+        --gold-hover:   #e09510;
+        --filter-accent: #264653;
+    }
+
+    /* ── Event Header ── */
+    .event-header {
+        text-align: center;
+        padding: 2rem 1rem 2rem;
+        background: linear-gradient(135deg, var(--tunisia-sand) 0%, #fff 100%);
+        border-radius: 20px;
+        margin-bottom: 1.5rem;
+    }
+    .event-header h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.4rem; font-weight: 700; color: var(--dark-gray); margin: 0;
+    }
+    .event-header .subtitle-line {
+        display: inline-block; width: 60px; height: 4px;
+        background: var(--tunisia-red); border-radius: 2px; margin-top: 0.8rem;
+    }
+
+    /* ── Bouton Planificateur IA ── */
+    .btn-ai-planner {
+        display: inline-flex; align-items: center; gap: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white; padding: 14px 32px; border-radius: 50px;
+        text-decoration: none; font-weight: 700; font-size: 1.1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102,126,234,0.3);
+        border: none; cursor: pointer;
+    }
+    .btn-ai-planner:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102,126,234,0.4);
+        color: white; text-decoration: none;
+    }
+    .btn-ai-planner i:first-child { font-size: 1.2rem; animation: pulse 2s infinite; }
+    .btn-ai-planner i:last-child { transition: transform 0.3s ease; }
+    .btn-ai-planner:hover i:last-child { transform: translateX(5px); }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.7; } }
+
+    /* ════════════════════════════════
+       FILTERS BAR
+    ════════════════════════════════ */
+    .filters-bar {
+        background: linear-gradient(135deg, #fdf8f2 0%, #fff 100%);
+        padding: 1.8rem 2rem; border-radius: 22px;
+        box-shadow: 0 8px 32px rgba(245,166,35,0.12), 0 2px 8px rgba(0,0,0,0.06);
+        border: 1.5px solid rgba(245,166,35,0.25);
+        margin-bottom: 2.5rem;
+        display: flex; flex-wrap: nowrap; gap: 1rem; align-items: flex-end;
+    }
+    .filters-selects { display: flex; flex-wrap: nowrap; gap: 1rem; align-items: flex-end; flex: 1; }
+    .filters-actions { display: flex; flex-wrap: nowrap; gap: 1rem; align-items: flex-end; flex-shrink: 0; }
+    .filter-group { display: flex; flex-direction: column; gap: 0.5rem; flex-shrink: 0; }
+    .filter-group label { font-weight: 700; color: var(--dark-gray); font-size: 0.92rem; display: flex; align-items: center; gap: 6px; }
+    .filter-group label i { color: var(--gold); font-size: 0.88rem; }
+
+    .custom-select-wrapper { position: relative; min-width: 160px; }
+    .custom-select-btn {
+        width: 100%; display: flex; align-items: center; justify-content: space-between;
+        gap: 8px; padding: 10px 16px; border: 2px solid var(--gold); border-radius: 30px;
+        background: white; font-size: 0.9rem; color: #1a1a1a; font-weight: 500;
+        font-family: 'Montserrat', sans-serif; cursor: pointer;
+        transition: all 0.25s ease; user-select: none; height: 46px;
+    }
+    .custom-select-btn:hover, .custom-select-btn.open {
+        border-color: var(--gold-hover); background: rgba(245,166,35,0.05);
+        box-shadow: 0 0 0 3px rgba(245,166,35,0.18);
+    }
+    .cs-chevron { font-size: 0.75rem; color: var(--gold); transition: transform 0.22s ease; flex-shrink: 0; }
+    .custom-select-btn.open .cs-chevron { transform: rotate(180deg); }
+    .custom-select-menu {
+        display: none; position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+        background: white; border-radius: 14px;
+        box-shadow: 0 12px 36px rgba(245,166,35,0.18);
+        border: 1.5px solid rgba(245,166,35,0.22); z-index: 9998; overflow: hidden; padding: 5px 0;
+    }
+    .custom-select-menu.open { display: block; animation: dropFade 0.16s ease; }
+    @keyframes dropFade { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:translateY(0); } }
+    .cs-option { padding: 11px 20px; font-size: 0.95rem; color: #1a1a1a; font-weight: 500; cursor: pointer; transition: background 0.14s; font-family: 'Montserrat', sans-serif; }
+    .cs-option:hover { background: rgba(245,166,35,0.10); color: var(--gold-hover); }
+    .cs-option.active { background: var(--gold); color: white; font-weight: 700; }
+
+    .btn-filter, .btn-reset {
+        padding: 10px 20px; border-radius: 30px; font-weight: 700; font-size: 0.9rem;
+        cursor: pointer; transition: all 0.25s ease; height: 46px;
+        display: inline-flex; align-items: center; gap: 7px;
+        white-space: nowrap; font-family: 'Montserrat', sans-serif; flex-shrink: 0;
+    }
+    .btn-filter { background: white; border: 2px solid var(--gold); color: #264653; }
+    .btn-filter:hover { background: white; border-color: var(--gold); color: #264653; box-shadow: none; transform: none; }
+    .btn-reset { background: white; border: 2px solid rgba(245,166,35,0.45); color: #a07018; }
+    .btn-reset:hover { background: rgba(245,166,35,0.07); border-color: var(--gold); color: var(--gold-hover); transform: translateY(-2px); }
+
+    .sort-wrapper { position: relative; display: flex; align-items: flex-end; }
+    .sort-toggle-btn {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 8px; padding: 10px 18px; border: 2px solid #264653; border-radius: 30px;
+        background: #264653; color: white; font-weight: 700; font-size: 0.9rem;
+        cursor: pointer; height: 46px; width: 200px; min-width: 200px;
+        overflow: hidden; user-select: none; font-family: 'Montserrat', sans-serif; flex-shrink: 0;
+    }
+    .sort-toggle-btn:hover, .sort-toggle-btn.open { background: #264653; color: white; box-shadow: none; }
+    #sortLabel { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+    .sort-toggle-btn .sort-chevron { transition: transform 0.22s ease; font-size: 0.75rem; flex-shrink: 0; }
+    .sort-toggle-btn.open .sort-chevron { transform: rotate(180deg); }
+    .sort-dropdown-menu {
+        display: none; position: absolute; top: calc(100% + 8px); right: 0;
+        background: white; border-radius: 14px;
+        box-shadow: 0 14px 42px rgba(38,70,83,0.16); min-width: 240px;
+        z-index: 9999; overflow: hidden; padding: 6px 0;
+        border: 1.5px solid rgba(38,70,83,0.14);
+    }
+    .sort-dropdown-menu.open { display: block; animation: dropFade 0.16s ease; }
+    .sort-option {
+        display: flex; align-items: center; gap: 12px; padding: 13px 22px;
+        font-size: 0.95rem; color: var(--dark-gray); cursor: pointer;
+        transition: background 0.14s; font-weight: 600; font-family: 'Montserrat', sans-serif;
+    }
+    .sort-option:hover { background: #dbeafe; color: #264653; }
+    .sort-option.active { background: rgba(38,70,83,0.07); font-weight: 700; color: #264653; }
+    .sort-option i { width: 18px; text-align: center; color: #264653; font-size: 0.9rem; }
+    #sortSelect { display: none; }
+
+    .active-filters { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+    .active-filter-badge {
+        background: var(--filter-accent); color: white; padding: 4px 12px; border-radius: 20px;
+        font-size: 0.78rem; font-weight: 600; display: flex; align-items: center; gap: 7px;
+    }
+    .remove-filter { cursor: pointer; font-weight: bold; opacity: 0.8; }
+    .remove-filter:hover { opacity: 1; }
+
+    .no-results-msg {
+        display: none; text-align: center; padding: 3rem;
+        background: white; border-radius: 18px; color: #6c757d; width: 100%;
+    }
+    .no-results-msg i { font-size: 2.5rem; margin-bottom: 1rem; color: #ccc; display: block; }
+
+    /* ════════════════════════════════
+       ACTIVITE CARDS
+    ════════════════════════════════ */
+    .activite-card {
+        background: white; border-radius: 20px; overflow: hidden;
+        box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+        transition: all 0.35s ease; position: relative; height: 100%;
+    }
+    .activite-card:hover { transform: translateY(-8px); box-shadow: 0 16px 40px rgba(0,0,0,0.14); }
+
+    #activitesGrid .col-md-6, #activitesGrid .col-lg-4 { padding-left: 14px; padding-right: 14px; margin-bottom: 2.4rem; }
+
+    .activite-img { height: 250px; overflow: hidden; position: relative; }
+    .activite-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+    .activite-card:hover .activite-img img { transform: scale(1.06); }
+
+    .price-badge {
+        position: absolute; bottom: 12px; right: 12px;
+        background: rgba(44,62,80,0.88); color: #FFD700;
+        font-weight: 700; font-size: 0.9rem; padding: 5px 12px; border-radius: 20px;
+    }
+
+    .dispo-badge {
+        position: absolute; top: 12px; left: 12px;
+        padding: 7px 16px; border-radius: 20px;
+        font-size: 0.85rem; font-weight: 700; z-index: 2; letter-spacing: 0.2px;
+    }
+    .dispo-available { background: #27AE60; color: white; }
+    .dispo-warning   { background: #F39C12; color: white; }
+    .dispo-soldout   { background: #E74C3C; color: white; }
+
+    /* ══ BOUTON FAVORI SUR LES ACTIVITÉS ══ */
+    .btn-card-favori {
+        position: absolute; top: 12px; right: 12px; z-index: 4;
+        width: 38px; height: 38px; border-radius: 50%;
+        border: 2px solid #E31B23; background: white; color: #E31B23;
+        font-size: 0.95rem; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.28s cubic-bezier(0.4,0,0.2,1);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .btn-card-favori:hover { transform: scale(1.12); box-shadow: 0 4px 14px rgba(227,27,35,0.30); }
+    .btn-card-favori.active { border-color: #E31B23; background: #E31B23; color: white; box-shadow: 0 4px 14px rgba(227,27,35,0.40); }
+    .btn-card-favori.active:hover { background: #C41E3A; transform: scale(1.1); }
+    .btn-card-favori.loading { opacity: 0.6; pointer-events: none; }
+
+    .activite-content { padding: 1.6rem 1.7rem 1.8rem; }
+
+    .activite-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.45rem; font-weight: 700; color: var(--dark-gray); margin-bottom: 0.8rem;
+    }
+
+    .activite-type { display: flex; align-items: center; gap: 6px; color: #93032E; font-weight: 700; font-size: 0.97rem; margin-bottom: 0.75rem; }
+    .activite-type i { color: #93032E; }
+
+    .activite-meta { display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 1.2rem; font-size: 0.93rem; color: #264653; font-weight: 600; }
+    .activite-meta span { display: flex; align-items: center; gap: 7px; }
+
+    .places-info { display: flex; align-items: center; gap: 7px; font-size: 0.93rem; color: #264653; font-weight: 600; margin-bottom: 1.4rem; }
+    .places-info.soldout { color: #E74C3C; font-weight: 700; }
+    .places-info.soldout i { color: #E74C3C; }
+
+    .btn-details {
+        display: block; background: var(--gold); border: none;
+        color: #264653; padding: 11px 0; border-radius: 30px;
+        font-weight: 700; text-decoration: none; text-align: center;
+        transition: all 0.3s ease; font-size: 0.92rem; width: 100%;
+    }
+    .btn-details:hover {
+        background: var(--gold-hover); transform: translateY(-2px); color: #264653;
+        box-shadow: 0 6px 18px rgba(245,166,35,0.4);
+    }
+
+    .empty-state { text-align: center; padding: 4rem; background: white; border-radius: 20px; }
+
+    @media (max-width: 768px) {
+        .event-header h1 { font-size: 1.6rem; }
+        .activite-img { height: 180px; }
+        .filters-bar { padding: 1.5rem; }
+        .filters-selects { flex-direction: column; }
+        .filters-actions { flex-wrap: wrap; gap: 0.8rem; }
+        .custom-select-wrapper { min-width: 100%; }
+        .sort-wrapper { width: 100%; }
+        .sort-toggle-btn { width: 100% !important; min-width: unset !important; justify-content: space-between; }
+        .sort-dropdown-menu { right: auto; left: 0; width: 100%; }
+        .btn-ai-planner { width: 100%; justify-content: center; margin-bottom: 1rem; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-4 pb-5" style="padding-bottom: 4rem !important;">
+
+    {# ── Header événement ── #}
+    <div class="event-header">
+        <h1>{{ evenement.Titre }}</h1>
+        <div class="subtitle-line"></div>
+    </div>
+
+    {# ── Bouton Planificateur IA ── #}
+    <div class="text-center mb-4">
+        <a href="{{ path('app_ai_planner') }}" class="btn-ai-planner">
+            <i class="fas fa-robot"></i>
+            <span>Recommendation IA</span>
+            <i class="fas fa-chevron-right"></i>
+        </a>
+    </div>
+
+    {# ════════════════════════════════
+       FILTERS BAR
+    ════════════════════════════════ #}
+    <div class="filters-bar">
+        <div class="filters-selects">
+
+            <div class="filter-group">
+                <label><i class="fas fa-concierge-bell"></i> Type</label>
+                <div class="custom-select-wrapper" id="typeWrapper">
+                    <button class="custom-select-btn" type="button">
+                        <span class="custom-select-label">Tous les types</span>
+                        <i class="fas fa-chevron-down cs-chevron"></i>
+                    </button>
+                    <div class="custom-select-menu">
+                        <div class="cs-option active" data-value="all">Tous les types</div>
+                        {% for type in typesActivite %}
+                            <div class="cs-option" data-value="{{ type|lower }}">{{ type }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <input type="hidden" id="typeFilter" value="all">
+            </div>
+
+            <div class="filter-group">
+                <label><i class="fas fa-coins"></i> Prix max</label>
+                <div class="custom-select-wrapper" id="priceWrapper">
+                    <button class="custom-select-btn" type="button">
+                        <span class="custom-select-label">Tous les prix</span>
+                        <i class="fas fa-chevron-down cs-chevron"></i>
+                    </button>
+                    <div class="custom-select-menu">
+                        <div class="cs-option active" data-value="all">Tous les prix</div>
+                        <div class="cs-option" data-value="20">Jusqu'à 20 TND</div>
+                        <div class="cs-option" data-value="50">Jusqu'à 50 TND</div>
+                        <div class="cs-option" data-value="100">Jusqu'à 100 TND</div>
+                        <div class="cs-option" data-value="200">Jusqu'à 200 TND</div>
+                    </div>
+                </div>
+                <input type="hidden" id="priceFilter" value="all">
+            </div>
+
+            <div class="filter-group">
+                <label><i class="fas fa-check-circle"></i> Disponibilité</label>
+                <div class="custom-select-wrapper" id="dispoWrapper">
+                    <button class="custom-select-btn" type="button">
+                        <span class="custom-select-label">Tous</span>
+                        <i class="fas fa-chevron-down cs-chevron"></i>
+                    </button>
+                    <div class="custom-select-menu">
+                        <div class="cs-option active" data-value="all">Tous</div>
+                        <div class="cs-option" data-value="available">Encore des places</div>
+                        <div class="cs-option" data-value="warning">Presque complet</div>
+                        <div class="cs-option" data-value="soldout">Complet</div>
+                    </div>
+                </div>
+                <input type="hidden" id="dispoFilter" value="all">
+            </div>
+
+        </div>
+
+        <div class="filters-actions">
+            <button class="btn-filter" id="applyFiltersBtn"><i class="fas fa-filter"></i> Appliquer</button>
+            <button class="btn-reset" id="resetFiltersBtn"><i class="fas fa-undo-alt"></i> Réinitialiser</button>
+
+            <div class="sort-wrapper">
+                <button class="sort-toggle-btn" id="sortToggleBtn" type="button">
+                    <i class="fas fa-sort-amount-down-alt" style="flex-shrink:0;"></i>
+                    <span id="sortLabel">Trier</span>
+                    <i class="fas fa-chevron-down sort-chevron"></i>
+                </button>
+                <div class="sort-dropdown-menu" id="sortDropdownMenu">
+                    <div class="sort-option active" data-value="heure_asc"><i class="fas fa-clock"></i> Heure de début</div>
+                    <div class="sort-option" data-value="prix_asc"><i class="fas fa-coins"></i> Prix</div>
+                    <div class="sort-option" data-value="capacite_asc"><i class="fas fa-users"></i> Capacité</div>
+                    <div class="sort-option" data-value="duree_asc"><i class="fas fa-hourglass-half"></i> Durée</div>
+                    <div class="sort-option" data-value="titre_asc"><i class="fas fa-sort-alpha-down"></i> Titre</div>
+                    <div class="sort-option" data-value="animateur_asc"><i class="fas fa-chalkboard-teacher"></i> Animateur</div>
+                </div>
+                <select id="sortSelect">
+                    <option value="heure_asc">Heure de début</option>
+                    <option value="prix_asc">Prix</option>
+                    <option value="capacite_asc">Capacité</option>
+                    <option value="duree_asc">Durée</option>
+                    <option value="titre_asc">Titre</option>
+                    <option value="animateur_asc">Animateur</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    {# Badges filtres actifs #}
+    <div class="active-filters" id="activeFilters"></div>
+
+    {# Message aucun résultat #}
+    <div class="no-results-msg" id="noResultsMsg">
+        <i class="fas fa-search"></i>
+        <p>Aucune activité ne correspond à vos filtres.</p>
+    </div>
+
+    {# ── Grille activités ── #}
+    <div class="row" id="activitesGrid">
+        {% for activite in activites %}
+            {% set pd = placesData[activite.IDAct] ?? {placesRestantes: activite.CapaciteM, disponibilite: 'available', pourcentageRemplissage: 0} %}
+
+            {% if pd.disponibilite == 'soldout' %}
+                {% set dispoLabel = 'Complet' %}
+                {% set dispoCss   = 'dispo-soldout' %}
+            {% elseif pd.disponibilite == 'warning' %}
+                {% set dispoLabel = 'Presque complet' %}
+                {% set dispoCss   = 'dispo-warning' %}
+            {% else %}
+                {% set dispoLabel = 'Disponible' %}
+                {% set dispoCss   = 'dispo-available' %}
+            {% endif %}
+
+            <div class="col-md-6 col-lg-4 activite-item"
+                 data-type="{{ activite.TypeActivite|lower }}"
+                 data-prix="{{ activite.Prix }}"
+                 data-dispo="{{ pd.disponibilite }}"
+                 data-heure="{{ activite.HeureDebut }}"
+                 data-capacite="{{ activite.CapaciteM }}"
+                 data-duree="{{ activite.Duree|lower }}"
+                 data-titre="{{ activite.Titre|lower }}"
+                 data-animateur="{{ activite.NomAnimateur|lower }}">
+
+                <div class="activite-card">
+                    <div class="activite-img">
+                        {% if activite.Image and activite.Image != 'NULL' %}
+                            <img src="{{ asset('uploads/activites/' ~ activite.Image|replace({' ': '%20'})) }}" alt="{{ activite.Titre }}">
+                        {% else %}
+                            <img src="https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=800" alt="{{ activite.Titre }}">
+                        {% endif %}
+                        <div class="price-badge">{{ activite.Prix|number_format(2, ',', ' ') }} TND</div>
+                        <span class="dispo-badge {{ dispoCss }}">{{ dispoLabel }}</span>
+
+                        {# ══ BOUTON FAVORI ACTIVITÉ — même design que les événements ══ #}
+                        <button
+                            class="btn-card-favori"
+                            data-fav-type="activite"
+                            data-fav-id="{{ activite.IDAct }}"
+                            title="Ajouter aux favoris"
+                            onclick="toggleFavoriActivite({{ activite.IDAct }})">
+                            <i class="far fa-heart"></i>
+                        </button>
+                    </div>
+
+                    <div class="activite-content">
+                        <h3 class="activite-title">{{ activite.Titre }}</h3>
+
+                        <div class="activite-type">
+                            <i class="fas fa-concierge-bell"></i>
+                            {{ activite.TypeActivite }}
+                        </div>
+
+                        <div class="activite-meta">
+                            <span><i class="far fa-clock"></i> {{ activite.HeureDebut }} ({{ activite.Duree }})</span>
+                            <span><i class="fas fa-chalkboard-teacher"></i> {{ activite.NomAnimateur }}</span>
+                        </div>
+
+                        <div class="places-info {{ pd.disponibilite == 'soldout' ? 'soldout' : '' }}">
+                            <i class="fas fa-users"></i>
+                            {{ pd.placesRestantes }}/{{ activite.CapaciteM }} places restantes
+                        </div>
+
+                        <a href="{{ path('app_activite_show', {'IDAct': activite.IDAct}) }}" class="btn-details">
+                            Voir détails
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        {% else %}
+            <div class="col-12">
+                <div class="empty-state">
+                    <i class="fas fa-calendar-alt fa-3x mb-3" style="color: #E8DFD1;"></i>
+                    <h3>Aucune activité disponible</h3>
+                    <p>Aucune activité n'est proposée pour cet événement pour le moment.</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    /* ════════════════════════════════
+       CUSTOM SELECT DROPDOWNS
+    ════════════════════════════════ */
+    const customSelects = [
+        { wrapperId: 'typeWrapper',  hiddenId: 'typeFilter'  },
+        { wrapperId: 'priceWrapper', hiddenId: 'priceFilter' },
+        { wrapperId: 'dispoWrapper', hiddenId: 'dispoFilter' },
+    ];
+
+    customSelects.forEach(function (cfg) {
+        const wrapper = document.getElementById(cfg.wrapperId);
+        if (!wrapper) return;
+        const btn    = wrapper.querySelector('.custom-select-btn');
+        const menu   = wrapper.querySelector('.custom-select-menu');
+        const label  = wrapper.querySelector('.custom-select-label');
+        const hidden = document.getElementById(cfg.hiddenId);
+
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            document.querySelectorAll('.custom-select-menu.open').forEach(m => { if (m !== menu) m.classList.remove('open'); });
+            document.querySelectorAll('.custom-select-btn.open').forEach(b => { if (b !== btn) b.classList.remove('open'); });
+            const isOpen = menu.classList.toggle('open');
+            btn.classList.toggle('open', isOpen);
+        });
+
+        wrapper.querySelectorAll('.cs-option').forEach(function (opt) {
+            opt.addEventListener('click', function (e) {
+                e.stopPropagation();
+                wrapper.querySelectorAll('.cs-option').forEach(o => o.classList.remove('active'));
+                opt.classList.add('active');
+                label.textContent = opt.textContent.trim();
+                hidden.value = opt.dataset.value;
+                menu.classList.remove('open');
+                btn.classList.remove('open');
+            });
+        });
+    });
+
+    /* ════════════════════════════════
+       SORT DROPDOWN
+    ════════════════════════════════ */
+    const sortToggleBtn    = document.getElementById('sortToggleBtn');
+    const sortDropdownMenu = document.getElementById('sortDropdownMenu');
+    const sortLabel        = document.getElementById('sortLabel');
+    const sortSelect       = document.getElementById('sortSelect');
+
+    sortToggleBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const isOpen = sortDropdownMenu.classList.toggle('open');
+        sortToggleBtn.classList.toggle('open', isOpen);
+    });
+
+    document.querySelectorAll('.sort-option').forEach(function (opt) {
+        opt.addEventListener('click', function (e) {
+            e.stopPropagation();
+            document.querySelectorAll('.sort-option').forEach(o => o.classList.remove('active'));
+            opt.classList.add('active');
+            sortSelect.value = opt.dataset.value;
+            const fullText = opt.textContent.trim();
+            sortLabel.textContent = fullText.length > 14 ? fullText.substring(0, 12) + '…' : fullText;
+            sortDropdownMenu.classList.remove('open');
+            sortToggleBtn.classList.remove('open');
+            sortActivites();
+        });
+    });
+
+    document.addEventListener('click', function () {
+        document.querySelectorAll('.custom-select-menu').forEach(m => m.classList.remove('open'));
+        document.querySelectorAll('.custom-select-btn').forEach(b => b.classList.remove('open'));
+        sortDropdownMenu.classList.remove('open');
+        sortToggleBtn.classList.remove('open');
+    });
+
+    /* ════════════════════════════════
+       RÉFÉRENCES DOM
+    ════════════════════════════════ */
+    const applyBtn      = document.getElementById('applyFiltersBtn');
+    const resetBtn      = document.getElementById('resetFiltersBtn');
+    const typeInput     = document.getElementById('typeFilter');
+    const priceInput    = document.getElementById('priceFilter');
+    const dispoInput    = document.getElementById('dispoFilter');
+    const activeFilters = document.getElementById('activeFilters');
+    const noResultsMsg  = document.getElementById('noResultsMsg');
+    const grid          = document.getElementById('activitesGrid');
+
+    let currentFilters = { type: 'all', prix: 'all', dispo: 'all' };
+
+    function getActiveLabel(wrapperId) {
+        const w = document.getElementById(wrapperId);
+        if (!w) return '';
+        const active = w.querySelector('.cs-option.active');
+        return active ? active.textContent.trim() : '';
+    }
+
+    function resetCustomSelect(wrapperId, hiddenId) {
+        const w = document.getElementById(wrapperId);
+        if (!w) return;
+        w.querySelectorAll('.cs-option').forEach(o => o.classList.remove('active'));
+        const first = w.querySelector('.cs-option[data-value="all"]');
+        if (first) { first.classList.add('active'); w.querySelector('.custom-select-label').textContent = first.textContent.trim(); }
+        document.getElementById(hiddenId).value = 'all';
+    }
+
+    function updateActiveFilterBadges() {
+        let html = '';
+        if (currentFilters.type !== 'all') {
+            html += `<span class="active-filter-badge"><i class="fas fa-concierge-bell"></i> ${getActiveLabel('typeWrapper')}<span class="remove-filter" data-filter="type">✕</span></span>`;
+        }
+        if (currentFilters.prix !== 'all') {
+            html += `<span class="active-filter-badge"><i class="fas fa-coins"></i> ${getActiveLabel('priceWrapper')}<span class="remove-filter" data-filter="prix">✕</span></span>`;
+        }
+        if (currentFilters.dispo !== 'all') {
+            html += `<span class="active-filter-badge"><i class="fas fa-check-circle"></i> ${getActiveLabel('dispoWrapper')}<span class="remove-filter" data-filter="dispo">✕</span></span>`;
+        }
+        activeFilters.innerHTML = html;
+
+        document.querySelectorAll('.remove-filter').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                switch (this.dataset.filter) {
+                    case 'type':  resetCustomSelect('typeWrapper',  'typeFilter');  currentFilters.type  = 'all'; break;
+                    case 'prix':  resetCustomSelect('priceWrapper', 'priceFilter'); currentFilters.prix  = 'all'; break;
+                    case 'dispo': resetCustomSelect('dispoWrapper', 'dispoFilter'); currentFilters.dispo = 'all'; break;
+                }
+                updateActiveFilterBadges();
+                filterActivites();
+            });
+        });
+    }
+
+    function filterActivites() {
+        const items = document.querySelectorAll('.activite-item');
+        let visible = 0;
+        items.forEach(function (item) {
+            let show = true;
+            if (currentFilters.type !== 'all' && item.dataset.type !== currentFilters.type) show = false;
+            if (currentFilters.prix !== 'all' && parseFloat(item.dataset.prix) > parseFloat(currentFilters.prix)) show = false;
+            if (currentFilters.dispo !== 'all' && item.dataset.dispo !== currentFilters.dispo) show = false;
+            item.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+        noResultsMsg.style.display = visible === 0 ? 'block' : 'none';
+        sortActivites();
+    }
+
+    function sortActivites() {
+        const items = Array.from(document.querySelectorAll('.activite-item')).filter(i => i.style.display !== 'none');
+        const val   = sortSelect.value;
+        items.sort(function (a, b) {
+            switch (val) {
+                case 'heure_asc':     return a.dataset.heure.localeCompare(b.dataset.heure);
+                case 'prix_asc':      return parseFloat(a.dataset.prix) - parseFloat(b.dataset.prix);
+                case 'capacite_asc':  return parseInt(a.dataset.capacite) - parseInt(b.dataset.capacite);
+                case 'duree_asc':     return a.dataset.duree.localeCompare(b.dataset.duree, 'fr', { sensitivity: 'base' });
+                case 'titre_asc':     return a.dataset.titre.localeCompare(b.dataset.titre, 'fr', { sensitivity: 'base' });
+                case 'animateur_asc': return a.dataset.animateur.localeCompare(b.dataset.animateur, 'fr', { sensitivity: 'base' });
+                default: return 0;
+            }
+        });
+        items.forEach(item => grid.appendChild(item));
+    }
+
+    function applyFilters() {
+        currentFilters = { type: typeInput.value, prix: priceInput.value, dispo: dispoInput.value };
+        updateActiveFilterBadges();
+        filterActivites();
+    }
+
+    function resetFilters() {
+        resetCustomSelect('typeWrapper',  'typeFilter');
+        resetCustomSelect('priceWrapper', 'priceFilter');
+        resetCustomSelect('dispoWrapper', 'dispoFilter');
+        currentFilters = { type: 'all', prix: 'all', dispo: 'all' };
+        updateActiveFilterBadges();
+        filterActivites();
+    }
+
+    if (applyBtn) applyBtn.addEventListener('click', applyFilters);
+    if (resetBtn) resetBtn.addEventListener('click', resetFilters);
+
+    sortSelect.value = 'heure_asc';
+    updateActiveFilterBadges();
+    filterActivites();
+
+    // Mettre à jour les boutons favoris après chargement
+    // (le système favoris est initialisé dans _favoris_sidebar.html.twig)
+    setTimeout(function() {
+        if (window.favoriSystem) window.favoriSystem.updateAllButtons();
+    }, 200);
+});
+</script>
+{% endblock %}

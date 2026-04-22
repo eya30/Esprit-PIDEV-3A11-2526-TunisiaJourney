@@ -1,0 +1,331 @@
+{# templates/user/profile_edit.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}TunisiaJourney — Modifier le profil{% endblock %}
+
+{% block stylesheets %}
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rouge:     #A0231F;
+    --rouge-vif: #C0392B;
+    --nuit:      #1A2E4A;
+    --sable:     #F5EDD8;
+    --sable-cl:  #FDF6EC;
+    --blanc:     #FFFFFF;
+    --gris:      #A0A0A0;
+    --border:    #EFE5D0;
+  }
+
+  /* ── Blur sur tout le contenu de base sauf notre overlay ── */
+  .navbar, main, footer,
+  .reservations-sidebar, .sidebar-overlay,
+  #reservationsSidebar, #sidebarOverlay {
+    filter: blur(7px);
+    pointer-events: none;
+    user-select: none;
+    transition: filter 0s;
+  }
+
+  /* ── Overlay sombre par-dessus ── */
+  .edit-overlay {
+    position: fixed; inset: 0; z-index: 1500;
+    display: flex;
+  }
+
+  /* ── Zone gauche cliquable pour fermer ── */
+  .edit-overlay-bg {
+    flex: 1;
+    background: rgba(26,46,74,.38);
+    backdrop-filter: blur(2px);
+    cursor: pointer;
+  }
+
+  /* ── Panneau droit ── */
+  .edit-panel {
+    width: min(520px, 96vw);
+    height: 100vh;
+    background: linear-gradient(160deg, #FDF6EC 0%, #F5EDD8 100%);
+    box-shadow: -12px 0 60px rgba(26,46,74,.22);
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+    animation: slideInRight .45s cubic-bezier(.76,0,.24,1);
+  }
+  @keyframes slideInRight {
+    from { transform: translateX(100%); }
+    to   { transform: translateX(0); }
+  }
+
+  /* ── Header panneau ── */
+  .edit-panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 28px 14px;
+    border-bottom: 1px solid rgba(160,35,31,.1);
+    position: sticky; top: 0; z-index: 10;
+    background: linear-gradient(160deg, #FDF6EC 0%, #F5EDD8 100%);
+  }
+  .edit-panel-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem; font-weight: 700; color: var(--nuit);
+    margin: 0; display: flex; align-items: center; gap: 8px;
+  }
+  .edit-panel-title i { color: var(--rouge); }
+  .edit-panel-close {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: none; background: rgba(160,35,31,.1);
+    color: var(--rouge); font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; text-decoration: none;
+    transition: background .2s, transform .2s;
+  }
+  .edit-panel-close:hover { background: var(--rouge); color: white; transform: rotate(90deg); }
+
+  /* ── Corps du panneau ── */
+  .edit-body { padding: 20px 28px 32px; display: flex; flex-direction: column; gap: 16px; }
+
+  /* ── Mini hero ── */
+  .edit-hero {
+    background: white; border-radius: 16px; padding: 20px;
+    display: flex; align-items: center; gap: 16px;
+    box-shadow: 0 3px 16px rgba(26,46,74,.07);
+  }
+  .edit-avatar {
+    width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, #C94040, #A0231F);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem; font-weight: 700; color: white;
+    border: 3px solid rgba(160,35,31,.2);
+    box-shadow: 0 3px 12px rgba(160,35,31,.22);
+  }
+  .edit-hero-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem; font-weight: 700; color: var(--nuit); margin: 0 0 3px;
+  }
+  .edit-hero-sub { font-size: .78rem; color: var(--rouge); margin: 0; }
+
+  /* ── Cards ── */
+  .edit-card {
+    background: white; border-radius: 14px; padding: 20px 22px;
+    box-shadow: 0 3px 16px rgba(26,46,74,.06);
+  }
+  .edit-card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: .95rem; font-weight: 700; color: var(--nuit);
+    margin: 0 0 16px; padding-bottom: 8px;
+    border-bottom: 1.5px solid #F0E8DD;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .edit-card-title i { color: var(--rouge); font-size: .82rem; }
+
+  /* ── Grille champs ── */
+  .edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .edit-field { display: flex; flex-direction: column; gap: 4px; }
+  .edit-field label {
+    font-size: .68rem; font-weight: 700; color: var(--gris);
+    letter-spacing: .5px; text-transform: uppercase;
+  }
+  .edit-field input {
+    width: 100%; padding: 11px 14px;
+    border: 1.5px solid var(--border); border-radius: 9px;
+    font-family: 'DM Sans', sans-serif; font-size: .88rem; color: var(--nuit);
+    background: var(--sable-cl); outline: none;
+    transition: border-color .2s, background .2s;
+    -webkit-appearance: none; appearance: none;
+  }
+  .edit-field input:focus {
+    border-color: var(--rouge); background: white;
+    box-shadow: 0 0 0 3px rgba(160,35,31,.08);
+  }
+  .edit-field input[type="date"] { cursor: pointer; }
+  .edit-field ul { list-style: none; padding: 0; margin: 2px 0 0; }
+  .edit-field ul li { font-size: .7rem; color: var(--rouge-vif); }
+
+  /* ── Champs verrouillés ── */
+  .edit-field-locked { display: flex; flex-direction: column; gap: 4px; }
+  .edit-field-locked label {
+    font-size: .68rem; font-weight: 700; color: var(--gris);
+    letter-spacing: .5px; text-transform: uppercase;
+  }
+  .edit-locked-val {
+    padding: 11px 14px; background: #F0EEEA;
+    border-radius: 9px; border: 1.5px solid #E0DAD0;
+    font-size: .88rem; color: #999;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .edit-locked-val i { font-size: .75rem; }
+  .edit-lock-note { font-size: .68rem; color: #bbb; display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+
+  /* ── Boutons ── */
+  .edit-actions { display: flex; gap: 10px; }
+  .btn-edit-cancel {
+    flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 12px; border: 2px solid var(--rouge); border-radius: 50px;
+    background: transparent; color: var(--rouge);
+    font-family: 'DM Sans', sans-serif; font-size: .88rem; font-weight: 600;
+    text-decoration: none; cursor: pointer; transition: all .22s;
+  }
+  .btn-edit-cancel:hover { background: var(--rouge); color: white; }
+  .btn-edit-save {
+    flex: 2; display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 12px;
+    background: linear-gradient(90deg, var(--rouge) 0%, var(--rouge-vif) 100%);
+    color: white; border: none; border-radius: 50px;
+    font-family: 'DM Sans', sans-serif; font-size: .88rem; font-weight: 600;
+    cursor: pointer; box-shadow: 0 4px 14px rgba(160,35,31,.28);
+    transition: transform .18s, box-shadow .18s;
+  }
+  .btn-edit-save:hover { transform: translateY(-2px); box-shadow: 0 7px 20px rgba(160,35,31,.4); }
+
+  @media (max-width: 560px) {
+    .edit-grid { grid-template-columns: 1fr; }
+    .edit-actions { flex-direction: column-reverse; }
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+
+<div class="edit-overlay">
+
+  {# Zone gauche — clic pour retourner à l'accueil #}
+  <a href="{{ path('app_accueil') }}" class="edit-overlay-bg"></a>
+
+  {# Panneau droit #}
+  <div class="edit-panel">
+
+    {# Header #}
+    <div class="edit-panel-header">
+      <h2 class="edit-panel-title">
+        <i class="fas fa-pen"></i> Modifier le profil
+      </h2>
+      <a href="{{ path('app_accueil') }}" class="edit-panel-close">&times;</a>
+    </div>
+
+    <div class="edit-body">
+
+      {# Mini hero #}
+      <div class="edit-hero">
+        <div class="edit-avatar">
+          {{ user.prenom|slice(0,1)|upper }}{{ user.nom|slice(0,1)|upper }}
+        </div>
+        <div>
+          <p class="edit-hero-name">{{ user.prenom }} {{ user.nom }}</p>
+          <p class="edit-hero-sub">Modification des informations personnelles</p>
+        </div>
+      </div>
+
+      {# Formulaire #}
+      {{ form_start(form, {
+        'attr': {'novalidate': 'novalidate'},
+        'method': 'POST',
+        'action': path('app_profile_edit')
+      }) }}
+
+        {# Infos personnelles #}
+        <div class="edit-card">
+          <div class="edit-card-title">
+            <i class="fas fa-id-card"></i> Informations personnelles
+          </div>
+          <div class="edit-grid">
+
+            <div class="edit-field">
+              {{ form_label(form.nom) }}
+              {{ form_widget(form.nom) }}
+              {{ form_errors(form.nom) }}
+            </div>
+
+            <div class="edit-field">
+              {{ form_label(form.prenom) }}
+              {{ form_widget(form.prenom) }}
+              {{ form_errors(form.prenom) }}
+            </div>
+
+            <div class="edit-field">
+              {{ form_label(form.dateNaissance) }}
+              {{ form_widget(form.dateNaissance) }}
+              {{ form_errors(form.dateNaissance) }}
+            </div>
+
+            <div class="edit-field">
+              {{ form_label(form.telephone) }}
+              {{ form_widget(form.telephone) }}
+              {{ form_errors(form.telephone) }}
+            </div>
+
+            <div class="edit-field" style="grid-column: 1 / -1">
+              {{ form_label(form.adresse) }}
+              {{ form_widget(form.adresse) }}
+              {{ form_errors(form.adresse) }}
+            </div>
+
+          </div>
+        </div>
+
+      {# Infos de connexion modifiables #}
+<div class="edit-card">
+  <div class="edit-card-title">
+    <i class="fas fa-shield-alt"></i> Informations de connexion
+  </div>
+  <div style="display:flex; flex-direction:column; gap:12px;">
+
+    {# Email #}
+    <div class="edit-field">
+      <label>Email</label>
+      <input type="email" name="email" value="{{ user.email }}" required>
+    </div>
+
+    <hr style="border-color:#F0E8DD; margin:4px 0;">
+    <p style="font-size:.75rem; color:var(--gris); margin:0;">
+      <i class="fas fa-key"></i> Changer le mot de passe
+      <em>(laisser vide pour ne pas modifier)</em>
+    </p>
+
+    <div class="edit-field">
+      <label>Mot de passe actuel</label>
+      <input type="password" name="current_password" autocomplete="current-password"
+             placeholder="Votre mot de passe actuel">
+    </div>
+
+    <div class="edit-grid">
+      <div class="edit-field">
+        <label>Nouveau mot de passe</label>
+        <input type="password" name="new_password" autocomplete="new-password"
+               placeholder="Nouveau mot de passe">
+      </div>
+      <div class="edit-field">
+        <label>Confirmer</label>
+        <input type="password" name="confirm_password" autocomplete="new-password"
+               placeholder="Confirmer">
+      </div>
+    </div>
+
+  </div>
+</div>
+        {# Actions #}
+        <div class="edit-actions">
+          <a href="{{ path('app_accueil') }}" class="btn-edit-cancel">
+            <i class="fas fa-times"></i> Annuler
+          </a>
+          <button type="submit" class="btn-edit-save">
+            <i class="fas fa-check"></i> Enregistrer
+          </button>
+        </div>
+
+      {{ form_end(form) }}
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+  // Après redirect avec ?openProfile=1 → ouvre le modal profil
+  if (new URLSearchParams(window.location.search).get('openProfile') === '1') {
+    const m = document.getElementById('profileModal');
+    if (m) { m.classList.add('active'); document.body.style.overflow = 'hidden'; }
+  }
+</script>
+{% endblock %}

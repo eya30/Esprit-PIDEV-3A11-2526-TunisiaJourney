@@ -1,0 +1,323 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Météo détaillée - {{ weather.city }} - TunisiaJourney{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .hero-city {
+        background: linear-gradient(135deg, #1a2a3a 0%, #2d5f6e 100%);
+        position: relative;
+        padding: 3rem 0;
+    }
+    
+    .back-link {
+        color: rgba(255,255,255,0.8);
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+    
+    .back-link:hover {
+        color: white;
+    }
+    
+    .city-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 3rem;
+        font-weight: 700;
+    }
+    
+    .weather-detail-card {
+        background: white;
+        border-radius: 24px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        height: 100%;
+        transition: all 0.3s;
+    }
+    
+    .weather-detail-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+    }
+    
+    .stat-circle {
+        text-align: center;
+        padding: 1rem;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2d5f6e;
+    }
+    
+    .stat-label {
+        color: #8ba0aa;
+        font-size: 0.85rem;
+    }
+    
+    .forecast-card {
+        background: white;
+        border-radius: 20px;
+        padding: 1rem;
+        text-align: center;
+        transition: all 0.3s;
+        height: 100%;
+    }
+    
+    .forecast-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .date-picker-card {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 24px;
+        padding: 1.5rem;
+    }
+    
+    .wind-direction {
+        display: inline-block;
+        transform: rotate(0deg);
+        transition: transform 0.3s;
+    }
+    
+    .divider {
+        background: linear-gradient(90deg, transparent, #e8b86b, transparent);
+        height: 2px;
+        margin: 1.5rem 0;
+    }
+    
+    .info-badge {
+        background: rgba(232,184,107,0.15);
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 12px;
+    }
+    
+    .btn-outline-weather {
+        border: 2px solid #e8b86b;
+        color: #e8b86b;
+        background: transparent;
+        border-radius: 30px;
+        padding: 10px 24px;
+        transition: all 0.3s;
+    }
+    
+    .btn-outline-weather:hover {
+        background: #e8b86b;
+        color: white;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animate-fade {
+        animation: fadeIn 0.5s ease-out;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="hero-city">
+    <div class="container">
+        <a href="{{ path('app_weather_index') }}" class="back-link mb-3 d-inline-block">
+            <i class="fas fa-arrow-left me-2"></i> Retour à toutes les villes
+        </a>
+        <div class="text-center text-white">
+            <h1 class="city-title mb-2">{{ weather.city }}</h1>
+            <p class="lead mb-0">
+                <i class="fas fa-map-marker-alt me-1"></i> {{ weather.region }}
+            </p>
+            <p class="mt-2 opacity-75">{{ weather.description }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <!-- Formulaire date précise -->
+    <div class="date-picker-card mb-5 animate-fade">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h5 class="mb-2">
+                    <i class="fas fa-calendar-alt me-2" style="color: #e8b86b;"></i>
+                    Météo à une date précise
+                </h5>
+                <p class="text-muted small mb-0">Consultez les prévisions pour une date spécifique (jusqu'à 16 jours)</p>
+            </div>
+            <div class="col-md-4">
+                <form method="get" class="d-flex gap-2">
+                    <input type="date" name="date" class="form-control rounded-pill" 
+                           value="{{ specific_date }}" 
+                           min="{{ "now"|date('Y-m-d') }}" 
+                           max="{{ "now"|date_modify('+16 days')|date('Y-m-d') }}">
+                    <button type="submit" class="btn-outline-weather">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        {% if specific_weather and specific_weather.current %}
+            <div class="mt-4 p-3" style="background: rgba(232,184,107,0.1); border-radius: 16px;">
+                <div class="row align-items-center">
+                    <div class="col-md-4 text-center">
+                        <i class="fas {{ specific_weather.current.condition_icon }} fa-3x" style="color: #e8b86b;"></i>
+                        <div class="mt-2">
+                            <span class="fw-bold fs-3">{{ specific_weather.current.temp_max }}°C</span>
+                            <span class="text-muted">/ {{ specific_weather.current.temp_min }}°C</span>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <h6 class="mb-2">Météo le {{ specific_date|date('d/m/Y') }}</h6>
+                        <p class="mb-2">{{ specific_weather.current.condition }}</p>
+                        <div class="row">
+                            <div class="col-4">
+                                <small><i class="fas fa-tint"></i> {{ specific_weather.current.humidity }}%</small>
+                            </div>
+                            <div class="col-4">
+                                <small><i class="fas fa-wind"></i> {{ specific_weather.current.wind_speed }} km/h</small>
+                            </div>
+                            <div class="col-4">
+                                <small><i class="fas fa-sun"></i> UV {{ specific_weather.current.uv_index }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% elseif specific_date %}
+            <div class="alert alert-warning mt-3">
+                <i class="fas fa-info-circle me-2"></i>
+                Prévisions disponibles uniquement pour les 16 prochains jours.
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Météo actuelle détaillée -->
+    <div class="weather-detail-card mb-5 animate-fade">
+        <h3 class="mb-4" style="color: #2d5f6e;">
+            <i class="fas fa-sun me-2" style="color: #e8b86b;"></i>
+            Météo aujourd'hui
+        </h3>
+        <div class="row">
+            <div class="col-md-5 text-center">
+                <i class="fas {{ weather.current.condition_icon }} fa-5x mb-3" style="color: #e8b86b;"></i>
+                <div class="display-1 fw-bold" style="color: #2d5f6e;">{{ weather.current.temp_max }}°C</div>
+                <div class="text-muted">min: {{ weather.current.temp_min }}°C</div>
+                <div class="mt-3">
+                    <span class="badge bg-light text-dark px-3 py-2">
+                        <i class="fas fa-cloud me-1"></i> {{ weather.current.condition }}
+                    </span>
+                </div>
+            </div>
+            <div class="col-md-7">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="info-badge">
+                            <i class="fas fa-tint" style="color: #4a90d9;"></i>
+                            <div class="stat-value">{{ weather.current.humidity }}%</div>
+                            <div class="stat-label">Humidité</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-badge">
+                            <i class="fas fa-wind" style="color: #4a90d9;"></i>
+                            <div class="stat-value">{{ weather.current.wind_speed }} km/h</div>
+                            <div class="stat-label">Vent</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-badge">
+                            <i class="fas fa-compass" style="color: #4a90d9;"></i>
+                            <div class="stat-value">{{ weather.current.wind_direction }}°</div>
+                            <div class="stat-label">Direction vent</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-badge">
+                            <i class="fas fa-chart-line" style="color: #4a90d9;"></i>
+                            <div class="stat-value">{{ weather.current.pressure }} hPa</div>
+                            <div class="stat-label">Pression</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-badge">
+                            <i class="fas fa-cloud" style="color: #4a90d9;"></i>
+                            <div class="stat-value">{{ weather.current.cloud_cover }}%</div>
+                            <div class="stat-label">Nuages</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-badge">
+                            <i class="fas fa-sun" style="color: #f4a261;"></i>
+                            <div class="stat-value">{{ weather.current.uv_index }}</div>
+                            <div class="stat-label">Indice UV</div>
+                        </div>
+                    </div>
+                </div>
+                {% if weather.current.rain %}
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-cloud-rain me-2"></i>
+                        <strong>Risque de pluie :</strong> {{ weather.current.rain_probability }}%<br>
+                        <small>Quantité prévue : {{ weather.current.rain_sum }} mm</small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Prévisions 5 jours -->
+    <div class="weather-detail-card animate-fade">
+        <h3 class="mb-4" style="color: #2d5f6e;">
+            <i class="fas fa-chart-line me-2" style="color: #e8b86b;"></i>
+            Prévisions 5 jours
+        </h3>
+        <div class="row">
+            {% for day in weather.forecast %}
+                <div class="col-md-2 col-6 mb-3">
+                    <div class="forecast-card">
+                        <div class="fw-bold" style="color: #2d5f6e;">{{ day.day }}</div>
+                        <div class="small text-muted mb-2">{{ day.date|date('d/m') }}</div>
+                        <i class="fas {{ day.condition_icon }} fa-2x mb-2" style="color: #e8b86b;"></i>
+                        <div class="fw-bold fs-5">{{ day.temp_max }}°</div>
+                        <div class="small text-muted">{{ day.temp_min }}°</div>
+                        <div class="small mt-2">
+                            <div><i class="fas fa-tint"></i> {{ day.humidity }}%</div>
+                            <div><i class="fas fa-wind"></i> {{ day.wind_speed }} km/h</div>
+                        </div>
+                        {% if day.rain %}
+                            <div class="mt-2">
+                                <span class="badge bg-info">
+                                    <i class="fas fa-cloud-rain"></i> {{ day.rain_probability }}%
+                                </span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="divider"></div>
+    
+    <!-- Villes recommandées -->
+    <div class="text-center">
+        <h5 class="mb-4" style="color: #2d5f6e;">
+            <i class="fas fa-compass me-2"></i>
+            Découvrez d'autres villes
+        </h5>
+        <div class="d-flex flex-wrap justify-content-center gap-2">
+            {% for cityName, cityInfo in cities|slice(0, 8) %}
+                {% if cityName != weather.city %}
+                    <a href="{{ path('app_weather_city', {city: cityName}) }}" class="btn btn-outline-secondary rounded-pill">
+                        <i class="fas fa-map-marker-alt me-1"></i> {{ cityName }}
+                    </a>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
