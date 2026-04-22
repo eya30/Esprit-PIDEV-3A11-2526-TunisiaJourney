@@ -1,0 +1,614 @@
+{# ══════════════════════════════════════════════════════════════════════════
+   _favoris_sidebar.html.twig
+   Sidebar favoris — inclure via : {% include '_favoris_sidebar.html.twig' %}
+   dans base.html.twig APRÈS le footer, avant les scripts.
+══════════════════════════════════════════════════════════════════════════ #}
+
+{# ── Bouton flottant "Mes favoris" — positionné en bas à gauche ── #}
+<button class="btn-favoris-floating" id="openFavorisSidebar" title="Mes favoris">
+    <i class="fas fa-heart"></i>
+    <span class="favoris-floating-badge" id="favoriNavBadge"></span>
+    <span class="favoris-floating-label">Favoris</span>
+</button>
+
+{# ── Overlay ── #}
+<div class="favoris-overlay" id="favorisOverlay"></div>
+
+{# ── Sidebar ── #}
+<div class="favoris-sidebar" id="favorisSidebar">
+    <div class="favoris-header">
+        <div class="favoris-header-left">
+            <div class="favoris-header-icon">
+                <i class="fas fa-heart"></i>
+            </div>
+            <div>
+                <h4>Mes Favoris</h4>
+                <p class="favoris-count-label"><span id="favorisTotalCount">0</span> élément(s) sauvegardé(s)</p>
+            </div>
+        </div>
+        <button class="close-favoris" id="closeFavorisSidebar" title="Fermer">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    {# Onglets Événements / Activités #}
+    <div class="favoris-tabs">
+        <button class="favoris-tab active" data-tab="evenements">
+            <i class="fas fa-calendar-star"></i>
+            Événements
+            <span class="tab-badge" id="tabBadgeEvenements">0</span>
+        </button>
+        <button class="favoris-tab" data-tab="activites">
+            <i class="fas fa-tasks"></i>
+            Activités
+            <span class="tab-badge" id="tabBadgeActivites">0</span>
+        </button>
+    </div>
+
+    {# Panneau Événements #}
+    <div class="favoris-panel active" id="panelEvenements">
+        <div class="favoris-list" id="favoriEvenementsContainer">
+            <div class="favoris-empty">
+                <div class="favoris-empty-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <p>Aucun événement en favori</p>
+                <small>Cliquez sur le ♥ d'un événement pour l'ajouter</small>
+            </div>
+        </div>
+    </div>
+
+    {# Panneau Activités #}
+    <div class="favoris-panel" id="panelActivites">
+        <div class="favoris-list" id="favoriActivitesContainer">
+            <div class="favoris-empty">
+                <div class="favoris-empty-icon">
+                    <i class="fas fa-running"></i>
+                </div>
+                <p>Aucune activité en favori</p>
+                <small>Cliquez sur le ♥ d'une activité pour l'ajouter</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ════════════════════════════════════════════════════════════════════════ #}
+<style>
+/* ── Bouton flottant ── */
+.btn-favoris-floating {
+    position: fixed;
+    bottom: 32px;
+    left: 32px;
+    z-index: 1200;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #C41E3A 0%, #E31B23 100%);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 22px 14px 18px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 0.92rem;
+    cursor: pointer;
+    box-shadow: 0 6px 24px rgba(227,27,35,0.38);
+    transition: all 0.32s cubic-bezier(0.16,1,0.3,1);
+    letter-spacing: 0.3px;
+}
+.btn-favoris-floating:hover {
+    transform: translateY(-3px) scale(1.04);
+    box-shadow: 0 12px 32px rgba(227,27,35,0.52);
+}
+.btn-favoris-floating i {
+    font-size: 1.05rem;
+    animation: heartbeat 2.4s ease-in-out infinite;
+}
+@keyframes heartbeat {
+    0%,100% { transform: scale(1); }
+    14%      { transform: scale(1.18); }
+    28%      { transform: scale(1); }
+    42%      { transform: scale(1.1); }
+    56%      { transform: scale(1); }
+}
+.favoris-floating-label { font-size: 0.88rem; }
+.favoris-floating-badge {
+    position: absolute;
+    top: -6px; right: -6px;
+    min-width: 20px; height: 20px;
+    background: #FF6B35;
+    color: white;
+    border-radius: 10px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    padding: 0 4px;
+    font-family: 'Montserrat', sans-serif;
+}
+.favoris-floating-badge.visible { display: flex; }
+
+body.dark-mode .btn-favoris-floating {
+    background: linear-gradient(135deg, #c0392b 0%, #FF4757 100%);
+    box-shadow: 0 6px 24px rgba(255,71,87,0.38);
+}
+
+/* ── Overlay ── */
+.favoris-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(26,46,74,0.45);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    z-index: 1299;
+}
+.favoris-overlay.active { display: block; }
+
+/* ── Sidebar ── */
+.favoris-sidebar {
+    position: fixed;
+    top: 0; left: -480px;
+    width: 480px; height: 100vh;
+    background: #FDFAF6;
+    box-shadow: 8px 0 48px rgba(27,58,75,0.18);
+    z-index: 1300;
+    transition: left 0.42s cubic-bezier(0.76,0,0.24,1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.favoris-sidebar.open { left: 0; }
+
+body.dark-mode .favoris-sidebar {
+    background: #1e1e2f;
+    box-shadow: 8px 0 48px rgba(0,0,0,0.4);
+}
+
+@media (max-width: 768px) {
+    .favoris-sidebar { width: 100%; left: -100%; }
+    .btn-favoris-floating { bottom: 20px; left: 20px; padding: 12px 18px 12px 14px; }
+    .favoris-floating-label { display: none; }
+}
+
+/* ── Header ── */
+.favoris-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 24px 18px;
+    background: linear-gradient(135deg, #1B3A4B 0%, #2A5570 100%);
+    color: white;
+    flex-shrink: 0;
+}
+.favoris-header-left { display: flex; align-items: center; gap: 14px; }
+.favoris-header-icon {
+    width: 46px; height: 46px; border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    border: 2px solid rgba(255,255,255,0.22);
+    flex-shrink: 0;
+}
+.favoris-header h4 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem; font-weight: 800; margin: 0;
+    color: white;
+}
+.favoris-count-label {
+    font-size: 0.75rem; color: rgba(255,255,255,0.72);
+    margin: 0; font-family: 'Montserrat', sans-serif;
+}
+.close-favoris {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: none; background: rgba(255,255,255,0.15);
+    color: white; font-size: 1rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.22s;
+    flex-shrink: 0;
+}
+.close-favoris:hover { background: rgba(255,255,255,0.3); transform: rotate(90deg); }
+
+/* ── Onglets ── */
+.favoris-tabs {
+    display: flex;
+    background: white;
+    border-bottom: 2px solid #F0E8DD;
+    flex-shrink: 0;
+}
+body.dark-mode .favoris-tabs { background: #2d2d3f; border-bottom-color: rgba(255,255,255,0.1); }
+
+.favoris-tab {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    padding: 13px 10px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.82rem; font-weight: 700;
+    color: #6B7280; background: none; border: none;
+    cursor: pointer; border-bottom: 3px solid transparent;
+    transition: all 0.22s; position: relative;
+    margin-bottom: -2px;
+}
+.favoris-tab:hover { color: #1B3A4B; }
+.favoris-tab.active { color: #1B3A4B; border-bottom-color: #C17817; }
+body.dark-mode .favoris-tab { color: #aaa; }
+body.dark-mode .favoris-tab.active { color: #e0e0e0; }
+body.dark-mode .favoris-tab:hover { color: #e0e0e0; }
+
+.tab-badge {
+    background: #C17817; color: white;
+    font-size: 0.6rem; font-weight: 800;
+    min-width: 16px; height: 16px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 0 4px; font-family: 'Montserrat', sans-serif;
+}
+
+/* ── Panneaux ── */
+.favoris-panel { display: none; flex: 1; overflow-y: auto; }
+.favoris-panel.active { display: flex; flex-direction: column; }
+
+.favoris-list { padding: 16px; display: flex; flex-direction: column; gap: 12px; flex: 1; }
+
+/* ── Empty state ── */
+.favoris-empty {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 3rem 2rem; text-align: center; flex: 1; color: #9CA3AF;
+}
+.favoris-empty-icon {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: #F0E8DD;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; color: rgba(193,120,23,0.4);
+    margin-bottom: 1.2rem;
+}
+body.dark-mode .favoris-empty-icon { background: rgba(255,255,255,0.07); }
+.favoris-empty p { font-size: 0.95rem; font-weight: 600; margin: 0 0 6px; color: #6B7280; }
+body.dark-mode .favoris-empty p { color: #aaa; }
+.favoris-empty small { font-size: 0.78rem; color: #9CA3AF; }
+
+/* ── Carte favori ── */
+.favori-item {
+    background: white;
+    border-radius: 16px;
+    border: 1.5px solid rgba(27,58,75,0.09);
+    overflow: hidden;
+    display: flex;
+    gap: 0;
+    transition: all 0.28s cubic-bezier(0.16,1,0.3,1);
+    position: relative;
+}
+.favori-item:hover {
+    border-color: #C17817;
+    box-shadow: 0 6px 20px rgba(193,120,23,0.18);
+    transform: translateX(4px);
+}
+body.dark-mode .favori-item {
+    background: #2d2d3f;
+    border-color: rgba(255,255,255,0.08);
+}
+body.dark-mode .favori-item:hover { border-color: #C17817; }
+
+.favori-item-img {
+    width: 88px; min-width: 88px; height: 88px;
+    overflow: hidden; flex-shrink: 0;
+}
+.favori-item-img img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.4s ease;
+}
+.favori-item:hover .favori-item-img img { transform: scale(1.08); }
+
+.favori-item-body {
+    padding: 12px 14px 12px 12px;
+    flex: 1; min-width: 0;
+    display: flex; flex-direction: column; gap: 4px; justify-content: center;
+}
+.favori-item-type {
+    font-size: 0.65rem; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.8px;
+    color: #C17817; font-family: 'Montserrat', sans-serif;
+    display: flex; align-items: center; gap: 5px;
+}
+.favori-item-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem; font-weight: 800;
+    color: #1B3A4B; line-height: 1.2;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+body.dark-mode .favori-item-title { color: #e0e0e0; }
+
+.favori-item-sub {
+    font-size: 0.75rem; color: #6B7280;
+    display: flex; align-items: center; gap: 5px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.favori-item-sub i { color: #C17817; font-size: 0.7rem; flex-shrink: 0; }
+
+.favori-item-actions {
+    display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;
+}
+.favori-btn {
+    padding: 5px 12px; border-radius: 20px;
+    font-size: 0.72rem; font-weight: 700;
+    text-decoration: none; border: none; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 5px;
+    transition: all 0.2s; font-family: 'Montserrat', sans-serif;
+}
+.favori-btn-voir { background: #1B3A4B; color: white; }
+.favori-btn-voir:hover { background: #2A5570; color: white; transform: translateY(-1px); }
+.favori-btn-act  { background: #C17817; color: white; }
+.favori-btn-act:hover  { background: #A06313; color: white; transform: translateY(-1px); }
+
+.btn-remove-favori-item {
+    position: absolute; top: 8px; right: 8px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: rgba(239,68,68,0.12);
+    border: none; color: #EF4444;
+    font-size: 0.65rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+}
+.btn-remove-favori-item:hover { background: #EF4444; color: white; }
+
+/* ── Bouton favori (cœur) sur les cards ── */
+.btn-card-favori {
+    position: absolute;
+    top: 12px; right: 12px;
+    z-index: 4;
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: 2px solid #E31B23;
+    background: white;
+    color: #E31B23;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.28s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.btn-card-favori:hover {
+    transform: scale(1.12);
+    box-shadow: 0 4px 14px rgba(227,27,35,0.30);
+}
+.btn-card-favori.active {
+    border-color: #E31B23;
+    background: #E31B23;
+    color: white;
+    box-shadow: 0 4px 14px rgba(227,27,35,0.40);
+}
+.btn-card-favori.active:hover {
+    background: #C41E3A;
+    transform: scale(1.1);
+}
+.btn-card-favori.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+</style>
+
+<script>
+(function () {
+    /* ══════════════════════════════════════════════════════════════════
+       SYSTÈME FAVORIS — Base de données via API PHP
+    ══════════════════════════════════════════════════════════════════ */
+
+    const API = {
+        toggle : '/api/favoris/toggle',
+        ids    : '/api/favoris/ids',
+        list   : '/api/favoris',
+    };
+
+    // IDs en mémoire (chargés depuis le serveur au démarrage)
+    let favIds = { evenements: [], activites: [] };
+
+    // ── Charger les IDs depuis le serveur ────────────────────────────
+    async function loadFavIds() {
+        try {
+            const r = await fetch(API.ids);
+            const d = await r.json();
+            favIds.evenements = d.evenements || [];
+            favIds.activites  = d.activites  || [];
+            updateAllButtons();
+            updateBadge();
+        } catch (e) { console.error('Favoris init error:', e); }
+    }
+
+    // ── Vérifie si un item est en favori ─────────────────────────────
+    function isFavori(type, id) {
+        id = parseInt(id);
+        if (type === 'evenement') return favIds.evenements.includes(id);
+        if (type === 'activite')  return favIds.activites.includes(id);
+        return false;
+    }
+
+    // ── Toggle via API ───────────────────────────────────────────────
+    async function toggleFavori(type, id) {
+        id = parseInt(id);
+        try {
+            const r = await fetch(API.toggle, {
+                method  : 'POST',
+                headers : { 'Content-Type': 'application/json' },
+                body    : JSON.stringify({ type, id }),
+            });
+            const d = await r.json();
+            if (d.success) {
+                if (d.action === 'added') {
+                    if (type === 'evenement' && !favIds.evenements.includes(id)) favIds.evenements.push(id);
+                    if (type === 'activite'  && !favIds.activites.includes(id))  favIds.activites.push(id);
+                } else {
+                    if (type === 'evenement') favIds.evenements = favIds.evenements.filter(x => x !== id);
+                    if (type === 'activite')  favIds.activites  = favIds.activites.filter(x => x !== id);
+                }
+                updateAllButtons();
+                updateBadge();
+                // Si sidebar ouverte, rafraîchir
+                if (document.getElementById('favorisSidebar').classList.contains('open')) {
+                    renderSidebar();
+                }
+            }
+        } catch (e) { console.error('Toggle favori error:', e); }
+    }
+
+    // ── Exposer globalement pour les onclick Twig ────────────────────
+    window.toggleFavoriEvenement = function(id) { toggleFavori('evenement', id); };
+    window.toggleFavoriActivite  = function(id) { toggleFavori('activite',  id); };
+
+    // ── Mettre à jour tous les boutons ─────────────────────────────
+    function updateAllButtons() {
+        document.querySelectorAll('[data-fav-type][data-fav-id]').forEach(btn => {
+            const type    = btn.dataset.favType;
+            const id      = parseInt(btn.dataset.favId);
+            const isActive = isFavori(type, id);
+            btn.classList.toggle('active', isActive);
+            const icon = btn.querySelector('i');
+            if (icon) icon.className = isActive ? 'fas fa-heart' : 'far fa-heart';
+        });
+    }
+
+    // ── Badge flottant ───────────────────────────────────────────────
+    function updateBadge() {
+        const total = favIds.evenements.length + favIds.activites.length;
+        const badge = document.getElementById('favoriNavBadge');
+        if (badge) {
+            badge.textContent = total > 0 ? total : '';
+            badge.classList.toggle('visible', total > 0);
+        }
+        // Mettre à jour le total dans la sidebar
+        const el = document.getElementById('favorisTotalCount');
+        if (el) el.textContent = total;
+    }
+
+    // ── Rendu de la sidebar ──────────────────────────────────────────
+    async function renderSidebar() {
+        try {
+            const r    = await fetch(API.list);
+            const list = await r.json();
+
+            const evs  = list.filter(x => x.type === 'evenement');
+            const acts = list.filter(x => x.type === 'activite');
+
+            // Badges onglets
+            const be = document.getElementById('tabBadgeEvenements');
+            const ba = document.getElementById('tabBadgeActivites');
+            if (be) be.textContent = evs.length;
+            if (ba) ba.textContent = acts.length;
+
+            renderList('favoriEvenementsContainer', evs,  'evenement');
+            renderList('favoriActivitesContainer',  acts, 'activite');
+        } catch (e) { console.error('Sidebar render error:', e); }
+    }
+
+    function renderList(containerId, items, type) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        if (items.length === 0) {
+            const icon  = type === 'evenement' ? 'fa-calendar-alt' : 'fa-running';
+            const label = type === 'evenement' ? 'événement' : 'activité';
+            container.innerHTML = `
+                <div class="favoris-empty">
+                    <div class="favoris-empty-icon"><i class="fas ${icon}"></i></div>
+                    <p>Aucun(e) ${label} en favori</p>
+                    <small>Cliquez sur le ♥ pour sauvegarder</small>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = items.map(item => {
+            const subIcon = type === 'evenement' ? 'fa-map-marker-alt' : 'fa-concierge-bell';
+            const btnActLabel = type === 'evenement' ? 'Activités' : 'Voir l\'activité';
+            const btnActUrl   = item.urlActivites;
+
+            return `
+            <div class="favori-item" id="fav-item-${type}-${item.id}">
+                <div class="favori-item-img">
+                    <img src="${item.image}" alt="${esc(item.titre)}" loading="lazy">
+                </div>
+                <div class="favori-item-body">
+                    <div class="favori-item-type">
+                        <i class="fas ${type === 'evenement' ? 'fa-calendar-star' : 'fa-tasks'}"></i>
+                        ${type === 'evenement' ? 'Événement' : 'Activité'}
+                    </div>
+                    <div class="favori-item-title">${esc(item.titre)}</div>
+                    ${item.sousTitre ? `<div class="favori-item-sub"><i class="fas ${subIcon}"></i>${esc(item.sousTitre)}</div>` : ''}
+                    <div class="favori-item-actions">
+                        <a href="${item.urlDetails}" class="favori-btn favori-btn-voir">
+                            <i class="fas fa-eye"></i> Voir
+                        </a>
+                        <a href="${btnActUrl}" class="favori-btn favori-btn-act">
+                            <i class="fas fa-arrow-right"></i> ${btnActLabel}
+                        </a>
+                    </div>
+                </div>
+                <button class="btn-remove-favori-item"
+                        onclick="removeFavoriFromSidebar('${type}', ${item.id})"
+                        title="Retirer des favoris">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>`;
+        }).join('');
+    }
+
+    function esc(str) {
+        if (!str) return '';
+        const d = document.createElement('div');
+        d.appendChild(document.createTextNode(str));
+        return d.innerHTML;
+    }
+
+    // ── Retirer depuis la sidebar ────────────────────────────────────
+    window.removeFavoriFromSidebar = async function(type, id) {
+        await toggleFavori(type, id);
+        // Supprimer l'élément visuellement avec animation
+        const el = document.getElementById(`fav-item-${type}-${id}`);
+        if (el) {
+            el.style.transition = 'all 0.3s ease';
+            el.style.opacity = '0';
+            el.style.transform = 'translateX(-20px)';
+            setTimeout(() => renderSidebar(), 350);
+        }
+    };
+
+    // ── Onglets ─────────────────────────────────────────────────────
+    document.querySelectorAll('.favoris-tab').forEach(tab => {
+        tab.addEventListener('click', function () {
+            document.querySelectorAll('.favoris-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.favoris-panel').forEach(p => p.classList.remove('active'));
+            this.classList.add('active');
+            const panelId = 'panel' + this.dataset.tab.charAt(0).toUpperCase() + this.dataset.tab.slice(1);
+            const panel = document.getElementById(panelId);
+            if (panel) panel.classList.add('active');
+        });
+    });
+
+    // ── Ouverture / fermeture sidebar ───────────────────────────────
+    const sidebar  = document.getElementById('favorisSidebar');
+    const overlay  = document.getElementById('favorisOverlay');
+    const openBtn  = document.getElementById('openFavorisSidebar');
+    const closeBtn = document.getElementById('closeFavorisSidebar');
+
+    function openSidebar() {
+        if (!sidebar) return;
+        sidebar.classList.add('open');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        renderSidebar();
+    }
+    function closeSidebar() {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    if (openBtn)  openBtn.addEventListener('click', openSidebar);
+    if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+    if (overlay)  overlay.addEventListener('click', closeSidebar);
+
+    // ── Init ─────────────────────────────────────────────────────────
+    loadFavIds();
+
+    // Exposer pour les pages qui rajoutent des cartes dynamiquement
+    window.favoriSystem = { loadFavIds, updateAllButtons, isFavori };
+})();
+</script>

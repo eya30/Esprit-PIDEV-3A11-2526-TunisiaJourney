@@ -17,4 +17,8 @@ services:
 volumes:
 ###> doctrine/doctrine-bundle ###
   database_data:
+<<<<<<< HEAD
 ###< doctrine/doctrine-bundle ###
+=======
+###< doctrine/doctrine-bundle ###
+>>>>>>> origin/devvvvv

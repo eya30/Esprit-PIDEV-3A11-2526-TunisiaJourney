@@ -1,0 +1,262 @@
+{% extends 'admin/base_admin.html.twig' %}
+{% block title %}Gestion des Produits{% endblock %}
+{% block page_title %}Liste des produits{% endblock %}
+
+{% block body %}
+<div class="page-header mb-4">
+    <p class="page-header-subtitle">Gérez l'ensemble de vos produits artisanaux</p>
+</div>
+
+{# ─── Notification stock faible / réapprovisionnement ─── #}
+{% if produitsReappro is defined and produitsReappro|length > 0 %}
+    <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert" style="border-left: 6px solid #dc3545; background: #fff3cd; border-radius: 16px;">
+        <div class="d-flex align-items-center">
+            <div class="me-3">
+                <i class="fas fa-exclamation-triangle fa-2x" style="color: #dc3545;"></i>
+            </div>
+            <div>
+                <strong class="me-2">⚠️ Attention :</strong> Certains produits ont un stock très faible.
+                <br>
+                <small>Liste des produits nécessitant un réapprovisionnement :</small>
+                <ul class="mb-0 mt-1">
+                    {% for produit in produitsReappro %}
+                        <li>
+                            <strong>{{ produit.titre }}</strong> – stock restant : {{ produit.stock }} unité(s)
+                            <a href="{{ path('admin_produit_edit', {'id': produit.idPR}) }}" class="ms-2" style="color: #dc3545;">
+                                <i class="fas fa-edit"></i> Réapprovisionner
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+{% endif %}
+
+<div class="d-flex justify-content-end mb-4" style="gap: 12px;">
+    <a href="{{ path('admin_produit_new') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i> Nouveau produit
+    </a>
+    <a href="{{ path('admin_commande_index') }}" class="btn btn-commandes">
+        <i class="fas fa-shopping-bag me-2"></i> Gérer les commandes
+    </a>
+</div>
+
+{# ══ Barre de Recherche et Filtres ══ #}
+<div class="search-container mb-4">
+    <form action="{{ path('admin_produit_index') }}" method="get" class="d-flex align-items-center">
+        <div class="input-group" style="background: white; border-radius: 40px; border: 1px solid #F0E8DD; padding: 5px 15px;">
+            <span class="text-muted"><i class="fas fa-search"></i></span>
+            <input type="text" name="q" value="{{ lastSearch }}" 
+                   class="form-control border-0 shadow-none" 
+                   placeholder="Rechercher par titre, catégorie ou description..."
+                   style="font-size: 14px;">
+            <input type="hidden" name="sort" value="{{ currentSort }}">
+            <input type="hidden" name="direction" value="{{ currentDirection }}">
+        </div>
+    </form>
+</div>
+
+<div class="admin-table">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>IMAGE</th>
+                <th>{{ knp_pagination_sortable(produits, 'TITRE', 'p.titre') }}</th>
+                <th>DESCRIPTION</th>
+                <th>{{ knp_pagination_sortable(produits, 'CATÉGORIE', 'p.categorie') }}</th>
+                <th>{{ knp_pagination_sortable(produits, 'STOCK', 'p.stock') }}</th>
+                <th>PRIX</th>
+                <th>ACTIONS</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for produit in produits %}
+                <tr>
+                    <td>
+                        {% if produit.image %}
+                            <img src="{{ asset('uploads/produits/' ~ produit.image) }}"
+                                 class="produit-thumbnail" alt="{{ produit.titre }}">
+                        {% else %}
+                            <div class="thumbnail-placeholder">
+                                <i class="fas fa-image"></i>
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td class="produit-name">{{ produit.titre }}</td>
+                    <td class="produit-description-cell">{{ produit.description }}</td>
+                    <td>
+                        {% if produit.categorie %}
+                            <span class="badge-categorie">{{ produit.categorie }}</span>
+                        {% else %}
+                            <span style="color:#ccc;font-size:0.8rem;">—</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ produit.stock ?? 0 }}</td>
+                    <td class="produit-price">{{ produit.prix|number_format(0, ',', ' ') }} TND</td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{{ path('admin_produit_edit', {'id': produit.idPR}) }}"
+                               class="action-btn edit-btn" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form method="post"
+                                  action="{{ path('admin_produit_delete', {id: produit.idPR}) }}"
+                                  style="display: inline-block;"
+                                  onsubmit="return confirm('Supprimer « {{ produit.titre|e('html_attr') }} » ?')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ produit.idPR) }}">
+                                <button type="submit" class="action-btn delete-btn" title="Supprimer">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7" class="text-center py-5">
+                        <i class="fas fa-store fa-3x mb-3" style="color: #E8DFD1;"></i>
+                        <p class="text-muted mb-0">Aucun produit trouvé</p>
+                        <a href="{{ path('admin_produit_new') }}" class="btn btn-primary mt-3">
+                            Ajouter un produit
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{# ══ Pagination ══ #}
+<div class="pagination-wrapper">
+    <div class="pagination-info">
+        Affichage de <strong>{{ produits|length }}</strong> sur <strong>{{ produits.getTotalItemCount }}</strong> produit(s)
+    </div>
+    <nav class="pagination-nav">
+        <ul class="pagination">
+            <li class="page-item {{ produits.getCurrentPageNumber == 1 ? 'disabled' : '' }}">
+                <a class="page-link" href="{{ produits.getCurrentPageNumber > 1 ? path('admin_produit_index', {page: produits.getCurrentPageNumber - 1, q: lastSearch, sort: currentSort, direction: currentDirection}) : '#' }}">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
+
+            {% for page in 1..produits.getPageCount %}
+                <li class="page-item {{ page == produits.getCurrentPageNumber ? 'active' : '' }}">
+                    <a class="page-link" href="{{ path('admin_produit_index', {page: page, q: lastSearch, sort: currentSort, direction: currentDirection}) }}">
+                        {{ page }}
+                    </a>
+                </li>
+            {% endfor %}
+
+            <li class="page-item {{ produits.getCurrentPageNumber == produits.getPageCount ? 'disabled' : '' }}">
+                <a class="page-link" href="{{ produits.getCurrentPageNumber < produits.getPageCount ? path('admin_produit_index', {page: produits.getCurrentPageNumber + 1, q: lastSearch, sort: currentSort, direction: currentDirection}) : '#' }}">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<style>
+    /* ─────────── Pagination ronde rouge ─────────── */
+    .pagination-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 30px;
+        padding: 16px 0;
+    }
+
+    .pagination-info {
+        font-size: 0.85rem;
+        color: #9CA3AF;
+    }
+
+    .pagination-info strong {
+        color: #DC3545;
+        font-weight: 600;
+    }
+
+    .pagination {
+        margin: 0;
+        gap: 8px;
+        display: flex;
+        list-style: none;
+    }
+
+    .page-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50% !important;
+        background: white;
+        border: 1px solid #DC3545;
+        color: #DC3545;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .page-link:hover {
+        background: #FFF0F0;
+        border-color: #B02A37;
+        color: #B02A37;
+        transform: translateY(-2px);
+    }
+
+    .page-item.active .page-link {
+        background: #DC3545 !important;
+        border-color: #DC3545 !important;
+        color: white !important;
+        box-shadow: 0 4px 10px rgba(220,53,69,0.3);
+    }
+
+    .page-item.disabled .page-link {
+        background: #FEF9F0;
+        border-color: #F0E8DD;
+        color: #E8DFD1;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    @media (max-width: 768px) {
+        .pagination-wrapper {
+            flex-direction: column;
+            gap: 16px;
+            align-items: center;
+        }
+    }
+
+    /* Styles existants */
+    .page-header-subtitle { font-size: 0.9rem; color: #93032E; font-weight: 500; margin: 0; }
+    .admin-table { background: white; border-radius: 20px; border: 1px solid #F0E8DD; overflow-x: auto; }
+    .admin-table .table { margin-bottom: 0; min-width: 1000px; }
+    .admin-table th { background: #FEF9F0; padding: 16px 20px; font-size: 12px; font-weight: 700; color: #93032E; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #F0E8DD; white-space: nowrap; }
+    .admin-table td { padding: 16px 20px; font-size: 13px; border-bottom: 1px solid #F5F0E8; color: #4A3B2F; vertical-align: middle; background: white; }
+    .admin-table tr:hover td { background: #FFF9F0; }
+    .produit-thumbnail { width: 70px; height: 70px; object-fit: cover; border-radius: 12px; border: 1px solid #F0E8DD; transition: all 0.2s; }
+    .produit-thumbnail:hover { transform: scale(1.05); border-color: #93032E; box-shadow: 0 4px 12px rgba(147,3,46,0.15); }
+    .thumbnail-placeholder { width: 70px; height: 70px; background: #FEF9F0; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #E8DFD1; font-size: 1.5rem; border: 1px solid #F0E8DD; }
+    .produit-name { font-weight: 700; color: #2C1810; font-size: 0.95rem; white-space: nowrap; }
+    .produit-description-cell { max-width: 220px; color: #6B7280; line-height: 1.5; font-size: 0.85rem; word-wrap: break-word; white-space: normal; }
+    .produit-price { font-weight: 700; color: #93032E; font-size: 1rem; white-space: nowrap; }
+    .badge-categorie { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; background: linear-gradient(135deg, #FEF3C7, #FDE68A); color: #92400E; border: 1px solid #F59E0B; white-space: nowrap; }
+    .badge-dispo { display: inline-flex; align-items: center; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .badge-stock { background: #D1FAE5; color: #065F46; }
+    .badge-rupture { background: #FEE2E2; color: #991B1B; }
+    .action-buttons { display: flex; gap: 8px; }
+    .action-btn { width: 36px; height: 36px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; cursor: pointer; border: none; background: transparent; font-size: 0.9rem; text-decoration: none; }
+    .edit-btn { background: #EFF6FF; color: #3B82F6; }
+    .edit-btn:hover { background: #3B82F6; color: white; transform: translateY(-2px); }
+    .delete-btn { background: #FEF2F2; color: #EF4444; }
+    .delete-btn:hover { background: #EF4444; color: white; transform: translateY(-2px); }
+    .btn-primary { background: #93032E; border: none; padding: 10px 24px; border-radius: 40px; font-size: 13px; font-weight: 600; color: white; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; }
+    .btn-primary:hover { background: #6B0221; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(147,3,46,0.3); color: white; }
+    .btn-commandes { background: white; border: 2px solid #93032E; padding: 10px 24px; border-radius: 40px; font-size: 13px; font-weight: 600; color: #93032E; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; }
+    .btn-commandes:hover { background: #93032E; color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(147,3,46,0.3); }
+</style>
+{% endblock %}

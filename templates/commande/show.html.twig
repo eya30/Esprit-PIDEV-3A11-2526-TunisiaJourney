@@ -1,0 +1,309 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détail de la commande #{{ commande.id }} — TunisiaJourney{% endblock %}
+
+{% block stylesheets %}
+<style>
+    :root {
+        --tunisia-red: #E31B23;
+        --tunisia-orange: #FF6B35;
+        --tunisia-sand: #FDF5E6;
+        --tunisia-soft: #F5CAC3;
+        --dark-gray: #2C3E50;
+    }
+    body { background: var(--tunisia-sand); }
+
+    .page-header {
+        background: linear-gradient(135deg, var(--tunisia-red) 0%, #C41E3A 50%, var(--tunisia-orange) 100%);
+        padding: 2rem 0;
+        color: white;
+        text-align: center;
+    }
+    .page-header h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--tunisia-soft);
+    }
+    .page-header p { color: rgba(255,255,255,0.85); }
+
+    .commande-card {
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    .commande-header {
+        background: linear-gradient(135deg, var(--tunisia-sand), #fff);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid rgba(245,202,195,0.4);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    .commande-header h3 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--tunisia-red);
+        margin: 0;
+    }
+    .badge-statut {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        border-radius: 30px;
+        font-size: 0.85rem;
+        font-weight: 700;
+    }
+    .badge-attente { background: #FEF3C7; color: #92400E; }
+    .badge-encours { background: #DBEAFE; color: #1E40AF; }
+    .badge-livree { background: #D1FAE5; color: #065F46; }
+    .badge-annulee { background: #FEE2E2; color: #991B1B; }
+
+    .info-section {
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #F0E8DD;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+    .info-item { margin-bottom: 0.5rem; }
+    .info-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: #9CA3AF;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+    .info-value {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--dark-gray);
+        margin-top: 0.25rem;
+    }
+
+    .articles-table {
+        padding: 1.5rem 2rem;
+    }
+    .articles-table table {
+        width: 100%;
+        margin: 0;
+    }
+    .articles-table th {
+        background: var(--tunisia-sand);
+        padding: 12px 16px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--tunisia-red);
+        text-transform: uppercase;
+        border-bottom: 1px solid #F0E8DD;
+    }
+    .articles-table td {
+        padding: 16px;
+        vertical-align: middle;
+        border-bottom: 1px solid #F5F0E8;
+    }
+    .product-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .product-img {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        object-fit: cover;
+    }
+    .total-commande {
+        background: linear-gradient(135deg, var(--tunisia-sand), #fff);
+        padding: 1.5rem 2rem;
+        text-align: right;
+        border-top: 1px solid #F0E8DD;
+    }
+    .total-commande h2 {
+        color: var(--tunisia-red);
+        font-weight: 800;
+        font-size: 1.8rem;
+        margin: 0;
+    }
+
+    .action-buttons {
+        padding: 1.5rem 2rem;
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        border-top: 1px solid #F0E8DD;
+    }
+    .btn-back {
+        background: white;
+        border: 2px solid var(--tunisia-red);
+        color: var(--tunisia-red);
+        padding: 10px 24px;
+        border-radius: 30px;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+    .btn-back:hover {
+        background: var(--tunisia-red);
+        color: white;
+        transform: translateY(-2px);
+    }
+    .btn-edit {
+        background: var(--tunisia-red);
+        color: white;
+        padding: 10px 24px;
+        border-radius: 30px;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+    .btn-edit:hover {
+        background: var(--tunisia-orange);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+        .commande-header { flex-direction: column; text-align: center; }
+        .info-section { grid-template-columns: 1fr; }
+        .product-info { flex-direction: column; text-align: center; }
+        .action-buttons { flex-direction: column; }
+        .action-buttons a { text-align: center; justify-content: center; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <div class="container">
+        <h1>Détail de la commande</h1>
+        <p>Commandée le {{ commande.dateC|date('d/m/Y à H:i') }}</p>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="commande-card">
+        <div class="commande-header">
+            <h3><i class="fas fa-receipt me-2"></i>Commande #{{ commande.id }}</h3>
+            {% set statutClass = {
+                'En attente': 'attente',
+                'En cours':   'encours',
+                'Livrée':     'livree',
+                'Annulée':    'annulee'
+            } %}
+            <span class="badge-statut badge-{{ statutClass[commande.statut] ?? 'attente' }}">
+                {% if commande.statut == 'En attente' %}
+                    <i class="fas fa-clock"></i>
+                {% elseif commande.statut == 'En cours' %}
+                    <i class="fas fa-truck"></i>
+                {% elseif commande.statut == 'Livrée' %}
+                    <i class="fas fa-check-circle"></i>
+                {% else %}
+                    <i class="fas fa-times-circle"></i>
+                {% endif %}
+                {{ commande.statut }}
+            </span>
+        </div>
+
+        <div class="info-section">
+            <div>
+                <div class="info-label"><i class="fas fa-map-marker-alt me-1"></i> Adresse de livraison</div>
+                <div class="info-value">{{ commande.adresseLiv ?? 'Non renseignée' }}</div>
+                {% if commande.codePostal %}
+                    <div class="info-value" style="font-size:0.85rem;">Code postal: {{ commande.codePostal }}</div>
+                {% endif %}
+            </div>
+            <div>
+                <div class="info-label"><i class="fas fa-credit-card me-1"></i> Mode de paiement</div>
+                <div class="info-value">{{ commande.modePaiement ?? 'Non renseigné' }}</div>
+            </div>
+            <div>
+                <div class="info-label"><i class="fas fa-boxes me-1"></i> Nombre d'articles</div>
+                <div class="info-value">{{ items|length }} article(s)</div>
+            </div>
+        </div>
+
+        <div class="articles-table">
+            <h4 style="color: var(--tunisia-red); margin-bottom: 1rem;">
+                <i class="fas fa-shopping-bag me-2"></i>Articles commandés
+            </h4>
+            <div class="overflow-x-auto">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>PRODUIT</th>
+                            <th>PRIX UNITAIRE</th>
+                            <th>QUANTITÉ</th>
+                            <th>TAILLE</th>
+                            <th>TOTAL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                            <td>
+                                <div class="product-info">
+                                    {% if item.produit.image %}
+                                        <img src="{{ asset('uploads/produits/' ~ item.produit.image) }}" class="product-img" alt="{{ item.produit.titre }}">
+                                    {% else %}
+                                        <div class="product-img d-flex align-items-center justify-content-center bg-light">
+                                            <i class="fas fa-image text-muted"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <strong>{{ item.produit.titre }}</strong>
+                                        <div style="font-size:0.75rem; color:#9CA3AF;">{{ item.produit.categorie ?? 'Artisanat' }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ item.prix ?? item.produit.prix|number_format(2, ',', ' ') }} TND</td>
+                            <td>{{ item.quantite }}</td>
+                            <td>
+                                {% if item.taille is defined and item.taille %}
+                                    <span class="badge" style="background:var(--tunisia-soft); color:var(--dark-gray);">
+                                        {{ item.taille }}
+                                    </span>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td class="total-cell" style="font-weight:800; color:var(--tunisia-red);">
+                                {{ ((item.prix ?? item.produit.prix) * item.quantite)|number_format(2, ',', ' ') }} TND
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="total-commande">
+            <h2>{{ commande.total|number_format(2, ',', ' ') }} TND</h2>
+            <p class="text-muted" style="margin:0;">Total TTC</p>
+        </div>
+
+        <div class="action-buttons">
+            <a href="{{ path('app_commande_index') }}" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Retour aux commandes
+            </a>
+            {% if commande.statut == 'En attente' %}
+                <a href="{{ path('app_commande_edit', {id: commande.id}) }}" class="btn-edit">
+                    <i class="fas fa-edit"></i> Modifier la commande
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -4,17 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}TunisiaJourney - Découvrez la Tunisie{% endblock %}</title>
-    
+   
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Cormorant+Garamond:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
+   
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+   
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+   
     <style>
+        /* ══════════════════════════════════════════
+           VARIABLES & DARK MODE
+        ══════════════════════════════════════════ */
         :root {
             --tunisia-red: #E31B23;
             --tunisia-dark-red: #C41E3A;
@@ -26,9 +29,10 @@
             --tunisia-cream: #FEF9E6;
             --footer-blue: #4e0915;
             --dark-gray: #2C3E50;
+            --sidebar-accent: #263B46;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
+
         body.dark-mode {
             --tunisia-red: #FF6B6B;
             --tunisia-dark-red: #FF4757;
@@ -43,102 +47,48 @@
             background-color: #1a1a2e;
             color: #e0e0e0;
         }
-        
         body.dark-mode .navbar {
             background: rgba(30, 30, 47, 0.98);
             box-shadow: 0 2px 20px rgba(0,0,0,0.3);
         }
-        
         body.dark-mode .navbar-brand .logo-text,
-        body.dark-mode .navbar-brand .logo-text span {
-            color: #FF6B6B;
-        }
-        
-        body.dark-mode .nav-link {
-            color: #e0e0e0;
-        }
-        
+        body.dark-mode .navbar-brand .logo-text span { color: #FF6B6B; }
+        body.dark-mode .nav-link { color: #e0e0e0; }
         body.dark-mode .nav-link:hover,
-        body.dark-mode .nav-link.active {
-            color: #FF6B6B;
-        }
-        
-        body.dark-mode .nav-link::after {
-            background: #FF6B6B;
-        }
-        
-        body.dark-mode .btn-login {
-            border-color: #FF6B6B;
-            color: #FF6B6B;
-        }
-        
-        body.dark-mode .btn-login:hover {
-            background: #FF6B6B;
-            color: #1a1a2e;
-        }
-        
-        body.dark-mode .btn-register {
-            background: #FF6B6B;
-            color: #1a1a2e;
-        }
-        
-        body.dark-mode .btn-register:hover {
-            background: #FF4757;
-        }
-        
-        body.dark-mode .btn-logout {
-            border-color: #FF6B6B;
-            color: #FF6B6B;
-        }
-        
-        body.dark-mode .btn-logout:hover {
-            background: #FF6B6B;
-            color: #1a1a2e;
-        }
-        
+        body.dark-mode .nav-link.active { color: #FF6B6B; }
+        body.dark-mode .nav-link::after { background: #FF6B6B; }
+        body.dark-mode .btn-login { border-color: #FF6B6B; color: #FF6B6B; }
+        body.dark-mode .btn-login:hover { background: #FF6B6B; color: #1a1a2e; }
+        body.dark-mode .btn-register { background: #FF6B6B; color: #1a1a2e; }
+        body.dark-mode .btn-register:hover { background: #FF4757; }
+        body.dark-mode .btn-logout { border-color: #FF6B6B; color: #FF6B6B; }
+        body.dark-mode .btn-logout:hover { background: #FF6B6B; color: #1a1a2e; }
         body.dark-mode .reservations-sidebar {
             background: #2d2d3f;
             border-left: 1px solid rgba(255,255,255,0.1);
         }
-        
-        body.dark-mode .sidebar-header {
-            border-bottom-color: rgba(255,255,255,0.1);
-        }
-        
+        body.dark-mode .sidebar-header { border-bottom-color: rgba(255,255,255,0.1); }
         body.dark-mode .reservation-card {
-            background: #25253a;
-            border-color: rgba(255,255,255,0.08);
+            background: #ffffff10;
+            border-color: var(--tunisia-red);
         }
-        
-        body.dark-mode .reservation-card:hover {
-            border-color: #FF6B6B;
-        }
-        
+        body.dark-mode .reservation-card:hover { border-color: #FF6B6B; }
         body.dark-mode .close-sidebar,
-        body.dark-mode .close-edit-modal {
-            color: #aaa;
-        }
-        
+        body.dark-mode .close-edit-modal { color: #aaa; }
         body.dark-mode .edit-modal-content {
             background: #2d2d3f;
             border: 1px solid rgba(255,255,255,0.1);
         }
-        
         body.dark-mode .edit-form-group input {
             background: #25253a;
             border-color: rgba(255,255,255,0.1);
             color: #e0e0e0;
         }
-        
-        body.dark-mode .footer {
-            background: #0f0f1a;
-        }
-        
+        body.dark-mode .footer { background: #0f0f1a; }
         body.dark-mode .profile-modal-panel,
         body.dark-mode .edit-modal-panel {
             background: linear-gradient(160deg, #25253a 0%, #1e1e2f 100%);
         }
-        
         body.dark-mode .pf-hero,
         body.dark-mode .pf-card,
         body.dark-mode .edit-hero,
@@ -146,455 +96,153 @@
             background: #2d2d3f;
             border: 1px solid rgba(255,255,255,0.08);
         }
-        
         body.dark-mode .pf-value {
             background: #25253a;
             border-color: rgba(255,255,255,0.08);
         }
-        
         body.dark-mode .edit-field input {
             background: #25253a;
             border-color: rgba(255,255,255,0.1);
             color: #e0e0e0;
         }
-        
         body.dark-mode .profile-modal-header,
         body.dark-mode .edit-modal-header {
             background: linear-gradient(160deg, #25253a 0%, #1e1e2f 100%);
             border-bottom-color: rgba(255,255,255,0.1);
         }
-        
+        body.dark-mode .language-selector select {
+            background: #2d2d3f;
+            border-color: rgba(255,255,255,0.1);
+            color: #e0e0e0;
+        }
+
+        /* ══ READONLY & VALIDATION ══ */
+        .readonly-field {
+            background-color: #f5f5f5 !important;
+            cursor: not-allowed !important;
+            border-color: #ddd !important;
+            color: #666 !important;
+            opacity: 0.8;
+        }
+        body.dark-mode .readonly-field {
+            background-color: #3a3a4a !important;
+            border-color: #555 !important;
+            color: #aaa !important;
+        }
+        .edit-form-group input.input-error {
+            border-color: #E31B23 !important;
+            background-color: #fff5f5 !important;
+        }
+        body.dark-mode .edit-form-group input.input-error {
+            background-color: #4a2525 !important;
+            border-color: #E31B23 !important;
+        }
+        .validation-error {
+            color: #E31B23;
+            font-size: 0.75rem;
+            display: block;
+            margin-top: 5px;
+            animation: fadeIn 0.3s ease;
+        }
+        .validation-error i { margin-right: 4px; font-size: 0.7rem; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ══ DARK MODE TOGGLE ══ */
         .dark-mode-toggle {
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition);
-            margin-left: 12px;
-            position: relative;
-            overflow: hidden;
+            background: transparent; border: none; cursor: pointer;
+            width: 42px; height: 42px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition); margin-left: 12px;
+            position: relative; overflow: hidden;
         }
-        
-        .dark-mode-toggle i {
-            font-size: 1.3rem;
-            transition: var(--transition);
-        }
-        
-        .dark-mode-toggle .fa-sun {
-            color: #F59E0B;
-            display: block;
-        }
-        
-        .dark-mode-toggle .fa-moon {
-            color: #C49A6C;
-            display: none;
-        }
-        
-        body.dark-mode .dark-mode-toggle .fa-sun {
-            display: none;
-        }
-        
-        body.dark-mode .dark-mode-toggle .fa-moon {
-            display: block;
-        }
-        
-        .dark-mode-toggle:hover {
-            background: rgba(0,0,0,0.05);
-            transform: scale(1.1);
-        }
-        
-        body.dark-mode .dark-mode-toggle:hover {
-            background: rgba(255,255,255,0.1);
-        }
-        
+        .dark-mode-toggle i { font-size: 1.3rem; transition: var(--transition); }
+        .dark-mode-toggle .fa-sun { color: #F59E0B; display: block; }
+        .dark-mode-toggle .fa-moon { color: #C49A6C; display: none; }
+        body.dark-mode .dark-mode-toggle .fa-sun { display: none; }
+        body.dark-mode .dark-mode-toggle .fa-moon { display: block; }
+        .dark-mode-toggle:hover { background: rgba(0,0,0,0.05); transform: scale(1.1); }
+        body.dark-mode .dark-mode-toggle:hover { background: rgba(255,255,255,0.1); }
+
+        /* ══ BASE ══ */
+        body { transition: background-color 0.3s ease, color 0.3s ease; }
+        .navbar, .card, .btn, .reservation-card, .modal-content, .footer { transition: var(--transition); }
         body {
-            transition: background-color 0.3s ease, color 0.3s ease;
             font-family: 'Montserrat', sans-serif;
             color: var(--dark-gray);
-            background: var(--tunisia-sand) !important;
-            background-color: #FDF5E6 !important;
+            background: var(--tunisia-sand);
         }
-        
-        .container, .main-content, .content, section, .py-5 {
-            background: transparent !important;
-        }
-        
         h1, h2, h3, h4, .logo-text {
             font-family: 'Cormorant Garamond', serif;
             font-weight: 800;
         }
-        
+
+        /* ══ NAVBAR ══ */
         .navbar {
             background: rgba(255,255,255,0.98);
             padding: 0.8rem 0;
             box-shadow: 0 2px 20px rgba(0,0,0,0.08);
             transition: all 0.3s ease;
         }
-        
-        .navbar.scrolled {
-            padding: 0.5rem 0;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
-        }
-        
+        .navbar.scrolled { padding: 0.5rem 0; box-shadow: 0 5px 25px rgba(0,0,0,0.1); }
+
         .reservation-menu-icon {
-            cursor: pointer;
-            margin-right: 2rem;
+            cursor: pointer; margin-right: 2rem;
             transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            padding: 5px;
+            display: flex; flex-direction: column; gap: 5px; padding: 5px;
         }
-        
         .reservation-menu-icon .line {
-            width: 25px;
-            height: 3px;
+            width: 25px; height: 3px;
             background-color: var(--tunisia-red);
-            border-radius: 3px;
-            transition: all 0.3s ease;
+            border-radius: 3px; transition: all 0.3s ease;
         }
-        
-        .reservation-menu-icon:hover .line {
-            background-color: var(--tunisia-orange);
-        }
-        
-        .reservation-menu-icon:hover {
-            transform: scale(1.05);
-        }
-        
-        .reservations-sidebar {
-            position: fixed;
-            top: 0;
-            left: -450px;
-            width: 450px;
-            height: 100vh;
-            background: white;
-            box-shadow: 5px 0 30px rgba(0,0,0,0.1);
-            z-index: 1050;
-            transition: left 0.3s ease;
-            overflow-y: auto;
-            padding: 1.5rem;
-        }
-        
-        .reservations-sidebar.open {
-            left: 0;
-        }
-        
-        .sidebar-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1040;
-            display: none;
-        }
-        
-        .sidebar-overlay.active {
-            display: block;
-        }
-        
-        .sidebar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 1rem;
-            margin-bottom: 1.5rem;
-            border-bottom: 2px solid #F0E8DD;
-        }
-        
-        .sidebar-header h4 {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.5rem;
-            color: var(--tunisia-red);
-            margin: 0;
-        }
-        
-        .close-sidebar {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #9CA3AF;
-            transition: all 0.2s;
-        }
-        
-        .close-sidebar:hover {
-            color: var(--tunisia-red);
-            transform: rotate(90deg);
-        }
-        
+        .reservation-menu-icon:hover .line { background-color: var(--tunisia-orange); }
+        .reservation-menu-icon:hover { transform: scale(1.05); }
+
         .navbar-brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-            transition: all 0.3s ease;
+            display: flex; align-items: center; gap: 12px;
+            text-decoration: none; transition: all 0.3s ease;
         }
-        
-        .navbar-brand:hover {
-            transform: scale(1.02);
-        }
-        
-        .navbar-brand .logo-img {
-            width: 70px;
-            height: 70px;
-            object-fit: contain;
-        }
-        
+        .navbar-brand:hover { transform: scale(1.02); }
+        .navbar-brand .logo-img { width: 65px; height: 65px; object-fit: contain; }
         .navbar-brand .logo-text {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: var(--tunisia-red);
+            font-size: 1.6rem; font-weight: 700; color: var(--tunisia-red);
         }
-        
-        .navbar-brand .logo-text span {
-            color: var(--tunisia-orange);
-        }
-        
+        .navbar-brand .logo-text span { color: var(--tunisia-orange); }
+
         .nav-link {
-            font-weight: 500;
-            color: var(--dark-gray);
-            transition: all 0.3s ease;
-            margin: 0 0.5rem;
-            position: relative;
-            padding-bottom: 5px;
+            font-weight: 500; color: var(--dark-gray);
+            transition: all 0.3s ease; margin: 0 0.5rem;
+            position: relative; padding-bottom: 5px;
         }
-        
         .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: var(--tunisia-red);
-            transition: width 0.3s ease;
-            border-radius: 2px;
+            content: ''; position: absolute; bottom: 0; left: 0;
+            width: 0; height: 2px; background: var(--tunisia-red);
+            transition: width 0.3s ease; border-radius: 2px;
         }
-        
         .nav-link:hover::after { width: 100%; }
         .nav-link.active::after { width: 100%; }
         .nav-link:hover, .nav-link.active { color: var(--tunisia-red); }
-        
+
         .btn-login {
-            background: transparent;
-            border: 2px solid var(--tunisia-red);
-            color: var(--tunisia-red);
-            padding: 8px 25px;
-            border-radius: 30px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
+            background: transparent; border: 2px solid var(--tunisia-red);
+            color: var(--tunisia-red); padding: 8px 25px; border-radius: 30px;
+            font-weight: 600; transition: all 0.3s ease;
+            text-decoration: none; display: inline-block;
         }
-        
-        .btn-login:hover {
-            background: var(--tunisia-red);
-            color: white;
-            transform: translateY(-2px);
-        }
-        
+        .btn-login:hover { background: var(--tunisia-red); color: white; transform: translateY(-2px); }
+
         .btn-register {
-            background: var(--tunisia-red);
-            border: none;
-            color: white;
-            padding: 8px 25px;
-            border-radius: 30px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
+            background: var(--tunisia-red); border: none; color: white;
+            padding: 8px 25px; border-radius: 30px; font-weight: 600;
+            transition: all 0.3s ease; text-decoration: none; display: inline-block;
         }
-        
-        .btn-register:hover {
-            background: #C41E3A;
-            transform: translateY(-2px);
-            color: white;
-        }
-        
-        .btn-logout {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            background: transparent;
-            color: var(--tunisia-dark-red);
-            border: 2px solid var(--tunisia-dark-red);
-            padding: 7px 18px;
-            border-radius: 30px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            font-family: 'Montserrat', sans-serif;
-            cursor: pointer;
-            transition: all 0.28s ease;
-            letter-spacing: 0.3px;
-        }
-        
-        .btn-logout i { font-size: 0.9rem; transition: transform 0.28s ease; }
-        .btn-logout:hover {
-            background: var(--tunisia-dark-red);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 16px rgba(196,30,58,0.28);
-        }
-        .btn-logout:hover i { transform: translateX(3px); }
-        
-        .profile-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--tunisia-red), var(--tunisia-dark-red));
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 0.95rem;
-            color: white;
-            letter-spacing: 0.5px;
-            border: 2.5px solid rgba(227,27,35,0.25);
-            box-shadow: 0 3px 12px rgba(227,27,35,0.22);
-            transition: all 0.28s ease;
-            position: relative;
-            flex-shrink: 0;
-            cursor: pointer;
-            font-family: 'Montserrat', sans-serif;
-        }
-        
-        .profile-avatar:hover {
-            transform: scale(1.1);
-            box-shadow: 0 5px 18px rgba(227,27,35,0.38);
-        }
-        
-        .avatar-dot {
-            position: absolute;
-            bottom: 1px;
-            right: 1px;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #22C55E;
-            border: 2px solid white;
-        }
-        
-        .reservation-card {
-            background: #FEF9F0;
-            border-radius: 16px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border: 1px solid #F0E8DD;
-            transition: all 0.2s;
-        }
-        
-        .reservation-card:hover {
-            transform: translateX(5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            border-color: var(--tunisia-red);
-        }
-        
-        .reservation-info { margin-bottom: 0.5rem; }
-        .reservation-name { font-weight: 700; color: var(--tunisia-red); margin-bottom: 0.3rem; font-size: 1rem; }
-        .reservation-sub { font-size: 0.7rem; color: #93032E; margin-bottom: 0.5rem; font-weight: 500; word-break: break-all; }
-        .reservation-details { font-size: 0.75rem; color: #6c757d; }
-        .reservation-details div { margin-bottom: 0.25rem; }
-        .reservation-details strong { color: #2C1810; }
-        
-        .badge-success {
-            background: #D1FAE5;
-            color: #059669;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.65rem;
-            font-weight: 600;
-            display: inline-block;
-        }
-        
-        .badge-warning {
-            background: #FEF3C7;
-            color: #D97706;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.65rem;
-            font-weight: 600;
-            display: inline-block;
-        }
-        
-        .reservation-actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-            flex-wrap: wrap;
-        }
-        
-        .reservation-actions button {
-            background: none;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 0.7rem;
-        }
-        
-        .btn-edit-reservation { background: #FEF3C7; color: #D97706; }
-        .btn-edit-reservation:hover { background: #F59E0B; color: white; }
-        
-        /* Bouton QR Code - visible */
-        .btn-qr-reservation {
-            background: #6B5B95 !important;
-            color: white !important;
-            border: none !important;
-            padding: 5px 12px !important;
-            border-radius: 8px !important;
-            cursor: pointer !important;
-            transition: all 0.2s !important;
-            display: inline-flex !important;
-            align-items: center !important;
-            gap: 5px !important;
-            font-size: 0.7rem !important;
-            font-weight: 500 !important;
-        }
-        
-        .btn-qr-reservation:hover {
-            background: #5a4a7a !important;
-            transform: translateY(-2px) !important;
-            color: white !important;
-        }
-        
-        .btn-qr-reservation i {
-            font-size: 0.7rem !important;
-        }
-        
-        /* Bouton Supprimer - lien vers la page de suppression */
-        .btn-delete-reservation-link {
-            background: #FEF2F2 !important;
-            color: #EF4444 !important;
-            border: none !important;
-            padding: 5px 12px !important;
-            border-radius: 8px !important;
-            cursor: pointer !important;
-            transition: all 0.2s !important;
-            display: inline-flex !important;
-            align-items: center !important;
-            gap: 5px !important;
-            font-size: 0.7rem !important;
-            font-weight: 500 !important;
-            text-decoration: none !important;
-        }
-        
-        .btn-delete-reservation-link:hover {
-            background: #EF4444 !important;
-            color: white !important;
-            transform: translateY(-2px) !important;
-        }
-        
-        /* Sélecteur de langue */
+        .btn-register:hover { background: #C41E3A; transform: translateY(-2px); color: white; }
+
+        /* ══ SÉLECTEUR DE LANGUE ══ */
         .language-selector select {
             padding: 5px 10px;
             border-radius: 30px;
@@ -604,18 +252,45 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        
         .language-selector select:hover {
             border-color: var(--tunisia-red);
         }
-        
-        body.dark-mode .language-selector select {
-            background: #2d2d3f;
-            border-color: rgba(255,255,255,0.1);
-            color: #e0e0e0;
+
+        /* ══ SIDEBAR RÉSERVATIONS ══ */
+        .reservations-sidebar {
+            position: fixed; top: 0; left: -450px;
+            width: 450px; height: 100vh;
+            background: white;
+            box-shadow: 5px 0 30px rgba(0,0,0,0.1);
+            z-index: 1050; transition: left 0.3s ease;
+            overflow-y: auto; padding: 1.5rem;
         }
-        
-        /* Nouveau design carte fidélité - Professionnel */
+        .reservations-sidebar.open { left: 0; }
+
+        .sidebar-overlay {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1040; display: none;
+        }
+        .sidebar-overlay.active { display: block; }
+
+        .sidebar-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding-bottom: 1rem; margin-bottom: 1.5rem;
+            border-bottom: 2px solid #F0E8DD;
+        }
+        .sidebar-header h4 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem; color: var(--tunisia-red); margin: 0;
+        }
+        .close-sidebar {
+            background: none; border: none; font-size: 1.5rem;
+            cursor: pointer; color: #9CA3AF; transition: all 0.2s;
+        }
+        .close-sidebar:hover { color: var(--tunisia-red); transform: rotate(90deg); }
+
+        /* ══ CARTE FIDÉLITÉ ══ */
         .fidelite-card {
             background: linear-gradient(135deg, #1a1a2e, #16213e);
             border-radius: 20px;
@@ -628,206 +303,276 @@
             overflow: hidden;
             border: 1px solid rgba(255,255,255,0.1);
         }
-        
         .fidelite-card::before {
             content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
+            position: absolute; top: -50%; left: -50%;
+            width: 200%; height: 200%;
             background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
             pointer-events: none;
         }
-        
         .fidelite-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
-        
         .fidelite-niveau {
-            font-size: 1.8rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin: 5px 0;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            font-size: 1.8rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 2px;
+            margin: 5px 0; text-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
-        
         .fidelite-points {
-            font-size: 2rem;
-            font-weight: 800;
-            margin: 10px 0;
+            font-size: 2rem; font-weight: 800; margin: 10px 0;
             background: rgba(255,255,255,0.15);
-            display: inline-block;
-            padding: 5px 20px;
-            border-radius: 50px;
+            display: inline-block; padding: 5px 20px; border-radius: 50px;
         }
-        
-        .fidelite-points small {
-            font-size: 0.8rem;
-            font-weight: normal;
-        }
-        
+        .fidelite-points small { font-size: 0.8rem; font-weight: normal; }
         .fidelite-reduction {
-            background: rgba(255,215,0,0.2);
-            border-radius: 50px;
-            padding: 8px 15px;
-            display: inline-block;
-            margin-top: 10px;
-            font-size: 0.9rem;
-            font-weight: 600;
+            background: rgba(255,215,0,0.2); border-radius: 50px;
+            padding: 8px 15px; display: inline-block; margin-top: 10px;
+            font-size: 0.9rem; font-weight: 600;
         }
-        
-        .fidelite-progress-container {
-            margin-top: 15px;
-            text-align: left;
-        }
-        
+        .fidelite-progress-container { margin-top: 15px; text-align: left; }
         .fidelite-progress-label {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.7rem;
-            margin-bottom: 5px;
-            color: rgba(255,255,255,0.7);
+            display: flex; justify-content: space-between;
+            font-size: 0.7rem; margin-bottom: 5px; color: rgba(255,255,255,0.7);
         }
-        
         .fidelite-progress {
-            background: rgba(255,255,255,0.2);
-            border-radius: 10px;
-            height: 8px;
-            overflow: hidden;
+            background: rgba(255,255,255,0.2); border-radius: 10px;
+            height: 8px; overflow: hidden;
         }
-        
         .fidelite-progress-bar {
             background: linear-gradient(90deg, #FFD700, #FFA500);
-            border-radius: 10px;
-            height: 100%;
-            width: 0%;
+            border-radius: 10px; height: 100%; width: 0%;
             transition: width 0.5s ease;
         }
-        
-        .fidelite-next {
-            font-size: 0.7rem;
-            margin-top: 8px;
-            color: rgba(255,255,255,0.6);
-            text-align: center;
-        }
-        
-        .fidelite-icon {
-            font-size: 2rem;
-            margin-bottom: 5px;
-        }
-        
+        .fidelite-next { font-size: 0.7rem; margin-top: 8px; color: rgba(255,255,255,0.6); text-align: center; }
+        .fidelite-icon { font-size: 2rem; margin-bottom: 5px; }
         .fidelite-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 20px;
-            padding: 3px 10px;
-            font-size: 0.6rem;
-            font-weight: 600;
+            position: absolute; top: 10px; right: 10px;
+            background: rgba(255,255,255,0.2); border-radius: 20px;
+            padding: 3px 10px; font-size: 0.6rem; font-weight: 600;
         }
-        
+
+        /* ══ RESERVATION CARDS ══ */
+        .reservation-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1.5px solid var(--tunisia-red);
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(227,27,35,0.07);
+        }
+        .reservation-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 18px rgba(227,27,35,0.15);
+            border-color: var(--tunisia-dark-red);
+        }
+        .reservation-info { margin-bottom: 0.5rem; }
+        .reservation-name {
+            font-weight: 700; color: var(--tunisia-red);
+            margin-bottom: 0.3rem; font-size: 1rem;
+        }
+        .reservation-sub { font-size: 0.7rem; color: #93032E; margin-bottom: 0.5rem; font-weight: 500; word-break: break-all; }
+        .reservation-details { font-size: 0.8rem; color: #6c757d; }
+        .reservation-details div { margin-bottom: 0.25rem; }
+        .reservation-details i { width: 20px; color: #263B46; }
+        .reservation-details strong { color: #2C1810; }
+
+        .badge-success {
+            background: #D1FAE5; color: #059669;
+            padding: 2px 8px; border-radius: 12px;
+            font-size: 0.65rem; font-weight: 600; display: inline-block;
+        }
+        .badge-warning {
+            background: #FEF3C7; color: #D97706;
+            padding: 2px 8px; border-radius: 12px;
+            font-size: 0.65rem; font-weight: 600; display: inline-block;
+        }
+
+        .reservation-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap; }
+        .reservation-actions button {
+            background: none; border: none; padding: 5px 10px;
+            border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 0.8rem;
+        }
+        .btn-edit-reservation {
+            background: #FEE2E2; color: var(--tunisia-red); font-weight: 600;
+        }
+        .btn-edit-reservation:hover { background: var(--tunisia-red); color: white; }
+        .btn-delete-reservation {
+            background: #E8EDF0; color: #263B46; font-weight: 600;
+        }
+        .btn-delete-reservation:hover { background: #263B46; color: white; }
+
+        /* Bouton QR Code */
+        .btn-qr-reservation {
+            background: #6B5B95 !important; color: white !important;
+            border: none !important; padding: 5px 12px !important;
+            border-radius: 8px !important; cursor: pointer !important;
+            transition: all 0.2s !important;
+            display: inline-flex !important; align-items: center !important;
+            gap: 5px !important; font-size: 0.7rem !important; font-weight: 500 !important;
+        }
+        .btn-qr-reservation:hover {
+            background: #5a4a7a !important; transform: translateY(-2px) !important; color: white !important;
+        }
+        .btn-qr-reservation i { font-size: 0.7rem !important; }
+
+        /* Bouton Supprimer lien */
+        .btn-delete-reservation-link {
+            background: #FEF2F2 !important; color: #EF4444 !important;
+            border: none !important; padding: 5px 12px !important;
+            border-radius: 8px !important; cursor: pointer !important;
+            transition: all 0.2s !important;
+            display: inline-flex !important; align-items: center !important;
+            gap: 5px !important; font-size: 0.7rem !important; font-weight: 500 !important;
+            text-decoration: none !important;
+        }
+        .btn-delete-reservation-link:hover {
+            background: #EF4444 !important; color: white !important; transform: translateY(-2px) !important;
+        }
+
+        /* ══ EDIT MODAL RÉSERVATION ══ */
         .edit-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1100;
-            align-items: center;
-            justify-content: center;
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1100;
+            align-items: center; justify-content: center;
         }
-        
         .edit-modal.active { display: flex; }
-        
         .edit-modal-content {
-            background: white;
-            border-radius: 20px;
-            padding: 2rem;
-            max-width: 450px;
-            width: 90%;
+            background: white; border-radius: 20px; padding: 2rem;
+            max-width: 450px; width: 90%;
         }
-        
         .edit-modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1.5rem; padding-bottom: 1rem;
             border-bottom: 1px solid #E8DFD1;
         }
-        
         .edit-modal-header h3 { font-size: 1.3rem; color: var(--tunisia-blue); margin: 0; }
-        
-        .close-edit-modal {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #9CA3AF;
-        }
-        
+        .close-edit-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #9CA3AF; }
+        .close-edit-modal:hover { color: var(--tunisia-red); }
         .edit-form-group { margin-bottom: 1rem; }
-        
-        .edit-form-group label {
-            display: block;
-            font-size: 0.85rem;
-            font-weight: 500;
-            margin-bottom: 0.3rem;
-        }
-        
+        .edit-form-group label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.3rem; }
         .edit-form-group input {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #E8DFD1;
-            border-radius: 10px;
-            font-size: 0.9rem;
+            width: 100%; padding: 10px 12px;
+            border: 1px solid #E8DFD1; border-radius: 10px; font-size: 0.9rem;
         }
-        
         .edit-form-group input:focus { outline: none; border-color: var(--tunisia-blue); }
-        
         .btn-save-edit {
-            width: 100%;
-            background: var(--tunisia-blue);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 30px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 1rem;
+            width: 100%; background: var(--tunisia-blue); color: white;
+            border: none; padding: 12px; border-radius: 30px;
+            font-weight: 600; cursor: pointer; margin-top: 1rem;
         }
-        
         .btn-save-edit:hover { background: #00408a; }
-        
+        .btn-save-edit:disabled { opacity: 0.6; cursor: not-allowed; }
         .empty-reservations { text-align: center; padding: 2rem; color: #9CA3AF; }
-        
-        /* Profile Modal */
-        .profile-modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            z-index: 2000;
+
+        /* ══ MODAL QR CODE ══ */
+        #qrModal {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); z-index: 3000;
+            align-items: center; justify-content: center;
         }
+
+        /* ══ BOUTON MÉTÉO FLOTTANT ══ */
+        .weather-float-btn {
+            position: fixed; bottom: 30px; right: 30px;
+            background: linear-gradient(135deg, #264653, #2A9D8F);
+            color: white; width: 60px; height: 60px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            transition: all 0.3s ease; z-index: 1000; text-decoration: none;
+        }
+        .weather-float-btn:hover {
+            transform: scale(1.1); color: white;
+            background: linear-gradient(135deg, #1a3340, #1f7a6f);
+        }
+        .weather-float-btn i { font-size: 28px; }
+        .weather-tooltip {
+            position: absolute; right: 70px;
+            background: #264653; color: white;
+            padding: 5px 12px; border-radius: 20px;
+            font-size: 12px; white-space: nowrap;
+            opacity: 0; transition: opacity 0.3s; pointer-events: none;
+        }
+        .weather-float-btn:hover .weather-tooltip { opacity: 1; }
+
+        /* ══ FOOTER ══ */
+        .footer {
+            background: #4e0915; color: white;
+            padding: 3rem 0 2rem; margin-top: 3rem;
+        }
+        .footer a { color: rgba(255,255,255,0.8); text-decoration: none; transition: all 0.3s ease; }
+        .footer a:hover { color: var(--tunisia-gold); padding-left: 5px; }
+        .social-icons a {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 40px; height: 40px; background: rgba(255,255,255,0.15);
+            border-radius: 50%; margin: 0 5px; transition: all 0.3s ease; color: white;
+        }
+        .social-icons a:hover { background: var(--tunisia-red); transform: translateY(-3px); color: white; }
+        .footer-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: var(--tunisia-gold); }
+        .footer-separator { background: rgba(255,255,255,0.2); margin: 2rem 0; }
+        .copyright { color: rgba(255,255,255,0.7); font-size: 0.85rem; }
+
+        /* ══ TOAST ══ */
+        .toast-message {
+            position: fixed; top: 90px; right: 20px; z-index: 1050;
+            min-width: 300px; animation: slideInRight 0.5s ease-out;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to   { transform: translateX(0);    opacity: 1; }
+        }
+
+        /* ══ BTN LOGOUT ══ */
+        .btn-logout {
+            display: inline-flex; align-items: center; gap: 7px;
+            background: transparent; color: var(--tunisia-dark-red);
+            border: 2px solid var(--tunisia-dark-red);
+            padding: 7px 18px; border-radius: 30px;
+            font-weight: 600; font-size: 0.85rem;
+            font-family: 'Montserrat', sans-serif;
+            cursor: pointer; transition: all 0.28s ease; letter-spacing: 0.3px;
+        }
+        .btn-logout i { font-size: 0.9rem; transition: transform 0.28s ease; }
+        .btn-logout:hover {
+            background: var(--tunisia-dark-red); color: white;
+            transform: translateY(-2px); box-shadow: 0 5px 16px rgba(196,30,58,0.28);
+        }
+        .btn-logout:hover i { transform: translateX(3px); }
+
+        /* ══ PROFILE AVATAR ══ */
+        .profile-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--tunisia-red), var(--tunisia-dark-red));
+            display: inline-flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.95rem; color: white; letter-spacing: 0.5px;
+            border: 2.5px solid rgba(227,27,35,0.25);
+            box-shadow: 0 3px 12px rgba(227,27,35,0.22);
+            transition: all 0.28s ease; position: relative; flex-shrink: 0;
+            cursor: pointer; font-family: 'Montserrat', sans-serif;
+        }
+        .profile-avatar:hover { transform: scale(1.1); box-shadow: 0 5px 18px rgba(227,27,35,0.38); }
+        .avatar-dot {
+            position: absolute; bottom: 1px; right: 1px;
+            width: 10px; height: 10px; border-radius: 50%;
+            background: #22C55E; border: 2px solid white;
+        }
+
+        /* ══ MODAL PROFIL (lecture) ══ */
+        .profile-modal-overlay { display: none; position: fixed; inset: 0; z-index: 2000; }
         .profile-modal-overlay.active { display: block; }
         .profile-modal-blur {
-            position: absolute;
-            inset: 0;
-            backdrop-filter: blur(8px);
+            position: absolute; inset: 0;
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
             background: rgba(26,46,74,0.35);
         }
         .profile-modal-panel {
-            position: absolute;
-            top: 50%;
-            right: 0;
+            position: absolute; top: 50%; right: 0;
             transform: translateY(-50%) translateX(100%);
-            width: min(520px, 96vw);
-            height: 100vh;
+            width: min(520px, 96vw); height: 100vh;
             background: linear-gradient(160deg, #FDF6EC 0%, #F5EDD8 100%);
             box-shadow: -12px 0 60px rgba(26,46,74,.18);
             overflow-y: auto;
@@ -838,462 +583,262 @@
             transform: translateY(-50%) translateX(0);
         }
         .profile-modal-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 20px 28px 0;
-            position: sticky;
-            top: 0;
-            z-index: 1;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 20px 28px 0; position: sticky; top: 0; z-index: 1;
             background: linear-gradient(160deg, #FDF6EC 0%, #F5EDD8 100%);
             padding-bottom: 10px;
             border-bottom: 1px solid rgba(160,35,31,.1);
         }
         .profile-modal-header .modal-title {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: #1A2E4A;
-            margin: 0;
+            font-size: 1.2rem; font-weight: 700; color: #1A2E4A; margin: 0;
         }
         .profile-modal-close {
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            border: none;
-            background: rgba(160,35,31,.1);
-            color: #A0231F;
-            font-size: 1.1rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 34px; height: 34px; border-radius: 50%;
+            border: none; background: rgba(160,35,31,.1);
+            color: #A0231F; font-size: 1.1rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
             transition: background .2s, transform .2s;
         }
         .profile-modal-close:hover { background: #A0231F; color: white; transform: rotate(90deg); }
-        
         .pf-body { padding: 20px 28px 0; display: flex; flex-direction: column; gap: 16px; }
         .pf-hero {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            display: flex;
-            align-items: center;
-            gap: 18px;
+            background: white; border-radius: 16px; padding: 24px;
+            display: flex; align-items: center; gap: 18px;
             box-shadow: 0 3px 16px rgba(26,46,74,.07);
         }
         .pf-avatar-lg {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            flex-shrink: 0;
+            width: 80px; height: 80px; border-radius: 50%; flex-shrink: 0;
             background: linear-gradient(135deg, #C94040, #A0231F);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             font-family: 'Cormorant Garamond', serif;
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: white;
+            font-size: 1.8rem; font-weight: 800; color: white;
             border: 3px solid rgba(160,35,31,.2);
             box-shadow: 0 4px 14px rgba(160,35,31,.22);
             position: relative;
         }
         .pf-avatar-lg img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
         .pf-avatar-cam {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: #A0231F;
-            border: 2px solid white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: absolute; bottom: 0; right: 0;
+            width: 24px; height: 24px; border-radius: 50%;
+            background: #A0231F; border: 2px solid white;
+            display: flex; align-items: center; justify-content: center;
         }
         .pf-avatar-cam i { font-size: 9px; color: white; }
         .pf-hero-info .pf-fullname {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 1.35rem;
-            font-weight: 800;
-            color: #1A2E4A;
-            margin: 0 0 3px;
+            font-size: 1.35rem; font-weight: 800; color: #1A2E4A; margin: 0 0 3px;
         }
         .pf-hero-info .pf-mail { font-size: .8rem; color: #A0231F; margin: 0 0 8px; }
         .pf-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            background: #FDF1F1;
-            color: #A0231F;
-            font-size: .68rem;
-            font-weight: 700;
-            padding: 3px 10px;
-            border-radius: 20px;
+            display: inline-flex; align-items: center; gap: 5px;
+            background: #FDF1F1; color: #A0231F;
+            font-size: .68rem; font-weight: 700;
+            padding: 3px 10px; border-radius: 20px;
             border: 1px solid rgba(160,35,31,.18);
         }
         .pf-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #22C55E; }
         .pf-card {
-            background: white;
-            border-radius: 14px;
-            padding: 20px 22px;
+            background: white; border-radius: 14px; padding: 20px 22px;
             box-shadow: 0 3px 16px rgba(26,46,74,.06);
         }
         .pf-card-title {
             font-family: 'Cormorant Garamond', serif;
-            font-size: .95rem;
-            font-weight: 800;
-            color: #1A2E4A;
-            margin: 0 0 14px;
-            padding-bottom: 8px;
+            font-size: .95rem; font-weight: 800; color: #1A2E4A;
+            margin: 0 0 14px; padding-bottom: 8px;
             border-bottom: 1.5px solid #F0E8DD;
-            display: flex;
-            align-items: center;
-            gap: 7px;
+            display: flex; align-items: center; gap: 7px;
         }
         .pf-card-title i { color: #A0231F; font-size: .85rem; }
         .pf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .pf-field { display: flex; flex-direction: column; gap: 3px; }
         .pf-label { font-size: .65rem; font-weight: 700; color: #A0A0A0; letter-spacing: .6px; text-transform: uppercase; }
         .pf-value {
-            font-size: .85rem;
-            color: #1A2E4A;
-            font-weight: 500;
-            padding: 9px 12px;
-            background: #FDF6EC;
-            border-radius: 8px;
-            border: 1px solid #EFE5D0;
+            font-size: .85rem; color: #1A2E4A; font-weight: 500;
+            padding: 9px 12px; background: #FDF6EC;
+            border-radius: 8px; border: 1px solid #EFE5D0;
         }
         .pf-value.empty { color: #C0B090; font-style: italic; }
         .pf-edit-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 7px;
-            width: 100%;
-            padding: 13px;
+            display: flex; align-items: center; justify-content: center; gap: 7px;
+            width: 100%; padding: 13px;
             background: linear-gradient(90deg, #A0231F, #C0392B);
-            color: white;
-            border: none;
-            border-radius: 50px;
-            font-family: 'Montserrat', sans-serif;
-            font-size: .88rem;
-            font-weight: 700;
-            cursor: pointer;
-            text-decoration: none;
+            color: white; border: none; border-radius: 50px;
+            font-family: 'Montserrat', sans-serif; font-size: .88rem; font-weight: 700;
+            cursor: pointer; text-decoration: none;
             box-shadow: 0 4px 14px rgba(160,35,31,.28);
             transition: transform .18s, box-shadow .18s;
         }
         .pf-edit-btn:hover { transform: translateY(-2px); box-shadow: 0 7px 20px rgba(160,35,31,.4); color: white; }
         .pf-edit-btn i { font-size: .85rem; }
-        
-        /* Edit Modal Profil */
-        .edit-modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            z-index: 2500;
-        }
+
+        /* ══ MODAL EDIT PROFIL ══ */
+        .edit-modal-overlay { display: none; position: fixed; inset: 0; z-index: 2500; }
         .edit-modal-overlay.active { display: block; }
         .edit-modal-blur {
-            position: absolute;
-            inset: 0;
-            backdrop-filter: blur(8px);
-            background: rgba(26,46,74,0.35);
-            cursor: pointer;
+            position: absolute; inset: 0;
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            background: rgba(26,46,74,0.35); cursor: pointer;
         }
         .edit-modal-panel {
-            position: absolute;
-            top: 50%;
-            right: 0;
+            position: absolute; top: 50%; right: 0;
             transform: translateY(-50%) translateX(100%);
-            width: min(520px, 96vw);
-            height: 100vh;
+            width: min(520px, 96vw); height: 100vh;
             background: linear-gradient(160deg, #FDF6EC 0%, #F5EDD8 100%);
             box-shadow: -12px 0 60px rgba(26,46,74,.18);
             overflow-y: auto;
             transition: transform 0.45s cubic-bezier(.76,0,.24,1);
             padding: 0 0 40px;
         }
-        .edit-modal-overlay.active .edit-modal-panel {
-            transform: translateY(-50%) translateX(0);
-        }
+        .edit-modal-overlay.active .edit-modal-panel { transform: translateY(-50%) translateX(0); }
         .edit-modal-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 20px 28px 10px;
-            position: sticky;
-            top: 0;
-            z-index: 1;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 20px 28px 10px; position: sticky; top: 0; z-index: 1;
             background: linear-gradient(160deg, #FDF6EC 0%, #F5EDD8 100%);
             border-bottom: 1px solid rgba(160,35,31,.1);
         }
-        .edit-modal-title {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: #1A2E4A;
-            margin: 0;
-        }
+        .edit-modal-title { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 800; color: #1A2E4A; margin: 0; }
         .edit-modal-close {
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            border: none;
-            background: rgba(160,35,31,.1);
-            color: #A0231F;
-            font-size: 1.1rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 34px; height: 34px; border-radius: 50%;
+            border: none; background: rgba(160,35,31,.1);
+            color: #A0231F; font-size: 1.1rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
             transition: background .2s, transform .2s;
         }
         .edit-modal-close:hover { background: #A0231F; color: white; transform: rotate(90deg); }
         .edit-body { padding: 20px 28px; display: flex; flex-direction: column; gap: 14px; }
         .edit-hero {
-            background: white;
-            border-radius: 16px;
-            padding: 18px 20px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
+            background: white; border-radius: 16px; padding: 18px 20px;
+            display: flex; align-items: center; gap: 14px;
             box-shadow: 0 3px 14px rgba(26,46,74,.07);
         }
         .edit-av {
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            flex-shrink: 0;
+            width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0;
             background: linear-gradient(135deg, #C94040, #A0231F);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 800; color: white;
             border: 3px solid rgba(160,35,31,.2);
         }
         .edit-hero-name { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; font-weight: 800; color: #1A2E4A; margin: 0 0 2px; }
-        .edit-hero-sub { font-size: .75rem; color: #A0231F; margin: 0; }
+        .edit-hero-sub  { font-size: .75rem; color: #A0231F; margin: 0; }
         .edit-card {
-            background: white;
-            border-radius: 14px;
-            padding: 18px 20px;
+            background: white; border-radius: 14px; padding: 18px 20px;
             box-shadow: 0 3px 14px rgba(26,46,74,.06);
         }
         .edit-card-title {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: .95rem;
-            font-weight: 800;
-            color: #1A2E4A;
-            margin: 0 0 14px;
-            padding-bottom: 8px;
-            border-bottom: 1.5px solid #F0E8DD;
-            display: flex;
-            align-items: center;
-            gap: 7px;
+            font-family: 'Cormorant Garamond', serif; font-size: .95rem; font-weight: 800; color: #1A2E4A;
+            margin: 0 0 14px; padding-bottom: 8px; border-bottom: 1.5px solid #F0E8DD;
+            display: flex; align-items: center; gap: 7px;
         }
         .edit-card-title i { color: #A0231F; font-size: .82rem; }
         .edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .edit-field { display: flex; flex-direction: column; gap: 4px; }
         .edit-field label { font-size: .65rem; font-weight: 700; color: #A0A0A0; letter-spacing: .5px; text-transform: uppercase; }
         .edit-field input {
-            width: 100%;
-            padding: 10px 13px;
-            border: 1.5px solid #EFE5D0;
-            border-radius: 9px;
-            font-family: 'Montserrat', sans-serif;
-            font-size: .84rem;
-            color: #1A2E4A;
-            background: #FDF6EC;
-            outline: none;
+            width: 100%; padding: 10px 13px;
+            border: 1.5px solid #EFE5D0; border-radius: 9px;
+            font-family: 'Montserrat', sans-serif; font-size: .84rem; color: #1A2E4A;
+            background: #FDF6EC; outline: none;
             transition: border-color .2s, background .2s;
-            -webkit-appearance: none;
-            appearance: none;
+            -webkit-appearance: none; appearance: none;
         }
         .edit-field input:focus { border-color: #A0231F; background: white; box-shadow: 0 0 0 3px rgba(160,35,31,.08); }
         .edit-field input[type="date"] { cursor: pointer; }
-        .edit-field input.input-error {
-            border-color: #A0231F !important;
-            background: #FDF1F1 !important;
-        }
+        .edit-field input.input-error { border-color: #A0231F !important; background: #FDF1F1 !important; }
         .field-error {
-            color: #A0231F;
-            font-size: .68rem;
-            font-weight: 600;
-            margin-top: 2px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
+            color: #A0231F; font-size: .68rem; font-weight: 600; margin-top: 2px;
+            display: flex; align-items: center; gap: 4px;
         }
         .field-error::before {
-            content: '!';
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 13px;
-            height: 13px;
-            border-radius: 50%;
-            background: #A0231F;
-            color: white;
-            font-size: .6rem;
-            font-weight: 800;
-            flex-shrink: 0;
+            content: '!'; display: inline-flex; align-items: center; justify-content: center;
+            width: 13px; height: 13px; border-radius: 50%;
+            background: #A0231F; color: white; font-size: .6rem; font-weight: 800; flex-shrink: 0;
         }
         .edit-locked { display: flex; flex-direction: column; gap: 4px; }
         .edit-locked label { font-size: .65rem; font-weight: 700; color: #A0A0A0; letter-spacing: .5px; text-transform: uppercase; }
         .edit-locked-val {
-            padding: 10px 13px;
-            background: #F0EEEA;
-            border-radius: 9px;
-            border: 1.5px solid #E0DAD0;
-            font-size: .84rem;
-            color: #999;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            padding: 10px 13px; background: #F0EEEA;
+            border-radius: 9px; border: 1.5px solid #E0DAD0;
+            font-size: .84rem; color: #999; display: flex; align-items: center; gap: 8px;
         }
         .edit-locked-note { font-size: .65rem; color: #bbb; display: flex; align-items: center; gap: 4px; margin-top: 2px; }
         .edit-actions { display: flex; gap: 10px; }
         .edit-btn-cancel {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            padding: 11px;
-            border: 2px solid #A0231F;
-            border-radius: 50px;
-            background: transparent;
-            color: #A0231F;
-            font-family: 'Montserrat', sans-serif;
-            font-size: .84rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all .22s;
+            flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+            padding: 11px; border: 2px solid #A0231F; border-radius: 50px;
+            background: transparent; color: #A0231F;
+            font-family: 'Montserrat', sans-serif; font-size: .84rem; font-weight: 700;
+            cursor: pointer; transition: all .22s;
         }
         .edit-btn-cancel:hover { background: #A0231F; color: white; }
         .edit-btn-save {
-            flex: 2;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
+            flex: 2; display: flex; align-items: center; justify-content: center; gap: 6px;
             padding: 11px;
             background: linear-gradient(90deg, #A0231F, #C0392B);
-            color: white;
-            border: none;
-            border-radius: 50px;
-            font-family: 'Montserrat', sans-serif;
-            font-size: .84rem;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 4px 14px rgba(160,35,31,.28);
+            color: white; border: none; border-radius: 50px;
+            font-family: 'Montserrat', sans-serif; font-size: .84rem; font-weight: 700;
+            cursor: pointer; box-shadow: 0 4px 14px rgba(160,35,31,.28);
             transition: transform .18s, box-shadow .18s;
         }
         .edit-btn-save:hover { transform: translateY(-2px); box-shadow: 0 7px 20px rgba(160,35,31,.4); }
-        
-        /* Bouton météo flottant */
-        .weather-float-btn {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: linear-gradient(135deg, #264653, #2A9D8F);
-            color: white;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
-            z-index: 1000;
-            text-decoration: none;
+
+        /* ══ SESSION TIMEOUT ══ */
+        .inactivity-overlay {
+            display: none; position: fixed; inset: 0; z-index: 99999;
+            background: rgba(0,0,0,.55); backdrop-filter: blur(6px);
+            align-items: center; justify-content: center;
         }
-        
-        .weather-float-btn:hover {
-            transform: scale(1.1);
-            color: white;
-            background: linear-gradient(135deg, #1a3340, #1f7a6f);
+        .inactivity-overlay.active { display: flex; }
+        .inactivity-box {
+            background: white; border-radius: 20px; padding: 36px 32px;
+            max-width: 380px; width: 90%; text-align: center;
+            box-shadow: 0 32px 80px rgba(0,0,0,.25);
+            animation: popIn .35s cubic-bezier(.34,1.56,.64,1);
         }
-        
-        .weather-float-btn i {
-            font-size: 28px;
+        @keyframes popIn {
+            from { transform: scale(.85); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
         }
-        
-        .weather-tooltip {
-            position: absolute;
-            right: 70px;
-            background: #264653;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            white-space: nowrap;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
+        .inactivity-icon {
+            width: 64px; height: 64px; border-radius: 50%;
+            background: #FEF2F2; margin: 0 auto 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; color: #C41E3A;
         }
-        
-        .weather-float-btn:hover .weather-tooltip {
-            opacity: 1;
+        .inactivity-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.25rem; font-weight: 700; color: #2C3E50; margin: 0 0 8px;
         }
-        
-        .footer {
-            background: #4e0915;
-            color: white;
-            padding: 3rem 0 2rem;
-            margin-top: 3rem;
+        .inactivity-msg { font-size: .88rem; color: #777; margin: 0 0 6px; line-height: 1.6; }
+        .inactivity-counter {
+            font-size: 2.2rem; font-weight: 700; color: #C41E3A;
+            margin: 10px 0 16px; font-family: monospace;
         }
-        
-        .footer a {
-            color: rgba(255,255,255,0.8);
-            text-decoration: none;
-            transition: all 0.3s ease;
+        .inactivity-progress {
+            width: 100%; height: 5px; background: #F0E0E0;
+            border-radius: 10px; margin-bottom: 20px; overflow: hidden;
         }
-        
-        .footer a:hover { color: var(--tunisia-gold); padding-left: 5px; }
-        
-        .social-icons a {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            background: rgba(255,255,255,0.15);
-            border-radius: 50%;
-            margin: 0 5px;
-            transition: all 0.3s ease;
-            color: white;
+        .inactivity-progress-bar {
+            height: 100%; background: linear-gradient(90deg, #C41E3A, #E31B23);
+            border-radius: 10px; transition: width 1s linear;
         }
-        
-        .social-icons a:hover { background: var(--tunisia-red); transform: translateY(-3px); color: white; }
-        
-        .footer-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: var(--tunisia-gold); }
-        .footer-separator { background: rgba(255,255,255,0.2); margin: 2rem 0; }
-        .copyright { color: rgba(255,255,255,0.7); font-size: 0.85rem; }
-        
-        .toast-message {
-            position: fixed;
-            top: 90px;
-            right: 20px;
-            z-index: 1050;
-            min-width: 300px;
-            animation: slideInRight 0.5s ease-out;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        .btn-inactivity-stay {
+            width: 100%; padding: 12px;
+            background: linear-gradient(90deg, #C41E3A, #E31B23);
+            color: white; border: none; border-radius: 50px;
+            font-size: .92rem; font-weight: 700; cursor: pointer;
+            box-shadow: 0 5px 16px rgba(196,30,58,.3);
+            transition: transform .18s, box-shadow .18s;
         }
-        
-        @keyframes slideInRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+        .btn-inactivity-stay:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(196,30,58,.42); }
+        .btn-inactivity-logout {
+            width: 100%; padding: 10px; background: transparent;
+            color: #C41E3A; border: 1.5px solid rgba(196,30,58,.3);
+            border-radius: 50px; font-size: .85rem; font-weight: 600;
+            cursor: pointer; margin-top: 8px; transition: all .2s;
         }
-        
+        .btn-inactivity-logout:hover { background: #FFF0F0; }
+
         @media (max-width: 768px) {
             .navbar-brand .logo-text { font-size: 1.2rem; }
             .navbar-brand .logo-img { width: 50px; height: 50px; }
@@ -1303,18 +848,20 @@
             .reservation-actions { flex-direction: column; }
             .reservation-actions button { width: 100%; justify-content: center; }
             .btn-delete-reservation-link { width: 100%; justify-content: center; }
-            .fidelite-niveau { font-size: 1.2rem; }
-            .fidelite-points { font-size: 1.3rem; }
         }
     </style>
-    
+   
     {% block stylesheets %}{% endblock %}
 </head>
 <body>
-    <!-- NAVBAR -->
+
+    <!-- ══════════════════════════════════════════
+         NAVBAR
+    ══════════════════════════════════════════ -->
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
             <div class="d-flex align-items-center">
+                <!-- Icône hamburger réservations -->
                 <div class="reservation-menu-icon" id="reservationIcon" style="display: none;">
                     <div class="line"></div>
                     <div class="line"></div>
@@ -1331,32 +878,33 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mx-auto">
                     <li class="nav-item">
-                        <a class="nav-link {% if app.request.get('_route') == 'app_accueil' %}active{% endif %}" href="{{ path('app_accueil') }}">Accueil</a>
+                        <a class="nav-link {% if app.request.get('_route') == 'app_accueil' %}active{% endif %}"
+                           href="{{ path('app_accueil') }}">Accueil</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if app.request.get('_route') starts with 'app_voyage' %}active{% endif %}" href="{{ path('app_voyage_index') }}">Voyages</a>
+                        <a class="nav-link {% if app.request.get('_route') starts with 'app_voyage' %}active{% endif %}"
+                           href="{{ path('app_voyage_index') }}">Voyages</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ path('app_hotel_index') }}">Hôtels</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_evenement_index') }}">Événements</a>
+                        <a class="nav-link {% if app.request.get('_route') starts with 'app_evenement' %}active{% endif %}"
+                           href="{{ path('app_evenement_index') }}">Événements</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ path('app_produit_index') }}">Produits</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Forum</a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link" href="#">Forum</a></li>
                 </ul>
-                
+
                 {% if app.user %}
                 <div class="d-flex align-items-center gap-2 ms-2">
+                    <!-- Toggle dark mode -->
                     <button class="dark-mode-toggle" id="darkModeToggle" title="Mode sombre/clair">
                         <i class="fas fa-sun"></i>
                         <i class="fas fa-moon"></i>
                     </button>
-                    
                     <!-- Sélecteur de langue -->
                     <div class="language-selector">
                         <select id="languageSelectCh">
@@ -1368,7 +916,7 @@
                             <option value="es">🇪🇸 Español</option>
                         </select>
                     </div>
-                    
+                    <!-- Avatar profil -->
                     <button class="profile-avatar" id="openProfileModal" title="Mon profil"
                             style="{% if app.user.profileImageUrl %}background:none;padding:0;border:2px solid rgba(227,27,35,0.4);{% endif %}">
                         {% if app.user.profileImageUrl %}
@@ -1379,7 +927,9 @@
                         {% endif %}
                         <span class="avatar-dot"></span>
                     </button>
+                    <!-- Déconnexion -->
                     <form method="post" action="{{ path('app_logout') }}" style="display:inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('logout') }}">
                         <button class="btn-logout">
                             <i class="fas fa-arrow-right-from-bracket"></i>
                             Déconnexion
@@ -1392,7 +942,6 @@
                         <i class="fas fa-sun"></i>
                         <i class="fas fa-moon"></i>
                     </button>
-                    
                     <!-- Sélecteur de langue -->
                     <div class="language-selector">
                         <select id="languageSelectCh">
@@ -1404,7 +953,6 @@
                             <option value="es">🇪🇸 Español</option>
                         </select>
                     </div>
-                    
                     <a href="{{ path('app_login') }}" class="btn-login me-2">Connexion</a>
                     <a href="{{ path('app_register') }}" class="btn-register">Inscription</a>
                 </div>
@@ -1412,24 +960,26 @@
             </div>
         </div>
     </nav>
-    
-    <!-- OVERLAY sidebar -->
+
+    <!-- Overlay sidebar réservations -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
-    
-    <!-- SIDEBAR RÉSERVATIONS -->
+
+    <!-- ══════════════════════════════════════════
+         SIDEBAR RÉSERVATIONS (Voyages + Événements + Hôtels)
+    ══════════════════════════════════════════ -->
     <div class="reservations-sidebar" id="reservationsSidebar">
         <div class="sidebar-header">
             <h4><i class="fas fa-ticket-alt me-2"></i> Mes Réservations</h4>
             <button class="close-sidebar" id="closeSidebarBtn">&times;</button>
         </div>
-        
-        <!-- Carte Fidélité - Nouveau design -->
+
+        <!-- Carte Fidélité -->
         <div class="fidelite-card" id="fidelite-card" style="display: none;">
             <div id="fidelite-content">
                 <i class="fas fa-spinner fa-spin"></i> Chargement...
             </div>
         </div>
-        
+
         <div id="reservationsList">
             <div class="empty-reservations">
                 <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
@@ -1437,8 +987,11 @@
             </div>
         </div>
     </div>
-    
-    <!-- MODAL RÉSERVATION ÉDITION -->
+
+    <!-- ══════════════════════════════════════════
+         MODAL ÉDITION RÉSERVATION
+         (nom/prénom readonly + validation inline)
+    ══════════════════════════════════════════ -->
     <div class="edit-modal" id="editModal">
         <div class="edit-modal-content">
             <div class="edit-modal-header">
@@ -1449,34 +1002,55 @@
                 <input type="hidden" id="editReservationId">
                 <input type="hidden" id="editReservationType">
                 <div class="edit-form-group">
-                    <label>Nom</label>
-                    <input type="text" id="editNom">
+                    <label>Nom <span style="color:#999; font-size:0.7rem;">(non modifiable)</span></label>
+                    <input type="text" id="editNom" readonly class="readonly-field">
                 </div>
                 <div class="edit-form-group">
-                    <label>Prénom</label>
-                    <input type="text" id="editPrenom">
+                    <label>Prénom <span style="color:#999; font-size:0.7rem;">(non modifiable)</span></label>
+                    <input type="text" id="editPrenom" readonly class="readonly-field">
                 </div>
                 <div class="edit-form-group">
-                    <label>Téléphone</label>
-                    <input type="tel" id="editTelephone">
+                    <label>Téléphone <span style="color:#E31B23;">*</span></label>
+                    <input type="text" id="editTelephone" placeholder="12345678" autocomplete="off">
                 </div>
                 <div class="edit-form-group">
-                    <label>Email</label>
-                    <input type="email" id="editEmail">
+                    <label>Email <span style="color:#E31B23;">*</span></label>
+                    <input type="text" id="editEmail" placeholder="nom@domaine.com" autocomplete="off">
                 </div>
                 <div class="edit-form-group">
-                    <label>Nombre de personnes</label>
+                    <label>Nombre de personnes <span style="color:#E31B23;">*</span></label>
                     <input type="number" id="editNbre" min="1">
                 </div>
                 <button type="submit" class="btn-save-edit">Enregistrer</button>
             </form>
         </div>
     </div>
-    
+
+    <!-- ══════════════════════════════════════════
+         MODAL QR CODE
+    ══════════════════════════════════════════ -->
+    <div id="qrModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 3000; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 20px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; position: relative; padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #264653;">
+                <h3 style="color: #264653; margin: 0;"><i class="fas fa-qrcode"></i> Détail de la réservation</h3>
+                <button onclick="closeQRModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #C0392B;">&times;</button>
+            </div>
+            <div id="qrCodeContent" style="text-align: center;">
+                <div id="qrCodeImage" style="margin: 20px 0;"></div>
+                <div id="qrDetails" style="text-align: left; background: #F8F5F0; padding: 15px; border-radius: 10px; margin-top: 15px;">
+                    <p><i class="fas fa-spinner fa-spin"></i> Chargement...</p>
+                </div>
+                <button onclick="downloadQRCode()" style="background: #264653; color: white; border: none; padding: 10px 20px; border-radius: 30px; margin-top: 15px; cursor: pointer;">
+                    <i class="fas fa-download"></i> Télécharger QR Code
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Espace navbar fixe -->
     <div style="height: 85px;"></div>
-    
-    <!-- FLASH MESSAGES -->
+
+    <!-- Flash messages -->
     {% for label, messages in app.flashes %}
         {% for message in messages %}
             <div class="alert alert-{{ label }} alert-dismissible fade show toast-message" role="alert">
@@ -1486,28 +1060,32 @@
             </div>
         {% endfor %}
     {% endfor %}
-    
+
     <!-- MAIN CONTENT -->
     <main>
         {% block body %}{% endblock %}
     </main>
-    
-    <!-- BOUTON MÉTÉO FLOTTANT -->
+
+    <!-- ══════════════════════════════════════════
+         BOUTON MÉTÉO FLOTTANT
+    ══════════════════════════════════════════ -->
     <a href="{{ path('app_weather_index') }}" class="weather-float-btn">
         <i class="fas fa-cloud-sun"></i>
         <span class="weather-tooltip">Météo Tunisie</span>
     </a>
-    
-    <!-- FOOTER -->
+
+    <!-- ══════════════════════════════════════════
+         FOOTER
+    ══════════════════════════════════════════ -->
     <footer class="footer">
         <div class="container">
             <div class="row">
                 <div class="col-md-4 mb-4">
                     <div class="d-flex align-items-center gap-2 mb-3">
-                        <img src="{{ asset('images/logo.png') }}" alt="TunisiaJourney" style="width: 55px; height: 55px; object-fit: contain;">
-                        <h4 class="mb-0" style="font-family: 'Cormorant Garamond', serif; color: var(--tunisia-gold);">TunisiaJourney</h4>
+                        <img src="{{ asset('images/logo.png') }}" alt="TunisiaJourney" style="width:55px;height:55px;object-fit:contain;">
+                        <h4 class="mb-0" style="font-family:'Cormorant Garamond',serif;color:var(--tunisia-gold);">TunisiaJourney</h4>
                     </div>
-                    <p style="color: rgba(255,255,255,0.8); line-height: 1.6;">Votre agence de voyage tunisienne depuis 2010. Découvrez la beauté authentique de la Tunisie avec des professionnels passionnés.</p>
+                    <p style="color:rgba(255,255,255,0.8);line-height:1.6;">Votre agence de voyage tunisienne depuis 2010. Découvrez la beauté authentique de la Tunisie avec des professionnels passionnés.</p>
                     <div class="social-icons mt-3">
                         <a href="#"><i class="fab fa-facebook-f"></i></a>
                         <a href="#"><i class="fab fa-instagram"></i></a>
@@ -1539,40 +1117,26 @@
                 </div>
                 <div class="col-md-4 mb-4">
                     <h5 class="footer-title">Contactez-nous</h5>
-                    <ul class="list-unstyled" style="color: rgba(255,255,255,0.8);">
-                        <li><i class="fas fa-phone me-2" style="color: var(--tunisia-gold);"></i> +216 71 123 456</li>
-                        <li><i class="fas fa-envelope me-2" style="color: var(--tunisia-gold);"></i> contact@tunisiajourney.tn</li>
-                        <li><i class="fas fa-map-marker-alt me-2" style="color: var(--tunisia-gold);"></i> Tunis, Tunisie</li>
+                    <ul class="list-unstyled" style="color:rgba(255,255,255,0.8);">
+                        <li><i class="fas fa-phone me-2" style="color:var(--tunisia-gold);"></i> +216 71 123 456</li>
+                        <li><i class="fas fa-envelope me-2" style="color:var(--tunisia-gold);"></i> contact@tunisiajourney.tn</li>
+                        <li><i class="fas fa-map-marker-alt me-2" style="color:var(--tunisia-gold);"></i> Tunis, Tunisie</li>
                     </ul>
                 </div>
             </div>
             <hr class="footer-separator">
             <div class="text-center">
-                <small class="copyright">&copy; {{ "now"|date("Y") }} TunisiaJourney - Tous droits réservés | Fait avec <i class="fas fa-heart" style="color: var(--tunisia-red);"></i> en Tunisie</small>
+                <small class="copyright">&copy; {{ "now"|date("Y") }} TunisiaJourney - Tous droits réservés | Fait avec <i class="fas fa-heart" style="color:var(--tunisia-red);"></i> en Tunisie</small>
             </div>
         </div>
     </footer>
-    
-    <!-- MODAL QR CODE -->
-    <div id="qrModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 3000; align-items: center; justify-content: center;">
-        <div style="background: white; border-radius: 20px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; position: relative; padding: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #264653;">
-                <h3 style="color: #264653; margin: 0;"><i class="fas fa-qrcode"></i> Détail de la réservation</h3>
-                <button onclick="closeQRModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #C0392B;">&times;</button>
-            </div>
-            <div id="qrCodeContent" style="text-align: center;">
-                <div id="qrCodeImage" style="margin: 20px 0;"></div>
-                <div id="qrDetails" style="text-align: left; background: #F8F5F0; padding: 15px; border-radius: 10px; margin-top: 15px;">
-                    <p><i class="fas fa-spinner fa-spin"></i> Chargement...</p>
-                </div>
-                <button onclick="downloadQRCode()" style="background: #264653; color: white; border: none; padding: 10px 20px; border-radius: 30px; margin-top: 15px; cursor: pointer;">
-                    <i class="fas fa-download"></i> Télécharger QR Code
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- MODAL PROFIL (lecture) -->
+
+    {# ══ SIDEBAR FAVORIS ══ #}
+    {% include '_favoris_sidebar.html.twig' %}
+
+    {# ══════════════════════════════════════════
+       MODAL PROFIL (lecture)
+    ══════════════════════════════════════════ #}
     {% if app.user %}
     <div class="profile-modal-overlay" id="profileModal">
         <div class="profile-modal-blur" id="profileBlur"></div>
@@ -1597,18 +1161,11 @@
                         <span class="pf-badge"><span class="pf-badge-dot"></span> Compte actif</span>
                     </div>
                 </div>
-                
                 <div class="pf-card">
                     <div class="pf-card-title"><i class="fas fa-id-card"></i> Informations personnelles</div>
                     <div class="pf-grid">
-                        <div class="pf-field">
-                            <span class="pf-label">Nom</span>
-                            <span class="pf-value">{{ app.user.nom }}</span>
-                        </div>
-                        <div class="pf-field">
-                            <span class="pf-label">Prénom</span>
-                            <span class="pf-value">{{ app.user.prenom }}</span>
-                        </div>
+                        <div class="pf-field"><span class="pf-label">Nom</span><span class="pf-value">{{ app.user.nom }}</span></div>
+                        <div class="pf-field"><span class="pf-label">Prénom</span><span class="pf-value">{{ app.user.prenom }}</span></div>
                         <div class="pf-field">
                             <span class="pf-label">Date de naissance</span>
                             <span class="pf-value {% if not app.user.dateNaissance %}empty{% endif %}">
@@ -1629,30 +1186,56 @@
                         </div>
                     </div>
                 </div>
-                
                 <div class="pf-card">
                     <div class="pf-card-title"><i class="fas fa-envelope"></i> Informations de connexion</div>
                     <div class="pf-grid">
-                        <div class="pf-field" style="grid-column:1/-1">
-                            <span class="pf-label">Email</span>
-                            <span class="pf-value">{{ app.user.email }}</span>
-                        </div>
-                        <div class="pf-field" style="grid-column:1/-1">
-                            <span class="pf-label">Mot de passe</span>
-                            <span class="pf-value">••••••••••••</span>
-                        </div>
+                        <div class="pf-field" style="grid-column:1/-1"><span class="pf-label">Email</span><span class="pf-value">{{ app.user.email }}</span></div>
+                        <div class="pf-field" style="grid-column:1/-1"><span class="pf-label">Mot de passe</span><span class="pf-value">••••••••••••</span></div>
                     </div>
                 </div>
-                
-                <button class="pf-edit-btn" id="openEditModal">
-                    <i class="fas fa-pen"></i> Modifier le profil
-                </button>
+                <button class="pf-edit-btn" id="openEditModal"><i class="fas fa-pen"></i> Modifier le profil</button>
+
+                {# ── Section 2FA ── #}
+                {% if app.user.isTotpEnabled %}
+                <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:#F0FDF4;border-radius:12px;border:1px solid #BBF7D0;margin-top:4px;">
+                    <div style="width:36px;height:36px;border-radius:50%;background:#DCFCE7;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="fas fa-shield-halved" style="color:#15803D;font-size:.9rem;"></i>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="font-weight:700;color:#15803D;font-size:.85rem;">2FA activée</div>
+                        <div style="font-size:.72rem;color:#aaa;">Votre compte est doublement protégé</div>
+                    </div>
+                    <form method="POST" action="{{ path('app_2fa_disable') }}" style="margin:0;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('2fa_disable') }}">
+                        <button type="submit"
+                                style="padding:6px 14px;background:transparent;border:1.5px solid #FECACA;border-radius:40px;color:#EF4444;font-size:.75rem;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all .2s;"
+                                onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='transparent'">
+                            Désactiver
+                        </button>
+                    </form>
+                </div>
+                {% else %}
+                <a href="{{ path('app_2fa_enable') }}"
+                   style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:#FFF1F0;border-radius:12px;border:1px solid rgba(160,35,31,.2);text-decoration:none;margin-top:4px;transition:all .2s;"
+                   onmouseover="this.style.borderColor='#A0231F'" onmouseout="this.style.borderColor='rgba(160,35,31,.2)'">
+                    <div style="width:36px;height:36px;border-radius:50%;background:#FDE8E8;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="fas fa-lock-open" style="color:#A0231F;font-size:.9rem;"></i>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="font-weight:700;color:#A0231F;font-size:.85rem;">Activer la 2FA</div>
+                        <div style="font-size:.72rem;color:#aaa;">Sécurisez avec Google Authenticator</div>
+                    </div>
+                    <i class="fas fa-chevron-right" style="color:#A0231F;font-size:.8rem;"></i>
+                </a>
+                {% endif %}
             </div>
         </div>
     </div>
     {% endif %}
-    
-    <!-- MODAL EDIT PROFIL -->
+
+    {# ══════════════════════════════════════════
+       MODAL EDIT PROFIL
+    ══════════════════════════════════════════ #}
     {% if app.user %}
     <div class="edit-modal-overlay {% if app.session.get('_profile_errors') %}active{% endif %}" id="editProfileModal">
         <div class="edit-modal-blur" id="editModalBlur"></div>
@@ -1666,9 +1249,9 @@
                       enctype="multipart/form-data" novalidate>
                     <input type="hidden" name="_token" value="{{ csrf_token('profile_edit') }}">
                     <input type="file" name="photo" id="photoInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
-                    
                     <div class="edit-hero" style="margin-bottom:14px;">
-                        <div class="edit-av" id="editAvatarPreview" style="overflow:hidden;cursor:pointer;position:relative;" onclick="document.getElementById('photoInput').click()" title="Cliquer pour changer la photo">
+                        <div class="edit-av" id="editAvatarPreview" style="overflow:hidden;cursor:pointer;position:relative;"
+                             onclick="document.getElementById('photoInput').click()" title="Cliquer pour changer la photo">
                             {% if app.user.profileImageUrl %}
                                 <img src="{{ app.user.profileImageUrl }}" alt="Photo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
                             {% else %}
@@ -1683,89 +1266,65 @@
                             <p class="edit-hero-sub">Cliquez sur l'avatar pour changer la photo</p>
                         </div>
                     </div>
-                    
                     <div class="edit-card" style="margin-bottom:14px;">
                         <div class="edit-card-title"><i class="fas fa-id-card"></i> Informations personnelles</div>
                         <div class="edit-grid">
                             <div class="edit-field">
                                 <label for="field_nom">Nom</label>
                                 <input type="text" id="field_nom" name="nom" value="{{ app.session.get('_profile_data') ? app.session.get('_profile_data')['nom'] : app.user.nom }}" placeholder="Votre nom" class="{{ app.session.get('_profile_errors') and app.session.get('_profile_errors')['nom'] is defined ? 'input-error' : '' }}">
-                                {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['nom'] is defined %}
-                                    <span class="field-error">{{ app.session.get('_profile_errors')['nom'][0] }}</span>
-                                {% endif %}
+                                {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['nom'] is defined %}<span class="field-error">{{ app.session.get('_profile_errors')['nom'][0] }}</span>{% endif %}
                             </div>
                             <div class="edit-field">
                                 <label for="field_prenom">Prénom</label>
                                 <input type="text" id="field_prenom" name="prenom" value="{{ app.session.get('_profile_data') ? app.session.get('_profile_data')['prenom'] : app.user.prenom }}" placeholder="Votre prénom" class="{{ app.session.get('_profile_errors') and app.session.get('_profile_errors')['prenom'] is defined ? 'input-error' : '' }}">
-                                {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['prenom'] is defined %}
-                                    <span class="field-error">{{ app.session.get('_profile_errors')['prenom'][0] }}</span>
-                                {% endif %}
+                                {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['prenom'] is defined %}<span class="field-error">{{ app.session.get('_profile_errors')['prenom'][0] }}</span>{% endif %}
                             </div>
                             <div class="edit-field">
                                 <label for="field_dob">Date de naissance</label>
                                 <input type="date" id="field_dob" name="dateNaissance" value="{{ app.session.get('_profile_data') and app.session.get('_profile_data')['dateNaissance'] ? app.session.get('_profile_data')['dateNaissance'] : (app.user.dateNaissance ? app.user.dateNaissance|date('Y-m-d') : '') }}" max="{{ "now"|date_modify("-18 years")|date('Y-m-d') }}" class="{{ app.session.get('_profile_errors') and app.session.get('_profile_errors')['dateNaissance'] is defined ? 'input-error' : '' }}">
-                                {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['dateNaissance'] is defined %}
-                                    <span class="field-error">{{ app.session.get('_profile_errors')['dateNaissance'][0] }}</span>
-                                {% endif %}
+                                {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['dateNaissance'] is defined %}<span class="field-error">{{ app.session.get('_profile_errors')['dateNaissance'][0] }}</span>{% endif %}
                             </div>
                             <div class="edit-field">
                                 <label for="field_tel">Téléphone</label>
                                 <input type="text" id="field_tel" name="telephone" value="{{ app.session.get('_profile_data') ? app.session.get('_profile_data')['telephone'] : app.user.telephone }}" placeholder="06XXXXXXXX" class="{{ app.session.get('_profile_errors') and app.session.get('_profile_errors')['telephone'] is defined ? 'input-error' : '' }}">
-                                {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['telephone'] is defined %}
-                                    <span class="field-error">{{ app.session.get('_profile_errors')['telephone'][0] }}</span>
-                                {% endif %}
+                                {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['telephone'] is defined %}<span class="field-error">{{ app.session.get('_profile_errors')['telephone'][0] }}</span>{% endif %}
                             </div>
                             <div class="edit-field" style="grid-column:1/-1">
                                 <label for="field_adresse">Adresse</label>
                                 <input type="text" id="field_adresse" name="adresse" value="{{ app.session.get('_profile_data') ? app.session.get('_profile_data')['adresse'] : app.user.adresse }}" placeholder="Votre adresse" class="{{ app.session.get('_profile_errors') and app.session.get('_profile_errors')['adresse'] is defined ? 'input-error' : '' }}">
-                                {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['adresse'] is defined %}
-                                    <span class="field-error">{{ app.session.get('_profile_errors')['adresse'][0] }}</span>
-                                {% endif %}
+                                {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['adresse'] is defined %}<span class="field-error">{{ app.session.get('_profile_errors')['adresse'][0] }}</span>{% endif %}
                             </div>
                         </div>
                     </div>
-                    
                     <div class="edit-card" style="margin-bottom:14px;">
                         <div class="edit-card-title"><i class="fas fa-shield-alt"></i> Informations de connexion</div>
                         <div style="display:flex;flex-direction:column;gap:12px;">
                             <div class="edit-field">
                                 <label for="field_email">Email</label>
                                 <input type="text" id="field_email" name="email" value="{{ app.session.get('_profile_data') ? app.session.get('_profile_data')['email'] : app.user.email }}" class="{{ app.session.get('_profile_errors') and app.session.get('_profile_errors')['email'] is defined ? 'input-error' : '' }}">
-                                {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['email'] is defined %}
-                                    <span class="field-error">{{ app.session.get('_profile_errors')['email'][0] }}</span>
-                                {% endif %}
+                                {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['email'] is defined %}<span class="field-error">{{ app.session.get('_profile_errors')['email'][0] }}</span>{% endif %}
                             </div>
                             <hr style="border-color:#F0E8DD;margin:4px 0;">
-                            <p style="font-size:.72rem;color:#A0A0A0;margin:0;">
-                                <i class="fas fa-key"></i> Changer le mot de passe
-                                <em>(laisser vide pour ne pas modifier)</em>
-                            </p>
+                            <p style="font-size:.72rem;color:#A0A0A0;margin:0;"><i class="fas fa-key"></i> Changer le mot de passe <em>(laisser vide pour ne pas modifier)</em></p>
                             <div class="edit-field">
                                 <label for="field_cur_pwd">Mot de passe actuel</label>
                                 <input type="password" id="field_cur_pwd" name="current_password" placeholder="Mot de passe actuel" class="{{ app.session.get('_profile_errors') and app.session.get('_profile_errors')['current_password'] is defined ? 'input-error' : '' }}">
-                                {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['current_password'] is defined %}
-                                    <span class="field-error">{{ app.session.get('_profile_errors')['current_password'][0] }}</span>
-                                {% endif %}
+                                {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['current_password'] is defined %}<span class="field-error">{{ app.session.get('_profile_errors')['current_password'][0] }}</span>{% endif %}
                             </div>
                             <div class="edit-grid">
                                 <div class="edit-field">
                                     <label for="field_new_pwd">Nouveau mot de passe</label>
                                     <input type="password" id="field_new_pwd" name="new_password" placeholder="Nouveau" class="{{ app.session.get('_profile_errors') and app.session.get('_profile_errors')['new_password'] is defined ? 'input-error' : '' }}">
-                                    {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['new_password'] is defined %}
-                                        <span class="field-error">{{ app.session.get('_profile_errors')['new_password'][0] }}</span>
-                                    {% endif %}
+                                    {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['new_password'] is defined %}<span class="field-error">{{ app.session.get('_profile_errors')['new_password'][0] }}</span>{% endif %}
                                 </div>
                                 <div class="edit-field">
                                     <label for="field_confirm_pwd">Confirmer</label>
                                     <input type="password" id="field_confirm_pwd" name="confirm_password" placeholder="Confirmer" class="{{ app.session.get('_profile_errors') and app.session.get('_profile_errors')['confirm_password'] is defined ? 'input-error' : '' }}">
-                                    {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['confirm_password'] is defined %}
-                                        <span class="field-error">{{ app.session.get('_profile_errors')['confirm_password'][0] }}</span>
-                                    {% endif %}
+                                    {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['confirm_password'] is defined %}<span class="field-error">{{ app.session.get('_profile_errors')['confirm_password'][0] }}</span>{% endif %}
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
                     <div class="edit-actions">
                         <button type="button" class="edit-btn-cancel" id="cancelEditModal"><i class="fas fa-times"></i> Annuler</button>
                         <button type="submit" class="edit-btn-save"><i class="fas fa-check"></i> Enregistrer</button>
@@ -1775,628 +1334,736 @@
         </div>
     </div>
     {% endif %}
-    
+
+    {# ══════════════════════════════════════════
+       SESSION TIMEOUT — Inactivité 15 minutes
+    ══════════════════════════════════════════ #}
+    {% if app.user %}
+    <div class="inactivity-overlay" id="inactivityOverlay">
+        <div class="inactivity-box">
+            <div class="inactivity-icon">⏱</div>
+            <h3 class="inactivity-title">Session inactive</h3>
+            <p class="inactivity-msg">Vous êtes inactif depuis un moment.<br>Vous serez déconnecté dans :</p>
+            <div class="inactivity-counter" id="inactivityCounter">60</div>
+            <div class="inactivity-progress">
+                <div class="inactivity-progress-bar" id="inactivityBar" style="width:100%"></div>
+            </div>
+            <button class="btn-inactivity-stay" onclick="inactivityStay()">✓ Je suis toujours là</button>
+            <form method="post" action="{{ path('app_logout') }}" id="inactivityLogoutForm" style="margin:0;">
+                <input type="hidden" name="_token" value="{{ csrf_token('logout') }}">
+                <button type="submit" class="btn-inactivity-logout">Se déconnecter maintenant</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <script>
-        // ==================== MODE SOMBRE ====================
-        if (localStorage.getItem('darkMode') === 'enabled') {
-            document.body.classList.add('dark-mode');
-        }
-        
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-            if (document.body.classList.contains('dark-mode')) {
-                localStorage.setItem('darkMode', 'enabled');
-            } else {
-                localStorage.setItem('darkMode', 'disabled');
-            }
-        }
-        
-        const darkModeToggle = document.getElementById('darkModeToggle');
-        const darkModeToggle2 = document.getElementById('darkModeToggle2');
-        
-        if (darkModeToggle) darkModeToggle.addEventListener('click', toggleDarkMode);
-        if (darkModeToggle2) darkModeToggle2.addEventListener('click', toggleDarkMode);
-        
-        // ==================== TRADUCTION ====================
-        // Fonction pour traduire la page
-        async function translatePage(lang) {
-            const path = window.location.pathname;
-            console.log('Traduction vers:', lang);
-            
-            // Page chambre
-            const chambreMatch = path.match(/\/chambre\/(\d+)/);
-            if (chambreMatch) {
-                const id = chambreMatch[1];
-                console.log('ID chambre:', id);
-                try {
-                    const response = await fetch(`/traduction/chambre/${id}?lang=${lang}`);
-                    const data = await response.json();
-                    console.log('Données reçues:', data);
-                    
-                    // Mettre à jour le titre
-                    const titleEl = document.getElementById('chambre-type');
-                    if (titleEl) titleEl.innerHTML = data.type;
-                    
-                    // Mettre à jour la description
-                    const descEl = document.getElementById('chambre-description');
-                    if (descEl) descEl.innerHTML = data.description;
-                    
-                    // Mettre à jour le nom de l'hôtel
-                    const hotelEl = document.getElementById('hotel-nom');
-                    if (hotelEl) hotelEl.innerHTML = data.hotel_nom;
-                    
-                    const hotelMetaEl = document.getElementById('hotel-nom-meta');
-                    if (hotelMetaEl) hotelMetaEl.innerHTML = data.hotel_nom;
-                    
-                    // Mettre à jour la ville
-                    const villeEl = document.getElementById('hotel-ville');
-                    if (villeEl) villeEl.innerHTML = data.hotel_ville;
-                    
-                    localStorage.setItem('preferred_language', lang);
-                    alert('Page traduite en ' + lang.toUpperCase());
-                } catch (error) {
-                    console.error('Erreur:', error);
-                    alert('Erreur de traduction');
-                }
-                return;
-            }
-            
-            // Page hôtel
-            const hotelMatch = path.match(/\/hotel\/(\d+)/);
-            if (hotelMatch) {
-                const id = hotelMatch[1];
-                console.log('ID hôtel:', id);
-                try {
-                    const response = await fetch(`/traduction/hotel/${id}?lang=${lang}`);
-                    const data = await response.json();
-                    console.log('Données reçues:', data);
-                    
-                    const titleEl = document.querySelector('.hotel-title');
-                    if (titleEl) titleEl.innerHTML = data.nom;
-                    
-                    const descEl = document.querySelector('.hotel-description');
-                    if (descEl) descEl.innerHTML = data.description;
-                    
-                    const locationEl = document.querySelector('.hotel-location');
-                    if (locationEl) locationEl.innerHTML = '<i class="fas fa-map-marker-alt"></i> ' + data.ville + ', ' + data.adresse;
-                    
-                    localStorage.setItem('preferred_language', lang);
-                    alert('Page traduite en ' + lang.toUpperCase());
-                } catch (error) {
-                    console.error('Erreur:', error);
-                    alert('Erreur de traduction');
-                }
-                return;
-            }
-        }
-        
-        // Ajouter l'événement au sélecteur de langue
-        const languageSelect = document.getElementById('languageSelectCh');
-        if (languageSelect) {
-            // Récupérer la langue sauvegardée
-            const savedLang = localStorage.getItem('preferred_language') || 'fr';
-            languageSelect.value = savedLang;
-            
-            // Traduire automatiquement si la langue n'est pas français
-            if (savedLang !== 'fr') {
-                setTimeout(() => translatePage(savedLang), 500);
-            }
-            
-            // Écouter le changement
-            languageSelect.addEventListener('change', function() {
-                const selectedLang = this.value;
-                if (selectedLang === 'fr') {
-                    window.location.reload();
-                } else {
-                    translatePage(selectedLang);
-                }
-            });
-        }
-        
-        // ==================== FIDÉLITÉ - NOUVEAU DESIGN ====================
-        async function chargerFidelite() {
+    // ══════════════════════════════════════════
+    // MODE SOMBRE
+    // ══════════════════════════════════════════
+    if (localStorage.getItem('darkMode') === 'enabled') {
+        document.body.classList.add('dark-mode');
+    }
+    function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+        localStorage.setItem('darkMode', document.body.classList.contains('dark-mode') ? 'enabled' : 'disabled');
+    }
+    const dmToggle  = document.getElementById('darkModeToggle');
+    const dmToggle2 = document.getElementById('darkModeToggle2');
+    if (dmToggle)  dmToggle.addEventListener('click', toggleDarkMode);
+    if (dmToggle2) dmToggle2.addEventListener('click', toggleDarkMode);
+
+    // ══════════════════════════════════════════
+    // TRADUCTION
+    // ══════════════════════════════════════════
+    async function translatePage(lang) {
+        const path = window.location.pathname;
+
+        const chambreMatch = path.match(/\/chambre\/(\d+)/);
+        if (chambreMatch) {
+            const id = chambreMatch[1];
             try {
-                const response = await fetch('/api/fidelite');
+                const response = await fetch(`/traduction/chambre/${id}?lang=${lang}`);
                 const data = await response.json();
-                
-                if (data.error) {
-                    const fideliteCard = document.getElementById('fidelite-card');
-                    if (fideliteCard) fideliteCard.style.display = 'none';
-                    return;
-                }
-                
-                const container = document.getElementById('fidelite-content');
-                const fideliteCard = document.getElementById('fidelite-card');
-                
-                if (container && fideliteCard) {
-                    fideliteCard.style.display = 'block';
-                    
-                    let reductionHtml = '';
-                    if (data.reduction > 0) {
-                        reductionHtml = `<div class="fidelite-reduction">
-                            <i class="fas fa-tag"></i> -${data.reduction}% sur vos réservations
-                        </div>`;
-                    }
-                    
-                    let progressionHtml = '';
-                    if (data.points_restants && data.points_restants > 0) {
-                        const pourcentage = (data.points / (data.points + data.points_restants)) * 100;
-                        progressionHtml = `
-                            <div class="fidelite-progress-container">
-                                <div class="fidelite-progress-label">
-                                    <span>Progression vers ${data.prochain_seuil}</span>
-                                    <span>${data.points} / ${data.points + data.points_restants} pts</span>
-                                </div>
-                                <div class="fidelite-progress">
-                                    <div class="fidelite-progress-bar" style="width: ${pourcentage}%;"></div>
-                                </div>
-                                <div class="fidelite-next">
-                                    <i class="fas fa-arrow-up"></i> Encore ${data.points_restants} points
-                                </div>
-                            </div>
-                        `;
-                    } else if (data.niveau === 'platine') {
-                        progressionHtml = `<div class="fidelite-next">🏆 Niveau maximum atteint ! 🏆</div>`;
-                    }
-                    
-                    const icones = {
-                        bronze: 'fa-medal',
-                        argent: 'fa-medal',
-                        or: 'fa-crown',
-                        platine: 'fa-gem'
-                    };
-                    
-                    container.innerHTML = `
-                        <div class="fidelite-badge">FIDÉLITÉ</div>
-                        <div class="fidelite-icon">
-                            <i class="fas ${icones[data.niveau] || 'fa-star'}"></i>
-                        </div>
-                        <div class="fidelite-niveau" style="color: ${data.couleur}; text-shadow: 0 0 10px ${data.couleur}40;">
-                            ${data.niveau}
-                        </div>
-                        <div class="fidelite-points">
-                            ${data.points} <small>points</small>
-                        </div>
-                        ${reductionHtml}
-                        ${progressionHtml}
-                    `;
-                }
+                const titleEl = document.getElementById('chambre-type');
+                if (titleEl) titleEl.innerHTML = data.type;
+                const descEl = document.getElementById('chambre-description');
+                if (descEl) descEl.innerHTML = data.description;
+                const hotelEl = document.getElementById('hotel-nom');
+                if (hotelEl) hotelEl.innerHTML = data.hotel_nom;
+                const hotelMetaEl = document.getElementById('hotel-nom-meta');
+                if (hotelMetaEl) hotelMetaEl.innerHTML = data.hotel_nom;
+                const villeEl = document.getElementById('hotel-ville');
+                if (villeEl) villeEl.innerHTML = data.hotel_ville;
+                localStorage.setItem('preferred_language', lang);
+                alert('Page traduite en ' + lang.toUpperCase());
             } catch (error) {
-                console.error('Erreur chargement fidélité:', error);
+                console.error('Erreur:', error);
+                alert('Erreur de traduction');
             }
+            return;
         }
-        
-        // ==================== SIDEBAR RÉSERVATIONS ====================
-        const showReservationIcon = ['/voyage/', '/voyage', '/hotel/', '/hotel', '/evenement/', '/evenement'];
-        if (showReservationIcon.some(p => window.location.pathname.startsWith(p))) {
+
+        const hotelMatch = path.match(/\/hotel\/(\d+)/);
+        if (hotelMatch) {
+            const id = hotelMatch[1];
+            try {
+                const response = await fetch(`/traduction/hotel/${id}?lang=${lang}`);
+                const data = await response.json();
+                const titleEl = document.querySelector('.hotel-title');
+                if (titleEl) titleEl.innerHTML = data.nom;
+                const descEl = document.querySelector('.hotel-description');
+                if (descEl) descEl.innerHTML = data.description;
+                const locationEl = document.querySelector('.hotel-location');
+                if (locationEl) locationEl.innerHTML = '<i class="fas fa-map-marker-alt"></i> ' + data.ville + ', ' + data.adresse;
+                localStorage.setItem('preferred_language', lang);
+                alert('Page traduite en ' + lang.toUpperCase());
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur de traduction');
+            }
+            return;
+        }
+    }
+
+    const languageSelect = document.getElementById('languageSelectCh');
+    if (languageSelect) {
+        const savedLang = localStorage.getItem('preferred_language') || 'fr';
+        languageSelect.value = savedLang;
+        if (savedLang !== 'fr') {
+            setTimeout(() => translatePage(savedLang), 500);
+        }
+        languageSelect.addEventListener('change', function() {
+            const selectedLang = this.value;
+            if (selectedLang === 'fr') {
+                window.location.reload();
+            } else {
+                translatePage(selectedLang);
+            }
+        });
+    }
+
+    // ══════════════════════════════════════════
+    // FIDÉLITÉ
+    // ══════════════════════════════════════════
+    async function chargerFidelite() {
+        try {
+            const response = await fetch('/api/fidelite');
+            const data = await response.json();
+
+            if (data.error) {
+                const fideliteCard = document.getElementById('fidelite-card');
+                if (fideliteCard) fideliteCard.style.display = 'none';
+                return;
+            }
+
+            const container = document.getElementById('fidelite-content');
+            const fideliteCard = document.getElementById('fidelite-card');
+
+            if (container && fideliteCard) {
+                fideliteCard.style.display = 'block';
+
+                let reductionHtml = '';
+                if (data.reduction > 0) {
+                    reductionHtml = `<div class="fidelite-reduction">
+                        <i class="fas fa-tag"></i> -${data.reduction}% sur vos réservations
+                    </div>`;
+                }
+
+                let progressionHtml = '';
+                if (data.points_restants && data.points_restants > 0) {
+                    const pourcentage = (data.points / (data.points + data.points_restants)) * 100;
+                    progressionHtml = `
+                        <div class="fidelite-progress-container">
+                            <div class="fidelite-progress-label">
+                                <span>Progression vers ${data.prochain_seuil}</span>
+                                <span>${data.points} / ${data.points + data.points_restants} pts</span>
+                            </div>
+                            <div class="fidelite-progress">
+                                <div class="fidelite-progress-bar" style="width: ${pourcentage}%;"></div>
+                            </div>
+                            <div class="fidelite-next">
+                                <i class="fas fa-arrow-up"></i> Encore ${data.points_restants} points
+                            </div>
+                        </div>
+                    `;
+                } else if (data.niveau === 'platine') {
+                    progressionHtml = `<div class="fidelite-next">🏆 Niveau maximum atteint ! 🏆</div>`;
+                }
+
+                const icones = {
+                    bronze: 'fa-medal',
+                    argent: 'fa-medal',
+                    or: 'fa-crown',
+                    platine: 'fa-gem'
+                };
+
+                container.innerHTML = `
+                    <div class="fidelite-badge">FIDÉLITÉ</div>
+                    <div class="fidelite-icon">
+                        <i class="fas ${icones[data.niveau] || 'fa-star'}"></i>
+                    </div>
+                    <div class="fidelite-niveau" style="color: ${data.couleur}; text-shadow: 0 0 10px ${data.couleur}40;">
+                        ${data.niveau}
+                    </div>
+                    <div class="fidelite-points">
+                        ${data.points} <small>points</small>
+                    </div>
+                    ${reductionHtml}
+                    ${progressionHtml}
+                `;
+            }
+        } catch (error) {
+            console.error('Erreur chargement fidélité:', error);
+        }
+    }
+
+    // ══════════════════════════════════════════
+    // SIDEBAR RÉSERVATIONS
+    // ══════════════════════════════════════════
+    (function() {
+        const showOnPaths = ['/voyage', '/evenement', '/hotel', '/chambre'];
+        if (showOnPaths.some(p => window.location.pathname.startsWith(p))) {
             const icon = document.getElementById('reservationIcon');
             if (icon) icon.style.display = 'flex';
         }
-        
-        const reservationIcon = document.getElementById('reservationIcon');
-        const sidebar = document.getElementById('reservationsSidebar');
-        const overlay = document.getElementById('sidebarOverlay');
-        const closeSidebarBtn = document.getElementById('closeSidebarBtn');
-        
+
+        const icon     = document.getElementById('reservationIcon');
+        const sidebar  = document.getElementById('reservationsSidebar');
+        const overlay  = document.getElementById('sidebarOverlay');
+        const closeBtn = document.getElementById('closeSidebarBtn');
+
         function openSidebar() {
-            if (sidebar && overlay) { 
-                sidebar.classList.add('open'); 
-                overlay.classList.add('active'); 
+            if (sidebar && overlay) {
+                sidebar.classList.add('open');
+                overlay.classList.add('active');
                 loadReservations();
                 setTimeout(chargerFidelite, 500);
             }
         }
-        
         function closeSidebar() {
-            if (sidebar && overlay) { 
-                sidebar.classList.remove('open'); 
-                overlay.classList.remove('active'); 
+            if (sidebar && overlay) {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
             }
         }
-        
-        if (reservationIcon) reservationIcon.addEventListener('click', openSidebar);
-        if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeSidebar);
-        if (overlay) overlay.addEventListener('click', closeSidebar);
-        
-        async function loadReservations() {
-            const container = document.getElementById('reservationsList');
-            if (!container) return;
-            
-            try {
-                const path = window.location.pathname;
-                let reservations = [];
-                
-                if (path.startsWith('/hotel') || path.startsWith('/chambre')) {
-                    const response = await fetch('/reservation/api/reservations/all');
-                    const data = await response.json();
-                    reservations = data.map(r => ({ ...r, type: 'chambre' }));
-                }
-                else if (path.startsWith('/voyage')) {
-                    const response = await fetch('/api/reservations');
-                    const data = await response.json();
-                    reservations = data.map(r => ({ ...r, type: 'voyage' }));
-                }
-                else if (path.startsWith('/evenement')) {
-                    const response = await fetch('/api/reservations-act');
-                    const data = await response.json();
-                    reservations = data.map(r => ({ ...r, type: 'activite' }));
-                }
-                else {
-                    const [respChambres, respVoyages] = await Promise.all([
-                        fetch('/reservation/api/reservations/all'),
-                        fetch('/api/reservations')
-                    ]);
-                    const chambres = (await respChambres.json()).map(c => ({ ...c, type: 'chambre' }));
-                    const voyages = (await respVoyages.json()).map(v => ({ ...v, type: 'voyage' }));
-                    reservations = [...chambres, ...voyages];
-                }
-                
-                if (!reservations || reservations.length === 0) {
-                    container.innerHTML = '<div class="empty-reservations"><i class="fas fa-ticket-alt fa-3x mb-2"></i><p>Aucune réservation trouvée</p></div>';
-                    return;
-                }
-                
-                container.innerHTML = reservations.map(res => {
-                    if (res.type === 'chambre') {
-                        const rid = res.idRes || res.id || res.idRP;
-                        const nom = res.nom || '';
-                        const prenom = res.prenom || '';
-                        const email = res.email || '';
-                        const telephone = res.telephone || '';
-                        const chambreNum = res.chambre_num || '-';
-                        const hotelNom = res.hotel_nom || '';
-                        const prixTotal = res.prixTotal || 0;
-                        const nbPersonnes = res.nbPersonnes || 1;
-                        const dateDebut = res.dateDebut || '';
-                        const dateFin = res.dateFin || '';
-                        const nbNuit = res.nbNuit || 0;
-                        const statut = res.statut || 'en_attente';
-                        
-                        return `
-                            <div class="reservation-card" data-id="${rid}" data-type="chambre">
-                                <div class="reservation-info">
-                                    <div class="reservation-name">${escapeHtml(nom)} ${escapeHtml(prenom)}</div>
-                                    <div class="reservation-sub">${escapeHtml(email)} | ${escapeHtml(telephone)}</div>
-                                    <div class="reservation-details">
-                                        <div><strong>🏨 Hôtel :</strong> ${escapeHtml(hotelNom)}</div>
-                                        <div><strong>🛏️ Chambre :</strong> n°${chambreNum}</div>
-                                        <div><strong>👥 Personnes :</strong> ${nbPersonnes}</div>
-                                        <div><strong>📅 Dates :</strong> du ${dateDebut} au ${dateFin}</div>
-                                        <div><strong>🌙 Nuits :</strong> ${nbNuit}</div>
-                                        <div><strong>💰 Prix total :</strong> ${prixTotal} TND</div>
-                                        <div><span class="${statut === 'confirmé' ? 'badge-success' : 'badge-warning'}">${statut === 'confirmé' ? '✓ Confirmée' : '⏳ En attente'}</span></div>
-                                    </div>
-                                </div>
-                                <div class="reservation-actions">
-                                    <button class="btn-edit-reservation" onclick="editReservationChambre(${rid})">
-                                        <i class="fas fa-edit"></i> Modifier
-                                    </button>
-                                    <a href="/reservation/chambre/${rid}/supprimer" class="btn-delete-reservation-link">
-                                        <i class="fas fa-trash-alt"></i> Supprimer
-                                    </a>
-                                    <button class="btn-qr-reservation" onclick="showQRCode(${rid})">
-                                        <i class="fas fa-qrcode"></i> QR Code
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                    }
-                    else if (res.type === 'voyage') {
-                        const rid = res.idRP || res.id;
-                        const nom = res.nom || '';
-                        const prenom = res.prenom || '';
-                        const email = res.email || '';
-                        const telephone = res.telephone || '';
-                        const nbre = res.nbre || 1;
-                        const prixProg = res.prixProg || 0;
-                        const dateProgramme = res.dateProgramme || '';
-                        
-                        return `
-                            <div class="reservation-card" data-id="${rid}" data-type="voyage">
-                                <div class="reservation-info">
-                                    <div class="reservation-name">${escapeHtml(prenom)} ${escapeHtml(nom)}</div>
-                                    <div class="reservation-sub">${escapeHtml(email)} | ${escapeHtml(telephone)}</div>
-                                    <div class="reservation-details">
-                                        <div><strong>👥 Personnes :</strong> ${nbre}</div>
-                                        <div><strong>📅 Date :</strong> ${dateProgramme}</div>
-                                        <div><strong>💰 Prix total :</strong> ${prixProg} DT</div>
-                                    </div>
-                                </div>
-                                <div class="reservation-actions">
-                                    <button class="btn-edit-reservation" onclick="editReservation(${rid})">
-                                        <i class="fas fa-edit"></i> Modifier
-                                    </button>
-                                    <button class="btn-delete-reservation" onclick="deleteReservation(${rid})">
-                                        <i class="fas fa-trash"></i> Supprimer
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                    }
-                    else {
-                        const rid = res.IDRes || res.id;
-                        const nom = res.Nom || res.nom || '';
-                        const prenom = res.Prenom || res.prenom || '';
-                        const email = res.email || '';
-                        const telephone = res.telephone || '';
-                        const nbre = res.NombrePlaces || res.nbre || 1;
-                        const prix = res.Prix || 0;
-                        const dateReservation = res.DateReservation || '';
-                        
-                        return `
-                            <div class="reservation-card" data-id="${rid}" data-type="activite">
-                                <div class="reservation-info">
-                                    <div class="reservation-name">${escapeHtml(prenom)} ${escapeHtml(nom)}</div>
-                                    <div class="reservation-sub">${escapeHtml(email)} | ${escapeHtml(telephone)}</div>
-                                    <div class="reservation-details">
-                                        <div><strong>👥 Personnes :</strong> ${nbre}</div>
-                                        <div><strong>📅 Date :</strong> ${dateReservation}</div>
-                                        <div><strong>💰 Prix total :</strong> ${prix} DT</div>
-                                    </div>
-                                </div>
-                                <div class="reservation-actions">
-                                    <button class="btn-edit-reservation" onclick="editReservationAct(${rid})">
-                                        <i class="fas fa-edit"></i> Modifier
-                                    </button>
-                                    <button class="btn-delete-reservation" onclick="deleteReservationAct(${rid})">
-                                        <i class="fas fa-trash"></i> Supprimer
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                    }
-                }).join('');
-            } catch (error) {
-                console.error('Erreur:', error);
-                container.innerHTML = '<div class="empty-reservations"><i class="fas fa-exclamation-circle fa-3x mb-2"></i><p>Erreur de chargement</p></div>';
-            }
-        }
-        
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
-        }
-        
-        async function editReservation(id) {
-            try {
-                const response = await fetch(`/api/reservations/${id}`);
-                const res = await response.json();
-                document.getElementById('editReservationId').value = res.idRP;
-                document.getElementById('editReservationType').value = 'voyage';
-                document.getElementById('editNom').value = res.nom;
-                document.getElementById('editPrenom').value = res.prenom;
-                document.getElementById('editTelephone').value = res.telephone;
-                document.getElementById('editEmail').value = res.email;
-                document.getElementById('editNbre').value = res.nbre;
-                document.getElementById('editModal').classList.add('active');
-            } catch (error) { alert('Erreur lors du chargement'); }
-        }
-        
-        async function editReservationChambre(id) {
-            try {
-                const response = await fetch(`/reservation/api/reservations/chambres/${id}`);
-                const res = await response.json();
-                document.getElementById('editReservationId').value = res.id;
-                document.getElementById('editReservationType').value = 'chambre';
-                document.getElementById('editNom').value = res.nom || '';
-                document.getElementById('editPrenom').value = res.prenom || '';
-                document.getElementById('editTelephone').value = res.telephone || '';
-                document.getElementById('editEmail').value = res.email || '';
-                document.getElementById('editNbre').value = res.nbPersonnes || 1;
-                document.getElementById('editModal').classList.add('active');
-            } catch (error) { alert('Erreur lors du chargement'); }
-        }
-        
-        async function editReservationAct(id) {
-            try {
-                const response = await fetch(`/api/reservations-act/${id}`);
-                const res = await response.json();
-                document.getElementById('editReservationId').value = res.IDRes;
-                document.getElementById('editReservationType').value = 'activite';
-                document.getElementById('editNom').value = res.Nom || '';
-                document.getElementById('editPrenom').value = res.Prenom || '';
-                document.getElementById('editTelephone').value = res.telephone || '';
-                document.getElementById('editEmail').value = res.email || '';
-                document.getElementById('editNbre').value = res.NombrePlaces || 1;
-                document.getElementById('editModal').classList.add('active');
-            } catch (error) { alert('Erreur lors du chargement'); }
-        }
-        
-        const closeEditModal = document.getElementById('closeEditModal');
-        if (closeEditModal) {
-            closeEditModal.addEventListener('click', () => document.getElementById('editModal').classList.remove('active'));
-        }
-        
-        const editForm = document.getElementById('editReservationForm');
-        if (editForm) {
-            editForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const id = document.getElementById('editReservationId').value;
-                const type = document.getElementById('editReservationType').value;
-                const data = {
-                    nom: document.getElementById('editNom').value,
-                    prenom: document.getElementById('editPrenom').value,
-                    telephone: document.getElementById('editTelephone').value,
-                    email: document.getElementById('editEmail').value,
-                    nbre: parseInt(document.getElementById('editNbre').value)
-                };
-                
-                let url;
-                if (type === 'chambre') {
-                    url = `/reservation/api/reservations/chambres/${id}`;
-                } else if (type === 'voyage') {
-                    url = `/api/reservations/${id}`;
-                } else {
-                    url = `/api/reservations-act/${id}`;
-                }
-                
-                try {
-                    const response = await fetch(url, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
-                    });
-                    if (response.ok) {
-                        document.getElementById('editModal').classList.remove('active');
-                        loadReservations();
-                        showToast('Réservation modifiée avec succès !');
-                    } else { alert('Erreur lors de la modification'); }
-                } catch (error) { alert('Erreur lors de la modification'); }
-            });
-        }
-        
-        async function deleteReservation(id) {
-            if (!confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?')) return;
-            try {
-                const response = await fetch(`/api/reservations/${id}`, { method: 'DELETE' });
-                if (response.ok) { loadReservations(); showToast('Réservation supprimée avec succès !'); }
-                else { alert('Erreur lors de la suppression'); }
-            } catch (error) { alert('Erreur lors de la suppression'); }
-        }
-        
-        async function deleteReservationAct(id) {
-            if (!confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?')) return;
-            try {
-                const response = await fetch(`/api/reservations-act/${id}`, { method: 'DELETE' });
-                if (response.ok) { loadReservations(); showToast('Réservation supprimée avec succès !'); }
-                else { alert('Erreur lors de la suppression'); }
-            } catch (error) { alert('Erreur lors de la suppression'); }
-        }
-        
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.className = 'alert alert-success toast-message';
-            toast.innerHTML = `<i class="fas fa-check-circle me-2"></i> ${message}`;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-        
-        setTimeout(() => {
-            document.querySelectorAll('.toast-message').forEach(toast => {
-                toast.style.transition = 'opacity 0.5s';
-                toast.style.opacity = '0';
-                setTimeout(() => toast.remove(), 500);
-            });
-        }, 5000);
-        
-        window.addEventListener('scroll', () => {
-            const navbar = document.querySelector('.navbar');
-            if (window.scrollY !== undefined) navbar.classList.toggle('scrolled', window.scrollY > 50);
-        });
-        
-        // ==================== QR CODE FUNCTIONS ====================
-        let currentQRCodeDataUri = null;
 
-        function showQRCode(id) {
-            console.log('Génération QR code pour ID:', id);
-            const modal = document.getElementById('qrModal');
-            modal.style.display = 'flex';
-            document.getElementById('qrCodeImage').innerHTML = '<div style="text-align: center;"><i class="fas fa-spinner fa-spin fa-3x"></i><p>Génération du QR code...</p></div>';
-            document.getElementById('qrDetails').innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Chargement des détails...</p>';
-            
-            fetch(`/reservation/api/reservations/chambres/${id}/qrcode`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Erreur HTTP ' + response.status);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success && data.qrCode) {
-                        currentQRCodeDataUri = data.qrCode;
-                        document.getElementById('qrCodeImage').innerHTML = `<img src="${data.qrCode}" style="width: 200px; height: 200px; border: 3px solid #264653; border-radius: 15px; padding: 10px; background: white;">`;
-                        
-                        const res = data.reservation;
-                        let detailsHtml = `
-                            <h4 style="color: #264653; margin-bottom: 15px;">🏨 ${res.hotel_nom || 'Hôtel'}</h4>
-                            <div style="margin-bottom: 15px;">
-                                <p><strong>🛏️ Chambre n° :</strong> ${res.chambre_num || '-'}</p>
-                                <p><strong>👤 Client :</strong> ${res.prenom || ''} ${res.nom || ''}</p>
-                                <p><strong>📧 Email :</strong> ${res.email || '-'}</p>
-                                <p><strong>📞 Téléphone :</strong> ${res.telephone || '-'}</p>
-                                <p><strong>👥 Personnes :</strong> ${res.nbPersonnes || 1}</p>
-                                <p><strong>📅 Dates :</strong> du ${res.dateDebut || '-'} au ${res.dateFin || '-'}</p>
-                                <p><strong>🌙 Nuits :</strong> ${res.nbNuit || 0}</p>
-                            </div>
-                            <hr style="border-color: #E8DFD1;">
-                            <div style="margin: 15px 0;">
-                                <h4 style="color: #C0392B;">💰 Détail du prix</h4>
-                                <p><strong>Prix total payé :</strong> <span style="font-size: 1.2rem; color: #C0392B;">${res.prixTotal || 0} TND</span></p>
-                                <p><strong>Détail complet :</strong> ${res.detailsPrix || '-'}</p>
-                            </div>
-                        `;
-                        document.getElementById('qrDetails').innerHTML = detailsHtml;
-                    } else {
-                        document.getElementById('qrCodeImage').innerHTML = '<p style="color: red;">Erreur lors de la génération du QR code</p>';
-                        document.getElementById('qrDetails').innerHTML = '<p style="color: red;">' + (data.error || 'Impossible de charger les détails') + '</p>';
-                    }
-                })
-                .catch(error => {
-                    console.error('Erreur:', error);
-                    document.getElementById('qrCodeImage').innerHTML = '<p style="color: red;">Erreur de connexion</p>';
-                    document.getElementById('qrDetails').innerHTML = '<p style="color: red;">Impossible de charger les détails. Vérifiez que la réservation existe.</p>';
-                });
-        }
+        if (icon)     icon.addEventListener('click', openSidebar);
+        if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+        if (overlay)  overlay.addEventListener('click', closeSidebar);
+    })();
 
-        function closeQRModal() {
-            document.getElementById('qrModal').style.display = 'none';
-            document.getElementById('qrCodeImage').innerHTML = '';
-            document.getElementById('qrDetails').innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Chargement...</p>';
-            currentQRCodeDataUri = null;
-        }
+    // ══════════════════════════════════════════
+    // CHARGEMENT RÉSERVATIONS
+    // ══════════════════════════════════════════
+    async function loadReservations() {
+        const container = document.getElementById('reservationsList');
+        if (!container) return;
 
-        function downloadQRCode() {
-            if (currentQRCodeDataUri) {
-                const link = document.createElement('a');
-                link.download = 'qrcode_reservation.png';
-                link.href = currentQRCodeDataUri;
-                link.click();
+        container.innerHTML = '<div class="empty-reservations"><i class="fas fa-spinner fa-spin fa-2x mb-2"></i><p>Chargement...</p></div>';
+
+        try {
+            const path = window.location.pathname;
+            let reservations = [];
+
+            if (path.startsWith('/hotel') || path.startsWith('/chambre')) {
+                const response = await fetch('/reservation/api/reservations/all');
+                const data = await response.json();
+                reservations = data.map(r => ({ ...r, type: 'chambre' }));
+            } else if (path.startsWith('/voyage')) {
+                const response = await fetch('/api/reservations');
+                const data = await response.json();
+                reservations = data.map(r => ({ ...r, type: 'voyage' }));
+            } else if (path.startsWith('/evenement')) {
+                const response = await fetch('/api/reservations-act');
+                const data = await response.json();
+                reservations = data.map(r => ({ ...r, type: 'activite' }));
             } else {
-                alert('Aucun QR code à télécharger');
+                const [respChambres, respVoyages] = await Promise.all([
+                    fetch('/reservation/api/reservations/all'),
+                    fetch('/api/reservations')
+                ]);
+                const chambres = (await respChambres.json()).map(c => ({ ...c, type: 'chambre' }));
+                const voyages  = (await respVoyages.json()).map(v => ({ ...v, type: 'voyage' }));
+                reservations = [...chambres, ...voyages];
+            }
+
+            if (!reservations || reservations.length === 0) {
+                container.innerHTML = '<div class="empty-reservations"><i class="fas fa-ticket-alt fa-3x mb-2"></i><p>Aucune réservation trouvée</p></div>';
+                return;
+            }
+
+            container.innerHTML = reservations.map(res => {
+                if (res.type === 'chambre') {
+                    const rid        = res.idRes || res.id || res.idRP;
+                    const nom        = res.nom || '';
+                    const prenom     = res.prenom || '';
+                    const email      = res.email || '';
+                    const telephone  = res.telephone || '';
+                    const chambreNum = res.chambre_num || '-';
+                    const hotelNom   = res.hotel_nom || '';
+                    const prixTotal  = res.prixTotal || 0;
+                    const nbPersonnes= res.nbPersonnes || 1;
+                    const dateDebut  = res.dateDebut || '';
+                    const dateFin    = res.dateFin || '';
+                    const nbNuit     = res.nbNuit || 0;
+                    const statut     = res.statut || 'en_attente';
+
+                    return `
+                        <div class="reservation-card" data-id="${rid}" data-type="chambre">
+                            <div class="reservation-info">
+                                <div class="reservation-name">${escapeHtml(nom)} ${escapeHtml(prenom)}</div>
+                                <div class="reservation-sub">${escapeHtml(email)} | ${escapeHtml(telephone)}</div>
+                                <div class="reservation-details">
+                                    <div><strong>🏨 Hôtel :</strong> ${escapeHtml(hotelNom)}</div>
+                                    <div><strong>🛏️ Chambre :</strong> n°${chambreNum}</div>
+                                    <div><strong>👥 Personnes :</strong> ${nbPersonnes}</div>
+                                    <div><strong>📅 Dates :</strong> du ${dateDebut} au ${dateFin}</div>
+                                    <div><strong>🌙 Nuits :</strong> ${nbNuit}</div>
+                                    <div><strong>💰 Prix total :</strong> ${prixTotal} TND</div>
+                                    <div><span class="${statut === 'confirmé' ? 'badge-success' : 'badge-warning'}">${statut === 'confirmé' ? '✓ Confirmée' : '⏳ En attente'}</span></div>
+                                </div>
+                            </div>
+                            <div class="reservation-actions">
+                                <button class="btn-edit-reservation" onclick="editReservationChambre(${rid})">
+                                    <i class="fas fa-edit"></i> Modifier
+                                </button>
+                                <a href="/reservation/chambre/${rid}/supprimer" class="btn-delete-reservation-link">
+                                    <i class="fas fa-trash-alt"></i> Supprimer
+                                </a>
+                                <button class="btn-qr-reservation" onclick="showQRCode(${rid})">
+                                    <i class="fas fa-qrcode"></i> QR Code
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else if (res.type === 'voyage') {
+                    const rid          = res.idRP || res.id;
+                    const nom          = res.nom || '';
+                    const prenom       = res.prenom || '';
+                    const email        = res.email || '';
+                    const telephone    = res.telephone || '';
+                    const nbre         = res.nbre || 1;
+                    const prixProg     = res.prixProg || 0;
+                    const dateProgramme= res.dateProgramme || '';
+
+                    return `
+                        <div class="reservation-card" data-id="${rid}" data-type="voyage">
+                            <div class="reservation-info">
+                                <div class="reservation-name">${escapeHtml(prenom)} ${escapeHtml(nom)}</div>
+                                <div class="reservation-sub">${escapeHtml(email)} | ${escapeHtml(telephone)}</div>
+                                <div class="reservation-details">
+                                    <div><strong>👥 Personnes :</strong> ${nbre}</div>
+                                    <div><strong>📅 Date :</strong> ${dateProgramme}</div>
+                                    <div><strong>💰 Prix total :</strong> ${prixProg} DT</div>
+                                </div>
+                            </div>
+                            <div class="reservation-actions">
+                                <button class="btn-edit-reservation" onclick="editReservation(${rid})">
+                                    <i class="fas fa-edit"></i> Modifier
+                                </button>
+                                <button class="btn-delete-reservation" onclick="deleteReservation(${rid}, 'voyage')">
+                                    <i class="fas fa-trash"></i> Supprimer
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const rid            = res.IDRes || res.id;
+                    const nom            = res.Nom || res.nom || '';
+                    const prenom         = res.Prenom || res.prenom || '';
+                    const email          = res.email || '';
+                    const telephone      = res.telephone || '';
+                    const nbre           = res.NombrePlaces || res.nbre || 1;
+                    const prix           = res.Prix || 0;
+                    const dateReservation= res.DateReservation || '';
+
+                    return `
+                        <div class="reservation-card" data-id="${rid}" data-type="activite">
+                            <div class="reservation-info">
+                                <div class="reservation-name">${escapeHtml(prenom)} ${escapeHtml(nom)}</div>
+                                <div class="reservation-sub">${escapeHtml(email)} | ${escapeHtml(telephone)}</div>
+                                <div class="reservation-details">
+                                    <div><strong>👥 Personnes :</strong> ${nbre}</div>
+                                    <div><strong>📅 Date :</strong> ${dateReservation}</div>
+                                    <div><strong>💰 Prix total :</strong> ${prix} DT</div>
+                                </div>
+                            </div>
+                            <div class="reservation-actions">
+                                <button class="btn-edit-reservation" onclick="editReservationAct(${rid})">
+                                    <i class="fas fa-edit"></i> Modifier
+                                </button>
+                                <button class="btn-delete-reservation" onclick="deleteReservationAct(${rid})">
+                                    <i class="fas fa-trash"></i> Supprimer
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+            }).join('');
+        } catch (e) {
+            container.innerHTML = '<div class="empty-reservations"><i class="fas fa-exclamation-circle fa-3x mb-2"></i><p>Erreur de chargement</p></div>';
+        }
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+    }
+
+    // ══════════════════════════════════════════
+    // VALIDATION INLINE (email, téléphone, nbre)
+    // ══════════════════════════════════════════
+    function clearValidationErrors() {
+        document.querySelectorAll('.validation-error').forEach(s => s.remove());
+        document.querySelectorAll('.edit-form-group input').forEach(i => i.classList.remove('input-error'));
+    }
+
+    function showValidationErrors(errors) {
+        clearValidationErrors();
+        const map = { telephone: 'editTelephone', email: 'editEmail', nbre: 'editNbre' };
+        for (const [field, msg] of Object.entries(errors)) {
+            const el = document.getElementById(map[field]);
+            if (el) {
+                el.classList.add('input-error');
+                const span = document.createElement('span');
+                span.className = 'validation-error';
+                span.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${msg}`;
+                el.parentNode.appendChild(span);
             }
         }
+    }
 
-        document.addEventListener('click', function(event) {
-            const modal = document.getElementById('qrModal');
-            if (event.target === modal) {
-                closeQRModal();
+    function validateReservationForm() {
+        const errors = {};
+        const tel   = document.getElementById('editTelephone').value.trim();
+        const email = document.getElementById('editEmail').value.trim();
+        const nbre  = parseInt(document.getElementById('editNbre').value);
+
+        if (!tel) {
+            errors.telephone = 'Le téléphone est obligatoire.';
+        } else if (!/^\+?[0-9]{8,15}$/.test(tel.replace(/\s/g, ''))) {
+            errors.telephone = 'Numéro invalide (ex: 12345678).';
+        }
+        if (!email) {
+            errors.email = "L'email est obligatoire.";
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            errors.email = 'Adresse email invalide.';
+        }
+        if (!nbre || nbre < 1) {
+            errors.nbre = 'Le nombre de places doit être ≥ 1.';
+        } else if (nbre > 50) {
+            errors.nbre = 'Maximum 50 places par réservation.';
+        }
+        return errors;
+    }
+
+    // ══════════════════════════════════════════
+    // ÉDITION RÉSERVATIONS
+    // ══════════════════════════════════════════
+    async function editReservation(id) {
+        try {
+            const res = await (await fetch(`/api/reservations/${id}`)).json();
+            document.getElementById('editReservationId').value   = res.idRP || id;
+            document.getElementById('editReservationType').value = 'voyage';
+            document.getElementById('editNom').value       = res.Nom    || res.nom    || '';
+            document.getElementById('editPrenom').value    = res.Prenom || res.prenom || '';
+            document.getElementById('editTelephone').value = res.telephone || '';
+            document.getElementById('editEmail').value     = res.email     || '';
+            document.getElementById('editNbre').value      = res.NombrePlaces || res.nbre || 1;
+            clearValidationErrors();
+            document.getElementById('editModal').classList.add('active');
+        } catch (e) { showToast('Erreur lors du chargement de la réservation', 'error'); }
+    }
+
+    async function editReservationChambre(id) {
+        try {
+            const res = await (await fetch(`/reservation/api/reservations/chambres/${id}`)).json();
+            document.getElementById('editReservationId').value   = res.id;
+            document.getElementById('editReservationType').value = 'chambre';
+            document.getElementById('editNom').value       = res.nom       || '';
+            document.getElementById('editPrenom').value    = res.prenom    || '';
+            document.getElementById('editTelephone').value = res.telephone || '';
+            document.getElementById('editEmail').value     = res.email     || '';
+            document.getElementById('editNbre').value      = res.nbPersonnes || 1;
+            clearValidationErrors();
+            document.getElementById('editModal').classList.add('active');
+        } catch (e) { showToast('Erreur lors du chargement de la réservation', 'error'); }
+    }
+
+    async function editReservationAct(id) {
+        try {
+            const res = await (await fetch(`/api/reservations-act/${id}`)).json();
+            document.getElementById('editReservationId').value   = res.IDRes || id;
+            document.getElementById('editReservationType').value = 'activite';
+            document.getElementById('editNom').value       = res.Nom    || '';
+            document.getElementById('editPrenom').value    = res.Prenom || '';
+            document.getElementById('editTelephone').value = res.telephone || '';
+            document.getElementById('editEmail').value     = res.email     || '';
+            document.getElementById('editNbre').value      = res.NombrePlaces || 1;
+            clearValidationErrors();
+            document.getElementById('editModal').classList.add('active');
+        } catch (e) { showToast('Erreur lors du chargement de la réservation', 'error'); }
+    }
+
+    document.getElementById('closeEditModal')?.addEventListener('click', () =>
+        document.getElementById('editModal').classList.remove('active')
+    );
+
+    document.getElementById('editReservationForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const clientErrors = validateReservationForm();
+        if (Object.keys(clientErrors).length) {
+            showValidationErrors(clientErrors);
+            showToast('Veuillez corriger les erreurs', 'error');
+            return;
+        }
+
+        const id   = document.getElementById('editReservationId').value;
+        const type = document.getElementById('editReservationType').value;
+        const btn  = e.target.querySelector('button[type="submit"]');
+        const origText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enregistrement...';
+
+        let url;
+        if (type === 'chambre') {
+            url = `/reservation/api/reservations/chambres/${id}`;
+        } else if (type === 'voyage') {
+            url = `/api/reservations/${id}`;
+        } else {
+            url = `/api/reservations-act/${id}`;
+        }
+
+        try {
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    telephone: document.getElementById('editTelephone').value.trim(),
+                    email:     document.getElementById('editEmail').value.trim(),
+                    nbre:      parseInt(document.getElementById('editNbre').value)
+                })
+            });
+            const result = await response.json();
+            if (response.ok) {
+                document.getElementById('editModal').classList.remove('active');
+                loadReservations();
+                showToast('Réservation modifiée avec succès !', 'success');
+            } else if (result.errors) {
+                showValidationErrors(result.errors);
+                showToast('Veuillez corriger les erreurs', 'error');
+            } else {
+                showToast('Erreur lors de la modification', 'error');
             }
+        } catch (err) {
+            showToast('Erreur lors de la modification', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = origText;
+        }
+    });
+
+    // ══════════════════════════════════════════
+    // ANNULATION RÉSERVATION (Soft Delete) pour les voyages
+    // ══════════════════════════════════════════
+    async function deleteReservation(id, type = 'voyage') {
+        if (!confirm('Êtes-vous sûr de vouloir ANNULER cette réservation ?\n\nLa place sera libérée pour la liste d\'attente.')) return;
+       
+        let apiUrl;
+        if (type === 'voyage') {
+            apiUrl = `/api/reservations/${id}/cancel`;
+        } else {
+            apiUrl = `/reservation-act/${id}/cancel`;
+        }
+       
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            const result = await response.json();
+           
+            if (response.ok && result.success) {
+                loadReservations();
+                showToast(result.message || 'Réservation annulée avec succès !', 'success');
+               
+                // Recharger la page si on est sur une page d'activité/voyage pour mettre à jour les places dispo
+                if (window.location.pathname.includes('/voyage/') || window.location.pathname.includes('/evenement/')) {
+                    setTimeout(() => window.location.reload(), 1500);
+                }
+            } else {
+                showToast(result.message || 'Erreur lors de l\'annulation', 'error');
+            }
+        } catch (e) {
+            showToast('Erreur lors de l\'annulation de la réservation', 'error');
+        }
+    }
+
+    // ══════════════════════════════════════════
+    // ANNULATION RÉSERVATION (Soft Delete) pour les activités/événements
+    // ══════════════════════════════════════════
+    async function deleteReservationAct(id) {
+        if (!confirm('Êtes-vous sûr de vouloir ANNULER cette réservation ?\n\nLa place sera libérée pour la liste d\'attente.')) return;
+       
+        const apiUrl = `/reservation-act/${id}/cancel`;
+       
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            const result = await response.json();
+           
+            if (response.ok && result.success) {
+                loadReservations();
+                showToast(result.message || 'Réservation annulée avec succès !', 'success');
+               
+                if (window.location.pathname.includes('/evenement/')) {
+                    setTimeout(() => window.location.reload(), 1500);
+                }
+            } else {
+                showToast(result.message || 'Erreur lors de l\'annulation', 'error');
+            }
+        } catch (e) {
+            showToast('Erreur lors de l\'annulation de la réservation', 'error');
+        }
+    }
+
+    // ══════════════════════════════════════════
+    // QR CODE
+    // ══════════════════════════════════════════
+    let currentQRCodeDataUri = null;
+
+    function showQRCode(id) {
+        const modal = document.getElementById('qrModal');
+        modal.style.display = 'flex';
+        document.getElementById('qrCodeImage').innerHTML = '<div style="text-align:center;"><i class="fas fa-spinner fa-spin fa-3x"></i><p>Génération du QR code...</p></div>';
+        document.getElementById('qrDetails').innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Chargement des détails...</p>';
+
+        fetch(`/reservation/api/reservations/chambres/${id}/qrcode`)
+            .then(response => {
+                if (!response.ok) throw new Error('Erreur HTTP ' + response.status);
+                return response.json();
+            })
+            .then(data => {
+                if (data.success && data.qrCode) {
+                    currentQRCodeDataUri = data.qrCode;
+                    document.getElementById('qrCodeImage').innerHTML = `<img src="${data.qrCode}" style="width:200px;height:200px;border:3px solid #264653;border-radius:15px;padding:10px;background:white;">`;
+                    const res = data.reservation;
+                    document.getElementById('qrDetails').innerHTML = `
+                        <h4 style="color:#264653;margin-bottom:15px;">🏨 ${res.hotel_nom || 'Hôtel'}</h4>
+                        <div style="margin-bottom:15px;">
+                            <p><strong>🛏️ Chambre n° :</strong> ${res.chambre_num || '-'}</p>
+                            <p><strong>👤 Client :</strong> ${res.prenom || ''} ${res.nom || ''}</p>
+                            <p><strong>📧 Email :</strong> ${res.email || '-'}</p>
+                            <p><strong>📞 Téléphone :</strong> ${res.telephone || '-'}</p>
+                            <p><strong>👥 Personnes :</strong> ${res.nbPersonnes || 1}</p>
+                            <p><strong>📅 Dates :</strong> du ${res.dateDebut || '-'} au ${res.dateFin || '-'}</p>
+                            <p><strong>🌙 Nuits :</strong> ${res.nbNuit || 0}</p>
+                        </div>
+                        <hr style="border-color:#E8DFD1;">
+                        <div style="margin:15px 0;">
+                            <h4 style="color:#C0392B;">💰 Détail du prix</h4>
+                            <p><strong>Prix total payé :</strong> <span style="font-size:1.2rem;color:#C0392B;">${res.prixTotal || 0} TND</span></p>
+                            <p><strong>Détail complet :</strong> ${res.detailsPrix || '-'}</p>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('qrCodeImage').innerHTML = '<p style="color:red;">Erreur lors de la génération du QR code</p>';
+                    document.getElementById('qrDetails').innerHTML = '<p style="color:red;">' + (data.error || 'Impossible de charger les détails') + '</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                document.getElementById('qrCodeImage').innerHTML = '<p style="color:red;">Erreur de connexion</p>';
+                document.getElementById('qrDetails').innerHTML = '<p style="color:red;">Impossible de charger les détails.</p>';
+            });
+    }
+
+    function closeQRModal() {
+        document.getElementById('qrModal').style.display = 'none';
+        document.getElementById('qrCodeImage').innerHTML = '';
+        document.getElementById('qrDetails').innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Chargement...</p>';
+        currentQRCodeDataUri = null;
+    }
+
+    function downloadQRCode() {
+        if (currentQRCodeDataUri) {
+            const link = document.createElement('a');
+            link.download = 'qrcode_reservation.png';
+            link.href = currentQRCodeDataUri;
+            link.click();
+        } else {
+            alert('Aucun QR code à télécharger');
+        }
+    }
+
+    document.addEventListener('click', function(event) {
+        const modal = document.getElementById('qrModal');
+        if (event.target === modal) closeQRModal();
+    });
+
+    // ══════════════════════════════════════════
+    // TOAST
+    // ══════════════════════════════════════════
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} toast-message`;
+        toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i> ${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.transition = 'opacity 0.5s';
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 500);
+        }, 3000);
+    }
+
+    // Auto-dismiss flash messages
+    setTimeout(() => {
+        document.querySelectorAll('.toast-message').forEach(t => {
+            t.style.transition = 'opacity 0.5s';
+            t.style.opacity = '0';
+            setTimeout(() => t.remove(), 500);
         });
+    }, 5000);
+
+    // Navbar scroll effect
+    window.addEventListener('scroll', () => {
+        document.querySelector('.navbar')?.classList.toggle('scrolled', window.scrollY > 50);
+    });
     </script>
-    
+
+    <!-- ══════════════════════════════════════════
+         JS MODALS PROFIL + EDIT PROFIL
+    ══════════════════════════════════════════ -->
     <script>
     (function(){
-        const profileModal   = document.getElementById('profileModal');
-        const openProfileBtn = document.getElementById('openProfileModal');
-        const closeProfileBtn= document.getElementById('closeProfileModal');
-        const profileBlur    = document.getElementById('profileBlur');
-        
-        const editModal      = document.getElementById('editProfileModal');
-        const openEditBtn    = document.getElementById('openEditModal');
-        const closeEditBtn   = document.getElementById('closeEditModal2');
-        const cancelEditBtn  = document.getElementById('cancelEditModal');
-        const editBlur       = document.getElementById('editModalBlur');
-        
-        function openProfile() {
-            if (profileModal) { profileModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
-        }
-        function closeProfile() {
-            if (profileModal) { profileModal.classList.remove('active'); document.body.style.overflow = ''; }
-        }
-        function openEdit() {
-            closeProfile();
-            if (editModal) { editModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
-        }
-        function closeEdit() {
-            if (editModal) { editModal.classList.remove('active'); document.body.style.overflow = ''; }
-            openProfile();
-        }
-        function closeEditOnly() {
-            if (editModal) { editModal.classList.remove('active'); document.body.style.overflow = ''; }
-        }
-        
+        const profileModal    = document.getElementById('profileModal');
+        const openProfileBtn  = document.getElementById('openProfileModal');
+        const closeProfileBtn = document.getElementById('closeProfileModal');
+        const profileBlur     = document.getElementById('profileBlur');
+        const editModal       = document.getElementById('editProfileModal');
+        const openEditBtn     = document.getElementById('openEditModal');
+        const closeEditBtn    = document.getElementById('closeEditModal2');
+        const cancelEditBtn   = document.getElementById('cancelEditModal');
+        const editBlur        = document.getElementById('editModalBlur');
+
+        function openProfile()   { if (profileModal) { profileModal.classList.add('active'); document.body.style.overflow = 'hidden'; } }
+        function closeProfile()  { if (profileModal) { profileModal.classList.remove('active'); document.body.style.overflow = ''; } }
+        function openEdit()      { closeProfile(); if (editModal) { editModal.classList.add('active'); document.body.style.overflow = 'hidden'; } }
+        function closeEdit()     { if (editModal) { editModal.classList.remove('active'); document.body.style.overflow = ''; } openProfile(); }
+        function closeEditOnly() { if (editModal) { editModal.classList.remove('active'); document.body.style.overflow = ''; } }
+
         if (openProfileBtn)  openProfileBtn.addEventListener('click', openProfile);
         if (closeProfileBtn) closeProfileBtn.addEventListener('click', closeProfile);
         if (profileBlur)     profileBlur.addEventListener('click', closeProfile);
@@ -2404,11 +2071,9 @@
         if (closeEditBtn)    closeEditBtn.addEventListener('click', closeEdit);
         if (cancelEditBtn)   cancelEditBtn.addEventListener('click', closeEdit);
         if (editBlur)        editBlur.addEventListener('click', closeEditOnly);
-        
-        document.addEventListener('keydown', function(e){
-            if (e.key === 'Escape') { closeProfile(); closeEditOnly(); }
-        });
-        
+
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeProfile(); closeEditOnly(); } });
+
         const profileEditForm = document.getElementById('profileEditForm');
         if (profileEditForm) {
             profileEditForm.addEventListener('submit', function(e) {
@@ -2419,32 +2084,151 @@
                 profileEditForm.submit();
             });
         }
-        
+
         const photoInput = document.getElementById('photoInput');
         if (photoInput) {
             photoInput.addEventListener('change', function() {
-                const file = this.files[0];
-                if (!file) return;
+                const file = this.files[0]; if (!file) return;
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = e => {
                     const av = document.getElementById('editAvatarPreview');
                     if (av) av.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
                 };
                 reader.readAsDataURL(file);
             });
         }
-        
-        if (new URLSearchParams(window.location.search).get('openProfile') === '1') {
-            openProfile();
-            history.replaceState({}, '', window.location.pathname);
+
+        const av = document.getElementById('editAvatarPreview');
+        if (av) {
+            const cam = av.querySelector('.avatar-hover-cam');
+            if (cam) {
+                av.addEventListener('mouseenter', () => cam.style.opacity = '1');
+                av.addEventListener('mouseleave', () => cam.style.opacity = '0');
+            }
         }
-        
-        if (editModal && editModal.classList.contains('active')) {
-            document.body.style.overflow = 'hidden';
+
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('openProfile') === '1')   { openProfile(); history.replaceState({}, '', window.location.pathname); }
+        if (params.get('openEditModal') === '1') {
+            openEdit(); history.replaceState({}, '', window.location.pathname);
+            fetch('/api/profile/clear-errors', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } }).catch(() => {});
         }
+        if (editModal && editModal.classList.contains('active')) document.body.style.overflow = 'hidden';
     })();
     </script>
-    
+
+    <!-- ══════════════════════════════════════════
+         SESSION TIMEOUT JS
+    ══════════════════════════════════════════ -->
+    {% if app.user %}
+    <script>
+    (function() {
+        var INACTIVE_MS  = 15 * 60 * 1000;
+        var WARNING_SECS = 60;
+        var inactiveTimer, countdownTimer;
+        var countLeft = WARNING_SECS;
+        var overlay  = document.getElementById('inactivityOverlay');
+        var counter  = document.getElementById('inactivityCounter');
+        var bar      = document.getElementById('inactivityBar');
+
+        function resetTimer() {
+            clearTimeout(inactiveTimer);
+            clearInterval(countdownTimer);
+            if (overlay && overlay.classList.contains('active')) {
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+                if (counter) counter.style.color = '#C41E3A';
+            }
+            inactiveTimer = setTimeout(showWarning, INACTIVE_MS);
+        }
+
+        function showWarning() {
+            if (!overlay) return;
+            countLeft = WARNING_SECS;
+            if (counter) counter.textContent = countLeft;
+            if (bar) bar.style.width = '100%';
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            countdownTimer = setInterval(function() {
+                countLeft--;
+                if (counter) counter.textContent = countLeft;
+                if (bar) bar.style.width = Math.round((countLeft / WARNING_SECS) * 100) + '%';
+                if (countLeft <= 10 && counter) counter.style.color = '#DC2626';
+                if (countLeft <= 0) {
+                    clearInterval(countdownTimer);
+                    document.getElementById('inactivityLogoutForm').submit();
+                }
+            }, 1000);
+        }
+
+        window.inactivityStay = function() { resetTimer(); };
+
+        ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'].forEach(function(evt) {
+            document.addEventListener(evt, resetTimer, { passive: true });
+        });
+
+        resetTimer();
+    })();
+    </script>
+    {% endif %}
+
+    {# ══════════════════════════════════════════
+       TOAST ÉMOTION — Face ID login
+    ══════════════════════════════════════════ #}
+    {% if app.session.get('face_emotion') %}
+    {% set _emo = app.session.get('face_emotion') %}
+    <script>
+    (function() {
+        const emoji  = {{ _emo.emoji|json_encode|raw }};
+        const msg    = {{ _emo.message|json_encode|raw }};
+        const prenom = {{ _emo.prenom|json_encode|raw }};
+
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);z-index:99998;';
+
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            position:fixed;top:50%;left:50%;
+            transform:translate(-50%,-50%);
+            background:white;border-radius:20px;
+            padding:32px 40px;text-align:center;
+            box-shadow:0 20px 60px rgba(0,0,0,.25);
+            z-index:99999;min-width:300px;
+            animation:toastPop .4s cubic-bezier(.34,1.56,.64,1);
+            font-family:'Montserrat',sans-serif;
+        `;
+        toast.innerHTML = `
+            <style>
+                @keyframes toastPop { from{transform:translate(-50%,-50%) scale(.7);opacity:0} to{transform:translate(-50%,-50%) scale(1);opacity:1} }
+                @keyframes progressBar { from{width:100%} to{width:0%} }
+            </style>
+            <div style="font-size:3.8rem;margin-bottom:12px;">${emoji}</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:800;color:#1A2E4A;margin-bottom:6px;">
+                ${prenom ? 'Bonjour ' + prenom + ' !' : 'Connexion réussie !'}
+            </div>
+            <div style="font-size:.88rem;color:#777;line-height:1.5;">${msg}</div>
+            <div style="margin-top:16px;height:3px;background:#F0E0E0;border-radius:10px;overflow:hidden;">
+                <div style="height:100%;background:linear-gradient(90deg,#C41E3A,#E31B23);animation:progressBar 3s linear forwards;border-radius:10px;"></div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+        document.body.appendChild(toast);
+
+        function dismiss() {
+            toast.style.transition = 'opacity .4s';
+            overlay.style.transition = 'opacity .4s';
+            toast.style.opacity = overlay.style.opacity = '0';
+            setTimeout(() => { toast.remove(); overlay.remove(); }, 400);
+        }
+        overlay.addEventListener('click', dismiss);
+        setTimeout(dismiss, 3500);
+    })();
+    </script>
+    {% do app.session.remove('face_emotion') %}
+    {% endif %}
+
     {% block javascripts %}{% endblock %}
 </body>
 </html>

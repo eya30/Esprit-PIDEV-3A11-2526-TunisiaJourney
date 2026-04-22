@@ -337,6 +337,172 @@
     .btn-debloquer { border: 1.5px solid #BBF7D0; color: #16A34A; }
     .btn-debloquer:hover { background: #F0FDF4; border-color: #16A34A; }
 
+<<<<<<< HEAD
+=======
+    /* ── Bouton Logs ── */
+    .btn-logs-open {
+        display: flex; align-items: center; gap: 7px;
+        padding: 9px 18px; border-radius: 40px; cursor: pointer;
+        font-size: .82rem; font-weight: 600;
+        background: #FFF1F0; color: var(--rouge);
+        border: 1.5px solid rgba(147,3,46,.25);
+        transition: all .22s; position: relative; white-space: nowrap;
+    }
+    .btn-logs-open:hover {
+        background: var(--rouge); color: white;
+        box-shadow: 0 4px 14px rgba(147,3,46,.28);
+        transform: translateY(-1px);
+    }
+    .btn-logs-open:hover .btn-logs-dot { background: white; }
+    .btn-logs-dot {
+        width: 7px; height: 7px; border-radius: 50%;
+        background: var(--rouge); flex-shrink: 0;
+        animation: pulseDot 2s ease-in-out infinite;
+    }
+    @keyframes pulseDot {
+        0%,100% { transform: scale(1); opacity: 1; }
+        50%      { transform: scale(1.5); opacity: .6; }
+    }
+    .btn-logs-badge {
+        background: var(--rouge); color: white;
+        font-size: .65rem; font-weight: 700;
+        padding: 1px 6px; border-radius: 20px;
+        margin-left: 2px;
+    }
+    .btn-logs-open:hover .btn-logs-badge { background: white; color: var(--rouge); }
+
+    /* ── Modal Logs ── */
+    .logs-modal-overlay {
+        display: none; position: fixed; inset: 0; z-index: 5000;
+        background: rgba(44,24,16,.5); backdrop-filter: blur(6px);
+    }
+    .logs-modal-overlay.active { display: flex; align-items: center; justify-content: center; }
+    .logs-modal {
+        background: white; border-radius: 24px; width: min(900px, 96vw);
+        max-height: 85vh; display: flex; flex-direction: column;
+        box-shadow: 0 32px 80px rgba(44,24,16,.25);
+        animation: slideUpModal .35s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes slideUpModal {
+        from { transform: translateY(40px); opacity: 0; }
+        to   { transform: translateY(0);    opacity: 1; }
+    }
+    .logs-modal-header {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 20px 28px 16px; border-bottom: 1px solid #F0E8DD;
+        flex-shrink: 0;
+    }
+    .logs-modal-title {
+        font-family: 'Playfair Display', serif; font-size: 1.15rem;
+        font-weight: 700; color: var(--nuit); display: flex; align-items: center; gap: 9px;
+    }
+    .logs-modal-title i { color: var(--rouge); }
+    .logs-modal-close {
+        width: 34px; height: 34px; border-radius: 50%; border: none;
+        background: rgba(147,3,46,.08); color: var(--rouge); font-size: 1.1rem;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; transition: background .2s, transform .2s;
+    }
+    .logs-modal-close:hover { background: var(--rouge); color: white; transform: rotate(90deg); }
+
+    /* Filtres dans le modal */
+    .logs-modal-filters {
+        display: flex; align-items: center; gap: 10px; padding: 14px 28px;
+        border-bottom: 1px solid #F5F0E8; flex-wrap: wrap; flex-shrink: 0;
+        background: #FFFDF9;
+    }
+    .logs-modal-filters input,
+    .logs-modal-filters select {
+        padding: 7px 13px; border: 1.5px solid #E8DFD1; border-radius: 40px;
+        font-size: .8rem; background: white; color: var(--nuit);
+        outline: none; transition: border-color .2s;
+    }
+    .logs-modal-filters input:focus,
+    .logs-modal-filters select:focus { border-color: var(--rouge); }
+    .logs-modal-filters input[type="search"] { width: 200px; }
+    .btn-logs-filter {
+        padding: 7px 16px; background: var(--rouge); color: white;
+        border: none; border-radius: 40px; font-size: .8rem; font-weight: 600;
+        cursor: pointer; transition: background .2s;
+    }
+    .btn-logs-filter:hover { background: #6B0221; }
+    .btn-logs-reset {
+        padding: 7px 14px; background: transparent; color: var(--nuit);
+        border: 1.5px solid #E8DFD1; border-radius: 40px; font-size: .8rem;
+        cursor: pointer; transition: border-color .2s; text-decoration: none;
+    }
+    .btn-logs-reset:hover { border-color: var(--rouge); color: var(--rouge); }
+    .logs-total { margin-left: auto; font-size: .78rem; color: #aaa; }
+    .logs-total strong { color: var(--rouge); }
+
+    /* Table logs */
+    .logs-modal-body { overflow-y: auto; flex: 1; }
+    .logs-table { width: 100%; border-collapse: collapse; }
+    .logs-table thead tr { background: linear-gradient(90deg, #FFF1F0, #FFF9F0); position: sticky; top: 0; }
+    .logs-table th {
+        padding: 11px 16px; font-size: .68rem; font-weight: 700;
+        color: var(--rouge); text-transform: uppercase; letter-spacing: .5px;
+        border-bottom: 1.5px solid #F0E8DD; white-space: nowrap;
+    }
+    .logs-table td {
+        padding: 10px 16px; font-size: .8rem; color: #4A3B2F;
+        border-bottom: 1px solid #FAF5EE; vertical-align: middle;
+    }
+    .logs-table tr:last-child td { border-bottom: none; }
+    .logs-table tr:hover td { background: #FFFDF9; }
+
+    /* Badge action */
+    .log-badge {
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 3px 9px; border-radius: 20px; font-size: .67rem; font-weight: 700; white-space: nowrap;
+    }
+    .log-badge-primary   { background: #EFF6FF; color: #1D4ED8; }
+    .log-badge-danger    { background: #FEF2F2; color: #DC2626; }
+    .log-badge-warning   { background: #FFF7ED; color: #C2410C; }
+    .log-badge-success   { background: #F0FDF4; color: #15803D; }
+    .log-badge-info      { background: #F0F9FF; color: #0369A1; }
+    .log-badge-secondary { background: #F8FAFC; color: #475569; }
+
+    /* Acteur */
+    .log-acteur { display: flex; align-items: center; gap: 7px; }
+    .log-avatar {
+        width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+        background: linear-gradient(135deg, #B5043A, #93032E);
+        display: flex; align-items: center; justify-content: center;
+        color: white; font-size: .65rem; font-weight: 700;
+    }
+    .log-name  { font-weight: 600; font-size: .8rem; color: var(--nuit); }
+    .log-role  { font-size: .66rem; color: #aaa; }
+    .log-role-admin  { color: #92400E; background: #FEF3C7; padding: 1px 6px; border-radius: 20px; font-size: .62rem; font-weight: 700; }
+    .log-role-super_admin { color: #5B21B6; background: #EDE9FE; padding: 1px 6px; border-radius: 20px; font-size: .62rem; font-weight: 700; }
+    .log-role-membre { color: var(--rouge); background: #FFF1F0; padding: 1px 6px; border-radius: 20px; font-size: .62rem; font-weight: 700; }
+
+    /* Détails */
+    .log-details { max-width: 220px; font-size: .75rem; color: #777; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .log-ip   { font-family: monospace; font-size: .72rem; color: #bbb; }
+    .log-date { white-space: nowrap; }
+    .log-date-day  { font-size: .78rem; color: var(--nuit); font-weight: 500; }
+    .log-date-time { font-size: .68rem; color: #aaa; }
+
+    /* Pagination modal */
+    .logs-modal-footer {
+        display: flex; align-items: center; justify-content: center;
+        gap: 5px; padding: 14px 28px; border-top: 1px solid #F0E8DD; flex-shrink: 0;
+    }
+    .log-page-btn {
+        width: 32px; height: 32px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        border: 1.5px solid #E8DFD1; background: white;
+        color: var(--nuit); font-size: .78rem; cursor: pointer;
+        transition: all .18s; text-decoration: none;
+    }
+    .log-page-btn:hover  { border-color: var(--rouge); color: var(--rouge); }
+    .log-page-btn.active { background: var(--rouge); color: white; border-color: var(--rouge); font-weight: 700; }
+    .log-page-btn.disabled { opacity: .3; pointer-events: none; cursor: default; }
+    .logs-empty { padding: 48px; text-align: center; color: #bbb; }
+    .logs-empty i { font-size: 2.5rem; display: block; margin-bottom: 10px; }
+
+>>>>>>> origin/devvvvv
     /* ── Modal confirm blocage ── */
     .toggle-confirm-overlay {
         display: none; position: fixed; inset: 0; z-index: 4000;
@@ -410,6 +576,20 @@
     <a href="{{ path('admin_users_export_excel') }}" class="toolbar-btn" style="text-decoration:none; color:inherit;">
         <i class="fas fa-file-excel" style="color:#16A34A;"></i> Exporter Excel
     </a>
+<<<<<<< HEAD
+=======
+
+    {# ── Bouton Logs — style alerte/badge ── #}
+    <button class="btn-logs-open" onclick="openLogsModal()" title="Voir les logs d'activité">
+        <span class="btn-logs-dot"></span>
+        <i class="fas fa-clipboard-list"></i>
+        Logs d'activité
+        {% set logsCount = logs|length %}
+        {% if logsCount > 0 %}
+            <span class="btn-logs-badge">{{ logsCount > 99 ? '99+' : logsCount }}</span>
+        {% endif %}
+    </button>
+>>>>>>> origin/devvvvv
 </div>
 
 {# ── GRILLE ── #}
@@ -553,7 +733,12 @@
                 <input type="hidden" name="_token" value="{{ csrf_token('admin_user_edit') }}">
                 <input type="hidden" name="userId" id="editUserId">
                 <input type="file" name="photo" id="editPhotoInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
+<<<<<<< HEAD
 
+=======
+              
+               
+>>>>>>> origin/devvvvv
                 <div class="upanel-hero" style="margin-bottom:16px;">
                     <div class="uedit-avatar" id="ueditAvatar"
                          onclick="document.getElementById('editPhotoInput').click()"
@@ -700,6 +885,126 @@
     </div>
 </div>
 
+<<<<<<< HEAD
+=======
+{# ══════════════════════════════════════
+   MODAL LOGS D'ACTIVITÉ
+══════════════════════════════════════ #}
+<div class="logs-modal-overlay" id="logsModalOverlay">
+    <div class="logs-modal" id="logsModal">
+
+        {# Header #}
+        <div class="logs-modal-header">
+            <div class="logs-modal-title">
+                <i class="fas fa-clipboard-list"></i>
+                Logs d'activité — Utilisateurs
+            </div>
+            <button class="logs-modal-close" onclick="closeLogsModal()">&times;</button>
+        </div>
+
+        {# Filtres #}
+        <div class="logs-modal-filters">
+            <input type="search" id="logsSearch" placeholder="🔍 Rechercher acteur, cible..."
+                   oninput="filterLogs()">
+            <select id="logsActionFilter" onchange="filterLogs()">
+                <option value="">Toutes les actions</option>
+                <option value="EDIT_USER">Modification user</option>
+                <option value="DELETE_USER">Suppression user</option>
+                <option value="TOGGLE_STATUT">Blocage/Déblocage</option>
+                <option value="EDIT_PROFILE">Profil modifié</option>
+                <option value="CHANGE_PASSWORD">Mot de passe</option>
+                <option value="UPLOAD_PHOTO">Photo modifiée</option>
+                <option value="UPLOAD_PHOTO_ADMIN">Photo (admin)</option>
+                <option value="REGISTER">Inscription</option>
+                <option value="LOGIN">Connexion</option>
+                <option value="LOGIN_GOOGLE">Connexion Google</option>
+                <option value="LOGIN_FACE">Connexion Face ID</option>
+                <option value="LOGOUT">Déconnexion</option>
+            </select>
+            <button class="btn-logs-reset" onclick="resetLogsFilter()">
+                <i class="fas fa-times"></i> Reset
+            </button>
+            <span class="logs-total">
+                <strong id="logsVisibleCount">{{ logs|length }}</strong> log{{ logs|length > 1 ? 's' : '' }}
+            </span>
+        </div>
+
+        {# Table #}
+        <div class="logs-modal-body">
+            {% if logs is empty %}
+                <div class="logs-empty">
+                    <i class="fas fa-clipboard-list"></i>
+                    Aucun log enregistré pour le moment.
+                </div>
+            {% else %}
+                <table class="logs-table" id="logsTable">
+                    <thead>
+                        <tr>
+                            <th>Acteur</th>
+                            <th>Action</th>
+                            <th>Cible</th>
+                            <th>Détails</th>
+                            <th>IP</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTableBody">
+                        {% for log in logs %}
+                        <tr class="log-row"
+                            data-action="{{ log.action }}"
+                            data-search="{{ (log.acteurNom ~ ' ' ~ log.cible ~ ' ' ~ log.details)|lower }}">
+
+                            {# Acteur #}
+                            <td>
+                                <div class="log-acteur">
+                                    <div class="log-avatar">
+                                        {% set parts = log.acteurNom|split(' ') %}
+                                        {{ parts[0]|slice(0,1)|upper }}{{ parts[1] is defined ? parts[1]|slice(0,1)|upper : '' }}
+                                    </div>
+                                    <div>
+                                        <div class="log-name">{{ log.acteurNom }}</div>
+                                        <span class="log-role-{{ log.acteurRole|lower }}">{{ log.acteurRole }}</span>
+                                    </div>
+                                </div>
+                            </td>
+
+                            {# Action #}
+                            <td>
+                                <span class="log-badge log-badge-{{ log.actionColor }}">
+                                    <i class="fas {{ log.actionIcon }}"></i>
+                                    {{ log.actionLabel }}
+                                </span>
+                            </td>
+
+                            {# Cible #}
+                            <td style="font-size:.78rem;">{{ log.cible ?? '—' }}</td>
+
+                            {# Détails #}
+                            <td>
+                                <span class="log-details" title="{{ log.details }}">
+                                    {{ log.details ?? '—' }}
+                                </span>
+                            </td>
+
+                            {# IP #}
+                            <td class="log-ip">{{ log.ip ?? '—' }}</td>
+
+                            {# Date #}
+                            <td class="log-date">
+                                <div class="log-date-day">{{ log.createdAt|date('d/m/Y') }}</div>
+                                <div class="log-date-time">{{ log.createdAt|date('H:i:s') }}</div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+>>>>>>> origin/devvvvv
 {% endblock %}
 
 {% block javascripts %}
@@ -954,10 +1259,14 @@ document.getElementById('searchInput').addEventListener('input', applyFilters);
 document.getElementById('filterStatut').addEventListener('change', applyFilters);
 document.getElementById('filterRole').addEventListener('change', applyFilters);
 
+<<<<<<< HEAD
 /* Échap */
 document.addEventListener('keydown', e => {
     if (e.key === 'Escape') { closeUserProfile(); closeUserEdit(); closeDeleteConfirm(); closeToggleConfirm(); }
 });
+=======
+/* Échap — géré en bas avec closeLogsModal() */
+>>>>>>> origin/devvvvv
 
 function toggleStatut(userId, statutActuel, userName) {
     const bloquer = statutActuel === 'ACTIF';
@@ -992,5 +1301,65 @@ function closeToggleConfirm() {
     document.getElementById('toggleConfirmOverlay').classList.remove('active');
     document.body.style.overflow = '';
 }
+<<<<<<< HEAD
 </script>
+=======
+
+/* ══════════════════════════════════════
+   LOGS MODAL
+══════════════════════════════════════ */
+function openLogsModal() {
+    document.getElementById('logsModalOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLogsModal() {
+    document.getElementById('logsModalOverlay').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+function filterLogs() {
+    const search = document.getElementById('logsSearch').value.toLowerCase().trim();
+    const action = document.getElementById('logsActionFilter').value;
+    const rows   = document.querySelectorAll('#logsTableBody .log-row');
+    let visible  = 0;
+
+    rows.forEach(row => {
+        const matchSearch = !search || row.dataset.search.includes(search);
+        const matchAction = !action || row.dataset.action === action;
+        const show = matchSearch && matchAction;
+        row.style.display = show ? '' : 'none';
+        if (show) visible++;
+    });
+
+    document.getElementById('logsVisibleCount').textContent = visible;
+}
+
+function resetLogsFilter() {
+    document.getElementById('logsSearch').value = '';
+    document.getElementById('logsActionFilter').value = '';
+    filterLogs();
+}
+
+/* Fermer avec Échap */
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        closeUserProfile(); closeUserEdit();
+        closeDeleteConfirm(); closeToggleConfirm();
+        closeLogsModal();
+    }
+});
+
+/* Fermer en cliquant hors du modal */
+document.getElementById('logsModalOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeLogsModal();
+});
+{% for msg in app.flashes('error') %}
+    <div class="alert">{{ msg }}</div>
+{% endfor %}
+</script>
+
+
+
+>>>>>>> origin/devvvvv
 {% endblock %}

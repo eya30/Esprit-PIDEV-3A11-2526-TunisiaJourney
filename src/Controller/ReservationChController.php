@@ -6,6 +6,7 @@ use App\Service\CurrencyChService;
 use App\Service\WeatherService;
 use App\Service\QrCodeService;
 use App\Service\FideliteService;
+use App\Service\SmsService;
 use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,7 +17,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class ReservationChController extends AbstractController
 {
     #[Route('/chambre/new/{idCh}', name: 'app_reservation_ch_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, Connection $connection, CurrencyChService $currency, WeatherService $weather, FideliteService $fideliteService, $idCh = null): Response
+    public function new(Request $request, Connection $connection, CurrencyChService $currency, WeatherService $weather, FideliteService $fideliteService, SmsService $smsService, $idCh = null): Response
     {
         if (!$idCh) {
             $this->addFlash('error', 'ID de la chambre manquant');
@@ -130,7 +131,6 @@ class ReservationChController extends AbstractController
         }
 
         if ($idUtilisateur === null) {
-            // Ne pas appliquer de fallback vers l'utilisateur #1. Exiger l'authentification.
             $this->addFlash('error', 'Vous devez être connecté pour effectuer une réservation.');
             return $this->redirectToRoute('app_hotel_index');
         }
@@ -346,6 +346,31 @@ class ReservationChController extends AbstractController
             $prenom,
             $email
         ]);
+
+        // ========== ENVOI DU SMS ==========
+        if (!empty($telephone)) {
+            try {
+                // Formater le message
+                $hotelNom = $chambre['hotel_nom'];
+                $dateDebutFormatted = (new \DateTime($dateDebut))->format('d/m/Y');
+                $dateFinFormatted = (new \DateTime($dateFin))->format('d/m/Y');
+                
+                $smsMessage = $smsService->generateConfirmationMessage(
+                    $hotelNom,
+                    $dateDebutFormatted,
+                    $dateFinFormatted,
+                    $nbNuit,
+                    $prixTotal
+                );
+                
+                $smsService->sendSms($telephone, $smsMessage);
+                $this->addFlash('info', '📱 Un SMS de confirmation vous a été envoyé.');
+            } catch (\Exception $e) {
+                // Ne pas bloquer la réservation si le SMS échoue
+                $this->addFlash('warning', '⚠️ La réservation est confirmée mais le SMS n\'a pas pu être envoyé.');
+            }
+        }
+        // =================================
 
         // ========== AJOUT DES POINTS DE FIDÉLITÉ ==========
         if ($user && method_exists($user, 'getId') && $prixTotal > 0) {

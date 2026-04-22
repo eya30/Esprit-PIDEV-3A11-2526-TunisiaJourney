@@ -91,17 +91,6 @@ class AdminDashboardController extends AbstractController
             ORDER BY count DESC
         ");
 
-        // ========== NOUVEAU GRAPHIQUE : TOP HÔTELS ==========
-        $topHotels = $connection->fetchAllAssociative("
-            SELECT h.nom as label, COUNT(r.idRes) as total_reservations
-            FROM hotel h
-            JOIN chambre c ON c.idH = h.idH
-            JOIN reservation_chambre r ON r.idCh = c.idCh
-            GROUP BY h.idH, h.nom
-            ORDER BY total_reservations DESC
-            LIMIT 6
-        ");
-
         return $this->render('admin/dashboard/index.html.twig', [
             'stats' => [
                 'users'        => $totalUsers,
@@ -120,8 +109,6 @@ class AdminDashboardController extends AbstractController
             'top_produits'           => $topProduits,
             'commandes_par_mois'     => $commandesParMois,
             'produits_par_categorie' => $produitsParCategorie,
-            // ✅ NOUVEAU : Top hôtels
-            'top_hotels'             => $topHotels,
         ]);
     }
 }

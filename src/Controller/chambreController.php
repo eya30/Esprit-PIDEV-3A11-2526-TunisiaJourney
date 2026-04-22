@@ -59,9 +59,9 @@ class chambreController extends AbstractController
         ]);
     }
 
-    // MODIFICATION ICI - Ajout des variables pour la devise
+    // MODIFICATION ICI - Ajout de Request $request pour lire la session
     #[Route('/{idCh}', name: 'app_chambre_show', methods: ['GET'])]
-    public function show(Connection $connection, $idCh): Response
+    public function show(Connection $connection, $idCh, Request $request): Response
     {
         // Requête SQL directe pour récupérer la chambre avec les infos de l'hôtel
         $sql = "SELECT c.*, 
@@ -81,15 +81,29 @@ class chambreController extends AbstractController
             throw $this->createNotFoundException('Chambre non trouvée');
         }
         
-        // ========== VARIABLES POUR LA DEVISE ==========
+        // ========== RÉCUPÉRATION DE LA DEVISE DEPUIS LA SESSION ==========
+        $session = $request->getSession();
+        $selected_currency = $session->get('selected_currency_ch', 'TND');
+        
         $currencies = [
             'TND' => 'Dinar Tunisien (TND)',
             'EUR' => 'Euro (€)',
             'USD' => 'Dollar US ($)',
         ];
-        $selected_currency = 'TND';
-        $prix_converti = $chambre['prix_nuit'];
+        
+        // Taux de conversion approximatifs
+        $taux = 1;
         $symbole = 'TND';
+        
+        if ($selected_currency === 'EUR') {
+            $taux = 0.28; // 1 TND ≈ 0.28 EUR
+            $symbole = '€';
+        } elseif ($selected_currency === 'USD') {
+            $taux = 0.31; // 1 TND ≈ 0.31 USD
+            $symbole = '$';
+        }
+        
+        $prix_converti = $chambre['prix_nuit'] * $taux;
         
         return $this->render('chambre/show.html.twig', [
             'chambre' => $chambre,
@@ -130,15 +144,28 @@ class chambreController extends AbstractController
             'telephone' => $request->query->get('telephone', '')
         ];
         
-        // ========== VARIABLES POUR LA DEVISE ==========
+        // ========== RÉCUPÉRATION DE LA DEVISE DEPUIS LA SESSION ==========
+        $session = $request->getSession();
+        $selected_currency = $session->get('selected_currency_ch', 'TND');
+        
         $currencies = [
             'TND' => 'Dinar Tunisien (TND)',
             'EUR' => 'Euro (€)',
             'USD' => 'Dollar US ($)',
         ];
-        $selected_currency = 'TND';
-        $prix_converti = $chambre['prix_nuit'];
+        
+        $taux = 1;
         $symbole = 'TND';
+        
+        if ($selected_currency === 'EUR') {
+            $taux = 0.28;
+            $symbole = '€';
+        } elseif ($selected_currency === 'USD') {
+            $taux = 0.31;
+            $symbole = '$';
+        }
+        
+        $prix_converti = $chambre['prix_nuit'] * $taux;
         
         return $this->render('chambre/show.html.twig', [
             'chambre' => $chambre,

@@ -1,0 +1,626 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Gestion des Programmes{% endblock %}
+{% block page_title %}Programmes{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-1" style="font-family: 'Playfair Display', serif;">Liste des programmes</h4>
+        <p class="text-muted small" style="color: #93032E !important;">Gérez l'ensemble des programmes</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-ai" id="btnAutoCreate">
+            <i class="fas fa-magic me-2"></i> Auto-créer avec IA
+        </button>
+        <a href="{{ path('admin_programme_new') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i> Nouveau programme
+        </a>
+    </div>
+</div>
+
+<!-- Modal IA Auto-Créer -->
+<div id="aiModal" class="ai-modal-overlay" style="display:none;">
+    <div class="ai-modal-box">
+        <!-- Header -->
+        <div class="ai-modal-header">
+            <div class="ai-header-left">
+                <div class="ai-icon-ring">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div>
+                    <h5 class="ai-modal-title">Auto-créer un programme</h5>
+                    <p class="ai-modal-sub">L'IA génère tous les champs automatiquement</p>
+                </div>
+            </div>
+            <button class="ai-close-btn" id="closeModal"><i class="fas fa-times"></i></button>
+        </div>
+
+        <!-- Step 1: Input -->
+        <div id="aiStep1">
+            <div class="ai-input-section">
+                <label class="ai-label">Décrivez le programme en quelques mots</label>
+                <div class="ai-input-wrapper">
+                    <i class="fas fa-pen-nib ai-input-icon"></i>
+                    <input type="text" id="aiUserInput" class="ai-input"
+                           placeholder="Ex: Voyage Sahara 3 jours, Découverte Djerba weekend…">
+                </div>
+                <div class="ai-examples">
+                    <span class="ai-example-chip" onclick="setExample(this)">🏜️ Sahara 3 jours</span>
+                    <span class="ai-example-chip" onclick="setExample(this)">🏝️ Djerba weekend</span>
+                    <span class="ai-example-chip" onclick="setExample(this)">🕌 Kairouan culturel</span>
+                    <span class="ai-example-chip" onclick="setExample(this)">🌊 Tabarka plongée</span>
+                </div>
+            </div>
+
+            <div class="ai-voyage-section">
+                <label class="ai-label">Voyage associé</label>
+                <div class="ai-input-wrapper">
+                    <i class="fas fa-suitcase ai-input-icon"></i>
+                    <select id="aiVoyageSelect" class="ai-input">
+                        <option value="">Sélectionner un voyage</option>
+                        {% for voyage in voyages %}
+                            <option value="{{ voyage.idV }}">{{ voyage.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <button class="ai-generate-btn" id="btnGenerate">
+                <i class="fas fa-sparkles me-2"></i> Générer avec l'IA
+            </button>
+        </div>
+
+        <!-- Step 2: Loading -->
+        <div id="aiStep2" style="display:none;">
+            <div class="ai-loading-state">
+                <div class="ai-spinner-ring"></div>
+                <p class="ai-loading-text" id="aiLoadingText">L'IA analyse votre demande…</p>
+                <div class="ai-loading-steps">
+                    <div class="ai-load-step" id="ls1"><i class="fas fa-check-circle"></i> Analyse du texte</div>
+                    <div class="ai-load-step" id="ls2"><i class="fas fa-circle"></i> Génération description</div>
+                    <div class="ai-load-step" id="ls3"><i class="fas fa-circle"></i> Calcul des dates</div>
+                    <div class="ai-load-step" id="ls4"><i class="fas fa-circle"></i> Suggestion activités & hôtel</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Preview & Confirm -->
+        <div id="aiStep3" style="display:none;">
+            <div class="ai-preview-header">
+                <i class="fas fa-check-circle ai-success-icon"></i>
+                <span>Programme généré ! Vérifiez et modifiez si besoin.</span>
+            </div>
+            <div class="ai-fields-grid">
+                <div class="ai-field-block full">
+                    <label>Nom du programme</label>
+                    <input type="text" id="p_nom" class="ai-field-input">
+                </div>
+                <div class="ai-field-block full">
+                    <label>Description</label>
+                    <textarea id="p_description" class="ai-field-input" rows="3"></textarea>
+                </div>
+                <div class="ai-field-block">
+                    <label>Date de début</label>
+                    <input type="date" id="p_dateDebut" class="ai-field-input">
+                </div>
+                <div class="ai-field-block">
+                    <label>Date de fin</label>
+                    <input type="date" id="p_dateFin" class="ai-field-input">
+                </div>
+                <div class="ai-field-block">
+                    <label>Lieu</label>
+                    <input type="text" id="p_lieu" class="ai-field-input">
+                </div>
+                <div class="ai-field-block">
+                    <label>Hôtel</label>
+                    <input type="text" id="p_hotel" class="ai-field-input">
+                </div>
+                <div class="ai-field-block full">
+                    <label>Activités associées</label>
+                    <input type="text" id="p_activite" class="ai-field-input">
+                </div>
+            </div>
+
+            <div class="ai-confirm-actions">
+                <button class="ai-back-btn" id="btnBack"><i class="fas fa-arrow-left me-1"></i> Recommencer</button>
+                <button class="ai-confirm-btn" id="btnConfirm"><i class="fas fa-paper-plane me-2"></i> Utiliser ce programme</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Barre de recherche dynamique -->
+<div class="search-bar-wrapper mb-4">
+    <div class="search-input-group">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" id="searchInput" class="form-control search-input"
+               placeholder="Rechercher par nom, lieu, hôtel ou voyage..."
+               value="{{ search }}">
+        <button id="clearSearch" class="clear-search-btn" style="display: {% if search %}flex{% else %}none{% endif %};">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    <div class="search-info">
+        <span id="resultCount">{{ total_count }}</span> programme(s) trouvé(s)
+    </div>
+</div>
+
+<div class="admin-table">
+    <table class="table">
+        <thead>
+             <tr>
+                <th style="width: 80px">Image</th>
+                <th>Nom</th>
+                <th>Description</th>
+                <th>Lieu</th>
+                <th>Hôtel</th>
+                <th>Dates</th>
+                <th>Voyage</th>
+                <th style="width: 120px">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="programmesTableBody">
+            {% for programme in programmes %}
+                <tr>
+                    <td>
+                        {% if programme.image %}
+                            <img src="{{ asset('uploads/programmes/' ~ programme.image) }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 10px;">
+                        {% else %}
+                            <div style="width: 50px; height: 50px; background: #FEF9F0; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-calendar-alt" style="color: #E8DFD1;"></i>
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td><strong style="color: #2C1810;">{{ programme.nom }}</strong></td>
+                    <td style="color: #6B7280;">{{ programme.description|slice(0, 50) }}{% if programme.description|length > 50 %}...{% endif %}</td>
+                    <td><span class="location-badge">{{ programme.lieu }}</span></td>
+                    <td><span class="hotel-badge">{{ programme.hotel }}</span></td>
+                    <td><span class="date-badge">{{ programme.dateDebut|date('d/m/Y') }}<br>→ {{ programme.dateFin|date('d/m/Y') }}</span></td>
+                    <td><span class="voyage-badge">{{ programme.voyage_nom }}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{{ path('admin_programme_reservations', {'id': programme.idProg}) }}" class="action-btn reservations-btn" title="Réservations">
+                                <i class="fas fa-book"></i>
+                            </a>
+                            <a href="{{ path('admin_programme_edit', {'id': programme.idProg}) }}" class="action-btn edit-btn" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form method="post" action="{{ path('admin_programme_delete', {'id': programme.idProg}) }}" style="display: inline-block;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_programme_' ~ programme.idProg) }}">
+                                <button type="submit" class="action-btn delete-btn" onclick="return confirm('Supprimer ce programme ?')" title="Supprimer">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="8" class="text-center py-5">
+                        <i class="fas fa-calendar-alt fa-3x mb-3" style="color: #E8DFD1;"></i>
+                        <p class="text-muted mb-0">Aucun programme trouvé</p>
+                        <a href="{{ path('admin_programme_new') }}" class="btn btn-primary mt-3">Créer un programme</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+/* ── AI Button ── */
+.btn-ai {
+    background: linear-gradient(135deg, #93032E 0%, #C0184F 100%);
+    border: none;
+    padding: 8px 20px;
+    border-radius: 40px;
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+    transition: all 0.2s;
+    box-shadow: 0 2px 12px rgba(147,3,46,0.25);
+}
+.btn-ai:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(147,3,46,0.4);
+    color: white;
+}
+
+/* ── Modal Overlay ── */
+.ai-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(30,8,18,0.55);
+    backdrop-filter: blur(6px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.ai-modal-box {
+    background: white;
+    border-radius: 24px;
+    width: 600px;
+    max-width: 96vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 60px rgba(30,8,18,0.25);
+    animation: slideUp 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* ── Modal Header ── */
+.ai-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 28px 20px;
+    border-bottom: 1px solid #F0E8DD;
+}
+.ai-header-left { display: flex; align-items: center; gap: 14px; }
+.ai-icon-ring {
+    width: 46px; height: 46px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #93032E, #C0184F);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 1.2rem;
+    box-shadow: 0 4px 12px rgba(147,3,46,0.3);
+}
+.ai-modal-title { font-family: 'Playfair Display', serif; font-size: 1.15rem; color: #2C1810; margin: 0; font-weight: 700; }
+.ai-modal-sub { font-size: 12px; color: #9CA3AF; margin: 2px 0 0; }
+.ai-close-btn {
+    background: #F5F0E8; border: none; width: 34px; height: 34px;
+    border-radius: 10px; color: #6B7280; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+}
+.ai-close-btn:hover { background: #93032E; color: white; }
+
+/* ── Input Section ── */
+.ai-input-section, .ai-voyage-section { padding: 20px 28px 0; }
+.ai-label { font-size: 12px; font-weight: 700; color: #2C1810; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px; }
+.ai-input-wrapper {
+    display: flex; align-items: center;
+    background: #FEF9F0; border: 1.5px solid #E8DFD1; border-radius: 12px;
+    transition: all 0.2s;
+}
+.ai-input-wrapper:focus-within { border-color: #93032E; background: white; box-shadow: 0 0 0 3px rgba(147,3,46,0.08); }
+.ai-input-icon { padding: 0 0 0 14px; color: #C49A6C; font-size: 0.95rem; min-width: 32px; }
+.ai-input {
+    border: none; background: transparent; padding: 12px 14px 12px 6px;
+    font-size: 14px; width: 100%; outline: none; color: #2C1810;
+}
+.ai-examples { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.ai-example-chip {
+    padding: 5px 14px; border-radius: 20px;
+    background: #FEF9F0; border: 1px solid #E8DFD1;
+    font-size: 12px; color: #93032E; cursor: pointer;
+    transition: all 0.15s; font-weight: 500;
+}
+.ai-example-chip:hover { background: #93032E; color: white; border-color: #93032E; transform: translateY(-1px); }
+
+/* ── Generate Button ── */
+.ai-generate-btn {
+    margin: 20px 28px 24px;
+    width: calc(100% - 56px);
+    padding: 14px;
+    background: linear-gradient(135deg, #93032E, #C0184F);
+    border: none; border-radius: 14px;
+    color: white; font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(147,3,46,0.3);
+    display: block;
+}
+.ai-generate-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(147,3,46,0.4); }
+.ai-generate-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+/* ── Loading ── */
+.ai-loading-state { padding: 40px 28px; text-align: center; }
+.ai-spinner-ring {
+    width: 60px; height: 60px; border-radius: 50%;
+    border: 4px solid #F0E8DD;
+    border-top-color: #93032E;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 20px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.ai-loading-text { font-size: 14px; color: #4A3B2F; font-weight: 600; margin-bottom: 20px; }
+.ai-loading-steps { text-align: left; max-width: 280px; margin: 0 auto; }
+.ai-load-step { font-size: 12px; color: #9CA3AF; padding: 5px 0; display: flex; align-items: center; gap: 8px; transition: all 0.3s; }
+.ai-load-step.done { color: #10B981; }
+.ai-load-step.active { color: #93032E; font-weight: 600; }
+
+/* ── Preview ── */
+#aiStep3 { padding: 0 0 24px; }
+.ai-preview-header {
+    display: flex; align-items: center; gap: 10px;
+    background: #F0FDF4; border-bottom: 1px solid #D1FAE5;
+    padding: 14px 28px; font-size: 13px; color: #065F46; font-weight: 600;
+}
+.ai-success-icon { color: #10B981; font-size: 1.1rem; }
+.ai-fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 20px 28px 0; }
+.ai-field-block.full { grid-column: 1 / -1; }
+.ai-field-block label { font-size: 11px; font-weight: 700; color: #93032E; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 5px; }
+.ai-field-input {
+    width: 100%; padding: 10px 12px;
+    border: 1.5px solid #E8DFD1; border-radius: 10px;
+    font-size: 13px; color: #2C1810; background: #FEF9F0;
+    outline: none; transition: all 0.2s; resize: vertical;
+}
+.ai-field-input:focus { border-color: #93032E; background: white; box-shadow: 0 0 0 3px rgba(147,3,46,0.07); }
+
+.ai-confirm-actions { display: flex; justify-content: flex-end; gap: 12px; padding: 20px 28px 0; }
+.ai-back-btn {
+    padding: 10px 20px; border-radius: 40px; border: 1.5px solid #E8DFD1;
+    background: white; color: #4A3B2F; font-size: 13px; cursor: pointer; transition: all 0.2s;
+}
+.ai-back-btn:hover { border-color: #93032E; color: #93032E; }
+.ai-confirm-btn {
+    padding: 10px 24px; border-radius: 40px; border: none;
+    background: linear-gradient(135deg, #93032E, #C0184F);
+    color: white; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 3px 12px rgba(147,3,46,0.3);
+}
+.ai-confirm-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(147,3,46,0.4); }
+
+/* ── Existing styles (unchanged) ── */
+.search-bar-wrapper { background: white; border-radius: 16px; padding: 16px 20px; border: 1px solid #F0E8DD; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+.search-input-group { position: relative; flex: 1; min-width: 250px; }
+.search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #9CA3AF; font-size: 0.9rem; }
+.search-input { width: 100%; padding: 12px 40px 12px 40px; border: 1px solid #E8DFD1; border-radius: 40px; font-size: 14px; background: #FEF9F0; transition: all 0.2s; }
+.search-input:focus { outline: none; border-color: #93032E; background: white; box-shadow: 0 0 0 3px rgba(147,3,46,0.1); }
+.clear-search-btn { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #9CA3AF; cursor: pointer; padding: 5px; display: flex; align-items: center; justify-content: center; transition: color 0.2s; }
+.clear-search-btn:hover { color: #93032E; }
+.search-info { font-size: 0.85rem; color: #9CA3AF; white-space: nowrap; }
+.search-info span { color: #93032E; font-weight: 600; }
+.admin-table { background: white; border-radius: 20px; border: 1px solid #F0E8DD; overflow: hidden; }
+.admin-table th { background: #FEF9F0; padding: 14px 20px; font-size: 12px; font-weight: 600; color: #93032E; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #F0E8DD; }
+.admin-table td { padding: 14px 20px; font-size: 13px; border-bottom: 1px solid #F5F0E8; color: #4A3B2F; vertical-align: middle; }
+.admin-table tr:hover td { background: #FFF9F0; }
+.location-badge, .hotel-badge, .voyage-badge { display: inline-flex; align-items: center; background: #FEF9F0; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; color: #93032E; }
+.date-badge { display: inline-flex; flex-direction: column; font-size: 11px; color: #9CA3AF; line-height: 1.4; }
+.action-buttons { display: flex; gap: 8px; }
+.action-btn { width: 34px; height: 34px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; cursor: pointer; border: none; background: transparent; font-size: 0.9rem; text-decoration: none; }
+.reservations-btn { background: #EFF6FF; color: #3B82F6; }
+.reservations-btn:hover { background: #3B82F6; color: white; transform: translateY(-2px); }
+.edit-btn { background: #FEF3C7; color: #D97706; }
+.edit-btn:hover { background: #F59E0B; color: white; transform: translateY(-2px); }
+.delete-btn { background: #FEF2F2; color: #EF4444; }
+.delete-btn:hover { background: #EF4444; color: white; transform: translateY(-2px); }
+.btn-primary { background: #93032E; border: none; padding: 8px 20px; border-radius: 40px; font-size: 13px; font-weight: 600; color: white; transition: all 0.2s; }
+.btn-primary:hover { background: #6B0221; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(147,3,46,0.3); }
+@media (max-width: 768px) { .search-bar-wrapper { flex-direction: column; align-items: stretch; } .search-info { text-align: center; } .admin-table { overflow-x: auto; } .ai-fields-grid { grid-template-columns: 1fr; } }
+</style>
+
+<script>
+// ── Search ──
+let searchTimeout;
+const searchInput = document.getElementById('searchInput');
+const clearSearchBtn = document.getElementById('clearSearch');
+function performSearch() {
+    const url = new URL(window.location.href);
+    url.searchParams.set('search', searchInput.value);
+    window.location.href = url.toString();
+}
+if (searchInput) {
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        if (this.value.length > 2 || this.value.length === 0) {
+            searchTimeout = setTimeout(performSearch, 500);
+        }
+    });
+}
+if (clearSearchBtn) {
+    clearSearchBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        performSearch();
+    });
+    searchInput.addEventListener('input', function() {
+        clearSearchBtn.style.display = this.value.length > 0 ? 'flex' : 'none';
+    });
+}
+
+// ── AI Modal ──
+const modal = document.getElementById('aiModal');
+const step1 = document.getElementById('aiStep1');
+const step2 = document.getElementById('aiStep2');
+const step3 = document.getElementById('aiStep3');
+
+document.getElementById('btnAutoCreate').addEventListener('click', () => {
+    modal.style.display = 'flex';
+    showStep(1);
+});
+document.getElementById('closeModal').addEventListener('click', () => modal.style.display = 'none');
+modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+
+function showStep(n) {
+    step1.style.display = n === 1 ? 'block' : 'none';
+    step2.style.display = n === 2 ? 'block' : 'none';
+    step3.style.display = n === 3 ? 'block' : 'none';
+}
+
+function setExample(el) {
+    const text = el.textContent.replace(/^[^\w]+/, '').trim();
+    document.getElementById('aiUserInput').value = text;
+}
+
+// Loading steps animation
+function animateLoadSteps() {
+    const steps = ['ls1','ls2','ls3','ls4'];
+    const messages = [
+        "Analyse du texte en cours…",
+        "Génération de la description…",
+        "Calcul intelligent des dates…",
+        "Suggestions activités & hôtel…"
+    ];
+    let i = 0;
+    // Reset
+    steps.forEach(id => {
+        const el = document.getElementById(id);
+        el.className = 'ai-load-step';
+        el.querySelector('i').className = 'fas fa-circle';
+    });
+
+    return setInterval(() => {
+        if (i > 0) {
+            const prev = document.getElementById(steps[i-1]);
+            prev.className = 'ai-load-step done';
+            prev.querySelector('i').className = 'fas fa-check-circle';
+        }
+        if (i < steps.length) {
+            const cur = document.getElementById(steps[i]);
+            cur.className = 'ai-load-step active';
+            cur.querySelector('i').className = 'fas fa-spinner fa-spin';
+            document.getElementById('aiLoadingText').textContent = messages[i];
+            i++;
+        }
+    }, 700);
+}
+
+// ── Detect location from text ──
+function detectLieu(text) {
+    const map = {
+        'sahara': 'Douz, Grand Erg Oriental',
+        'djerba': 'Djerba, Houmt Souk',
+        'kairouan': 'Kairouan, Médina',
+        'sidi bou said': 'Sidi Bou Saïd, Tunis',
+        'tabarka': 'Tabarka, Aïn Draham',
+        'sousse': 'Sousse, Médina',
+        'hammamet': 'Hammamet',
+        'tunis': 'Tunis, Médina',
+        'tozeur': 'Tozeur, Chott el-Jérid',
+        'monastir': 'Monastir',
+        'sfax': 'Sfax',
+        'carthage': 'Carthage, Tunis',
+    };
+    const lower = text.toLowerCase();
+    for (const [key, val] of Object.entries(map)) {
+        if (lower.includes(key)) return val;
+    }
+    return 'Tunisie';
+}
+
+// ── Detect hotel from text ──
+function detectHotel(text) {
+    const lower = text.toLowerCase();
+    if (lower.includes('sahara') || lower.includes('désert') || lower.includes('dune')) return 'Campement Saharien / Dar Zahra';
+    if (lower.includes('djerba')) return 'Hôtel Hasdrubal Thalassa ★★★★';
+    if (lower.includes('tabarka') || lower.includes('plongée')) return 'Hôtel Tabarka Beach ★★★';
+    if (lower.includes('sidi bou')) return 'Dar Said Boutique Hotel ★★★★';
+    if (lower.includes('hammamet')) return 'Hôtel Sindbad Hammamet ★★★★';
+    if (lower.includes('tunis') || lower.includes('kairouan') || lower.includes('carthage')) return 'Hôtel Medina Dar ★★★';
+    if (lower.includes('sousse') || lower.includes('monastir')) return 'Hôtel Marhaba Beach ★★★★';
+    return 'Hôtel 3★ Centre-ville';
+}
+
+// ── Parse duration from text ──
+function parseDuration(text) {
+    const match = text.match(/(\d+)\s*(jour|nuit|day)/i);
+    if (match) return parseInt(match[1]);
+    if (/week[- ]?end|2\s*jour/i.test(text)) return 2;
+    if (/semaine/i.test(text)) return 7;
+    return 3; // default
+}
+
+// ── Next weekend ──
+function nextWeekend() {
+    const today = new Date();
+    const day = today.getDay();
+    const daysUntilFriday = (5 - day + 7) % 7 || 7;
+    const start = new Date(today);
+    start.setDate(today.getDate() + daysUntilFriday);
+    return start;
+}
+
+function toDateStr(d) {
+    return d.toISOString().split('T')[0];
+}
+
+// ── Generate via Ollama (via Symfony route) ──
+document.getElementById('btnGenerate').addEventListener('click', async () => {
+    const input = document.getElementById('aiUserInput').value.trim();
+    const voyageId = document.getElementById('aiVoyageSelect').value;
+
+    if (!input) {
+        document.getElementById('aiUserInput').style.borderColor = '#EF4444';
+        document.getElementById('aiUserInput').focus();
+        return;
+    }
+
+    showStep(2);
+    const interval = animateLoadSteps();
+
+    try {
+        // Call Symfony AI route
+        const resp = await fetch('/admin/programmes/ai-generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ input: input, voyageId: voyageId })
+        });
+
+        const data = await resp.json();
+        clearInterval(interval);
+
+        // Mark all steps done
+        ['ls1','ls2','ls3','ls4'].forEach(id => {
+            const el = document.getElementById(id);
+            el.className = 'ai-load-step done';
+            el.querySelector('i').className = 'fas fa-check-circle';
+        });
+
+        await new Promise(r => setTimeout(r, 400));
+
+        // Fill preview fields
+        document.getElementById('p_nom').value = data.nom || input;
+        document.getElementById('p_description').value = data.description || '';
+        document.getElementById('p_dateDebut').value = data.dateDebut || '';
+        document.getElementById('p_dateFin').value = data.dateFin || '';
+        document.getElementById('p_lieu').value = data.lieu || detectLieu(input);
+        document.getElementById('p_hotel').value = data.hotel || detectHotel(input);
+        document.getElementById('p_activite').value = data.activiteAssociee || '';
+
+        showStep(3);
+
+    } catch (err) {
+        clearInterval(interval);
+        // Fallback: generate client-side
+        const duration = parseDuration(input);
+        const start = nextWeekend();
+        const end = new Date(start);
+        end.setDate(start.getDate() + duration);
+
+        document.getElementById('p_nom').value = input.charAt(0).toUpperCase() + input.slice(1);
+        document.getElementById('p_description').value = `Partez à la découverte de ${detectLieu(input)} lors de ce programme de ${duration} jours. Entre paysages authentiques et culture locale, une expérience inoubliable vous attend.`;
+        document.getElementById('p_dateDebut').value = toDateStr(start);
+        document.getElementById('p_dateFin').value = toDateStr(end);
+        document.getElementById('p_lieu').value = detectLieu(input);
+        document.getElementById('p_hotel').value = detectHotel(input);
+        document.getElementById('p_activite').value = 'Visite guidée, dîner traditionnel, balade découverte';
+
+        showStep(3);
+    }
+});
+
+// ── Back ──
+document.getElementById('btnBack').addEventListener('click', () => showStep(1));
+
+// ── Confirm: redirect to new form with prefilled URL params ──
+document.getElementById('btnConfirm').addEventListener('click', () => {
+    const params = new URLSearchParams({
+        nom: document.getElementById('p_nom').value,
+        description: document.getElementById('p_description').value,
+        dateDebut: document.getElementById('p_dateDebut').value,
+        dateFin: document.getElementById('p_dateFin').value,
+        lieu: document.getElementById('p_lieu').value,
+        hotel: document.getElementById('p_hotel').value,
+        activiteAssociee: document.getElementById('p_activite').value,
+        voyage_id: document.getElementById('aiVoyageSelect').value || '',
+    });
+    window.location.href = "{{ path('admin_programme_new') }}?" + params.toString();
+});
+</script>
+{% endblock %}

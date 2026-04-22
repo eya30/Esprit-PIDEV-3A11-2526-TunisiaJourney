@@ -11,6 +11,4 @@ when@dev:
 
 when@test:
     framework:
-        profiler:
-            enabled: false
-            collect: false
+        profiler: { collect: false }

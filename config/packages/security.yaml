@@ -5,7 +5,7 @@ security:
     role_hierarchy:
         ROLE_SUPER_ADMIN: [ROLE_ADMIN, ROLE_USER]
         ROLE_ADMIN:       [ROLE_MEMBRE, ROLE_USER]
-        ROLE_MEMBRE:      [ROLE_USER]
+        ROLE_MEMBRE:      [ROLE_USER]                
 
     providers:
         app_user_provider:
@@ -21,28 +21,53 @@ security:
         main:
             lazy: true
             provider: app_user_provider
-            custom_authenticator: App\Security\LoginFormAuthenticator
-
+            custom_authenticators:
+                - App\Security\LoginFormAuthenticator
+                - App\Security\GoogleAuthenticator
+            entry_point: App\Security\LoginFormAuthenticator
             logout:
                 path: app_logout
                 target: app_accueil
                 csrf_token_id: logout
                 csrf_parameter: _token
-
+                invalidate_session: true
+                delete_cookies:
+                    PHPSESSID: ~
             remember_me:
                 secret: '%kernel.secret%'
                 lifetime: 604800
                 path: /
 
     access_control:
-        - { path: '^/login', roles: PUBLIC_ACCESS }
-        - { path: '^/register', roles: PUBLIC_ACCESS }
-        - { path: '^/reservation', roles: PUBLIC_ACCESS }
-        - { path: '^/admin', roles: ROLE_ADMIN }
+        # Routes publiques (accès libre)
+        - { path: ^/face-login,        roles: PUBLIC_ACCESS }
+        - { path: ^/forgot-password,   roles: PUBLIC_ACCESS }
+        - { path: ^/reset-password,    roles: PUBLIC_ACCESS }
+        - { path: '^/login',           roles: PUBLIC_ACCESS }
+        - { path: '^/register',        roles: PUBLIC_ACCESS }
+        - { path: '^/2fa/check',       roles: PUBLIC_ACCESS }
+        - { path: '^/connect/google',  roles: PUBLIC_ACCESS }
+        
+        # Routes admin principales
+        - { path: '^/admin',           roles: ROLE_ADMIN }
         - { path: '^/admin/dashboard', roles: ROLE_ADMIN }
-        - { path: '^/admin/voyages', roles: ROLE_ADMIN }
+        - { path: '^/admin/voyages',   roles: ROLE_ADMIN }
         - { path: '^/admin/programmes', roles: ROLE_ADMIN }
         - { path: '^/admin/reservations', roles: ROLE_ADMIN }
+        
+        # Routes IA Analyzer (AJAX)
+        - { path: '^/admin/voyages/analyze', roles: ROLE_ADMIN }
+        - { path: '^/admin/voyages/tasks', roles: ROLE_ADMIN }
+        - { path: '^/admin/voyages/tasks/.*/status', roles: ROLE_ADMIN }
+        
+        # Routes IA Report Generator
+        - { path: '^/admin/voyages/report/generate', roles: ROLE_ADMIN }
+        - { path: '^/admin/voyages/report/pdf', roles: ROLE_ADMIN }
+        - { path: '^/admin/voyages/report/preview', roles: ROLE_ADMIN }
+        
+        # Routes API IA (si utilisées séparément)
+        - { path: '^/api/ai/analyze', roles: ROLE_ADMIN }
+        - { path: '^/api/ai/report',  roles: ROLE_ADMIN }
 
 when@test:
     security:

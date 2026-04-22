@@ -22,4 +22,11 @@
 ###> symfony/asset-mapper ###
 /public/assets/
 /assets/vendor/
+<<<<<<< HEAD
 ###< symfony/asset-mapper ###
+=======
+###< symfony/asset-mapper ###
+# Ignore env files (IMPORTANT)
+.env
+.env.*
+>>>>>>> origin/devvvvv

@@ -1,0 +1,804 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Planificateur IA - Trouvez votre activité parfaite{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    :root {
+        --tunisia-red: #951923;
+        --gold: #F5A623;
+        --gold-light: rgba(245, 166, 35, 0.12);
+        --dark: #26474E;
+        --surface: #ffffff;
+        --surface2: #fafaf8;
+        --muted: #6b7280;
+        --border: rgba(0, 0, 0, 0.08);
+        --success: #10b981;
+        --warning: #f59e0b;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background: var(--surface2);
+    }
+
+    /* Banner professionnel */
+    .ai-banner {
+        background: var(--dark);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border-left: 6px solid var(--gold);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .banner-content {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex: 1;
+    }
+
+    .banner-icon {
+        width: 60px;
+        height: 60px;
+        background: var(--gold-light);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .banner-icon i {
+        font-size: 2rem;
+        color: var(--gold);
+    }
+
+    .banner-text h3 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.25rem;
+    }
+
+    .banner-text p {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin: 0;
+    }
+
+    .banner-stats {
+        display: flex;
+        gap: 1.5rem;
+    }
+
+    .stat {
+        text-align: center;
+    }
+
+    .stat .number {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--gold);
+    }
+
+    .stat .label {
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* Formulaire */
+    .form-card {
+        background: var(--surface);
+        border-radius: 24px;
+        padding: 2rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
+        margin-bottom: 2rem;
+        border: 1px solid var(--border);
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .form-label i {
+        color: var(--tunisia-red);
+        font-size: 1rem;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 0.875rem 1rem;
+        font-size: 1rem;
+        transition: all 0.2s;
+        width: 100%;
+        background: var(--surface);
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--gold);
+        outline: none;
+        box-shadow: 0 0 0 3px var(--gold-light);
+    }
+
+    /* Type d'activité - Pills */
+    .activity-types {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+    }
+
+    .type-pill {
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        border: 2px solid #e2e8f0;
+        background: var(--surface);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--dark);
+    }
+
+    .type-pill:hover {
+        border-color: var(--gold);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .type-pill.active {
+        background: var(--tunisia-red);
+        border-color: var(--tunisia-red);
+        color: white;
+    }
+
+    .type-pill i {
+        font-size: 1.1rem;
+    }
+
+    /* Bouton générer */
+    .btn-generate {
+        background: var(--tunisia-red);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        width: 100%;
+        transition: all 0.3s;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+
+    .btn-generate:hover {
+        background: var(--tunisia-red);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-generate:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* Loader */
+    .loader-overlay {
+        display: none;
+        text-align: center;
+        padding: 3rem;
+    }
+
+    .spinner {
+        width: 60px;
+        height: 60px;
+        border: 4px solid #e2e8f0;
+        border-top-color: var(--tunisia-red);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Cartes résultats */
+    .result-card {
+        background: var(--surface);
+        border-radius: 24px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+        transition: all 0.3s;
+        border: 1px solid var(--border);
+    }
+
+    .result-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+        background: var(--dark);
+        padding: 1.25rem 1.5rem;
+        color: white;
+        border-bottom: 3px solid var(--gold);
+    }
+
+    .card-header h3 {
+        margin: 0;
+        font-size: 1.3rem;
+        font-weight: 700;
+    }
+
+    .card-header h3 i {
+        color: var(--gold);
+        margin-right: 0.5rem;
+    }
+
+    .score {
+        background: var(--gold);
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--dark);
+    }
+
+    .score i {
+        color: var(--dark);
+        margin-right: 0.25rem;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .activity-row {
+        display: flex;
+        gap: 1rem;
+        padding: 1rem;
+        border-bottom: 1px solid var(--border);
+        transition: background 0.2s;
+        position: relative;
+    }
+
+    .activity-row:last-child {
+        border-bottom: none;
+    }
+
+    .activity-row:hover {
+        background: var(--surface2);
+    }
+
+    .activity-icon {
+        width: 55px;
+        height: 55px;
+        background: var(--gold-light);
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        flex-shrink: 0;
+        color: var(--tunisia-red);
+    }
+
+    .activity-info {
+        flex: 1;
+    }
+
+    .activity-info h4 {
+        margin: 0 0 0.25rem 0;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--dark);
+    }
+
+    .activity-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin-top: 0.5rem;
+    }
+
+    .activity-meta span {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .activity-meta i {
+        color: var(--tunisia-red);
+        width: 14px;
+    }
+
+    .budget-box {
+        background: var(--gold-light);
+        padding: 1rem;
+        border-radius: 16px;
+        margin-top: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid rgba(245, 166, 35, 0.2);
+    }
+
+    .budget-box .amount {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: var(--tunisia-red);
+    }
+
+    .message-box {
+        background: #f0fdf4;
+        border-left: 4px solid var(--success);
+        padding: 1rem;
+        border-radius: 12px;
+        margin-top: 1rem;
+        font-size: 0.9rem;
+        color: #166534;
+    }
+
+    .message-box i {
+        margin-right: 0.5rem;
+        color: var(--success);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        background: var(--surface);
+        border-radius: 24px;
+        border: 1px solid var(--border);
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        color: var(--muted);
+        margin-bottom: 1rem;
+    }
+
+    /* Timeline visuelle */
+    .timeline-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px dashed var(--gold);
+    }
+
+    .timeline-indicator i {
+        color: var(--tunisia-red);
+    }
+
+    .timeline-indicator span {
+        font-size: 0.8rem;
+        color: var(--muted);
+        font-weight: 500;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .ai-banner { flex-direction: column; text-align: center; }
+        .banner-content { flex-direction: column; text-align: center; }
+        .banner-stats { justify-content: center; }
+        .activity-types { gap: 0.5rem; }
+        .type-pill { padding: 0.5rem 1rem; font-size: 0.85rem; }
+        .activity-meta { flex-direction: column; gap: 0.25rem; }
+        .card-header h3 { font-size: 1rem; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    
+    <!-- Banner professionnel -->
+    <div class="ai-banner">
+        <div class="banner-content">
+            <div class="banner-icon">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="banner-text">
+                <h3>Planificateur d'Activités Intelligent</h3>
+                <p>Optimisez votre temps et votre budget avec des recommandations personnalisées</p>
+            </div>
+        </div>
+        <div class="banner-stats">
+            <div class="stat">
+                <div class="number">15+</div>
+                <div class="label">Activités</div>
+            </div>
+            <div class="stat">
+                <div class="number">7</div>
+                <div class="label">Catégories</div>
+            </div>
+            <div class="stat">
+                <div class="number">100%</div>
+                <div class="label">Personnalisé</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulaire -->
+    <div class="form-card">
+        <form id="plannerForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-calendar-alt"></i> Date de début
+                        </label>
+                        <input type="date" class="form-control" id="dateDebut" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-calendar-check"></i> Date de fin
+                        </label>
+                        <input type="date" class="form-control" id="dateFin" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-tag"></i> Type d'activité
+                </label>
+                <div class="activity-types" id="activityTypes">
+                    <div class="type-pill" data-type="concert">
+                        <i class="fas fa-music"></i> Concert
+                    </div>
+                    <div class="type-pill" data-type="artisanat">
+                        <i class="fas fa-paint-brush"></i> Artisanat
+                    </div>
+                    <div class="type-pill" data-type="cuisine">
+                        <i class="fas fa-utensils"></i> Cuisine
+                    </div>
+                    <div class="type-pill" data-type="spectacle">
+                        <i class="fas fa-theater-masks"></i> Spectacle
+                    </div>
+                    <div class="type-pill" data-type="visite">
+                        <i class="fas fa-landmark"></i> Visite
+                    </div>
+                    <div class="type-pill" data-type="atelier">
+                        <i class="fas fa-pencil-alt"></i> Atelier
+                    </div>
+                    <div class="type-pill" data-type="sport">
+                        <i class="fas fa-futbol"></i> Sport
+                    </div>
+                </div>
+                <input type="hidden" id="typeActivite" required>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-coins"></i> Budget total (TND)
+                        </label>
+                        <input type="number" class="form-control" id="budget" placeholder="Ex: 500" required min="0" step="10" value="500">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-users"></i> Nombre de personnes
+                        </label>
+                        <input type="number" class="form-control" id="nombrePersonnes" placeholder="Ex: 2" required min="1" value="2">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-user-friends"></i> Type de groupe
+                        </label>
+                        <select class="form-select" id="groupType">
+                            <option value="solo"><i class="fas fa-user"></i> Solo</option>
+                            <option value="couple"><i class="fas fa-heart"></i> En couple</option>
+                            <option value="friends"><i class="fas fa-users"></i> Entre amis</option>
+                            <option value="family"><i class="fas fa-family"></i> En famille</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-generate" id="generateBtn">
+                <i class="fas fa-brain"></i>
+                Générer des recommandations
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </form>
+    </div>
+
+    <!-- Loader -->
+    <div class="loader-overlay" id="loader">
+        <div class="spinner"></div>
+        <p style="color: var(--muted);">
+            <i class="fas fa-chart-line me-1"></i>
+            Analyse des meilleures options pour vous...
+        </p>
+    </div>
+
+    <!-- Résultats -->
+    <div id="results"></div>
+
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('plannerForm');
+    const generateBtn = document.getElementById('generateBtn');
+    const loader = document.getElementById('loader');
+    const resultsDiv = document.getElementById('results');
+    const typeInput = document.getElementById('typeActivite');
+    
+    // Sélection du type d'activité
+    const typePills = document.querySelectorAll('.type-pill');
+    let selectedType = null;
+    
+    typePills.forEach(pill => {
+        pill.addEventListener('click', function() {
+            typePills.forEach(p => p.classList.remove('active'));
+            this.classList.add('active');
+            selectedType = this.dataset.type;
+            typeInput.value = selectedType;
+        });
+    });
+    
+    // Dates par défaut
+    const today = new Date();
+    const nextWeek = new Date();
+    nextWeek.setDate(today.getDate() + 7);
+    
+    document.getElementById('dateDebut').value = today.toISOString().split('T')[0];
+    document.getElementById('dateFin').value = nextWeek.toISOString().split('T')[0];
+    
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const dateDebut = document.getElementById('dateDebut').value;
+        const dateFin = document.getElementById('dateFin').value;
+        const typeActivite = typeInput.value;
+        const budget = parseFloat(document.getElementById('budget').value);
+        const nombrePersonnes = parseInt(document.getElementById('nombrePersonnes').value);
+        const groupType = document.getElementById('groupType').value;
+        
+        // Validations
+        if (!dateDebut || !dateFin) {
+            showError('Veuillez sélectionner les dates');
+            return;
+        }
+        
+        if (new Date(dateDebut) > new Date(dateFin)) {
+            showError('La date de début doit être antérieure à la date de fin');
+            return;
+        }
+        
+        if (!typeActivite) {
+            showError('Veuillez sélectionner un type d\'activité');
+            return;
+        }
+        
+        if (isNaN(budget) || budget <= 0) {
+            showError('Veuillez entrer un budget valide');
+            return;
+        }
+        
+        if (isNaN(nombrePersonnes) || nombrePersonnes <= 0) {
+            showError('Veuillez entrer un nombre de personnes valide');
+            return;
+        }
+        
+        // Afficher loader
+        loader.style.display = 'block';
+        resultsDiv.innerHTML = '';
+        generateBtn.disabled = true;
+        
+        try {
+            const response = await fetch('{{ path('app_ai_recommendations') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    dateDebut: dateDebut,
+                    dateFin: dateFin,
+                    typeActivite: typeActivite,
+                    budget: budget,
+                    nombrePersonnes: nombrePersonnes,
+                    groupType: groupType
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                displayRecommendations(data.recommendations);
+            } else {
+                showError(data.error || 'Une erreur est survenue');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showError('Erreur de connexion. Veuillez réessayer.');
+        } finally {
+            loader.style.display = 'none';
+            generateBtn.disabled = false;
+        }
+    });
+    
+    function displayRecommendations(recommendations) {
+        if (!recommendations || recommendations.length === 0 || (recommendations.length === 1 && recommendations[0].activities.length === 0)) {
+            resultsDiv.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-sad-tear"></i>
+                    <h3 class="mt-3" style="color: var(--dark);">Aucune activité trouvée</h3>
+                    <p class="text-muted">Essayez d'ajuster vos critères (budget, dates, type d'activité)</p>
+                </div>
+            `;
+            return;
+        }
+        
+        let html = '<div class="row">';
+        
+        recommendations.forEach((rec, index) => {
+            // Trier les activités par heure de début
+            if (rec.activities && rec.activities.length > 0) {
+                rec.activities.sort((a, b) => {
+                    return (a.HeureDebut || '00:00').localeCompare(b.HeureDebut || '00:00');
+                });
+            }
+            
+            // Icône selon le type de recommandation
+            let recIcon = '<i class="fas fa-star"></i>';
+            if (rec.name.includes('Pack')) recIcon = '<i class="fas fa-gift"></i>';
+            else if (rec.name.includes('Duo')) recIcon = '<i class="fas fa-gem"></i>';
+            else if (rec.name.includes('Découverte')) recIcon = '<i class="fas fa-compass"></i>';
+            
+            html += `
+                <div class="col-lg-${recommendations.length === 1 ? '12' : '6'} mb-4">
+                    <div class="result-card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h3>${recIcon} ${escapeHtml(rec.name)}</h3>
+                            <span class="score"><i class="fas fa-chart-simple"></i> ${Math.round(rec.score || 0)}%</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="timeline-indicator">
+                                <i class="fas fa-clock"></i>
+                                <span>Programme chronologique</span>
+                            </div>
+            `;
+            
+            if (rec.activities && rec.activities.length > 0) {
+                rec.activities.forEach((activity, idx) => {
+                    const placesRestantes = activity.CapaciteM - (activity.totalReserved || 0);
+                    html += `
+                        <div class="activity-row">
+                            <div class="activity-icon">
+                                ${getActivityIcon(activity.TypeActivite)}
+                            </div>
+                            <div class="activity-info">
+                                <h4>${escapeHtml(activity.Titre)}</h4>
+                                <div class="activity-meta">
+                                    <span><i class="far fa-clock"></i> <strong>${activity.HeureDebut || 'Horaire flexible'}</strong></span>
+                                    <span><i class="fas fa-tag"></i> ${activity.TypeActivite || 'Général'}</span>
+                                    <span><i class="fas fa-coins"></i> ${activity.Prix} TND/personne</span>
+                                    <span><i class="fas fa-users"></i> ${placesRestantes} places restantes</span>
+                                </div>
+                                <small class="text-muted"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(activity.eventTitle || '')}</small>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                    <div class="budget-box">
+                        <span><i class="fas fa-wallet"></i> Budget total estimé</span>
+                        <span class="amount">${rec.totalCost.toFixed(2)} TND</span>
+                    </div>
+                    ${rec.remainingBudget > 0 ? `
+                        <div class="budget-box" style="background: rgba(16, 185, 129, 0.1); margin-top: 0.75rem; border-color: rgba(16, 185, 129, 0.2);">
+                            <span><i class="fas fa-piggy-bank"></i> Budget restant</span>
+                            <span class="amount" style="color: var(--success);">${rec.remainingBudget.toFixed(2)} TND</span>
+                        </div>
+                    ` : ''}
+                `;
+            }
+            
+            if (rec.message) {
+                html += `
+                    <div class="message-box">
+                        <i class="fas fa-comment-dots"></i>
+                        ${escapeHtml(rec.message)}
+                    </div>
+                `;
+            }
+            
+            html += `
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        resultsDiv.innerHTML = html;
+        
+        // Scroll aux résultats
+        resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    
+    function getActivityIcon(type) {
+        const icons = {
+            'Concert': '<i class="fas fa-music"></i>',
+            'Artisanat': '<i class="fas fa-paint-brush"></i>',
+            'Cuisine': '<i class="fas fa-utensils"></i>',
+            'Spectacle': '<i class="fas fa-theater-masks"></i>',
+            'Visite': '<i class="fas fa-landmark"></i>',
+            'Atelier': '<i class="fas fa-pencil-alt"></i>',
+            'Sport': '<i class="fas fa-futbol"></i>'
+        };
+        return icons[type] || '<i class="fas fa-calendar-day"></i>';
+    }
+    
+    function showError(message) {
+        resultsDiv.innerHTML = `
+            <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius: 20px; background: #fee2e2; border: 1px solid var(--tunisia-red); color: var(--tunisia-red);">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                ${escapeHtml(message)}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        setTimeout(() => {
+            const alert = resultsDiv.querySelector('.alert');
+            if (alert) alert.remove();
+        }, 5000);
+    }
+    
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+});
+</script>
+{% endblock %}
