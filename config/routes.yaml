@@ -1,0 +1,9 @@
+controllers:
+    resource:
+        path: ../src/Controller/
+        namespace: App\Controller
+    type: attribute
+# config/routes.yaml
+app_partager_aventure:
+    path: /partager-aventure
+    controller: App\Controller\PartagerAventureController::index

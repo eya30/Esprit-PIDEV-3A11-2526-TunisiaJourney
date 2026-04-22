@@ -1,0 +1,725 @@
+{% extends 'admin/dashboard/base_admin.html.twig' %}
+
+{% block title %}Gestion des Commentaires{% endblock %}
+{% block page_title %}Commentaires{% endblock %}
+
+{% block body %}
+
+{# ── FLASH MESSAGES ── #}
+{% for label, messages in app.flashes %}
+    {% for message in messages %}
+        <div style="margin-bottom:14px;padding:12px 18px;border-radius:12px;font-size:0.87rem;font-weight:500;display:flex;align-items:center;gap:10px;
+            {% if label == 'success' %}background:#E0F2E9;color:#047857;border:1px solid #A7F3D0;
+            {% elseif label == 'error' %}background:#FEF2F2;color:#DC2626;border:1px solid #FECACA;
+            {% else %}background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;{% endif %}">
+            <i class="fas fa-{% if label == 'success' %}check-circle{% elseif label == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endfor %}
+
+{# ══ BANNEAU NOTIFICATIONS SIGNALEMENTS ══ #}
+<div id="snotificationBanner" style="display:none;background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:1.5px solid #F59E0B;border-radius:16px;padding:16px 20px;margin-bottom:24px;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;box-shadow:0 4px 12px rgba(0,0,0,.1);">
+    <div style="display:flex;align-items:center;gap:14px;flex:1;">
+        <div style="width:56px;height:56px;border-radius:50%;background:#F59E0B;display:flex;align-items:center;justify-content:center;color:white;font-size:1.6rem;flex-shrink:0;animation:pulse 2s infinite;">
+            🚩
+        </div>
+        <div>
+            <div style="font-weight:700;color:#92400E;font-size:1rem;">
+                <span id="snotificationCount">0</span> notification(s) de signalement en attente
+            </div>
+            <div style="font-size:.8rem;color:#B45309;margin-top:3px;">
+                Des commentaires ont été signalés par des utilisateurs. Cliquez pour examiner et traiter.
+            </div>
+        </div>
+    </div>
+    <button onclick="toggleSNotificationPanel()" style="background:#92400E;color:white;border:none;padding:10px 20px;border-radius:20px;font-size:.83rem;font-weight:600;cursor:pointer;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.2);">
+        <i class="fas fa-bell me-1"></i> Voir les notifications
+    </button>
+</div>
+
+{# ══ PANNEAU NOTIFICATIONS ══ #}
+<div id="snotificationPanel" style="display:none;background:white;border-radius:20px;border:1.5px solid #FDE68A;padding:1.8rem;margin-bottom:28px;box-shadow:0 6px 24px rgba(245,158,11,.15);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;border-bottom:2px solid #FEF9F0;padding-bottom:1rem;">
+        <h5 style="margin:0;color:#92400E;font-size:1.1rem;display:flex;align-items:center;gap:10px;">
+            <i class="fas fa-bell" style="color:#F59E0B;"></i>
+            Signalements de commentaires
+            <span id="panelCount" style="background:#F59E0B;color:white;padding:2px 10px;border-radius:20px;font-size:.7rem;font-weight:700;">0</span>
+        </h5>
+        <div style="display:flex;gap:10px;">
+            <button onclick="markAllSNotificationsAsRead()" style="background:#E0F2E9;color:#047857;border:none;padding:6px 14px;border-radius:18px;font-size:.76rem;font-weight:600;cursor:pointer;">
+                <i class="fas fa-check-double me-1"></i>Tout marquer lu
+            </button>
+            <button onclick="toggleSNotificationPanel()" style="background:none;border:none;color:#aaa;font-size:1.4rem;cursor:pointer;">✕</button>
+        </div>
+    </div>
+    <div id="snotificationList" style="max-height:600px;overflow-y:auto;">
+        <div style="text-align:center;color:#aaa;padding:2rem;">
+            <i class="fas fa-spinner fa-spin" style="font-size:2rem;"></i>
+            <p style="margin-top:.8rem;">Chargement...</p>
+        </div>
+    </div>
+</div>
+
+{# ══ HEADER TABLEAU ══ #}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-1" style="font-family:'Playfair Display',serif;color:#2C1810;">Tous les Commentaires</h4>
+        <p class="mb-0" style="font-size:.85rem;color:#93032E;">
+            Gérez les commentaires &nbsp;
+            <span id="countBadge" style="background:#FEF9F0;color:#93032E;border:1px solid #F0E8DD;padding:3px 12px;border-radius:20px;font-size:.78rem;font-weight:600;">
+                {{ commentaires|length }} commentaire{{ commentaires|length > 1 ? 's' : '' }}
+            </span>
+        </p>
+    </div>
+    <button onclick="showAddModal()" class="tj-btn-primary">
+        <i class="fas fa-plus me-2"></i>Ajouter un commentaire
+    </button>
+</div>
+
+{# ── BARRE RECHERCHE + TRI ── #}
+<div style="display:flex;gap:12px;margin-bottom:18px;align-items:center;flex-wrap:wrap;">
+    <div style="position:relative;flex:1;min-width:220px;">
+        <i class="fas fa-search" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#C49A6C;font-size:.85rem;"></i>
+        <input id="searchInput" type="text" placeholder="Rechercher par publication..."
+               onkeyup="filterAndSort()"
+               style="width:100%;padding:10px 14px 10px 38px;border:1px solid #F0E8DD;border-radius:12px;font-size:.85rem;background:#FFF9F0;color:#4A3B2F;outline:none;">
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+        <span style="font-size:.82rem;color:#9CA3AF;font-weight:500;">Tri :</span>
+        <button onclick="setSort('asc')" id="btnAsc" style="padding:8px 14px;border-radius:10px;border:1px solid #F0E8DD;background:#FEF9F0;color:#93032E;font-size:.8rem;font-weight:600;cursor:pointer;">
+            <i class="fas fa-sort-amount-up-alt me-1"></i>Croissant
+        </button>
+        <button onclick="setSort('desc')" id="btnDesc" style="padding:8px 14px;border-radius:10px;border:1px solid #F0E8DD;background:#FEF9F0;color:#93032E;font-size:.8rem;font-weight:600;cursor:pointer;">
+            <i class="fas fa-sort-amount-down me-1"></i>Décroissant
+        </button>
+        <button onclick="setSort('none')" id="btnNone" style="padding:8px 12px;border-radius:10px;border:1px solid #F0E8DD;background:#F3F4F6;color:#6B7280;font-size:.8rem;cursor:pointer;">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+</div>
+
+{# ══ TABLEAU COMMENTAIRES ══ #}
+{% if commentaires is empty %}
+    <div class="tj-empty">
+        <i class="fas fa-comments" style="font-size:3rem;color:#E8DFD1;margin-bottom:1rem;"></i>
+        <p style="color:#9CA3AF;">Aucun commentaire trouvé.</p>
+    </div>
+{% else %}
+<div class="tj-table-wrap">
+    <table class="tj-table" id="mainTable">
+        <thead>
+            <tr>
+                <th>COMMENTAIRE</th>
+                <th>PUBLICATION</th>
+                <th>FORUM</th>
+                <th>DATE</th>
+                <th style="text-align:center;">STATUT</th>
+                <th style="text-align:center;">ACTIONS</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            {% for com in commentaires %}
+            <tr data-pub="{{ com.publication.nom|lower }}"
+                data-date="{{ com.dateCreation|date('Y-m-d') }}"
+                {% if com.isCancelled %}class="row-cancelled"{% endif %}
+                id="row-{{ com.idC }}">
+                <td style="max-width:260px;">
+                    <div style="display:flex;align-items:flex-start;gap:10px;">
+                        <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#93032E,#C49A6C);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;flex-shrink:0;font-size:.85rem;">V</div>
+                        <div>
+                            <div style="font-size:.87rem;color:#4A3B2F;line-height:1.5;">
+                                {{ com.description|slice(0,80) }}{% if com.description|length > 80 %}…{% endif %}
+                            </div>
+                            {% if com.tags %}
+                                <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;">
+                                    {% for tag in com.tags|split(',') %}
+                                        <span style="background:#FEF9F0;color:#93032E;border:1px solid #F0E8DD;padding:1px 8px;border-radius:20px;font-size:.7rem;">#{{ tag|trim }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </td>
+                <td><span class="tj-badge tj-badge-wine">{{ com.publication.nom|slice(0,25) }}{% if com.publication.nom|length > 25 %}…{% endif %}</span></td>
+                <td style="color:#6B7280;font-size:.85rem;">{{ com.publication.forum.nom }}</td>
+                <td><span class="tj-badge tj-badge-grey">{{ com.dateCreation|date('d/m/Y') }}</span></td>
+                <td style="text-align:center;" id="status-{{ com.idC }}">
+                    {% if com.isCancelled %}
+                        <span class="tj-badge" style="background:#F3F4F6;color:#6B7280;"><i class="fas fa-ban me-1"></i>Bloqué</span>
+                    {% else %}
+                        <span class="tj-badge tj-badge-green"><i class="fas fa-check me-1"></i>Actif</span>
+                    {% endif %}
+                </td>
+                <td style="text-align:center;" id="actions-{{ com.idC }}">
+                    <div class="tj-actions">
+                        {% if not com.isCancelled %}
+                            <form method="post" action="{{ path('app_commentaire_cancel', {idC: com.idC}) }}" onsubmit="return confirm('Bloquer ce commentaire ?')" style="display:inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ com.idC) }}">
+                                <button class="action-btn cancel-btn" title="Bloquer"><i class="fas fa-ban"></i></button>
+                            </form>
+                        {% else %}
+                            <form method="post" action="{{ path('app_commentaire_uncancel', {idC: com.idC}) }}" onsubmit="return confirm('Débloquer ce commentaire ?')" style="display:inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('uncancel' ~ com.idC) }}">
+                                <button class="action-btn uncancel-btn" title="Débloquer"><i class="fas fa-check-circle"></i></button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div id="noResult" style="display:none;padding:2rem;text-align:center;color:#9CA3AF;font-size:.9rem;">
+        <i class="fas fa-search me-2"></i>Aucun commentaire trouvé.
+    </div>
+</div>
+{% endif %}
+
+{# ══ MODAL AJOUTER ══ #}
+<div id="addModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:1100;align-items:center;justify-content:center;">
+    <div style="background:white;border-radius:20px;width:540px;max-width:94%;box-shadow:0 24px 60px rgba(0,0,0,.22);overflow:hidden;max-height:94vh;overflow-y:auto;">
+        <div style="padding:1.2rem 1.5rem;border-bottom:1px solid #F0E8DD;display:flex;justify-content:space-between;align-items:center;background:#FEF9F0;position:sticky;top:0;z-index:2;">
+            <h5 style="margin:0;color:#93032E;font-size:1.05rem;"><i class="fas fa-comment-alt me-2"></i>Ajouter un commentaire</h5>
+            <button onclick="closeAddModal()" style="background:none;border:none;font-size:1.5rem;color:#aaa;cursor:pointer;">&times;</button>
+        </div>
+        <form id="addForm" method="POST" style="padding:1.5rem;">
+            <div style="margin-bottom:1.1rem;">
+                <label style="display:block;font-size:.85rem;font-weight:700;color:#4A3B2F;margin-bottom:6px;">Publication <span style="color:#EF4444;">*</span></label>
+                <select id="pubSelect" name="publication_id" required onchange="updateFormAction()"
+                        style="width:100%;padding:10px 14px;border:1.5px solid #F0E8DD;border-radius:10px;font-size:.85rem;background:#FFF9F0;color:#4A3B2F;outline:none;">
+                    <option value="">-- Sélectionnez une publication --</option>
+                    {% for pub in publications %}
+                        <option value="{{ pub.idP }}">{{ pub.nom }} ({{ pub.forum.nom }})</option>
+                    {% endfor %}
+                </select>
+                <div id="pubError" style="display:none;color:#EF4444;font-size:.78rem;margin-top:5px;"><i class="fas fa-exclamation-circle me-1"></i>Veuillez sélectionner une publication.</div>
+            </div>
+            <div style="margin-bottom:.7rem;">
+                <label style="display:block;font-size:.85rem;font-weight:700;color:#4A3B2F;margin-bottom:6px;">Commentaire <span style="color:#EF4444;">*</span></label>
+                <textarea id="descInput" name="description" rows="4" required placeholder="Commentaire..."
+                          oninput="validateDesc(this)"
+                          style="width:100%;padding:10px 14px;border:1.5px solid #F0E8DD;border-radius:10px;font-size:.85rem;background:#FFF9F0;color:#4A3B2F;outline:none;resize:vertical;box-sizing:border-box;"></textarea>
+                <div id="descError" style="display:none;color:#EF4444;font-size:.78rem;margin-top:5px;"><i class="fas fa-exclamation-circle me-1"></i><span id="descErrorMsg"></span></div>
+            </div>
+            <div style="margin-bottom:1.3rem;">
+                <label style="display:block;font-size:.85rem;font-weight:700;color:#4A3B2F;margin-bottom:6px;">Tags <span style="font-weight:400;color:#9CA3AF;">(optionnel)</span></label>
+                <input type="text" name="tags" id="tagsInput" placeholder="ex: voyage, tunisie"
+                       style="width:100%;padding:10px 14px;border:1.5px solid #F0E8DD;border-radius:10px;font-size:.85rem;background:#FFF9F0;color:#4A3B2F;outline:none;box-sizing:border-box;">
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #F0E8DD;padding-top:1rem;">
+                <button type="button" onclick="closeAddModal()" style="padding:9px 22px;background:#F5F0E8;border:none;border-radius:10px;font-size:.85rem;cursor:pointer;color:#4A3B2F;font-weight:600;">Annuler</button>
+                <button type="button" onclick="submitAddForm()" style="padding:9px 24px;background:#93032E;color:white;border:none;border-radius:10px;font-size:.85rem;font-weight:700;cursor:pointer;">
+                    <i class="fas fa-paper-plane me-1"></i>Publier
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+@keyframes pulse    { 0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.6)}50%{box-shadow:0 0 0 10px rgba(245,158,11,0)} }
+@keyframes slideDown{ from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)} }
+@keyframes toastIn  { from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)} }
+@keyframes highlightAnim { 0%,100%{background:inherit}30%,70%{background:#FEF9C3!important} }
+
+/* ── Notification items ── */
+.snotif-item {
+    background:#FFFBF0;
+    border-radius:14px;
+    border:1px solid #FDE68A;
+    border-left:5px solid #F59E0B;
+    padding:16px;
+    margin-bottom:12px;
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    transition:all .3s;
+}
+.snotif-item:hover { background:white; box-shadow:0 4px 16px rgba(245,158,11,.2); }
+.snotif-content { flex:1; min-width:0; }
+.snotif-badge {
+    background:#FEF3C7; color:#92400E;
+    padding:3px 10px; border-radius:20px;
+    font-size:.72rem; font-weight:700;
+    display:inline-block; margin-bottom:8px;
+}
+.snotif-comment-text {
+    background:#FFF8F0;
+    border:1px solid #FDE68A;
+    border-left:3px solid #F59E0B;
+    border-radius:10px;
+    padding:8px 12px;
+    font-size:.83rem;
+    color:#555;
+    margin-top:8px;
+    font-style:italic;
+    word-break:break-word;
+}
+.snotif-meta { font-size:.78rem; color:#777; margin-top:6px; line-height:1.7; }
+.snotif-date { color:#bbb; font-size:.7rem; margin-top:4px; }
+.snotif-actions { display:flex; flex-direction:column; gap:6px; flex-shrink:0; min-width:90px; }
+.btn-snotif-view {
+    background:#EFF6FF; color:#1D4ED8;
+    border:none; padding:7px 14px; border-radius:18px;
+    font-size:.73rem; font-weight:600; cursor:pointer;
+    transition:all .2s; white-space:nowrap; text-align:center;
+}
+.btn-snotif-view:hover { background:#1D4ED8; color:white; }
+.btn-snotif-block {
+    background:#93032E; color:white;
+    border:none; padding:7px 14px; border-radius:18px;
+    font-size:.73rem; font-weight:600; cursor:pointer;
+    transition:all .2s; white-space:nowrap; text-align:center;
+}
+.btn-snotif-block:hover  { background:#6B0221; box-shadow:0 3px 8px rgba(147,3,46,.35); }
+.btn-snotif-block:disabled { opacity:.5; cursor:not-allowed; }
+.btn-snotif-read {
+    background:#F3F4F6; color:#6B7280;
+    border:none; padding:7px 12px; border-radius:18px;
+    font-size:.7rem; cursor:pointer;
+    transition:all .2s; white-space:nowrap; text-align:center;
+}
+.btn-snotif-read:hover { background:#E5E7EB; }
+
+/* ── Table ── */
+.tj-btn-primary{background:#93032E;color:white;border:none;padding:10px 22px;border-radius:40px;font-size:.88rem;font-weight:600;display:inline-flex;align-items:center;transition:all .2s;cursor:pointer;}
+.tj-btn-primary:hover{background:#6B0221;transform:translateY(-2px);}
+.tj-empty{background:white;border-radius:20px;border:1px solid #F0E8DD;padding:3rem;text-align:center;}
+.tj-table-wrap{background:white;border-radius:20px;border:1px solid #F0E8DD;overflow-x:auto;}
+.tj-table{width:100%;border-collapse:collapse;min-width:760px;}
+.tj-table thead tr{background:#FEF9F0;border-bottom:2px solid #F0E8DD;}
+.tj-table th{padding:14px 18px;font-size:.72rem;font-weight:700;color:#93032E;text-transform:uppercase;letter-spacing:.6px;}
+.tj-table td{padding:13px 18px;font-size:.87rem;border-bottom:1px solid #F5F0E8;color:#4A3B2F;vertical-align:middle;}
+.tj-table tr:last-child td{border-bottom:none;}
+.tj-table tbody tr:hover td{background:#FFF9F0;}
+.row-cancelled td{opacity:.6;background:#F9FAFB !important;}
+.tj-badge{padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:600;display:inline-block;}
+.tj-badge-wine{background:#FEF9F0;color:#93032E;border:1px solid #F0E8DD;}
+.tj-badge-grey{background:#F3F4F6;color:#6B7280;}
+.tj-badge-green{background:#E0F2E9;color:#047857;}
+.tj-actions{display:flex;gap:8px;justify-content:center;}
+.action-btn{width:34px;height:34px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;transition:all .2s;cursor:pointer;border:none;font-size:.9rem;}
+.cancel-btn{background:#FEF2F2;color:#EF4444;}.cancel-btn:hover{background:#EF4444;color:white;}
+.uncancel-btn{background:#E0F2E9;color:#047857;}.uncancel-btn:hover{background:#047857;color:white;}
+.sort-active{background:#93032E !important;color:white !important;border-color:#93032E !important;}
+.highlight-row td { animation:highlightAnim 2.5s ease; }
+</style>
+
+<script>
+'use strict';
+
+var currentSort            = 'none';
+var snotificationPanelOpen = false;
+
+/* ══════════════════════════════════════════════════════
+   UTILITAIRES
+══════════════════════════════════════════════════════ */
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function showToast(msg, type, duration) {
+    var colors = { success:'#27ae60', error:'#c0392b', warn:'#e07b39', info:'#2980b9' };
+    var t = document.createElement('div');
+    t.style.cssText =
+        'position:fixed;bottom:24px;right:24px;color:white;padding:12px 22px;' +
+        'border-radius:30px;font-size:.83rem;font-weight:600;z-index:99999;' +
+        'background:' + (colors[type] || colors.success) + ';' +
+        'box-shadow:0 4px 18px rgba(0,0,0,.22);animation:toastIn .3s ease;max-width:360px;';
+    t.innerHTML = msg;
+    document.body.appendChild(t);
+    setTimeout(function () {
+        t.style.opacity = '0'; t.style.transition = '.3s';
+        setTimeout(function () { if (t && t.parentNode) t.parentNode.removeChild(t); }, 320);
+    }, duration || 4000);
+}
+
+/* ══════════════════════════════════════════════════════
+   CHARGEMENT NOTIFICATIONS
+══════════════════════════════════════════════════════ */
+async function loadSNotifications() {
+    try {
+        var response = await fetch('/signalement/snotifications', {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept':           'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('HTTP ' + response.status);
+        }
+
+        var data = await response.json();
+
+        if (!data.success) {
+            console.error('[Notif] Erreur API:', data.error);
+            return;
+        }
+
+        var snotifications = data.snotifications || [];
+        var total          = snotifications.length;
+
+        // ── Mettre à jour le bandeau orange ──
+        var banner  = document.getElementById('snotificationBanner');
+        var countEl = document.getElementById('snotificationCount');
+        var pCount  = document.getElementById('panelCount');
+
+        if (banner) banner.style.display = total > 0 ? 'flex' : 'none';
+        if (countEl) countEl.textContent = total;
+        if (pCount)  pCount.textContent  = total;
+
+        // ── Construire la liste si le panneau est ouvert ──
+        if (snotificationPanelOpen) {
+            renderNotificationList(snotifications);
+        }
+
+    } catch (err) {
+        console.error('[Notif] Fetch error:', err);
+    }
+}
+
+function renderNotificationList(snotifications) {
+    var listEl = document.getElementById('snotificationList');
+    if (!listEl) return;
+
+    var reasonLabels = {
+        'langage_inapproprié': '🔞 Langage inapproprié',
+        'propos_injurieux':    '💢 Propos injurieux',
+        'discrimination':      '⚠️ Discrimination',
+        'spam':                '📢 Spam',
+        'contenu_offensant':   '🚫 Contenu offensant',
+        'autre':               '❓ Autre'
+    };
+
+    if (snotifications.length === 0) {
+        listEl.innerHTML =
+            '<div style="text-align:center;color:#9CA3AF;padding:3rem;">' +
+            '<i class="fas fa-check-circle" style="color:#047857;font-size:2.5rem;margin-bottom:1rem;display:block;"></i>' +
+            '<p style="margin:0;font-size:.95rem;font-weight:600;color:#047857;">Aucune notification en attente</p>' +
+            '<small style="color:#aaa;display:block;margin-top:.4rem;">Tous les signalements ont été traités</small>' +
+            '</div>';
+        return;
+    }
+
+    listEl.innerHTML = snotifications.map(function (snotif) {
+        var reasonLabel = reasonLabels[snotif.reason] || escapeHtml(snotif.reason || 'Inconnu');
+        var commentText = escapeHtml((snotif.commentText || '').substring(0, 250));
+        var reporter    = (snotif.userReporterId === 999 || snotif.userReporterId == null)
+            ? '👤 Visiteur (non connecté)' : '👤 User #' + snotif.userReporterId;
+
+        return '<div class="snotif-item" id="snotif-' + snotif.id + '">' +
+            '<div class="snotif-content">' +
+                '<span class="snotif-badge"><i class="fas fa-flag me-1"></i>' + reasonLabel + '</span>' +
+                '<div class="snotif-meta">' +
+                    '<strong>Commentaire #' + snotif.commentId + '</strong><br>' +
+                    'Signalé par : ' + reporter +
+                '</div>' +
+                '<div class="snotif-comment-text">' +
+                    '<i class="fas fa-quote-left me-1" style="color:#F59E0B;font-size:.65rem;"></i> ' +
+                    (commentText || '<em style="color:#aaa;">Texte non disponible</em>') +
+                '</div>' +
+                '<div class="snotif-date"><i class="fas fa-clock me-1"></i>' + escapeHtml(snotif.dateCreation) + '</div>' +
+            '</div>' +
+            '<div class="snotif-actions">' +
+                '<button class="btn-snotif-view" onclick="viewCommentInTable(' + snotif.commentId + ')">' +
+                    '<i class="fas fa-eye me-1"></i>Voir' +
+                '</button>' +
+                '<button class="btn-snotif-block" id="blockBtn-' + snotif.id + '" ' +
+                    'onclick="blockCommentViaSNotif(' + snotif.signalementId + ',' + snotif.id + ',this)">' +
+                    '<i class="fas fa-ban me-1"></i>Bloquer' +
+                '</button>' +
+                '<button class="btn-snotif-read" onclick="markSNotifAsRead(' + snotif.id + ',this)">' +
+                    '<i class="fas fa-check me-1"></i>Lu' +
+                '</button>' +
+            '</div>' +
+        '</div>';
+    }).join('');
+}
+
+/* ══════════════════════════════════════════════════════
+   ACTIONS PANEL
+══════════════════════════════════════════════════════ */
+function toggleSNotificationPanel() {
+    snotificationPanelOpen = !snotificationPanelOpen;
+    var panel = document.getElementById('snotificationPanel');
+    if (!panel) return;
+    panel.style.display = snotificationPanelOpen ? 'block' : 'none';
+    if (snotificationPanelOpen) {
+        loadSNotifications();
+    }
+}
+
+function viewCommentInTable(commentId) {
+    // Fermer le panneau
+    if (snotificationPanelOpen) toggleSNotificationPanel();
+
+    var row = document.getElementById('row-' + commentId);
+    if (row) {
+        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        row.classList.add('highlight-row');
+        setTimeout(function () { row.classList.remove('highlight-row'); }, 2600);
+    } else {
+        showToast('⚠️ Commentaire #' + commentId + ' non visible dans le tableau', 'warn');
+    }
+}
+
+async function blockCommentViaSNotif(signalementId, snotificationId, btn) {
+    if (!signalementId || signalementId === 'null') {
+        showToast('❌ ID de signalement invalide.', 'error');
+        return;
+    }
+    if (!confirm('Bloquer définitivement ce commentaire ?')) return;
+
+    var originalHTML = btn ? btn.innerHTML : '';
+    if (btn) { btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true; }
+
+    try {
+        var response = await fetch('/signalement/' + signalementId + '/block-comment', {
+            method:  'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+        });
+
+        var data = await response.json();
+
+        if (data.success) {
+            showToast('✅ Commentaire bloqué avec succès !', 'success');
+
+            // Supprimer la notification du panneau
+            var el = document.getElementById('snotif-' + snotificationId);
+            if (el) {
+                el.style.transition = 'opacity .4s, transform .4s';
+                el.style.opacity    = '0';
+                el.style.transform  = 'translateX(20px)';
+                setTimeout(function () {
+                    if (el && el.parentNode) el.parentNode.removeChild(el);
+                    loadSNotifications();
+                }, 430);
+            }
+
+            // Mettre à jour la ligne dans le tableau SANS recharger la page
+            if (data.commentId) {
+                updateRowToBlocked(data.commentId);
+            }
+
+        } else {
+            showToast('❌ ' + (data.error || 'Erreur lors du blocage'), 'error');
+            if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; }
+        }
+
+    } catch (err) {
+        console.error('[Block] Erreur:', err);
+        showToast('❌ Erreur de connexion', 'error');
+        if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; }
+    }
+}
+
+function updateRowToBlocked(commentId) {
+    var row = document.getElementById('row-' + commentId);
+    if (!row) return;
+
+    // Ajouter la classe visuelle "bloqué"
+    row.classList.add('row-cancelled');
+
+    // Mettre à jour le badge statut
+    var statusCell = document.getElementById('status-' + commentId);
+    if (statusCell) {
+        statusCell.innerHTML =
+            '<span class="tj-badge" style="background:#F3F4F6;color:#6B7280;">' +
+            '<i class="fas fa-ban me-1"></i>Bloqué</span>';
+    }
+
+    // Mettre à jour les actions (remplacer "Bloquer" par "Débloquer")
+    var actionsCell = document.getElementById('actions-' + commentId);
+    if (actionsCell) {
+        actionsCell.innerHTML =
+            '<div class="tj-actions">' +
+            '<form method="post" action="/commentaire/' + commentId + '/uncancel" ' +
+            'onsubmit="return confirm(\'Débloquer ce commentaire ?\')" style="display:inline">' +
+            '<input type="hidden" name="_token" value="">' +
+            '<button class="action-btn uncancel-btn" title="Débloquer">' +
+            '<i class="fas fa-check-circle"></i></button>' +
+            '</form></div>';
+    }
+}
+
+async function markSNotifAsRead(snotificationId, btn) {
+    var originalHTML = btn ? btn.innerHTML : '';
+    if (btn) { btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true; }
+
+    try {
+        var response = await fetch('/signalement/snotifications/' + snotificationId + '/read', {
+            method:  'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+        });
+        var data = await response.json();
+
+        if (data.success) {
+            var el = document.getElementById('snotif-' + snotificationId);
+            if (el) {
+                el.style.transition = 'opacity .4s';
+                el.style.opacity    = '0';
+                setTimeout(function () {
+                    if (el && el.parentNode) el.parentNode.removeChild(el);
+                    loadSNotifications();
+                }, 430);
+            }
+        } else {
+            showToast('❌ Erreur lors du marquage', 'error');
+            if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; }
+        }
+    } catch (err) {
+        console.error('[MarkRead] Erreur:', err);
+        if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; }
+    }
+}
+
+async function markAllSNotificationsAsRead() {
+    var items = document.querySelectorAll('[id^="snotif-"]');
+    if (items.length === 0) { showToast('ℹ️ Aucune notification à marquer.', 'info'); return; }
+    if (!confirm('Marquer TOUTES les notifications comme lues ?')) return;
+
+    showToast('📝 Marquage en cours...', 'info', 2000);
+    for (var i = 0; i < items.length; i++) {
+        var id = items[i].id.replace('snotif-', '');
+        try {
+            await fetch('/signalement/snotifications/' + id + '/read', {
+                method:  'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+        } catch (e) { /* ignorer */ }
+    }
+    showToast('✅ Toutes les notifications marquées comme lues', 'success');
+    await loadSNotifications();
+}
+
+/* ══════════════════════════════════════════════════════
+   TABLE — FILTRE ET TRI
+══════════════════════════════════════════════════════ */
+function filterAndSort() {
+    var search  = document.getElementById('searchInput').value.toLowerCase().trim();
+    var tbody   = document.getElementById('tableBody');
+    if (!tbody) return;
+
+    var rows    = Array.from(tbody.querySelectorAll('tr'));
+    var visible = rows.filter(function (row) {
+        var pub   = (row.getAttribute('data-pub') || '').toLowerCase();
+        var match = search === '' || pub.includes(search);
+        row.style.display = match ? '' : 'none';
+        return match;
+    });
+
+    if (currentSort !== 'none') {
+        visible.sort(function (a, b) {
+            var da = a.getAttribute('data-date') || '';
+            var db = b.getAttribute('data-date') || '';
+            return currentSort === 'asc' ? da.localeCompare(db) : db.localeCompare(da);
+        });
+        visible.forEach(function (r) { tbody.appendChild(r); });
+    }
+
+    var badge = document.getElementById('countBadge');
+    if (badge) badge.textContent = visible.length + ' commentaire' + (visible.length !== 1 ? 's' : '');
+
+    var noResult = document.getElementById('noResult');
+    if (noResult) noResult.style.display = visible.length === 0 ? 'block' : 'none';
+}
+
+function setSort(dir) {
+    currentSort = dir;
+    ['btnAsc','btnDesc','btnNone'].forEach(function (id) {
+        var b = document.getElementById(id);
+        if (b) b.classList.remove('sort-active');
+    });
+    var map = { asc:'btnAsc', desc:'btnDesc', none:'btnNone' };
+    var ab  = document.getElementById(map[dir]);
+    if (ab) ab.classList.add('sort-active');
+    filterAndSort();
+}
+
+/* ══════════════════════════════════════════════════════
+   MODAL AJOUTER
+══════════════════════════════════════════════════════ */
+function showAddModal() {
+    var modal = document.getElementById('addModal');
+    if (!modal) return;
+    modal.style.display = 'flex';
+    var form = document.getElementById('addForm');
+    if (form) form.reset();
+    ['pubError','descError'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+}
+
+function closeAddModal() {
+    var modal = document.getElementById('addModal');
+    if (modal) modal.style.display = 'none';
+}
+
+function updateFormAction() {
+    var sel  = document.getElementById('pubSelect');
+    var form = document.getElementById('addForm');
+    if (sel && form && sel.value) {
+        form.action = '/commentaire/new/' + sel.value;
+        var err = document.getElementById('pubError');
+        if (err) err.style.display = 'none';
+    }
+}
+
+function validateDesc(textarea) {
+    var errDiv = document.getElementById('descError');
+    var errMsg = document.getElementById('descErrorMsg');
+    if (!textarea || !textarea.value || textarea.value.trim().length < 3) {
+        if (errMsg) errMsg.textContent = 'Min. 3 caractères.';
+        if (errDiv) errDiv.style.display = 'block';
+        return false;
+    }
+    if (errDiv) errDiv.style.display = 'none';
+    return true;
+}
+
+function submitAddForm() {
+    var select  = document.getElementById('pubSelect');
+    var descEl  = document.getElementById('descInput');
+    var valid   = true;
+
+    if (!select || !select.value) {
+        var pubErr = document.getElementById('pubError');
+        if (pubErr) pubErr.style.display = 'block';
+        valid = false;
+    } else {
+        updateFormAction();
+    }
+    if (!validateDesc(descEl)) valid = false;
+    if (valid) {
+        var form = document.getElementById('addForm');
+        if (form) form.submit();
+    }
+}
+
+/* ══════════════════════════════════════════════════════
+   INITIALISATION
+══════════════════════════════════════════════════════ */
+window.addEventListener('click', function (e) {
+    var modal = document.getElementById('addModal');
+    if (e.target === modal) closeAddModal();
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    filterAndSort();
+    loadSNotifications();
+    // Rafraîchissement automatique toutes les 15 secondes
+    setInterval(loadSNotifications, 15000);
+});
+</script>
+{% endblock %}
