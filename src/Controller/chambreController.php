@@ -59,7 +59,7 @@ class chambreController extends AbstractController
         ]);
     }
 
-    // MODIFICATION ICI - Utilisation de Connection
+    // MODIFICATION ICI - Ajout des variables pour la devise
     #[Route('/{idCh}', name: 'app_chambre_show', methods: ['GET'])]
     public function show(Connection $connection, $idCh): Response
     {
@@ -81,9 +81,23 @@ class chambreController extends AbstractController
             throw $this->createNotFoundException('Chambre non trouvée');
         }
         
+        // ========== VARIABLES POUR LA DEVISE ==========
+        $currencies = [
+            'TND' => 'Dinar Tunisien (TND)',
+            'EUR' => 'Euro (€)',
+            'USD' => 'Dollar US ($)',
+        ];
+        $selected_currency = 'TND';
+        $prix_converti = $chambre['prix_nuit'];
+        $symbole = 'TND';
+        
         return $this->render('chambre/show.html.twig', [
             'chambre' => $chambre,
-            'old' => []
+            'old' => [],
+            'currencies' => $currencies,
+            'selected_currency' => $selected_currency,
+            'prix_converti' => $prix_converti,
+            'symbole' => $symbole,
         ]);
     }
 
@@ -116,9 +130,23 @@ class chambreController extends AbstractController
             'telephone' => $request->query->get('telephone', '')
         ];
         
+        // ========== VARIABLES POUR LA DEVISE ==========
+        $currencies = [
+            'TND' => 'Dinar Tunisien (TND)',
+            'EUR' => 'Euro (€)',
+            'USD' => 'Dollar US ($)',
+        ];
+        $selected_currency = 'TND';
+        $prix_converti = $chambre['prix_nuit'];
+        $symbole = 'TND';
+        
         return $this->render('chambre/show.html.twig', [
             'chambre' => $chambre,
-            'old' => $oldData
+            'old' => $oldData,
+            'currencies' => $currencies,
+            'selected_currency' => $selected_currency,
+            'prix_converti' => $prix_converti,
+            'symbole' => $symbole,
         ]);
     }
 

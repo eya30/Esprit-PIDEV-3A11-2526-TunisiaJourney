@@ -2,6 +2,10 @@
 
 namespace App\Controller;
 
+use App\Service\CurrencyChService;
+use App\Service\WeatherService;
+use App\Service\QrCodeService;
+use App\Service\FideliteService;
 use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -11,8 +15,8 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/reservation')]
 class ReservationChController extends AbstractController
 {
-    #[Route('/chambre/new/{idCh}', name: 'app_reservation_ch_new', methods: ['POST'])]
-    public function new(Request $request, Connection $connection, $idCh = null): Response
+    #[Route('/chambre/new/{idCh}', name: 'app_reservation_ch_new', methods: ['GET', 'POST'])]
+    public function new(Request $request, Connection $connection, CurrencyChService $currency, WeatherService $weather, FideliteService $fideliteService, $idCh = null): Response
     {
         if (!$idCh) {
             $this->addFlash('error', 'ID de la chambre manquant');
@@ -31,11 +35,81 @@ class ReservationChController extends AbstractController
             return $this->redirectToRoute('app_hotel_index');
         }
 
+        // ========== SI REQUÊTE GET : AFFICHER LE FORMULAIRE ==========
+        if ($request->isMethod('GET')) {
+            $session = $request->getSession();
+            $selectedCurrency = $session->get('selected_currency_ch', 'TND');
+            
+            // Valeurs par défaut pour l'affichage initial
+            $defaultCheckin = (new \DateTime('+1 day'))->format('Y-m-d');
+            $defaultCheckout = (new \DateTime('+2 days'))->format('Y-m-d');
+            
+            // Calculer le prix dynamique avec la météo pour la date d'arrivée
+            try {
+                $dynamicPrice = $weather->calculateDynamicPrice(
+                    $chambre['prix_nuit'],
+                    $chambre['hotel_ville'],
+                    $defaultCheckin,
+                    $defaultCheckout
+                );
+            } catch (\Exception $e) {
+                $dynamicPrice = null;
+            }
+            
+            // Si le prix dynamique n'est pas disponible, on utilise le prix normal
+            if ($dynamicPrice && isset($dynamicPrice['final_price_per_night'])) {
+                $prixFinal = $dynamicPrice['final_price_per_night'];
+            } else {
+                $prixFinal = $chambre['prix_nuit'];
+            }
+            
+            // === RÉDUCTION FIDÉLITÉ ===
+            $user = $this->getUser();
+            $reductionFidelite = 0;
+            $prixOriginal = $prixFinal;
+            
+            if ($user && method_exists($user, 'getId')) {
+                $reductionFidelite = $fideliteService->getReduction($user->getId());
+                if ($reductionFidelite > 0) {
+                    $prixFinal = $prixFinal * (1 - $reductionFidelite / 100);
+                }
+            }
+            // =========================
+            
+            // Taux de conversion pour l'affichage (1 TND = ? dans la devise choisie)
+            $tauxConversion = 1;
+            if ($selectedCurrency !== 'TND') {
+                $tauxConversion = $currency->convert(1, $selectedCurrency);
+                if (!$tauxConversion) $tauxConversion = 1;
+            }
+            
+            $prixConverti = $currency->convert($prixFinal, $selectedCurrency);
+            $symbole = $currency->getSymbol($selectedCurrency);
+            
+            // Récupérer la météo pour affichage
+            $weatherData = $weather->getWeather5Days($chambre['hotel_ville']);
+            
+            return $this->render('chambre/reservationch.html.twig', [
+                'chambre' => $chambre,
+                'currencies' => $currency->getAvailableCurrencies(),
+                'selected_currency' => $selectedCurrency,
+                'prix_converti' => $prixConverti,
+                'symbole' => $symbole,
+                'taux_conversion' => $tauxConversion,
+                'old' => [],
+                'errors' => [],
+                'weather_data' => $weatherData,
+                'dynamic_price' => $dynamicPrice,
+                'default_checkin' => $defaultCheckin,
+                'default_checkout' => $defaultCheckout,
+                'reduction_fidelite' => $reductionFidelite,
+                'prix_original' => $prixOriginal
+            ]);
+        }
+
+        // ========== SI REQUÊTE POST : TRAITER LE FORMULAIRE ==========
         $data = $request->request->all();
-    // Debug: log incoming reservation POST data (avoid logging sensitive full content in prod)
-    @file_put_contents(__DIR__ . '/../../var/log/reservation_debug.log', sprintf("%s - ENTRY idCh=%s data=%s\n", (new \DateTime())->format('c'), $idCh, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)), FILE_APPEND);
         
-        // Récupération des données
         $nom = trim($data['nom'] ?? '');
         $prenom = trim($data['prenom'] ?? '');
         $email = trim($data['email'] ?? '');
@@ -44,22 +118,21 @@ class ReservationChController extends AbstractController
         $dateFin = $data['dateFin'] ?? '';
         $nbPersonnes = $data['nbPersonnes'] ?? 1;
 
-        // ID utilisateur : si l'utilisateur est connecté, on récupère son id depuis la session
+        // ID utilisateur
         $idUtilisateur = $data['idUtilisateur'] ?? null;
         if (is_string($idUtilisateur) && trim($idUtilisateur) === '') {
             $idUtilisateur = null;
         }
 
         $user = $this->getUser();
-        if ($user) {
-            if (method_exists($user, 'getId')) {
-                $idUtilisateur = $user->getId();
-            }
+        if ($user && method_exists($user, 'getId')) {
+            $idUtilisateur = $user->getId();
         }
 
-        // fallback temporaire
         if ($idUtilisateur === null) {
-            $idUtilisateur = 1;
+            // Ne pas appliquer de fallback vers l'utilisateur #1. Exiger l'authentification.
+            $this->addFlash('error', 'Vous devez être connecté pour effectuer une réservation.');
+            return $this->redirectToRoute('app_hotel_index');
         }
 
         $formData = [
@@ -73,158 +146,125 @@ class ReservationChController extends AbstractController
         ];
 
         $errors = [];
-        $calcul = [];
 
-        // Validations (Nom, Prénom, Email, Téléphone, Dates, etc.)
+        // Validations
         if (empty($nom)) {
-            $errors[] = "Le nom est requis.";
-            $errorsNom = "Le nom est requis.";
+            $errors['nom'] = "Le nom est requis.";
         } elseif (strlen($nom) < 2) {
-            $errors[] = "Le nom doit contenir au moins 2 caractères.";
-            $errorsNom = "Le nom doit contenir au moins 2 caractères.";
-        } elseif (strlen($nom) > 50) {
-            $errors[] = "Le nom ne peut pas dépasser 50 caractères.";
-            $errorsNom = "Le nom ne peut pas dépasser 50 caractères.";
-        } elseif (!preg_match('/^[a-zA-ZÀ-ÿ\s\'-]+$/', $nom)) {
-            $errors[] = "Le nom ne doit contenir que des lettres.";
-            $errorsNom = "Le nom ne doit contenir que des lettres.";
+            $errors['nom'] = "Le nom doit contenir au moins 2 caractères.";
         }
 
         if (empty($prenom)) {
-            $errors[] = "Le prénom est requis.";
-            $errorsPrenom = "Le prénom est requis.";
+            $errors['prenom'] = "Le prénom est requis.";
         } elseif (strlen($prenom) < 2) {
-            $errors[] = "Le prénom doit contenir au moins 2 caractères.";
-            $errorsPrenom = "Le prénom doit contenir au moins 2 caractères.";
-        } elseif (strlen($prenom) > 50) {
-            $errors[] = "Le prénom ne peut pas dépasser 50 caractères.";
-            $errorsPrenom = "Le prénom ne peut pas dépasser 50 caractères.";
-        } elseif (!preg_match('/^[a-zA-ZÀ-ÿ\s\'-]+$/', $prenom)) {
-            $errors[] = "Le prénom ne doit contenir que des lettres.";
-            $errorsPrenom = "Le prénom ne doit contenir que des lettres.";
+            $errors['prenom'] = "Le prénom doit contenir au moins 2 caractères.";
         }
 
         if (empty($email)) {
-            $errors[] = "L'email est requis.";
-            $errorsEmail = "L'email est requis.";
+            $errors['email'] = "L'email est requis.";
         } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors[] = "L'email n'est pas valide.";
-            $errorsEmail = "L'email n'est pas valide.";
-        } elseif (strlen($email) > 100) {
-            $errors[] = "L'email ne peut pas dépasser 100 caractères.";
-            $errorsEmail = "L'email ne peut pas dépasser 100 caractères.";
+            $errors['email'] = "L'email n'est pas valide.";
         }
 
         if (empty($telephone)) {
-            $errors[] = "Le téléphone est requis.";
-            $errorsTelephone = "Le téléphone est requis.";
+            $errors['telephone'] = "Le téléphone est requis.";
         } else {
             $telephoneClean = preg_replace('/[^0-9]/', '', $telephone);
-            if (strlen($telephoneClean) < 8) {
-                $errors[] = "Le téléphone doit contenir au moins 8 chiffres.";
-                $errorsTelephone = "Le téléphone doit contenir au moins 8 chiffres.";
-            } elseif (strlen($telephoneClean) > 15) {
-                $errors[] = "Le téléphone ne peut pas dépasser 15 chiffres.";
-                $errorsTelephone = "Le téléphone ne peut pas dépasser 15 chiffres.";
-            } elseif (!preg_match('/^[0-9+\-\s]+$/', $telephone)) {
-                $errors[] = "Le téléphone contient des caractères non autorisés.";
-                $errorsTelephone = "Le téléphone contient des caractères non autorisés.";
+            if (strlen($telephoneClean) !== 8) {
+                $errors['telephone'] = "Le téléphone doit contenir exactement 8 chiffres.";
             }
         }
 
         if (empty($dateDebut)) {
-            $errors[] = "La date de début est requise.";
-            $errorsDateDebut = "La date de début est requise.";
-        } elseif (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateDebut)) {
-            $errors[] = "La date de début doit être au format AAAA-MM-JJ.";
-            $errorsDateDebut = "La date de début doit être au format AAAA-MM-JJ.";
+            $errors['dateDebut'] = "La date de début est requise.";
         } else {
             $dateDebutObj = new \DateTime($dateDebut);
             $today = new \DateTime();
             $today->setTime(0, 0, 0);
-            
             if ($dateDebutObj < $today) {
-                $errors[] = "La date de début ne peut pas être dans le passé.";
-                $errorsDateDebut = "La date de début ne peut pas être dans le passé.";
-            }
-            
-            $maxDate = new \DateTime('+2 years');
-            if ($dateDebutObj > $maxDate) {
-                $errors[] = "La date de début ne peut pas être au-delà de 2 ans.";
-                $errorsDateDebut = "La date de début ne peut pas être au-delà de 2 ans.";
+                $errors['dateDebut'] = "La date de début ne peut pas être dans le passé.";
             }
         }
 
         if (empty($dateFin)) {
-            $errors[] = "La date de fin est requise.";
-            $errorsDateFin = "La date de fin est requise.";
-        } elseif (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateFin)) {
-            $errors[] = "La date de fin doit être au format AAAA-MM-JJ.";
-            $errorsDateFin = "La date de fin doit être au format AAAA-MM-JJ.";
-        } else {
-            $dateFinObj = new \DateTime($dateFin);
-            $maxDate = new \DateTime('+2 years');
-            if ($dateFinObj > $maxDate) {
-                $errors[] = "La date de fin ne peut pas être au-delà de 2 ans.";
-                $errorsDateFin = "La date de fin ne peut pas être au-delà de 2 ans.";
-            }
+            $errors['dateFin'] = "La date de fin est requise.";
         }
 
         $nbNuit = 0;
         $prixTotal = 0;
-        $prixParNuitApresPromo = $chambre['prix_nuit'];
         $promotion = $chambre['promotion'] ?? 0;
+        $prixBase = $chambre['prix_nuit'];
 
-        if ($promotion > 0) {
-            $prixParNuitApresPromo = $prixParNuitApresPromo * (1 - $promotion / 100);
-        }
-
+        // Calcul du prix dynamique avec les vraies dates
+        $dynamicPrice = null;
+        $prixFinalParNuit = $prixBase;
+        
         if (empty($errors) && !empty($dateDebut) && !empty($dateFin)) {
             $dateDebutObj = new \DateTime($dateDebut);
             $dateFinObj = new \DateTime($dateFin);
             
             if ($dateFinObj <= $dateDebutObj) {
-                $errors[] = "La date de fin doit être postérieure à la date de début.";
+                $errors['dateFin'] = "La date de fin doit être postérieure à la date de début.";
             } else {
                 $interval = $dateDebutObj->diff($dateFinObj);
                 $nbNuit = $interval->days;
                 
                 if ($nbNuit < 1) {
-                    $errors[] = "Le séjour doit durer au moins 1 nuit.";
+                    $errors['dateFin'] = "Le séjour doit durer au moins 1 nuit.";
                 }
                 if ($nbNuit > 90) {
-                    $errors[] = "Le séjour ne peut pas dépasser 90 nuits (environ 3 mois).";
+                    $errors['dateFin'] = "Le séjour ne peut pas dépasser 90 nuits.";
                 }
                 
-                $prixTotal = $prixParNuitApresPromo * $nbNuit;
-                
-                $calcul = [
-                    'prix_nuit' => $prixParNuitApresPromo,
-                    'nb_nuits' => $nbNuit,
-                    'prix_total' => $prixTotal,
-                    'promotion' => $promotion
-                ];
+                try {
+                    $dynamicPrice = $weather->calculateDynamicPrice(
+                        $prixBase,
+                        $chambre['hotel_ville'],
+                        $dateDebut,
+                        $dateFin
+                    );
+                    
+                    if ($dynamicPrice && isset($dynamicPrice['final_price_per_night'])) {
+                        $prixFinalParNuit = $dynamicPrice['final_price_per_night'];
+                        $prixTotal = $dynamicPrice['total_price'];
+                    } else {
+                        if ($promotion > 0) {
+                            $prixFinalParNuit = $prixBase * (1 - $promotion / 100);
+                        }
+                        $prixTotal = $prixFinalParNuit * $nbNuit;
+                    }
+                } catch (\Exception $e) {
+                    if ($promotion > 0) {
+                        $prixFinalParNuit = $prixBase * (1 - $promotion / 100);
+                    }
+                    $prixTotal = $prixFinalParNuit * $nbNuit;
+                    $dynamicPrice = null;
+                }
             }
         }
 
+        // === APPLICATION DE LA RÉDUCTION FIDÉLITÉ SUR LE PRIX TOTAL ===
+        if ($user && method_exists($user, 'getId') && $prixTotal > 0) {
+            $reductionFidelite = $fideliteService->getReduction($user->getId());
+            if ($reductionFidelite > 0) {
+                $prixTotal = $prixTotal * (1 - $reductionFidelite / 100);
+            }
+        }
+        // ============================================================
+
+        // Validation nombre de personnes
         if (empty($nbPersonnes)) {
-            $errors[] = "Le nombre de personnes est requis.";
-            $errorsNbPersonnes = "Le nombre de personnes est requis.";
+            $errors['nbPersonnes'] = "Le nombre de personnes est requis.";
         } elseif (!is_numeric($nbPersonnes)) {
-            $errors[] = "Le nombre de personnes doit être un nombre.";
-            $errorsNbPersonnes = "Le nombre de personnes doit être un nombre.";
+            $errors['nbPersonnes'] = "Le nombre de personnes doit être un nombre.";
         } elseif ($nbPersonnes <= 0) {
-            $errors[] = "Le nombre de personnes doit être au moins 1.";
-            $errorsNbPersonnes = "Le nombre de personnes doit être au moins 1.";
+            $errors['nbPersonnes'] = "Le nombre de personnes doit être au moins 1.";
         } elseif ($nbPersonnes > $chambre['capacite_max']) {
-            $errors[] = "Le nombre de personnes ne peut pas dépasser " . $chambre['capacite_max'] . " personnes.";
-            $errorsNbPersonnes = "Le nombre de personnes ne peut pas dépasser " . $chambre['capacite_max'] . " personnes.";
-        } elseif ($nbPersonnes > 10) {
-            $errors[] = "Le nombre de personnes ne peut pas dépasser 10.";
-            $errorsNbPersonnes = "Le nombre de personnes ne peut pas dépasser 10.";
+            $errors['nbPersonnes'] = "Le nombre de personnes ne peut pas dépasser " . $chambre['capacite_max'] . " personnes.";
         }
 
-        if (empty($errors) && !empty($dateDebut) && !empty($dateFin)) {
+        // Vérification des réservations existantes
+        if (empty($errors) && !empty($dateDebut) && !empty($dateFin) && $nbNuit > 0) {
             $sqlCheck = "SELECT COUNT(*) as count FROM reservation_chambre 
                          WHERE idCh = ? AND statut != 'annulé'
                          AND ((dateDebut <= ? AND dateFin >= ?) 
@@ -236,26 +276,57 @@ class ReservationChController extends AbstractController
             ]);
             
             if ($existing && $existing['count'] > 0) {
-                $errors[] = "Cette chambre est déjà réservée pour les dates sélectionnées.";
+                $errors['dateDebut'] = "Cette chambre est déjà réservée pour les dates sélectionnées.";
             }
         }
 
         if (count($errors) > 0) {
-            // Debug: log validation errors
-            @file_put_contents(__DIR__ . '/../../var/log/reservation_debug.log', sprintf("%s - VALIDATION_ERRORS idCh=%s errors=%s\n", (new \DateTime())->format('c'), $idCh, json_encode($errors, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)), FILE_APPEND);
-            return $this->render('chambre/show.html.twig', [
+            $session = $request->getSession();
+            $selectedCurrency = $session->get('selected_currency_ch', 'TND');
+            $prixConverti = $currency->convert($prixBase, $selectedCurrency);
+            $symbole = $currency->getSymbol($selectedCurrency);
+            $weatherData = $weather->getWeather5Days($chambre['hotel_ville']);
+            
+            $tauxConversion = 1;
+            if ($selectedCurrency !== 'TND') {
+                $tauxConversion = $currency->convert(1, $selectedCurrency);
+                if (!$tauxConversion) $tauxConversion = 1;
+            }
+            
+            return $this->render('chambre/reservationch.html.twig', [
                 'chambre'  => $chambre,
                 'errors'   => $errors,
-                'formData' => $formData,
-                'calcul'   => $calcul
+                'old' => $formData,
+                'currencies' => $currency->getAvailableCurrencies(),
+                'selected_currency' => $selectedCurrency,
+                'prix_converti' => $prixConverti,
+                'symbole' => $symbole,
+                'taux_conversion' => $tauxConversion,
+                'weather_data' => $weatherData,
+                'dynamic_price' => $dynamicPrice
             ]);
         }
 
-        $detailsPrix = sprintf('%d nuit(s) x %.2f €', $nbNuit, $prixParNuitApresPromo);
-        if ($promotion > 0) {
-            $detailsPrix .= sprintf(' (promotion: -%.0f%%)', $promotion);
+        // Construction du détail du prix
+        if ($dynamicPrice && isset($dynamicPrice['season_percent'])) {
+            $detailsPrix = sprintf(
+                '%d nuit(s) x %.2f DT (base: %.2f DT, saison: %+d%%, météo: -%d%%) = %.2f DT',
+                $nbNuit,
+                $prixFinalParNuit,
+                $dynamicPrice['base_price'],
+                $dynamicPrice['season_percent'],
+                $dynamicPrice['weather_discount'],
+                $prixTotal
+            );
+            $messageFlash = '✅ Réservation confirmée ! Prix dynamique appliqué (saison + météo)';
+        } else {
+            if ($promotion > 0) {
+                $detailsPrix = sprintf('%d nuit(s) x %.2f DT (promotion -%d%%) = %.2f DT', $nbNuit, $prixFinalParNuit, $promotion, $prixTotal);
+            } else {
+                $detailsPrix = sprintf('%d nuit(s) x %.2f DT = %.2f DT', $nbNuit, $prixFinalParNuit, $prixTotal);
+            }
+            $messageFlash = '✅ Réservation confirmée !';
         }
-        $detailsPrix .= sprintf(' = %.2f €', $prixTotal);
         
         $sqlInsert = "INSERT INTO reservation_chambre 
                       (idCh, idUtilisateur, dateDebut, dateFin, nbNuit, prixTotal, nbPersonnes, detailsPrix, telephone, statut, nom, prenom, email) 
@@ -276,25 +347,34 @@ class ReservationChController extends AbstractController
             $email
         ]);
 
-        $this->addFlash('success', '✅ Réservation confirmée ! Merci ' . $nom . ' ' . $prenom . '.');
-    // Debug: log successful insertion
-    @file_put_contents(__DIR__ . '/../../var/log/reservation_debug.log', sprintf("%s - INSERT_SUCCESS idCh=%s user=%s nbNuit=%d prixTotal=%.2f\n", (new \DateTime())->format('c'), $idCh, $idUtilisateur, $nbNuit, $prixTotal), FILE_APPEND);
+        // ========== AJOUT DES POINTS DE FIDÉLITÉ ==========
+        if ($user && method_exists($user, 'getId') && $prixTotal > 0) {
+            try {
+                $fideliteService->ajouterPoints($idUtilisateur, $prixTotal);
+                $pointsGagnes = intval($prixTotal / 100);
+                $this->addFlash('success', $messageFlash . ' 🎉 Vous avez gagné ' . $pointsGagnes . ' points de fidélité !');
+            } catch (\Exception $e) {
+                $this->addFlash('success', $messageFlash);
+            }
+        } else {
+            $this->addFlash('success', $messageFlash);
+        }
+        
         return $this->redirectToRoute('app_chambre_show', ['idCh' => $idCh]);
     }
 
-    // API Routes
+    // ========== API ROUTES ==========
+    
     #[Route('/api/reservations/all', name: 'api_reservations_all', methods: ['GET'])]
     public function apiGetAll(Connection $connection): Response
     {
         $user = $this->getUser();
-        // Ne retourner que les réservations de l'utilisateur connecté
         if (!$user || !method_exists($user, 'getId')) {
             return $this->json([]);
         }
 
         $idUtilisateur = $user->getId();
 
-        // Récupérer les réservations de chambres pour cet utilisateur
         $sqlChambres = "SELECT r.*, c.num as chambre_num, h.nom as hotel_nom 
             FROM reservation_chambre r 
             JOIN chambre c ON r.idCh = c.idCh 
@@ -340,7 +420,6 @@ class ReservationChController extends AbstractController
 
         $idUtilisateur = $user->getId();
 
-        // Au lieu de supprimer, on marque la réservation comme annulée
         $sql = "UPDATE reservation_chambre SET statut = 'annulé' WHERE idRes = ? AND idUtilisateur = ?";
         $affected = $connection->executeStatement($sql, [$id, $idUtilisateur]);
 
@@ -356,23 +435,23 @@ class ReservationChController extends AbstractController
     {
         $user = $this->getUser();
         $data = json_decode($request->getContent(), true);
+        
         if (!$user || !method_exists($user, 'getId')) {
             return $this->json(['error' => 'Non autorisé'], 401);
         }
 
         $idUtilisateur = $user->getId();
         
-        // Vérifier que la réservation existe
-    $checkSql = "SELECT idRes FROM reservation_chambre WHERE idRes = ? AND idUtilisateur = ?";
-    $exists = $connection->fetchOne($checkSql, [$id, $idUtilisateur]);
+        $checkSql = "SELECT idRes FROM reservation_chambre WHERE idRes = ? AND idUtilisateur = ?";
+        $exists = $connection->fetchOne($checkSql, [$id, $idUtilisateur]);
         
         if (!$exists) {
             return $this->json(['error' => 'Réservation non trouvée'], 404);
         }
         
-    $sql = "UPDATE reservation_chambre 
-        SET nom = ?, prenom = ?, telephone = ?, email = ?, nbPersonnes = ?
-        WHERE idRes = ? AND idUtilisateur = ?";
+        $sql = "UPDATE reservation_chambre 
+            SET nom = ?, prenom = ?, telephone = ?, email = ?, nbPersonnes = ?
+            WHERE idRes = ? AND idUtilisateur = ?";
         
         $affected = $connection->executeStatement($sql, [
             $data['nom'] ?? '',
@@ -389,5 +468,144 @@ class ReservationChController extends AbstractController
         }
         
         return $this->json(['error' => 'Aucune modification'], 400);
+    }
+
+    #[Route('/api/reservations/chambres/{id}/qrcode', name: 'api_reservations_chambres_qrcode', methods: ['GET'])]
+    public function generateQRCode(Connection $connection, QrCodeService $qrCodeService, $id): Response
+    {
+        $user = $this->getUser();
+        if (!$user || !method_exists($user, 'getId')) {
+            return $this->json(['error' => 'Non autorisé'], 401);
+        }
+
+        $idUtilisateur = $user->getId();
+
+        $sql = "SELECT r.*, c.num as chambre_num, h.nom as hotel_nom 
+                FROM reservation_chambre r 
+                JOIN chambre c ON r.idCh = c.idCh 
+                JOIN hotel h ON c.idH = h.idH 
+                WHERE r.idRes = ? AND r.idUtilisateur = ?";
+        $reservation = $connection->fetchAssociative($sql, [$id, $idUtilisateur]);
+        
+        if (!$reservation) {
+            return $this->json(['error' => 'Réservation non trouvée'], 404);
+        }
+        
+        $qrCodeDataUri = $qrCodeService->generateReservationQRCode($reservation);
+        
+        return $this->json([
+            'success' => true,
+            'qrCode' => $qrCodeDataUri,
+            'reservation' => $reservation
+        ]);
+    }
+
+    // ========== SUPPRESSION AVEC REMBOURSEMENT ==========
+    
+    #[Route('/chambre/{id}/supprimer', name: 'app_reservation_ch_supprimer', methods: ['GET', 'POST'])]
+    public function supprimer(Request $request, Connection $connection, $id): Response
+    {
+        $user = $this->getUser();
+        if (!$user || !method_exists($user, 'getId')) {
+            $this->addFlash('error', 'Vous devez être connecté pour supprimer une réservation');
+            return $this->redirectToRoute('app_login');
+        }
+
+        $idUtilisateur = $user->getId();
+
+        $sql = "SELECT r.*, c.num as chambre_num, c.prix_nuit, h.nom as hotel_nom, h.ville as hotel_ville
+                FROM reservation_chambre r 
+                JOIN chambre c ON r.idCh = c.idCh 
+                JOIN hotel h ON c.idH = h.idH 
+                WHERE r.idRes = ? AND r.idUtilisateur = ? AND r.statut != 'annulé'";
+        $reservation = $connection->fetchAssociative($sql, [$id, $idUtilisateur]);
+
+        if (!$reservation) {
+            $this->addFlash('error', 'Réservation non trouvée ou déjà annulée');
+            return $this->redirectToRoute('app_profile');
+        }
+
+        $dateSuppression = new \DateTime();
+        $dateArrivee = new \DateTime($reservation['dateDebut']);
+        
+        $interval = $dateArrivee->diff($dateSuppression);
+        $joursAvantArrivee = (int) $interval->format('%a');
+        
+        if ($dateSuppression > $dateArrivee) {
+            $pourcentageRemboursement = 0;
+            $montantRembourse = 0;
+            $texteExplication = "❌ Suppression après la date d'arrivée : aucun remboursement";
+            $cssClass = 'danger';
+            $icone = 'fa-times-circle';
+        } 
+        elseif ($joursAvantArrivee >= 30) {
+            $pourcentageRemboursement = 100;
+            $montantRembourse = $reservation['prixTotal'];
+            $texteExplication = "✅ Suppression {$joursAvantArrivee} jours avant l'arrivée (> 30 jours) → remboursement 100%";
+            $cssClass = 'success';
+            $icone = 'fa-check-circle';
+        } 
+        elseif ($joursAvantArrivee >= 15) {
+            $pourcentageRemboursement = 50;
+            $montantRembourse = $reservation['prixTotal'] * 0.5;
+            $texteExplication = "⚠️ Suppression {$joursAvantArrivee} jours avant l'arrivée (15-30 jours) → remboursement 50%";
+            $cssClass = 'warning';
+            $icone = 'fa-exclamation-triangle';
+        } 
+        elseif ($joursAvantArrivee >= 7) {
+            $pourcentageRemboursement = 25;
+            $montantRembourse = $reservation['prixTotal'] * 0.25;
+            $texteExplication = "⚠️ Suppression {$joursAvantArrivee} jours avant l'arrivée (7-15 jours) → remboursement 25%";
+            $cssClass = 'info';
+            $icone = 'fa-clock';
+        } 
+        else {
+            $pourcentageRemboursement = 0;
+            $montantRembourse = 0;
+            $texteExplication = "❌ Suppression {$joursAvantArrivee} jours avant l'arrivée (- de 7 jours) → aucun remboursement";
+            $cssClass = 'danger';
+            $icone = 'fa-times-circle';
+        }
+
+        if ($request->isMethod('POST')) {
+            $sqlUpdate = "UPDATE reservation_chambre 
+                          SET statut = 'annulé', 
+                              dateAnnulation = ?,
+                              montantRembourse = ?
+                          WHERE idRes = ? AND idUtilisateur = ?";
+            
+            $connection->executeStatement($sqlUpdate, [
+                $dateSuppression->format('Y-m-d H:i:s'),
+                $montantRembourse,
+                $id,
+                $idUtilisateur
+            ]);
+
+            if ($montantRembourse > 0) {
+                $this->addFlash('success', sprintf(
+                    '✅ Réservation supprimée. Remboursement de %.2f DT (%d%%) effectué.',
+                    $montantRembourse,
+                    $pourcentageRemboursement
+                ));
+            } else {
+                $this->addFlash('warning', sprintf(
+                    '⚠️ Réservation supprimée. %s',
+                    $texteExplication
+                ));
+            }
+
+            return $this->redirectToRoute('app_profile');
+        }
+
+        return $this->render('reservation_ch/supprimer.html.twig', [
+            'reservation' => $reservation,
+            'date_suppression' => $dateSuppression,
+            'jours_avant_arrivee' => $joursAvantArrivee,
+            'pourcentage_remboursement' => $pourcentageRemboursement,
+            'montant_rembourse' => round($montantRembourse, 2),
+            'texte_explication' => $texteExplication,
+            'css_class' => $cssClass,
+            'icone' => $icone,
+        ]);
     }
 }

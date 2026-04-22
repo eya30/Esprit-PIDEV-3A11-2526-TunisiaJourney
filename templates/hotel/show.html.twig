@@ -136,7 +136,6 @@
         margin: 1.5rem 0;
     }
     
-    /* BOUTON PRINCIPAL POUR VOIR LES CHAMBRES */
     .btn-chambres-principal {
         display: inline-block;
         background: linear-gradient(135deg, var(--tunisia-red), var(--tunisia-orange));
@@ -169,6 +168,151 @@
         margin-top: 2rem;
     }
     
+    .btn-donner-avis {
+        background: linear-gradient(135deg, #E31B23, #FF6B35);
+        color: white;
+        padding: 12px 30px;
+        border-radius: 50px;
+        font-weight: 600;
+        border: none;
+        margin: 20px 0;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .btn-donner-avis:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 20px rgba(227,27,35,0.4);
+    }
+    
+    .avis-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid #F0E8DD;
+        transition: all 0.2s;
+    }
+    
+    .avis-card:hover {
+        transform: translateX(5px);
+        border-color: var(--tunisia-red);
+    }
+    
+    .avis-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #F0E8DD;
+    }
+    
+    .avis-client {
+        font-weight: 700;
+        color: var(--tunisia-red);
+    }
+    
+    .avis-date {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    
+    .avis-notes {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 10px;
+        margin: 1rem 0;
+    }
+    
+    .avis-note-item {
+        font-size: 0.85rem;
+    }
+    
+    .avis-commentaire {
+        background: #FDF5E6;
+        padding: 1rem;
+        border-radius: 12px;
+        font-style: italic;
+        margin-top: 1rem;
+    }
+    
+    .critere-card {
+        background: #FDF5E6;
+        border-radius: 12px;
+        padding: 1rem;
+        border: 1px solid #F0E8DD;
+        transition: all 0.3s ease;
+    }
+    
+    .critere-card:hover {
+        border-color: #E31B23;
+    }
+    
+    .critere-label {
+        font-weight: 600;
+        color: #2C3E50;
+        margin-bottom: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .critere-label i {
+        color: #E31B23;
+    }
+    
+    /* Style pour les étoiles interactives */
+    .star-rating {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+    
+    .star-rating input {
+        display: none;
+    }
+    
+    .star-rating label {
+        font-size: 28px;
+        cursor: pointer;
+        color: #ddd;
+        transition: all 0.2s ease;
+    }
+    
+    .star-rating label:before {
+        content: "☆";
+    }
+    
+    .star-rating input:checked ~ label:before,
+    .star-rating label:hover:before,
+    .star-rating label:hover ~ label:before {
+        content: "★";
+        color: #FFD700;
+    }
+    
+    .btn-submit-avis {
+        background: linear-gradient(135deg, #E31B23, #FF6B35);
+        color: white;
+        border: none;
+        padding: 14px 40px;
+        border-radius: 50px;
+        font-weight: 700;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-submit-avis:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(227,27,35,0.3);
+    }
+    
     @media (max-width: 768px) {
         .hotel-container {
             flex-direction: column;
@@ -198,19 +342,21 @@
             padding: 12px 30px;
             font-size: 1rem;
         }
+        
+        .avis-notes {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 {% endblock %}
 
 {% block body %}
 <div class="container py-5">
-    <!-- Flèche de retour -->
     <a href="{{ path('app_hotel_index') }}" class="back-arrow">
         <i class="fas fa-arrow-left"></i> Retour aux hôtels
     </a>
     
     <div class="hotel-container">
-        <!-- Image à gauche -->
         <div class="hotel-image">
             {% if hotel.image %}
                 <img src="{{ asset('uploads/hotels/' ~ hotel.image) }}" alt="{{ hotel.nom }}">
@@ -219,7 +365,6 @@
             {% endif %}
         </div>
         
-        <!-- Détails à droite -->
         <div class="hotel-info">
             <h1 class="hotel-title">{{ hotel.nom }}
                 {% if hotel.promotion > 0 %}
@@ -266,11 +411,222 @@
                 {{ hotel.description }}
             </div>
             
-            <!-- SEULEMENT LE BOUTON POUR VOIR LES CHAMBRES - PAS DE LISTE -->
             <div class="chambres-section">
                 <a href="{{ path('app_hotel_chambres', {'idH': hotel.idH}) }}" class="btn-chambres-principal">
                     <i class="fas fa-bed"></i> Voir toutes les chambres
                 </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ========== SECTION AVIS ========== -->
+    <div class="mt-5">
+        <h3>⭐ Avis des clients</h3>
+        
+        {% if app.user %}
+            <button type="button" class="btn-donner-avis" data-bs-toggle="modal" data-bs-target="#modalAvis">
+                <i class="fas fa-star"></i> Donner mon avis sur cet hôtel
+            </button>
+        {% else %}
+            <div class="alert alert-info mt-3">
+                <a href="{{ path('app_login') }}">Connectez-vous</a> pour donner votre avis.
+            </div>
+        {% endif %}
+        
+        {% if avis|length > 0 %}
+            {% for avi in avis %}
+                <div class="avis-card">
+                    <div class="avis-header">
+                        <span class="avis-client">
+                            <i class="fas fa-user-circle"></i> {{ avi.prenom }} {{ avi.nom|first }}.
+                        </span>
+                        <span class="avis-date">
+                            <i class="fas fa-calendar-alt"></i> {{ avi.date_creation|date('d/m/Y') }}
+                        </span>
+                    </div>
+                    <div class="avis-notes">
+                        <div class="avis-note-item">🛏️ Confort: {{ avi.note_confort }}/5</div>
+                        <div class="avis-note-item">📶 Services: {{ avi.note_services }}/5</div>
+                        <div class="avis-note-item">📺 Équipements: {{ avi.note_equipements }}/5</div>
+                        <div class="avis-note-item">🧹 Propreté: {{ avi.note_proprete }}/5</div>
+                        <div class="avis-note-item">👨‍💼 Personnel: {{ avi.note_personnel }}/5</div>
+                        <div class="avis-note-item">📍 Emplacement: {{ avi.note_emplacement }}/5</div>
+                        <div class="avis-note-item">🍽️ Restauration: {{ avi.note_restauration }}/5</div>
+                        <div class="avis-note-item">💸 Rapport Q/P: {{ avi.note_prix_qualite }}/5</div>
+                        <div class="avis-note-item">🔇 Calme: {{ avi.note_calme }}/5</div>
+                    </div>
+                    {% if avi.commentaire %}
+                        <div class="avis-commentaire">
+                            <i class="fas fa-quote-left me-2"></i>
+                            "{{ avi.commentaire }}"
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-secondary text-center py-4">
+                <i class="fas fa-comment-dots fa-2x mb-2"></i>
+                <p>Aucun avis pour le moment. Soyez le premier à donner votre avis !</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ========== POPUP MODAL POUR LE FORMULAIRE D'AVIS ========== -->
+<div class="modal fade" id="modalAvis" tabindex="-1" aria-labelledby="modalAvisLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content" style="border-radius: 24px; overflow: hidden;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #E31B23, #FF6B35); border: none;">
+                <h5 class="modal-title text-white" id="modalAvisLabel">
+                    <i class="fas fa-star"></i> Donnez votre avis sur {{ hotel.nom }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body" style="background: linear-gradient(135deg, #FDF5E6 0%, #FEF9E6 100%); padding: 2rem;">
+                
+                <form method="post" action="{{ path('app_hotel_show', {'idH': hotel.idH}) }}">
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                        
+                        <!-- Confort -->
+                        <div class="critere-card">
+                            <div class="critere-label">
+                                <i class="fas fa-bed"></i> Confort des chambres
+                            </div>
+                            <div class="star-rating">
+                                <input type="radio" name="avis[noteConfort]" value="5" id="confort_5"><label for="confort_5">☆</label>
+                                <input type="radio" name="avis[noteConfort]" value="4" id="confort_4"><label for="confort_4">☆</label>
+                                <input type="radio" name="avis[noteConfort]" value="3" id="confort_3"><label for="confort_3">☆</label>
+                                <input type="radio" name="avis[noteConfort]" value="2" id="confort_2"><label for="confort_2">☆</label>
+                                <input type="radio" name="avis[noteConfort]" value="1" id="confort_1"><label for="confort_1">☆</label>
+                            </div>
+                        </div>
+                        
+                        <!-- Services -->
+                        <div class="critere-card">
+                            <div class="critere-label">
+                                <i class="fas fa-wifi"></i> Services (wifi, piscine...)
+                            </div>
+                            <div class="star-rating">
+                                <input type="radio" name="avis[noteServices]" value="5" id="services_5"><label for="services_5">☆</label>
+                                <input type="radio" name="avis[noteServices]" value="4" id="services_4"><label for="services_4">☆</label>
+                                <input type="radio" name="avis[noteServices]" value="3" id="services_3"><label for="services_3">☆</label>
+                                <input type="radio" name="avis[noteServices]" value="2" id="services_2"><label for="services_2">☆</label>
+                                <input type="radio" name="avis[noteServices]" value="1" id="services_1"><label for="services_1">☆</label>
+                            </div>
+                        </div>
+                        
+                        <!-- Équipements -->
+                        <div class="critere-card">
+                            <div class="critere-label">
+                                <i class="fas fa-tv"></i> Équipements
+                            </div>
+                            <div class="star-rating">
+                                <input type="radio" name="avis[noteEquipements]" value="5" id="equip_5"><label for="equip_5">☆</label>
+                                <input type="radio" name="avis[noteEquipements]" value="4" id="equip_4"><label for="equip_4">☆</label>
+                                <input type="radio" name="avis[noteEquipements]" value="3" id="equip_3"><label for="equip_3">☆</label>
+                                <input type="radio" name="avis[noteEquipements]" value="2" id="equip_2"><label for="equip_2">☆</label>
+                                <input type="radio" name="avis[noteEquipements]" value="1" id="equip_1"><label for="equip_1">☆</label>
+                            </div>
+                        </div>
+                        
+                        <!-- Propreté -->
+                        <div class="critere-card">
+                            <div class="critere-label">
+                                <i class="fas fa-broom"></i> Propreté générale
+                            </div>
+                            <div class="star-rating">
+                                <input type="radio" name="avis[noteProprete]" value="5" id="proprete_5"><label for="proprete_5">☆</label>
+                                <input type="radio" name="avis[noteProprete]" value="4" id="proprete_4"><label for="proprete_4">☆</label>
+                                <input type="radio" name="avis[noteProprete]" value="3" id="proprete_3"><label for="proprete_3">☆</label>
+                                <input type="radio" name="avis[noteProprete]" value="2" id="proprete_2"><label for="proprete_2">☆</label>
+                                <input type="radio" name="avis[noteProprete]" value="1" id="proprete_1"><label for="proprete_1">☆</label>
+                            </div>
+                        </div>
+                        
+                        <!-- Personnel -->
+                        <div class="critere-card">
+                            <div class="critere-label">
+                                <i class="fas fa-user-tie"></i> Service personnel / Accueil
+                            </div>
+                            <div class="star-rating">
+                                <input type="radio" name="avis[notePersonnel]" value="5" id="personnel_5"><label for="personnel_5">☆</label>
+                                <input type="radio" name="avis[notePersonnel]" value="4" id="personnel_4"><label for="personnel_4">☆</label>
+                                <input type="radio" name="avis[notePersonnel]" value="3" id="personnel_3"><label for="personnel_3">☆</label>
+                                <input type="radio" name="avis[notePersonnel]" value="2" id="personnel_2"><label for="personnel_2">☆</label>
+                                <input type="radio" name="avis[notePersonnel]" value="1" id="personnel_1"><label for="personnel_1">☆</label>
+                            </div>
+                        </div>
+                        
+                        <!-- Emplacement -->
+                        <div class="critere-card">
+                            <div class="critere-label">
+                                <i class="fas fa-map-marker-alt"></i> Emplacement
+                            </div>
+                            <div class="star-rating">
+                                <input type="radio" name="avis[noteEmplacement]" value="5" id="emplacement_5"><label for="emplacement_5">☆</label>
+                                <input type="radio" name="avis[noteEmplacement]" value="4" id="emplacement_4"><label for="emplacement_4">☆</label>
+                                <input type="radio" name="avis[noteEmplacement]" value="3" id="emplacement_3"><label for="emplacement_3">☆</label>
+                                <input type="radio" name="avis[noteEmplacement]" value="2" id="emplacement_2"><label for="emplacement_2">☆</label>
+                                <input type="radio" name="avis[noteEmplacement]" value="1" id="emplacement_1"><label for="emplacement_1">☆</label>
+                            </div>
+                        </div>
+                        
+                        <!-- Restauration -->
+                        <div class="critere-card">
+                            <div class="critere-label">
+                                <i class="fas fa-utensils"></i> Restauration
+                            </div>
+                            <div class="star-rating">
+                                <input type="radio" name="avis[noteRestauration]" value="5" id="restau_5"><label for="restau_5">☆</label>
+                                <input type="radio" name="avis[noteRestauration]" value="4" id="restau_4"><label for="restau_4">☆</label>
+                                <input type="radio" name="avis[noteRestauration]" value="3" id="restau_3"><label for="restau_3">☆</label>
+                                <input type="radio" name="avis[noteRestauration]" value="2" id="restau_2"><label for="restau_2">☆</label>
+                                <input type="radio" name="avis[noteRestauration]" value="1" id="restau_1"><label for="restau_1">☆</label>
+                            </div>
+                        </div>
+                        
+                        <!-- Rapport qualité/prix -->
+                        <div class="critere-card">
+                            <div class="critere-label">
+                                <i class="fas fa-euro-sign"></i> Rapport qualité/prix
+                            </div>
+                            <div class="star-rating">
+                                <input type="radio" name="avis[notePrixQualite]" value="5" id="prix_5"><label for="prix_5">☆</label>
+                                <input type="radio" name="avis[notePrixQualite]" value="4" id="prix_4"><label for="prix_4">☆</label>
+                                <input type="radio" name="avis[notePrixQualite]" value="3" id="prix_3"><label for="prix_3">☆</label>
+                                <input type="radio" name="avis[notePrixQualite]" value="2" id="prix_2"><label for="prix_2">☆</label>
+                                <input type="radio" name="avis[notePrixQualite]" value="1" id="prix_1"><label for="prix_1">☆</label>
+                            </div>
+                        </div>
+                        
+                        <!-- Calme -->
+                        <div class="critere-card">
+                            <div class="critere-label">
+                                <i class="fas fa-volume-mute"></i> Calme / bruit
+                            </div>
+                            <div class="star-rating">
+                                <input type="radio" name="avis[noteCalme]" value="5" id="calme_5"><label for="calme_5">☆</label>
+                                <input type="radio" name="avis[noteCalme]" value="4" id="calme_4"><label for="calme_4">☆</label>
+                                <input type="radio" name="avis[noteCalme]" value="3" id="calme_3"><label for="calme_3">☆</label>
+                                <input type="radio" name="avis[noteCalme]" value="2" id="calme_2"><label for="calme_2">☆</label>
+                                <input type="radio" name="avis[noteCalme]" value="1" id="calme_1"><label for="calme_1">☆</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: white; border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem; border: 1px solid #F0E8DD;">
+                        <label style="font-weight: 600; color: #2C3E50; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-comment-dots" style="color: #E31B23;"></i> Votre commentaire (optionnel)
+                        </label>
+                        <textarea name="avis[commentaire]" rows="4" style="width:100%; border:1px solid #F0E8DD; border-radius:12px; padding:1rem; resize:vertical;"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn-submit-avis">
+                        <i class="fas fa-paper-plane"></i> Envoyer mon avis
+                    </button>
+                    
+                </form>
             </div>
         </div>
     </div>

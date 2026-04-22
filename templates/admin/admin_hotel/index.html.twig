@@ -8,6 +8,28 @@
     <p class="page-header-subtitle">Gérez l'ensemble de vos hôtels</p>
 </div>
 
+<!-- ========== ICÔNE DE NOTIFICATION AVEC POPUP ========== -->
+<div style="position: relative; display: inline-block; float: right; margin-top: -50px;">
+    <button id="notificationBellBtn" style="background: none; border: none; cursor: pointer; position: relative; padding: 10px;">
+        <i class="fas fa-bell" style="font-size: 24px; color: #93032E;"></i>
+        <span id="notificationBadge" class="notification-badge" style="display: none;">0</span>
+    </button>
+    
+    <!-- Popup de notifications -->
+    <div id="notificationPopup" class="notification-popup" style="display: none;">
+        <div class="notification-popup-header">
+            <h4><i class="fas fa-bell"></i> Notifications</h4>
+            <button id="closeNotificationPopup" class="close-popup">&times;</button>
+        </div>
+        <div id="notificationList" class="notification-popup-body">
+            <div class="loading">Chargement...</div>
+        </div>
+        <div class="notification-popup-footer">
+            <a href="{{ path('app_admin_notifications_chambres') }}">Voir toutes les notifications</a>
+        </div>
+    </div>
+</div>
+
 <!-- Barre de recherche dynamique -->
 <div class="search-bar-wrapper mb-4">
     <div class="search-input-group">
@@ -123,7 +145,7 @@
         Affichage de <strong>{{ hotels|length }}</strong> sur <strong>{{ total_count }}</strong> hôtel(s)
     </div>
     <nav class="pagination-nav">
-        <ul class="pagination">
+        <ul class="pagination" id="paginationList">
             <li class="page-item {% if current_page == 1 %}disabled{% endif %}">
                 <a class="page-link" href="#" data-page="{{ current_page - 1 }}">
                     <i class="fas fa-chevron-left"></i>
@@ -419,6 +441,126 @@
         color: white;
     }
     
+    /* Notification Bell Styles */
+    .notification-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: #DC2626;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+    
+    .notification-popup {
+        position: absolute;
+        top: 50px;
+        right: 0;
+        width: 400px;
+        max-width: 90vw;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        z-index: 1000;
+        border: 1px solid #F0E8DD;
+        overflow: hidden;
+    }
+    
+    .notification-popup-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        background: linear-gradient(135deg, #93032E, #6B0221);
+        color: white;
+    }
+    
+    .notification-popup-header h4 {
+        margin: 0;
+        font-size: 1rem;
+    }
+    
+    .close-popup {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+    }
+    
+    .close-popup:hover {
+        opacity: 0.8;
+    }
+    
+    .notification-popup-body {
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 10px;
+    }
+    
+    .notification-popup-body .loading {
+        text-align: center;
+        padding: 20px;
+        color: #9CA3AF;
+    }
+    
+    .notification-item {
+        padding: 12px;
+        border-bottom: 1px solid #F0E8DD;
+        transition: background 0.2s;
+        cursor: pointer;
+    }
+    
+    .notification-item:hover {
+        background: #FFF9F0;
+    }
+    
+    .notification-item.unread {
+        background: #FEF3C7;
+        border-left: 3px solid #DC2626;
+    }
+    
+    .notification-item .notification-title {
+        font-weight: 600;
+        color: #2C1810;
+        font-size: 0.9rem;
+    }
+    
+    .notification-item .notification-text {
+        font-size: 0.8rem;
+        color: #6B7280;
+        margin-top: 4px;
+    }
+    
+    .notification-item .notification-date {
+        font-size: 0.7rem;
+        color: #9CA3AF;
+        margin-top: 4px;
+    }
+    
+    .notification-popup-footer {
+        padding: 12px;
+        text-align: center;
+        border-top: 1px solid #F0E8DD;
+        background: #FEF9F0;
+    }
+    
+    .notification-popup-footer a {
+        color: #93032E;
+        text-decoration: none;
+        font-size: 0.85rem;
+    }
+    
+    .notification-popup-footer a:hover {
+        text-decoration: underline;
+    }
+    
     /* Pagination */
     .pagination-wrapper {
         display: flex;
@@ -505,6 +647,10 @@
             flex-direction: column;
             gap: 6px;
         }
+        .notification-popup {
+            width: 90vw;
+            right: -40px;
+        }
     }
 </style>
 
@@ -574,8 +720,12 @@
                 
                 hotelsTableBody.innerHTML = html;
                 resultCountSpan.textContent = data.total_count;
-                document.querySelector('.pagination-info strong:first-child').textContent = data.hotels.length;
-                document.querySelector('.pagination-info strong:last-child').textContent = data.total_count;
+                
+                const paginationInfo = document.querySelectorAll('.pagination-info strong');
+                if (paginationInfo.length >= 2) {
+                    paginationInfo[0].textContent = data.hotels.length;
+                    paginationInfo[1].textContent = data.total_count;
+                }
                 
                 updatePagination(data.current_page, data.total_pages);
                 searchSpinner.style.display = 'none';
@@ -673,5 +823,89 @@
     }
     
     attachPaginationEvents();
+    
+    // ========== NOTIFICATIONS POPUP ==========
+    const notificationBtn = document.getElementById('notificationBellBtn');
+    const notificationPopup = document.getElementById('notificationPopup');
+    const closePopup = document.getElementById('closeNotificationPopup');
+    const notificationListDiv = document.getElementById('notificationList');
+    const notificationBadge = document.getElementById('notificationBadge');
+    
+    function loadNotifications() {
+        fetch('/api/notifications/chambres')
+            .then(response => response.json())
+            .then(data => {
+                if (data.total > 0) {
+                    notificationBadge.style.display = 'flex';
+                    notificationBadge.textContent = data.total > 99 ? '99+' : data.total;
+                } else {
+                    notificationBadge.style.display = 'none';
+                }
+                
+                if (data.notifications && data.notifications.length > 0) {
+                    let html = '';
+                    for (const notif of data.notifications) {
+                        html += `
+                            <div class="notification-item ${notif.statut_notification === 'non_lue' ? 'unread' : ''}" data-id="${notif.id}">
+                                <div class="notification-title">
+                                    <i class="fas fa-exclamation-triangle" style="color: #DC2626;"></i>
+                                    ${escapeHtml(notif.hotel_nom)}
+                                </div>
+                                <div class="notification-text">
+                                    ${escapeHtml(notif.prenom)} ${escapeHtml(notif.nom)}: "${escapeHtml(notif.commentaire).substring(0, 80)}${notif.commentaire && notif.commentaire.length > 80 ? '...' : ''}"
+                                </div>
+                                <div class="notification-date">
+                                    ${new Date(notif.date_creation).toLocaleDateString('fr-FR')}
+                                </div>
+                            </div>
+                        `;
+                    }
+                    notificationListDiv.innerHTML = html;
+                    
+                    document.querySelectorAll('.notification-item').forEach(item => {
+                        item.addEventListener('click', function() {
+                            const id = this.dataset.id;
+                            window.location.href = `/admin/notifications/chambres/marquer-lue/${id}`;
+                        });
+                    });
+                } else {
+                    notificationListDiv.innerHTML = '<div class="loading"><i class="fas fa-check-circle"></i> Aucune notification</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                notificationListDiv.innerHTML = '<div class="loading">Erreur de chargement</div>';
+            });
+    }
+    
+    if (notificationBtn) {
+        notificationBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (notificationPopup.style.display === 'block') {
+                notificationPopup.style.display = 'none';
+            } else {
+                loadNotifications();
+                notificationPopup.style.display = 'block';
+            }
+        });
+    }
+    
+    if (closePopup) {
+        closePopup.addEventListener('click', function() {
+            notificationPopup.style.display = 'none';
+        });
+    }
+    
+    document.addEventListener('click', function(e) {
+        if (notificationPopup && notificationBtn) {
+            if (!notificationPopup.contains(e.target) && !notificationBtn.contains(e.target)) {
+                notificationPopup.style.display = 'none';
+            }
+        }
+    });
+    
+    // Charger les notifications au chargement
+    loadNotifications();
+    setInterval(loadNotifications, 30000);
 </script>
 {% endblock %}

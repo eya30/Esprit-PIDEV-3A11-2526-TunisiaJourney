@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\ChambreRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ChambreRepository::class)]
 class Chambre
@@ -14,34 +15,80 @@ class Chambre
     private ?int $idCh = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank(message: "Le numéro de chambre est requis.")]
+    #[Assert\Positive(message: "Le numéro de chambre doit être un nombre positif.")]
     private ?int $num = null;
 
     #[ORM\Column(length: 80)]
+    #[Assert\NotBlank(message: "Le type de chambre est requis.")]
+    #[Assert\Length(
+        min: 2,
+        max: 80,
+        minMessage: "Le type doit contenir au moins {{ limit }} caractères.",
+        maxMessage: "Le type ne peut pas dépasser {{ limit }} caractères."
+    )]
+    #[Assert\Choice(
+        choices: ["simple", "double", "triple", "suite", "presidentielle", "familiale"],
+        message: "Le type de chambre doit être : simple, double, triple, suite, presidentielle ou familiale."
+    )]
     private ?string $type = null;
 
     #[ORM\Column(type: "float")]
+    #[Assert\NotBlank(message: "Le prix par nuit est requis.")]
+    #[Assert\Positive(message: "Le prix par nuit doit être un nombre positif.")]
+    #[Assert\Range(
+        min: 10,
+        max: 2000,
+        notInRangeMessage: "Le prix par nuit doit être compris entre {{ min }} et {{ max }} €."
+    )]
     private ?float $prix_nuit = null;
 
     #[ORM\Column(length: 50, nullable: true)]
+    #[Assert\Choice(
+        choices: ["disponible", "indisponible", "maintenance"],
+        message: "Le status doit être : disponible, indisponible ou maintenance."
+    )]
     private ?string $status = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank(message: "La capacité maximale est requise.")]
+    #[Assert\Range(
+        min: 1,
+        max: 10,
+        notInRangeMessage: "La capacité maximale doit être comprise entre {{ min }} et {{ max }} personnes."
+    )]
     private ?int $capacite_max = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
+    #[Assert\Length(
+        min: 10,
+        max: 2000,
+        minMessage: "La description doit contenir au moins {{ limit }} caractères.",
+        maxMessage: "La description ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $description = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Image(
+        maxSize: "5M",
+        mimeTypes: ["image/jpeg", "image/png", "image/gif", "image/webp"],
+        mimeTypesMessage: "L'image doit être au format JPG, PNG, GIF ou WEBP.",
+        maxSizeMessage: "L'image ne doit pas dépasser {{ maxSize }}."
+    )]
     private ?string $image = null;
 
     #[ORM\Column(length: 500, nullable: true)]
+    #[Assert\Url(
+        message: "L'URL du modèle 3D doit être une URL valide."
+    )]
     private ?string $modele3D_URL = null;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'idH', referencedColumnName: 'idH')]
+    #[Assert\NotBlank(message: "L'hôtel associé est requis.")]
     private ?Hotel $hotel = null;
 
-    // Getters et Setters
+    // Getters et Setters (inchangés)
     public function getIdCh(): ?int
     {
         return $this->idCh;

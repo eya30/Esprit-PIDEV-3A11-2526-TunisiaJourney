@@ -529,6 +529,7 @@
             display: flex;
             gap: 0.5rem;
             margin-top: 0.5rem;
+            flex-wrap: wrap;
         }
         
         .reservation-actions button {
@@ -543,8 +544,191 @@
         
         .btn-edit-reservation { background: #FEF3C7; color: #D97706; }
         .btn-edit-reservation:hover { background: #F59E0B; color: white; }
-        .btn-delete-reservation { background: #FEF2F2; color: #EF4444; }
-        .btn-delete-reservation:hover { background: #EF4444; color: white; }
+        
+        /* Bouton QR Code - visible */
+        .btn-qr-reservation {
+            background: #6B5B95 !important;
+            color: white !important;
+            border: none !important;
+            padding: 5px 12px !important;
+            border-radius: 8px !important;
+            cursor: pointer !important;
+            transition: all 0.2s !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 5px !important;
+            font-size: 0.7rem !important;
+            font-weight: 500 !important;
+        }
+        
+        .btn-qr-reservation:hover {
+            background: #5a4a7a !important;
+            transform: translateY(-2px) !important;
+            color: white !important;
+        }
+        
+        .btn-qr-reservation i {
+            font-size: 0.7rem !important;
+        }
+        
+        /* Bouton Supprimer - lien vers la page de suppression */
+        .btn-delete-reservation-link {
+            background: #FEF2F2 !important;
+            color: #EF4444 !important;
+            border: none !important;
+            padding: 5px 12px !important;
+            border-radius: 8px !important;
+            cursor: pointer !important;
+            transition: all 0.2s !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 5px !important;
+            font-size: 0.7rem !important;
+            font-weight: 500 !important;
+            text-decoration: none !important;
+        }
+        
+        .btn-delete-reservation-link:hover {
+            background: #EF4444 !important;
+            color: white !important;
+            transform: translateY(-2px) !important;
+        }
+        
+        /* Sélecteur de langue */
+        .language-selector select {
+            padding: 5px 10px;
+            border-radius: 30px;
+            border: 1px solid #E8DFD1;
+            background: white;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .language-selector select:hover {
+            border-color: var(--tunisia-red);
+        }
+        
+        body.dark-mode .language-selector select {
+            background: #2d2d3f;
+            border-color: rgba(255,255,255,0.1);
+            color: #e0e0e0;
+        }
+        
+        /* Nouveau design carte fidélité - Professionnel */
+        .fidelite-card {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            color: white;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .fidelite-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        
+        .fidelite-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .fidelite-niveau {
+            font-size: 1.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 5px 0;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        .fidelite-points {
+            font-size: 2rem;
+            font-weight: 800;
+            margin: 10px 0;
+            background: rgba(255,255,255,0.15);
+            display: inline-block;
+            padding: 5px 20px;
+            border-radius: 50px;
+        }
+        
+        .fidelite-points small {
+            font-size: 0.8rem;
+            font-weight: normal;
+        }
+        
+        .fidelite-reduction {
+            background: rgba(255,215,0,0.2);
+            border-radius: 50px;
+            padding: 8px 15px;
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .fidelite-progress-container {
+            margin-top: 15px;
+            text-align: left;
+        }
+        
+        .fidelite-progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            margin-bottom: 5px;
+            color: rgba(255,255,255,0.7);
+        }
+        
+        .fidelite-progress {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+        }
+        
+        .fidelite-progress-bar {
+            background: linear-gradient(90deg, #FFD700, #FFA500);
+            border-radius: 10px;
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .fidelite-next {
+            font-size: 0.7rem;
+            margin-top: 8px;
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+        }
+        
+        .fidelite-icon {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+        
+        .fidelite-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 3px 10px;
+            font-size: 0.6rem;
+            font-weight: 600;
+        }
         
         .edit-modal {
             display: none;
@@ -1014,6 +1198,53 @@
         }
         .edit-btn-save:hover { transform: translateY(-2px); box-shadow: 0 7px 20px rgba(160,35,31,.4); }
         
+        /* Bouton météo flottant */
+        .weather-float-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #264653, #2A9D8F);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            text-decoration: none;
+        }
+        
+        .weather-float-btn:hover {
+            transform: scale(1.1);
+            color: white;
+            background: linear-gradient(135deg, #1a3340, #1f7a6f);
+        }
+        
+        .weather-float-btn i {
+            font-size: 28px;
+        }
+        
+        .weather-tooltip {
+            position: absolute;
+            right: 70px;
+            background: #264653;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        
+        .weather-float-btn:hover .weather-tooltip {
+            opacity: 1;
+        }
+        
         .footer {
             background: #4e0915;
             color: white;
@@ -1067,6 +1298,13 @@
             .navbar-brand .logo-text { font-size: 1.2rem; }
             .navbar-brand .logo-img { width: 50px; height: 50px; }
             .reservations-sidebar { width: 100%; left: -100%; }
+            .weather-float-btn { width: 50px; height: 50px; bottom: 20px; right: 20px; }
+            .weather-float-btn i { font-size: 22px; }
+            .reservation-actions { flex-direction: column; }
+            .reservation-actions button { width: 100%; justify-content: center; }
+            .btn-delete-reservation-link { width: 100%; justify-content: center; }
+            .fidelite-niveau { font-size: 1.2rem; }
+            .fidelite-points { font-size: 1.3rem; }
         }
     </style>
     
@@ -1119,6 +1357,18 @@
                         <i class="fas fa-moon"></i>
                     </button>
                     
+                    <!-- Sélecteur de langue -->
+                    <div class="language-selector">
+                        <select id="languageSelectCh">
+                            <option value="fr">🇫🇷 Français</option>
+                            <option value="en">🇬🇧 English</option>
+                            <option value="ar">🇸🇦 العربية</option>
+                            <option value="de">🇩🇪 Deutsch</option>
+                            <option value="it">🇮🇹 Italiano</option>
+                            <option value="es">🇪🇸 Español</option>
+                        </select>
+                    </div>
+                    
                     <button class="profile-avatar" id="openProfileModal" title="Mon profil"
                             style="{% if app.user.profileImageUrl %}background:none;padding:0;border:2px solid rgba(227,27,35,0.4);{% endif %}">
                         {% if app.user.profileImageUrl %}
@@ -1142,6 +1392,19 @@
                         <i class="fas fa-sun"></i>
                         <i class="fas fa-moon"></i>
                     </button>
+                    
+                    <!-- Sélecteur de langue -->
+                    <div class="language-selector">
+                        <select id="languageSelectCh">
+                            <option value="fr">🇫🇷 Français</option>
+                            <option value="en">🇬🇧 English</option>
+                            <option value="ar">🇸🇦 العربية</option>
+                            <option value="de">🇩🇪 Deutsch</option>
+                            <option value="it">🇮🇹 Italiano</option>
+                            <option value="es">🇪🇸 Español</option>
+                        </select>
+                    </div>
+                    
                     <a href="{{ path('app_login') }}" class="btn-login me-2">Connexion</a>
                     <a href="{{ path('app_register') }}" class="btn-register">Inscription</a>
                 </div>
@@ -1159,6 +1422,14 @@
             <h4><i class="fas fa-ticket-alt me-2"></i> Mes Réservations</h4>
             <button class="close-sidebar" id="closeSidebarBtn">&times;</button>
         </div>
+        
+        <!-- Carte Fidélité - Nouveau design -->
+        <div class="fidelite-card" id="fidelite-card" style="display: none;">
+            <div id="fidelite-content">
+                <i class="fas fa-spinner fa-spin"></i> Chargement...
+            </div>
+        </div>
+        
         <div id="reservationsList">
             <div class="empty-reservations">
                 <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
@@ -1221,6 +1492,12 @@
         {% block body %}{% endblock %}
     </main>
     
+    <!-- BOUTON MÉTÉO FLOTTANT -->
+    <a href="{{ path('app_weather_index') }}" class="weather-float-btn">
+        <i class="fas fa-cloud-sun"></i>
+        <span class="weather-tooltip">Météo Tunisie</span>
+    </a>
+    
     <!-- FOOTER -->
     <footer class="footer">
         <div class="container">
@@ -1275,6 +1552,25 @@
             </div>
         </div>
     </footer>
+    
+    <!-- MODAL QR CODE -->
+    <div id="qrModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 3000; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 20px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; position: relative; padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #264653;">
+                <h3 style="color: #264653; margin: 0;"><i class="fas fa-qrcode"></i> Détail de la réservation</h3>
+                <button onclick="closeQRModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #C0392B;">&times;</button>
+            </div>
+            <div id="qrCodeContent" style="text-align: center;">
+                <div id="qrCodeImage" style="margin: 20px 0;"></div>
+                <div id="qrDetails" style="text-align: left; background: #F8F5F0; padding: 15px; border-radius: 10px; margin-top: 15px;">
+                    <p><i class="fas fa-spinner fa-spin"></i> Chargement...</p>
+                </div>
+                <button onclick="downloadQRCode()" style="background: #264653; color: white; border: none; padding: 10px 20px; border-radius: 30px; margin-top: 15px; cursor: pointer;">
+                    <i class="fas fa-download"></i> Télécharger QR Code
+                </button>
+            </div>
+        </div>
+    </div>
     
     <!-- MODAL PROFIL (lecture) -->
     {% if app.user %}
@@ -1464,17 +1760,18 @@
                                     <input type="password" id="field_confirm_pwd" name="confirm_password" placeholder="Confirmer" class="{{ app.session.get('_profile_errors') and app.session.get('_profile_errors')['confirm_password'] is defined ? 'input-error' : '' }}">
                                     {% if app.session.get('_profile_errors') and app.session.get('_profile_errors')['confirm_password'] is defined %}
                                         <span class="field-error">{{ app.session.get('_profile_errors')['confirm_password'][0] }}</span>
-                                {% endif %}
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="edit-actions">
-                    <button type="button" class="edit-btn-cancel" id="cancelEditModal"><i class="fas fa-times"></i> Annuler</button>
-                    <button type="submit" class="edit-btn-save"><i class="fas fa-check"></i> Enregistrer</button>
-                </div>
-            </form>
+                    
+                    <div class="edit-actions">
+                        <button type="button" class="edit-btn-cancel" id="cancelEditModal"><i class="fas fa-times"></i> Annuler</button>
+                        <button type="submit" class="edit-btn-save"><i class="fas fa-check"></i> Enregistrer</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
     {% endif %}
@@ -1502,6 +1799,175 @@
         if (darkModeToggle) darkModeToggle.addEventListener('click', toggleDarkMode);
         if (darkModeToggle2) darkModeToggle2.addEventListener('click', toggleDarkMode);
         
+        // ==================== TRADUCTION ====================
+        // Fonction pour traduire la page
+        async function translatePage(lang) {
+            const path = window.location.pathname;
+            console.log('Traduction vers:', lang);
+            
+            // Page chambre
+            const chambreMatch = path.match(/\/chambre\/(\d+)/);
+            if (chambreMatch) {
+                const id = chambreMatch[1];
+                console.log('ID chambre:', id);
+                try {
+                    const response = await fetch(`/traduction/chambre/${id}?lang=${lang}`);
+                    const data = await response.json();
+                    console.log('Données reçues:', data);
+                    
+                    // Mettre à jour le titre
+                    const titleEl = document.getElementById('chambre-type');
+                    if (titleEl) titleEl.innerHTML = data.type;
+                    
+                    // Mettre à jour la description
+                    const descEl = document.getElementById('chambre-description');
+                    if (descEl) descEl.innerHTML = data.description;
+                    
+                    // Mettre à jour le nom de l'hôtel
+                    const hotelEl = document.getElementById('hotel-nom');
+                    if (hotelEl) hotelEl.innerHTML = data.hotel_nom;
+                    
+                    const hotelMetaEl = document.getElementById('hotel-nom-meta');
+                    if (hotelMetaEl) hotelMetaEl.innerHTML = data.hotel_nom;
+                    
+                    // Mettre à jour la ville
+                    const villeEl = document.getElementById('hotel-ville');
+                    if (villeEl) villeEl.innerHTML = data.hotel_ville;
+                    
+                    localStorage.setItem('preferred_language', lang);
+                    alert('Page traduite en ' + lang.toUpperCase());
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    alert('Erreur de traduction');
+                }
+                return;
+            }
+            
+            // Page hôtel
+            const hotelMatch = path.match(/\/hotel\/(\d+)/);
+            if (hotelMatch) {
+                const id = hotelMatch[1];
+                console.log('ID hôtel:', id);
+                try {
+                    const response = await fetch(`/traduction/hotel/${id}?lang=${lang}`);
+                    const data = await response.json();
+                    console.log('Données reçues:', data);
+                    
+                    const titleEl = document.querySelector('.hotel-title');
+                    if (titleEl) titleEl.innerHTML = data.nom;
+                    
+                    const descEl = document.querySelector('.hotel-description');
+                    if (descEl) descEl.innerHTML = data.description;
+                    
+                    const locationEl = document.querySelector('.hotel-location');
+                    if (locationEl) locationEl.innerHTML = '<i class="fas fa-map-marker-alt"></i> ' + data.ville + ', ' + data.adresse;
+                    
+                    localStorage.setItem('preferred_language', lang);
+                    alert('Page traduite en ' + lang.toUpperCase());
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    alert('Erreur de traduction');
+                }
+                return;
+            }
+        }
+        
+        // Ajouter l'événement au sélecteur de langue
+        const languageSelect = document.getElementById('languageSelectCh');
+        if (languageSelect) {
+            // Récupérer la langue sauvegardée
+            const savedLang = localStorage.getItem('preferred_language') || 'fr';
+            languageSelect.value = savedLang;
+            
+            // Traduire automatiquement si la langue n'est pas français
+            if (savedLang !== 'fr') {
+                setTimeout(() => translatePage(savedLang), 500);
+            }
+            
+            // Écouter le changement
+            languageSelect.addEventListener('change', function() {
+                const selectedLang = this.value;
+                if (selectedLang === 'fr') {
+                    window.location.reload();
+                } else {
+                    translatePage(selectedLang);
+                }
+            });
+        }
+        
+        // ==================== FIDÉLITÉ - NOUVEAU DESIGN ====================
+        async function chargerFidelite() {
+            try {
+                const response = await fetch('/api/fidelite');
+                const data = await response.json();
+                
+                if (data.error) {
+                    const fideliteCard = document.getElementById('fidelite-card');
+                    if (fideliteCard) fideliteCard.style.display = 'none';
+                    return;
+                }
+                
+                const container = document.getElementById('fidelite-content');
+                const fideliteCard = document.getElementById('fidelite-card');
+                
+                if (container && fideliteCard) {
+                    fideliteCard.style.display = 'block';
+                    
+                    let reductionHtml = '';
+                    if (data.reduction > 0) {
+                        reductionHtml = `<div class="fidelite-reduction">
+                            <i class="fas fa-tag"></i> -${data.reduction}% sur vos réservations
+                        </div>`;
+                    }
+                    
+                    let progressionHtml = '';
+                    if (data.points_restants && data.points_restants > 0) {
+                        const pourcentage = (data.points / (data.points + data.points_restants)) * 100;
+                        progressionHtml = `
+                            <div class="fidelite-progress-container">
+                                <div class="fidelite-progress-label">
+                                    <span>Progression vers ${data.prochain_seuil}</span>
+                                    <span>${data.points} / ${data.points + data.points_restants} pts</span>
+                                </div>
+                                <div class="fidelite-progress">
+                                    <div class="fidelite-progress-bar" style="width: ${pourcentage}%;"></div>
+                                </div>
+                                <div class="fidelite-next">
+                                    <i class="fas fa-arrow-up"></i> Encore ${data.points_restants} points
+                                </div>
+                            </div>
+                        `;
+                    } else if (data.niveau === 'platine') {
+                        progressionHtml = `<div class="fidelite-next">🏆 Niveau maximum atteint ! 🏆</div>`;
+                    }
+                    
+                    const icones = {
+                        bronze: 'fa-medal',
+                        argent: 'fa-medal',
+                        or: 'fa-crown',
+                        platine: 'fa-gem'
+                    };
+                    
+                    container.innerHTML = `
+                        <div class="fidelite-badge">FIDÉLITÉ</div>
+                        <div class="fidelite-icon">
+                            <i class="fas ${icones[data.niveau] || 'fa-star'}"></i>
+                        </div>
+                        <div class="fidelite-niveau" style="color: ${data.couleur}; text-shadow: 0 0 10px ${data.couleur}40;">
+                            ${data.niveau}
+                        </div>
+                        <div class="fidelite-points">
+                            ${data.points} <small>points</small>
+                        </div>
+                        ${reductionHtml}
+                        ${progressionHtml}
+                    `;
+                }
+            } catch (error) {
+                console.error('Erreur chargement fidélité:', error);
+            }
+        }
+        
         // ==================== SIDEBAR RÉSERVATIONS ====================
         const showReservationIcon = ['/voyage/', '/voyage', '/hotel/', '/hotel', '/evenement/', '/evenement'];
         if (showReservationIcon.some(p => window.location.pathname.startsWith(p))) {
@@ -1515,10 +1981,19 @@
         const closeSidebarBtn = document.getElementById('closeSidebarBtn');
         
         function openSidebar() {
-            if (sidebar && overlay) { sidebar.classList.add('open'); overlay.classList.add('active'); loadReservations(); }
+            if (sidebar && overlay) { 
+                sidebar.classList.add('open'); 
+                overlay.classList.add('active'); 
+                loadReservations();
+                setTimeout(chargerFidelite, 500);
+            }
         }
+        
         function closeSidebar() {
-            if (sidebar && overlay) { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
+            if (sidebar && overlay) { 
+                sidebar.classList.remove('open'); 
+                overlay.classList.remove('active'); 
+            }
         }
         
         if (reservationIcon) reservationIcon.addEventListener('click', openSidebar);
@@ -1533,25 +2008,21 @@
                 const path = window.location.pathname;
                 let reservations = [];
                 
-                // HÔTELS / CHAMBRES : toutes mes réservations de chambres
                 if (path.startsWith('/hotel') || path.startsWith('/chambre')) {
                     const response = await fetch('/reservation/api/reservations/all');
                     const data = await response.json();
                     reservations = data.map(r => ({ ...r, type: 'chambre' }));
                 }
-                // VOYAGES : toutes mes réservations de voyages
                 else if (path.startsWith('/voyage')) {
                     const response = await fetch('/api/reservations');
                     const data = await response.json();
                     reservations = data.map(r => ({ ...r, type: 'voyage' }));
                 }
-                // ÉVÉNEMENTS : toutes mes réservations d'activités
                 else if (path.startsWith('/evenement')) {
                     const response = await fetch('/api/reservations-act');
                     const data = await response.json();
                     reservations = data.map(r => ({ ...r, type: 'activite' }));
                 }
-                // AUTRES PAGES : toutes mes réservations (chambres + voyages)
                 else {
                     const [respChambres, respVoyages] = await Promise.all([
                         fetch('/reservation/api/reservations/all'),
@@ -1568,7 +2039,6 @@
                 }
                 
                 container.innerHTML = reservations.map(res => {
-                    // RÉSERVATIONS DE CHAMBRES
                     if (res.type === 'chambre') {
                         const rid = res.idRes || res.id || res.idRP;
                         const nom = res.nom || '';
@@ -1595,7 +2065,7 @@
                                         <div><strong>👥 Personnes :</strong> ${nbPersonnes}</div>
                                         <div><strong>📅 Dates :</strong> du ${dateDebut} au ${dateFin}</div>
                                         <div><strong>🌙 Nuits :</strong> ${nbNuit}</div>
-                                        <div><strong>💰 Prix total :</strong> ${prixTotal} €</div>
+                                        <div><strong>💰 Prix total :</strong> ${prixTotal} TND</div>
                                         <div><span class="${statut === 'confirmé' ? 'badge-success' : 'badge-warning'}">${statut === 'confirmé' ? '✓ Confirmée' : '⏳ En attente'}</span></div>
                                     </div>
                                 </div>
@@ -1603,14 +2073,16 @@
                                     <button class="btn-edit-reservation" onclick="editReservationChambre(${rid})">
                                         <i class="fas fa-edit"></i> Modifier
                                     </button>
-                                    <button class="btn-delete-reservation" onclick="deleteReservationChambre(${rid})">
-                                        <i class="fas fa-trash"></i> Supprimer
+                                    <a href="/reservation/chambre/${rid}/supprimer" class="btn-delete-reservation-link">
+                                        <i class="fas fa-trash-alt"></i> Supprimer
+                                    </a>
+                                    <button class="btn-qr-reservation" onclick="showQRCode(${rid})">
+                                        <i class="fas fa-qrcode"></i> QR Code
                                     </button>
                                 </div>
                             </div>
                         `;
                     }
-                    // RÉSERVATIONS DE VOYAGES (reservationprog)
                     else if (res.type === 'voyage') {
                         const rid = res.idRP || res.id;
                         const nom = res.nom || '';
@@ -1643,7 +2115,6 @@
                             </div>
                         `;
                     }
-                    // RÉSERVATIONS D'ACTIVITÉS (ReservationAct)
                     else {
                         const rid = res.IDRes || res.id;
                         const nom = res.Nom || res.nom || '';
@@ -1785,15 +2256,6 @@
             } catch (error) { alert('Erreur lors de la suppression'); }
         }
         
-        async function deleteReservationChambre(id) {
-            if (!confirm('Êtes-vous sûr de vouloir supprimer cette réservation de chambre ?')) return;
-            try {
-                const response = await fetch(`/reservation/api/reservations/chambres/${id}`, { method: 'DELETE' });
-                if (response.ok) { loadReservations(); showToast('Réservation de chambre supprimée avec succès !'); }
-                else { alert('Erreur lors de la suppression'); }
-            } catch (error) { alert('Erreur lors de la suppression'); }
-        }
-        
         async function deleteReservationAct(id) {
             if (!confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?')) return;
             try {
@@ -1822,6 +2284,85 @@
         window.addEventListener('scroll', () => {
             const navbar = document.querySelector('.navbar');
             if (window.scrollY !== undefined) navbar.classList.toggle('scrolled', window.scrollY > 50);
+        });
+        
+        // ==================== QR CODE FUNCTIONS ====================
+        let currentQRCodeDataUri = null;
+
+        function showQRCode(id) {
+            console.log('Génération QR code pour ID:', id);
+            const modal = document.getElementById('qrModal');
+            modal.style.display = 'flex';
+            document.getElementById('qrCodeImage').innerHTML = '<div style="text-align: center;"><i class="fas fa-spinner fa-spin fa-3x"></i><p>Génération du QR code...</p></div>';
+            document.getElementById('qrDetails').innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Chargement des détails...</p>';
+            
+            fetch(`/reservation/api/reservations/chambres/${id}/qrcode`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur HTTP ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success && data.qrCode) {
+                        currentQRCodeDataUri = data.qrCode;
+                        document.getElementById('qrCodeImage').innerHTML = `<img src="${data.qrCode}" style="width: 200px; height: 200px; border: 3px solid #264653; border-radius: 15px; padding: 10px; background: white;">`;
+                        
+                        const res = data.reservation;
+                        let detailsHtml = `
+                            <h4 style="color: #264653; margin-bottom: 15px;">🏨 ${res.hotel_nom || 'Hôtel'}</h4>
+                            <div style="margin-bottom: 15px;">
+                                <p><strong>🛏️ Chambre n° :</strong> ${res.chambre_num || '-'}</p>
+                                <p><strong>👤 Client :</strong> ${res.prenom || ''} ${res.nom || ''}</p>
+                                <p><strong>📧 Email :</strong> ${res.email || '-'}</p>
+                                <p><strong>📞 Téléphone :</strong> ${res.telephone || '-'}</p>
+                                <p><strong>👥 Personnes :</strong> ${res.nbPersonnes || 1}</p>
+                                <p><strong>📅 Dates :</strong> du ${res.dateDebut || '-'} au ${res.dateFin || '-'}</p>
+                                <p><strong>🌙 Nuits :</strong> ${res.nbNuit || 0}</p>
+                            </div>
+                            <hr style="border-color: #E8DFD1;">
+                            <div style="margin: 15px 0;">
+                                <h4 style="color: #C0392B;">💰 Détail du prix</h4>
+                                <p><strong>Prix total payé :</strong> <span style="font-size: 1.2rem; color: #C0392B;">${res.prixTotal || 0} TND</span></p>
+                                <p><strong>Détail complet :</strong> ${res.detailsPrix || '-'}</p>
+                            </div>
+                        `;
+                        document.getElementById('qrDetails').innerHTML = detailsHtml;
+                    } else {
+                        document.getElementById('qrCodeImage').innerHTML = '<p style="color: red;">Erreur lors de la génération du QR code</p>';
+                        document.getElementById('qrDetails').innerHTML = '<p style="color: red;">' + (data.error || 'Impossible de charger les détails') + '</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    document.getElementById('qrCodeImage').innerHTML = '<p style="color: red;">Erreur de connexion</p>';
+                    document.getElementById('qrDetails').innerHTML = '<p style="color: red;">Impossible de charger les détails. Vérifiez que la réservation existe.</p>';
+                });
+        }
+
+        function closeQRModal() {
+            document.getElementById('qrModal').style.display = 'none';
+            document.getElementById('qrCodeImage').innerHTML = '';
+            document.getElementById('qrDetails').innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Chargement...</p>';
+            currentQRCodeDataUri = null;
+        }
+
+        function downloadQRCode() {
+            if (currentQRCodeDataUri) {
+                const link = document.createElement('a');
+                link.download = 'qrcode_reservation.png';
+                link.href = currentQRCodeDataUri;
+                link.click();
+            } else {
+                alert('Aucun QR code à télécharger');
+            }
+        }
+
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('qrModal');
+            if (event.target === modal) {
+                closeQRModal();
+            }
         });
     </script>
     

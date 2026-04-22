@@ -48,143 +48,57 @@
     .hotel-stars i { color: #FFD700; font-size: 1rem; margin-right: 2px; }
     .hotel-stars i.far { color: #ddd; }
 
-    .btn-reserve {
-        background: var(--tunisia-blue);
-        color: white;
-        border: none;
-        padding: 12px 30px;
-        border-radius: 30px;
-        font-weight: 600;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        margin-top: 1rem;
+    .currency-selector {
+        background: #FEF9F0;
+        padding: 10px 15px;
+        border-radius: 40px;
         display: inline-block;
-    }
-    .btn-reserve:hover { background: #00408a; transform: translateY(-2px); }
-
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
-    .modal.active { display: flex; }
-    .modal-content { background: white; border-radius: 20px; padding: 2rem; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #E8DFD1; }
-    .modal-header h3 { font-size: 1.3rem; font-weight: 600; color: var(--tunisia-blue); margin: 0; }
-    .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #9CA3AF; }
-    .close-modal:hover { color: var(--tunisia-red); }
-    
-    .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
+        border: 1px solid #F0E8DD;
+        margin-bottom: 15px;
     }
     
-    .form-group {
-        margin-bottom: 1rem;
-    }
-    
-    .form-group label {
-        display: block;
-        font-size: 0.85rem;
+    .currency-selector label {
+        font-size: 0.8rem;
         font-weight: 600;
         color: var(--dark-gray);
-        margin-bottom: 0.3rem;
+        margin-right: 8px;
     }
     
-    .form-group label .required {
-        color: #E31B23;
-        margin-left: 3px;
-    }
-    
-    .form-group input {
-        width: 100%;
-        padding: 10px 12px;
+    .currency-selector select {
+        background: white;
         border: 1px solid #E8DFD1;
-        border-radius: 10px;
-        font-size: 0.9rem;
-        box-sizing: border-box;
+        border-radius: 30px;
+        padding: 6px 15px;
+        font-size: 0.85rem;
+        color: var(--dark-gray);
+        cursor: pointer;
         transition: all 0.2s;
     }
     
-    .form-group input:focus {
-        outline: none;
-        border-color: var(--tunisia-blue);
+    .currency-selector select:hover {
+        border-color: var(--tunisia-red);
     }
-    
-    .form-group input.error-border {
-        border-color: #EF4444;
-        background: #FEF2F2;
-    }
-    
-    .error-message {
-        color: #EF4444;
-        font-size: 0.7rem;
-        margin-top: 0.3rem;
-        display: block;
-    }
-    
-    .error-messages {
-        background: #FEF2F2;
-        border-left: 4px solid #EF4444;
-        padding: 12px 16px;
-        margin-bottom: 1rem;
-        border-radius: 8px;
-    }
-    
-    .error-messages ul {
-        margin: 0;
-        padding-left: 1.5rem;
-        color: #EF4444;
-        font-size: 0.85rem;
-    }
-    
-    .success-messages {
-        background: #E0F2E9;
-        border-left: 4px solid #10B981;
-        padding: 12px 16px;
-        margin-bottom: 1rem;
-        border-radius: 8px;
-    }
-    
-    .success-messages ul {
-        margin: 0;
-        padding-left: 1.5rem;
-        color: #047857;
-        font-size: 0.85rem;
-    }
-    
-    .info-recap {
-        background: #F0F8FF;
-        border-left: 4px solid var(--tunisia-blue);
-        padding: 12px 16px;
-        margin-bottom: 1rem;
-        border-radius: 8px;
-    }
-    
-    .info-recap p {
-        margin: 5px 0;
-        font-size: 0.85rem;
-    }
-    
-    .info-recap strong {
-        color: var(--tunisia-red);
-    }
-    
-    .btn-submit {
-        width: 100%;
+
+    .btn-reserve {
         background: linear-gradient(135deg, var(--tunisia-red), var(--tunisia-orange));
         color: white;
         border: none;
-        padding: 14px;
-        border-radius: 30px;
+        padding: 14px 35px;
+        border-radius: 50px;
         font-weight: 700;
         font-size: 1rem;
         cursor: pointer;
-        margin-top: 1rem;
         transition: all 0.3s ease;
+        margin-top: 1.5rem;
+        display: inline-block;
+        text-decoration: none;
+        box-shadow: 0 4px 15px rgba(227,27,35,0.3);
     }
-    
-    .btn-submit:hover {
+    .btn-reserve:hover { 
+        background: linear-gradient(135deg, #C41E3A, #E55B2B);
         transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(227,27,35,0.3);
+        box-shadow: 0 6px 20px rgba(227,27,35,0.4);
+        color: white;
     }
 
     @media (max-width: 768px) {
@@ -193,7 +107,7 @@
         .chambre-info { padding: 1.5rem; }
         .chambre-title { font-size: 1.5rem; }
         .chambre-price { font-size: 1.3rem; }
-        .form-row { grid-template-columns: 1fr; }
+        .currency-selector { display: block; text-align: center; }
     }
 </style>
 {% endblock %}
@@ -214,7 +128,7 @@
         </div>
 
         <div class="chambre-info">
-            <h1 class="chambre-title">Chambre n°{{ chambre.num }}</h1>
+            <h1 class="chambre-title" id="chambre-type">Chambre n°{{ chambre.num }} - {{ chambre.type }}</h1>
             
             <div class="hotel-stars">
                 {% for i in 1..chambre.hotel_etoiles %}
@@ -223,11 +137,24 @@
                 {% for i in chambre.hotel_etoiles+1..5 %}
                     <i class="far fa-star"></i>
                 {% endfor %}
-                <span class="ms-2 text-muted">{{ chambre.hotel_nom }}</span>
+                <span class="ms-2 text-muted" id="hotel-nom">{{ chambre.hotel_nom }}</span>
             </div>
             
+            <div class="currency-selector">
+                <label><i class="fas fa-money-bill-wave"></i> Devise :</label>
+                <select id="currencySelect">
+                    {% for code, name in currencies %}
+                        <option value="{{ code }}" {% if code == selected_currency %}selected{% endif %}>
+                            {{ name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
             <div class="chambre-price">
-                {{ chambre.prix_nuit|number_format(2, ',', ' ') }} <small>€ / nuit</small>
+                <span class="price-value">{{ prix_converti|number_format(2, ',', ' ') }}</span>
+                <span class="price-symbol">{{ symbole }}</span>
+                <small>/nuit</small>
                 {% if chambre.promotion is defined and chambre.promotion > 0 %}
                     <br><small class="text-success">🔥 Promotion -{{ chambre.promotion }}%</small>
                 {% endif %}
@@ -236,8 +163,8 @@
             <div class="chambre-meta">
                 <div class="meta-item"><i class="fas fa-bed"></i> <span>Type : {{ chambre.type }}</span></div>
                 <div class="meta-item"><i class="fas fa-users"></i> <span>Capacité : {{ chambre.capacite_max }} personnes</span></div>
-                <div class="meta-item"><i class="fas fa-hotel"></i> <span>Hôtel : {{ chambre.hotel_nom }}</span></div>
-                <div class="meta-item"><i class="fas fa-map-marker-alt"></i> <span>{{ chambre.hotel_ville }}</span></div>
+                <div class="meta-item"><i class="fas fa-hotel"></i> <span>Hôtel : <span id="hotel-nom-meta">{{ chambre.hotel_nom }}</span></span></div>
+                <div class="meta-item"><i class="fas fa-map-marker-alt"></i> <span id="hotel-ville">{{ chambre.hotel_ville }}</span></div>
                 {% if chambre.status == 'disponible' %}
                     <div class="meta-item text-success"><i class="fas fa-check-circle"></i> <span>Disponible</span></div>
                 {% else %}
@@ -245,156 +172,29 @@
                 {% endif %}
             </div>
             
-            <div class="chambre-description">
+            <div class="chambre-description" id="chambre-description">
                 {{ chambre.description }}
             </div>
             
-            <a href="{{ path('app_chambre_show', {'idCh': chambre.idCh}) }}?reserve=1#reservationForm" class="btn-reserve">
-                Réserver cette chambre <i class="fas fa-arrow-right ms-2"></i>
+            <a href="{{ path('app_reservation_ch_new', {'idCh': chambre.idCh}) }}" class="btn-reserve">
+                <i class="fas fa-calendar-check"></i> Réserver cette chambre
             </a>
         </div>
     </div>
-{# ===================== MODAL DE RÉSERVATION ===================== #}
 </div>
 
-{# ===================== FORMULAIRE DE RÉSERVATION (affiché uniquement quand demandé) ===================== #}
-{% set showForm = (app.request.query.get('reserve') == '1') or (errors is defined and errors|length > 0) %}
-{% if showForm %}
-<div id="reservationForm" class="reservation-form" style="margin:2rem 0;">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Réserver une chambre</h3>
-        </div>
-
-        {# Affichage des erreurs #}
-        {% if errors is defined and errors|length > 0 %}
-            <div class="error-messages">
-                <ul>
-                    {% for message in errors %}
-                        <li>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-        {% endif %}
-
-        {# Messages flash de succès #}
-        {% for message in app.flashes('success') %}
-            <div class="success-messages">
-                <ul><li>{{ message }}</li></ul>
-            </div>
-        {% endfor %}
-
-        {# Récapitulatif des prix (calculés côté serveur) — n'afficher que si le calcul contient des valeurs #}
-        {% if calcul is defined and calcul is not empty %}
-        <div class="info-recap">
-            <p><strong>📊 Récapitulatif :</strong></p>
-            <p>💰 Prix par nuit : <strong>{{ calcul.prix_nuit|default(0)|number_format(2, ',', ' ') }} €</strong></p>
-            <p>📅 Nombre de nuits : <strong>{{ calcul.nb_nuits|default(0) }}</strong></p>
-            <p>🏷️ Promotion : <strong>{{ calcul.promotion|default(0) }}%</strong></p>
-            <p><strong>💵 Prix total : {{ calcul.prix_total|default(0)|number_format(2, ',', ' ') }} €</strong></p>
-        </div>
-        {% endif %}
-
-        {# Formulaire - PAS de types HTML5 spécifiques (ex: pas type=date), PAS de JavaScript #}
-        <form method="post" action="{{ path('app_reservation_ch_new', {'idCh': chambre.idCh}) }}">
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Nom <span class="required">*</span></label>
-                    <input type="text" name="nom" placeholder="Votre nom" value="{{ formData.nom ?? '' }}" class="{% if errorsNom is defined %}error-border{% endif %}">
-                    {% if errorsNom is defined %}<span class="error-message">{{ errorsNom }}</span>{% endif %}
-                </div>
-                <div class="form-group">
-                    <label>Prénom <span class="required">*</span></label>
-                    <input type="text" name="prenom" placeholder="Votre prénom" value="{{ formData.prenom ?? '' }}" class="{% if errorsPrenom is defined %}error-border{% endif %}">
-                    {% if errorsPrenom is defined %}<span class="error-message">{{ errorsPrenom }}</span>{% endif %}
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Email <span class="required">*</span></label>
-                    <input type="text" name="email" placeholder="exemple@email.com" value="{{ formData.email ?? '' }}" class="{% if errorsEmail is defined %}error-border{% endif %}">
-                    {% if errorsEmail is defined %}<span class="error-message">{{ errorsEmail }}</span>{% endif %}
-                </div>
-                <div class="form-group">
-                    <label>Téléphone <span class="required">*</span></label>
-                    <input type="text" name="telephone" placeholder="Ex: 12345678" value="{{ formData.telephone ?? '' }}" class="{% if errorsTelephone is defined %}error-border{% endif %}">
-                    {% if errorsTelephone is defined %}<span class="error-message">{{ errorsTelephone }}</span>{% endif %}
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Date de début <span class="required">*</span></label>
-                    <input id="dateDebut" type="date" name="dateDebut" placeholder="AAAA-MM-JJ" value="{{ formData.dateDebut ?? '' }}" class="{% if errorsDateDebut is defined %}error-border{% endif %}">
-                    {% if errorsDateDebut is defined %}<span class="error-message">{{ errorsDateDebut }}</span>{% endif %}
-                </div>
-                <div class="form-group">
-                    <label>Date de fin <span class="required">*</span></label>
-                    <input id="dateFin" type="date" name="dateFin" placeholder="AAAA-MM-JJ" value="{{ formData.dateFin ?? '' }}" class="{% if errorsDateFin is defined %}error-border{% endif %}">
-                    {% if errorsDateFin is defined %}<span class="error-message">{{ errorsDateFin }}</span>{% endif %}
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Nombre de personnes <span class="required">*</span></label>
-                <input type="text" name="nbPersonnes" placeholder="Ex: 2" value="{{ formData.nbPersonnes ?? '1' }}" class="{% if errorsNbPersonnes is defined %}error-border{% endif %}">
-                {% if errorsNbPersonnes is defined %}<span class="error-message">{{ errorsNbPersonnes }}</span>{% endif %}
-                <small style="color: #6c757d; font-size: 0.7rem;">Capacité maximale : {{ chambre.capacite_max }} personnes</small>
-            </div>
-
-                {# ID Utilisateur en caché : automatiquement récupéré côté serveur si connecté
-                    -> valeur par défaut temporaire = 1 tant que l'entité User n'est pas intégrée #}
-                <input type="hidden" name="idUtilisateur" value="{{ app.user ? app.user.id : 1 }}">
-
-            <button type="submit" class="btn-submit">
-                <i class="fas fa-check-circle"></i> Confirmer la réservation
-            </button>
-        </form>
-    </div>
-</div>
-{% endif %}
-    {% block javascripts %}
-        {{ parent() }}
-        <script>
-            (function(){
-                const dateDebut = document.getElementById('dateDebut');
-                const dateFin = document.getElementById('dateFin');
-                if (!dateDebut || !dateFin) return;
-
-                const today = new Date();
-                const pad = (n) => n.toString().padStart(2, '0');
-                const toYMD = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-
-                // set minimal selectable date to today
-                dateDebut.min = toYMD(today);
-
-                // set max selectable date to one year from now
-                const max = new Date(); max.setFullYear(max.getFullYear()+1);
-                dateDebut.max = toYMD(max);
-                dateFin.max = toYMD(max);
-
-                // if dateDebut has a value, set dateFin.min accordingly
-                const syncDateFinMin = () => {
-                    if (!dateDebut.value) {
-                        dateFin.min = dateDebut.min;
-                        return;
-                    }
-                    const d = new Date(dateDebut.value);
-                    // ensure dateFin cannot be before dateDebut + 1 day
-                    const minFin = new Date(d);
-                    minFin.setDate(minFin.getDate() + 1);
-                    dateFin.min = toYMD(minFin);
-                    if (dateFin.value && dateFin.value < dateFin.min) {
-                        dateFin.value = dateFin.min;
-                    }
-                };
-
-                // initialize
-                syncDateFinMin();
-
-                dateDebut.addEventListener('change', syncDateFinMin);
-            })();
-        </script>
-    {% endblock %}
+<script>
+    const currencySelect = document.getElementById('currencySelect');
+    if (currencySelect) {
+        currencySelect.addEventListener('change', function() {
+            fetch('/change-currency-ch', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({currency: this.value})
+            })
+            .then(response => response.json())
+            .then(() => window.location.reload());
+        });
+    }
+</script>
 {% endblock %}

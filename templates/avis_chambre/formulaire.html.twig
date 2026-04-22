@@ -1,0 +1,233 @@
+<!-- ========== POPUP MODAL POUR LE FORMULAIRE D'AVIS (REDESIGNÉ) ========== -->
+<div class="modal fade" id="modalAvis" tabindex="-1" aria-labelledby="modalAvisLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content" style="border-radius: 24px; overflow: hidden;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #E31B23, #FF6B35); border: none;">
+                <h5 class="modal-title text-white" id="modalAvisLabel">
+                    <i class="fas fa-star"></i> Donnez votre avis sur {{ hotel.nom }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body" style="background: linear-gradient(135deg, #FDF5E6 0%, #FEF9E6 100%); padding: 2rem;">
+                {{ form_start(formAvis) }}
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                    
+                    <!-- Confort -->
+                    <div class="critere-card" style="background: white; border-radius: 16px; padding: 1rem; border: 1px solid #F0E8DD; transition: all 0.3s ease;">
+                        <div class="critere-label" style="font-weight: 600; color: #2C3E50; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-bed" style="color: #E31B23;"></i> Confort des chambres
+                        </div>
+                        <div class="star-rating" data-field="noteConfort">
+                            <input type="radio" name="avis_chambre[noteConfort]" value="5" id="confort_5"><label for="confort_5">☆</label>
+                            <input type="radio" name="avis_chambre[noteConfort]" value="4" id="confort_4"><label for="confort_4">☆</label>
+                            <input type="radio" name="avis_chambre[noteConfort]" value="3" id="confort_3"><label for="confort_3">☆</label>
+                            <input type="radio" name="avis_chambre[noteConfort]" value="2" id="confort_2"><label for="confort_2">☆</label>
+                            <input type="radio" name="avis_chambre[noteConfort]" value="1" id="confort_1"><label for="confort_1">☆</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Services -->
+                    <div class="critere-card" style="background: white; border-radius: 16px; padding: 1rem; border: 1px solid #F0E8DD;">
+                        <div class="critere-label" style="font-weight: 600; color: #2C3E50; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-wifi" style="color: #E31B23;"></i> Services (wifi, piscine...)
+                        </div>
+                        <div class="star-rating" data-field="noteServices">
+                            <input type="radio" name="avis_chambre[noteServices]" value="5" id="services_5"><label for="services_5">☆</label>
+                            <input type="radio" name="avis_chambre[noteServices]" value="4" id="services_4"><label for="services_4">☆</label>
+                            <input type="radio" name="avis_chambre[noteServices]" value="3" id="services_3"><label for="services_3">☆</label>
+                            <input type="radio" name="avis_chambre[noteServices]" value="2" id="services_2"><label for="services_2">☆</label>
+                            <input type="radio" name="avis_chambre[noteServices]" value="1" id="services_1"><label for="services_1">☆</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Équipements -->
+                    <div class="critere-card" style="background: white; border-radius: 16px; padding: 1rem; border: 1px solid #F0E8DD;">
+                        <div class="critere-label" style="font-weight: 600; color: #2C3E50; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-tv" style="color: #E31B23;"></i> Équipements
+                        </div>
+                        <div class="star-rating" data-field="noteEquipements">
+                            <input type="radio" name="avis_chambre[noteEquipements]" value="5" id="equip_5"><label for="equip_5">☆</label>
+                            <input type="radio" name="avis_chambre[noteEquipements]" value="4" id="equip_4"><label for="equip_4">☆</label>
+                            <input type="radio" name="avis_chambre[noteEquipements]" value="3" id="equip_3"><label for="equip_3">☆</label>
+                            <input type="radio" name="avis_chambre[noteEquipements]" value="2" id="equip_2"><label for="equip_2">☆</label>
+                            <input type="radio" name="avis_chambre[noteEquipements]" value="1" id="equip_1"><label for="equip_1">☆</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Propreté -->
+                    <div class="critere-card" style="background: white; border-radius: 16px; padding: 1rem; border: 1px solid #F0E8DD;">
+                        <div class="critere-label" style="font-weight: 600; color: #2C3E50; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-broom" style="color: #E31B23;"></i> Propreté générale
+                        </div>
+                        <div class="star-rating" data-field="noteProprete">
+                            <input type="radio" name="avis_chambre[noteProprete]" value="5" id="proprete_5"><label for="proprete_5">☆</label>
+                            <input type="radio" name="avis_chambre[noteProprete]" value="4" id="proprete_4"><label for="proprete_4">☆</label>
+                            <input type="radio" name="avis_chambre[noteProprete]" value="3" id="proprete_3"><label for="proprete_3">☆</label>
+                            <input type="radio" name="avis_chambre[noteProprete]" value="2" id="proprete_2"><label for="proprete_2">☆</label>
+                            <input type="radio" name="avis_chambre[noteProprete]" value="1" id="proprete_1"><label for="proprete_1">☆</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Personnel -->
+                    <div class="critere-card" style="background: white; border-radius: 16px; padding: 1rem; border: 1px solid #F0E8DD;">
+                        <div class="critere-label" style="font-weight: 600; color: #2C3E50; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-user-tie" style="color: #E31B23;"></i> Service personnel / Accueil
+                        </div>
+                        <div class="star-rating" data-field="notePersonnel">
+                            <input type="radio" name="avis_chambre[notePersonnel]" value="5" id="personnel_5"><label for="personnel_5">☆</label>
+                            <input type="radio" name="avis_chambre[notePersonnel]" value="4" id="personnel_4"><label for="personnel_4">☆</label>
+                            <input type="radio" name="avis_chambre[notePersonnel]" value="3" id="personnel_3"><label for="personnel_3">☆</label>
+                            <input type="radio" name="avis_chambre[notePersonnel]" value="2" id="personnel_2"><label for="personnel_2">☆</label>
+                            <input type="radio" name="avis_chambre[notePersonnel]" value="1" id="personnel_1"><label for="personnel_1">☆</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Emplacement -->
+                    <div class="critere-card" style="background: white; border-radius: 16px; padding: 1rem; border: 1px solid #F0E8DD;">
+                        <div class="critere-label" style="font-weight: 600; color: #2C3E50; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-map-marker-alt" style="color: #E31B23;"></i> Emplacement
+                        </div>
+                        <div class="star-rating" data-field="noteEmplacement">
+                            <input type="radio" name="avis_chambre[noteEmplacement]" value="5" id="emplacement_5"><label for="emplacement_5">☆</label>
+                            <input type="radio" name="avis_chambre[noteEmplacement]" value="4" id="emplacement_4"><label for="emplacement_4">☆</label>
+                            <input type="radio" name="avis_chambre[noteEmplacement]" value="3" id="emplacement_3"><label for="emplacement_3">☆</label>
+                            <input type="radio" name="avis_chambre[noteEmplacement]" value="2" id="emplacement_2"><label for="emplacement_2">☆</label>
+                            <input type="radio" name="avis_chambre[noteEmplacement]" value="1" id="emplacement_1"><label for="emplacement_1">☆</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Restauration -->
+                    <div class="critere-card" style="background: white; border-radius: 16px; padding: 1rem; border: 1px solid #F0E8DD;">
+                        <div class="critere-label" style="font-weight: 600; color: #2C3E50; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-utensils" style="color: #E31B23;"></i> Restauration
+                        </div>
+                        <div class="star-rating" data-field="noteRestauration">
+                            <input type="radio" name="avis_chambre[noteRestauration]" value="5" id="restau_5"><label for="restau_5">☆</label>
+                            <input type="radio" name="avis_chambre[noteRestauration]" value="4" id="restau_4"><label for="restau_4">☆</label>
+                            <input type="radio" name="avis_chambre[noteRestauration]" value="3" id="restau_3"><label for="restau_3">☆</label>
+                            <input type="radio" name="avis_chambre[noteRestauration]" value="2" id="restau_2"><label for="restau_2">☆</label>
+                            <input type="radio" name="avis_chambre[noteRestauration]" value="1" id="restau_1"><label for="restau_1">☆</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Rapport qualité/prix -->
+                    <div class="critere-card" style="background: white; border-radius: 16px; padding: 1rem; border: 1px solid #F0E8DD;">
+                        <div class="critere-label" style="font-weight: 600; color: #2C3E50; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-euro-sign" style="color: #E31B23;"></i> Rapport qualité/prix
+                        </div>
+                        <div class="star-rating" data-field="notePrixQualite">
+                            <input type="radio" name="avis_chambre[notePrixQualite]" value="5" id="prix_5"><label for="prix_5">☆</label>
+                            <input type="radio" name="avis_chambre[notePrixQualite]" value="4" id="prix_4"><label for="prix_4">☆</label>
+                            <input type="radio" name="avis_chambre[notePrixQualite]" value="3" id="prix_3"><label for="prix_3">☆</label>
+                            <input type="radio" name="avis_chambre[notePrixQualite]" value="2" id="prix_2"><label for="prix_2">☆</label>
+                            <input type="radio" name="avis_chambre[notePrixQualite]" value="1" id="prix_1"><label for="prix_1">☆</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Calme -->
+                    <div class="critere-card" style="background: white; border-radius: 16px; padding: 1rem; border: 1px solid #F0E8DD;">
+                        <div class="critere-label" style="font-weight: 600; color: #2C3E50; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-volume-mute" style="color: #E31B23;"></i> Calme / bruit
+                        </div>
+                        <div class="star-rating" data-field="noteCalme">
+                            <input type="radio" name="avis_chambre[noteCalme]" value="5" id="calme_5"><label for="calme_5">☆</label>
+                            <input type="radio" name="avis_chambre[noteCalme]" value="4" id="calme_4"><label for="calme_4">☆</label>
+                            <input type="radio" name="avis_chambre[noteCalme]" value="3" id="calme_3"><label for="calme_3">☆</label>
+                            <input type="radio" name="avis_chambre[noteCalme]" value="2" id="calme_2"><label for="calme_2">☆</label>
+                            <input type="radio" name="avis_chambre[noteCalme]" value="1" id="calme_1"><label for="calme_1">☆</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background: white; border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem; border: 1px solid #F0E8DD;">
+                    <label style="font-weight: 600; color: #2C3E50; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-comment-dots" style="color: #E31B23;"></i> Votre commentaire (optionnel)
+                    </label>
+                    {{ form_widget(formAvis.commentaire, {'attr': {'style': 'width:100%; border:1px solid #F0E8DD; border-radius:12px; padding:1rem; resize:vertical;', 'rows': 4}}) }}
+                </div>
+                
+                <button type="submit" class="btn-submit-avis" style="background: linear-gradient(135deg, #E31B23, #FF6B35); color: white; border: none; padding: 14px 40px; border-radius: 50px; font-weight: 700; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: all 0.3s ease;">
+                    <i class="fas fa-paper-plane"></i> Envoyer mon avis
+                </button>
+                
+                {{ form_end(formAvis) }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Style pour les étoiles interactives */
+    .star-rating {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+    
+    .star-rating input {
+        display: none;
+    }
+    
+    .star-rating label {
+        font-size: 28px;
+        cursor: pointer;
+        color: #ddd;
+        transition: all 0.2s ease;
+    }
+    
+    .star-rating label:before {
+        content: "☆";
+    }
+    
+    .star-rating input:checked ~ label:before,
+    .star-rating label:hover:before,
+    .star-rating label:hover ~ label:before {
+        content: "★";
+        color: #FFD700;
+    }
+    
+    .star-rating input:checked ~ label {
+        color: #FFD700;
+    }
+    
+    .btn-submit-avis:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(227,27,35,0.3);
+    }
+    
+    .critere-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        border-color: #E31B23;
+    }
+</style>
+
+<script>
+    // Script pour gérer les étoiles interactives
+    document.addEventListener('DOMContentLoaded', function() {
+        const starRatings = document.querySelectorAll('.star-rating');
+        
+        starRatings.forEach(rating => {
+            const labels = rating.querySelectorAll('label');
+            const inputs = rating.querySelectorAll('input');
+            
+            labels.forEach((label, index) => {
+                label.addEventListener('click', function() {
+                    const value = this.htmlFor.split('_')[1];
+                    // Mettre à jour l'affichage
+                    inputs.forEach((input, i) => {
+                        if (i >= (5 - parseInt(value))) {
+                            const lbl = input.nextElementSibling;
+                            if (lbl) lbl.style.color = '#FFD700';
+                        } else {
+                            const lbl = input.nextElementSibling;
+                            if (lbl) lbl.style.color = '#ddd';
+                        }
+                    });
+                });
+            });
+        });
+    });
+</script>
