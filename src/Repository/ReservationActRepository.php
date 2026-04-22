@@ -17,9 +17,24 @@ class ReservationActRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return ReservationAct[] Returns reservations by activite ID
+     * @return ReservationAct[] Returns reservations by activite ID (UNIQUEMENT LES CONFIRMÉES)
      */
     public function findByActiviteId(int $activiteId): array
+    {
+        return $this->createQueryBuilder('r')
+            ->andWhere('r.IDAct = :activiteId')
+            ->andWhere('r.status = :status')
+            ->setParameter('activiteId', $activiteId)
+            ->setParameter('status', ReservationAct::STATUS_CONFIRMED)
+            ->orderBy('r.IDRes', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return ReservationAct[] Returns ALL reservations by activite ID (INCLUT LES ANNULÉES)
+     */
+    public function findByActiviteIdIncludingCancelled(int $activiteId): array
     {
         return $this->createQueryBuilder('r')
             ->andWhere('r.IDAct = :activiteId')
@@ -28,4 +43,28 @@ class ReservationActRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-}
+
+    /**
+     * Soft delete : annuler une réservation
+     */
+    public function cancelReservation(ReservationAct $reservation): void
+    {
+        $reservation->setStatus(ReservationAct::STATUS_CANCELLED);
+        $this->getEntityManager()->flush();
+    }
+
+    /**
+     * Récupère le nombre total de places réservées et confirmées pour une activité
+     */
+    public function getTotalConfirmedPlacesByActiviteId(int $activiteId): int
+    {
+        return (int) $this->createQueryBuilder('r')
+            ->select('COALESCE(SUM(r.NombrePlaces), 0)')
+            ->andWhere('r.IDAct = :activiteId')
+            ->andWhere('r.status = :status')
+            ->setParameter('activiteId', $activiteId)
+            ->setParameter('status', ReservationAct::STATUS_CONFIRMED)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+} 

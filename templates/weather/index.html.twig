@@ -1,0 +1,242 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Météo des villes de Tunisie - TunisiaJourney{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .hero-weather {
+        background: linear-gradient(135deg, #1a2a3a 0%, #2d5f6e 100%);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-weather::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.05)" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,154.7C960,171,1056,181,1152,165.3C1248,149,1344,107,1392,85.3L1440,64L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"></path></svg>') no-repeat bottom;
+        background-size: cover;
+        opacity: 0.3;
+    }
+    
+    .weather-card {
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        cursor: pointer;
+    }
+    
+    .weather-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+    
+    .weather-card-header {
+        background: linear-gradient(135deg, #2d5f6e, #1a3a44);
+        padding: 1.5rem;
+        text-align: center;
+        color: white;
+    }
+    
+    .weather-card-header h3 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        letter-spacing: -0.5px;
+    }
+    
+    .weather-card-header .region-badge {
+        display: inline-block;
+        background: rgba(255,255,255,0.2);
+        border-radius: 20px;
+        padding: 4px 12px;
+        font-size: 0.7rem;
+        margin-top: 8px;
+    }
+    
+    .weather-icon-large {
+        font-size: 3.5rem;
+        margin: 1rem 0;
+    }
+    
+    .temp-large {
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: #2d5f6e;
+    }
+    
+    .temp-min {
+        color: #8ba0aa;
+        font-size: 1rem;
+    }
+    
+    .forecast-mini {
+        background: #f8f9fa;
+        border-radius: 16px;
+        padding: 12px;
+        margin-top: 12px;
+    }
+    
+    .forecast-day {
+        text-align: center;
+        font-size: 0.75rem;
+    }
+    
+    .region-section {
+        margin-bottom: 3rem;
+    }
+    
+    .region-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #2d5f6e;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 3px solid #e8b86b;
+        display: inline-block;
+    }
+    
+    .stat-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #f0f4f6;
+        padding: 6px 12px;
+        border-radius: 30px;
+        font-size: 0.8rem;
+        color: #2d5f6e;
+    }
+    
+    .btn-weather {
+        background: linear-gradient(135deg, #e8b86b, #d4a04a);
+        color: white;
+        border: none;
+        border-radius: 30px;
+        padding: 8px 20px;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+    
+    .btn-weather:hover {
+        transform: scale(1.05);
+        background: linear-gradient(135deg, #d4a04a, #c4903a);
+        color: white;
+    }
+    
+    .weather-note {
+        background: linear-gradient(135deg, #e8f5e9, #c8e6d9);
+        border-radius: 24px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        text-align: center;
+        border: 1px solid rgba(232,184,107,0.3);
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="hero-weather py-5">
+    <div class="container text-center text-white position-relative">
+        <div class="mb-3">
+            <i class="fas fa-cloud-sun fa-4x"></i>
+        </div>
+        <h1 class="display-4 fw-bold mb-3">Météo en Tunisie</h1>
+        <p class="lead mb-2">Prévisions météo pour toutes les villes de Tunisie</p>
+        <p class="small opacity-75">
+            <i class="fas fa-sync-alt me-1"></i> Dernière mise à jour : {{ last_update|date('d/m/Y à H:i') }}
+        </p>
+    </div>
+</div>
+
+<div class="container py-5">
+    {% for region, cities in regions %}
+        <div class="region-section">
+            <h2 class="region-title">
+                <i class="fas fa-map-marker-alt me-2" style="color: #e8b86b;"></i>
+                {{ region }}
+            </h2>
+            <div class="row g-4">
+                {% for weather in cities %}
+                    <div class="col-md-6 col-lg-4">
+                        <a href="{{ path('app_weather_city', {city: weather.city}) }}" class="text-decoration-none">
+                            <div class="weather-card">
+                                <div class="weather-card-header">
+                                    <h3>{{ weather.city }}</h3>
+                                    <span class="region-badge">
+                                        <i class="fas fa-location-dot"></i> {{ weather.region }}
+                                    </span>
+                                </div>
+                                <div class="p-4 text-center">
+                                    {% if weather.current %}
+                                        <div class="weather-icon-large">
+                                            <i class="fas {{ weather.current.condition_icon }} fa-3x" style="color: #e8b86b;"></i>
+                                        </div>
+                                        <div class="temp-large">
+                                            {{ weather.current.temp_max }}°C
+                                        </div>
+                                        <div class="temp-min mb-3">
+                                            min: {{ weather.current.temp_min }}°C
+                                        </div>
+                                        <div class="mb-3">
+                                            <span class="stat-badge">
+                                                <i class="fas fa-tint"></i> {{ weather.current.humidity }}%
+                                            </span>
+                                            <span class="stat-badge ms-2">
+                                                <i class="fas fa-wind"></i> {{ weather.current.wind_speed }} km/h
+                                            </span>
+                                        </div>
+                                        <div class="forecast-mini">
+                                            <div class="row">
+                                                {% for forecast in weather.forecast|slice(1, 4) %}
+                                                    <div class="col-3 forecast-day">
+                                                        <div class="fw-bold">{{ forecast.day|slice(0,3) }}</div>
+                                                        <i class="fas {{ forecast.condition_icon }} my-1" style="color: #e8b86b;"></i>
+                                                        <div>{{ forecast.temp_max }}°</div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        {% if weather.has_rain %}
+                                            <div class="mt-3">
+                                                <span class="badge bg-info">
+                                                    <i class="fas fa-cloud-rain"></i> Risque de pluie
+                                                </span>
+                                            </div>
+                                        {% endif %}
+                                    {% else %}
+                                        <p class="text-muted">Données non disponibles</p>
+                                    {% endif %}
+                                </div>
+                                <div class="p-3 text-center border-top">
+                                    <span class="btn-weather btn-sm">
+                                        Voir les détails <i class="fas fa-arrow-right ms-1"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-warning text-center py-4">
+            <i class="fas fa-exclamation-triangle fa-2x mb-3 d-block"></i>
+            <h4>Aucune donnée météo disponible</h4>
+            <p>Veuillez réessayer plus tard.</p>
+        </div>
+    {% endfor %}
+    
+    <div class="weather-note">
+        <i class="fas fa-info-circle fa-2x mb-3" style="color: #e8b86b;"></i>
+        <h5 class="mb-2">Bon à savoir</h5>
+        <p class="mb-0">En cas de pluie, bénéficiez d'une réduction de <strong>15%</strong> sur le prix de vos nuits d'hôtel !</p>
+    </div>
+</div>
+{% endblock %}

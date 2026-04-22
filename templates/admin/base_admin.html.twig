@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %} {% endblock %}</title>
+    <title>{% block title %}Administration TunisiaJourney{% endblock %}</title>
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -150,6 +150,9 @@
             font-weight: 600;
             transition: all 0.2s;
             border: 1.5px solid #93032E;
+            width: 100%;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
         }
         
         .logout-btn i {
@@ -550,17 +553,17 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ path('admin_hotel_index') }}" class="nav-link {% if app.request.get('_route') starts with 'admin_hotel' %}active{% endif %}">
                         <i class="fas fa-hotel"></i> Hôtels
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ path('admin_evenement_index') }}" class="nav-link {% if app.request.get('_route') starts with 'admin_evenement' %}active{% endif %}">
                         <i class="fas fa-calendar-alt"></i> Événements
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ path('admin_produit_index') }}" class="nav-link {% if app.request.get('_route') starts with 'admin_produit' %}active{% endif %}">
                         <i class="fas fa-gift"></i> Produits
                     </a>
                 </li>
@@ -579,7 +582,7 @@
             <div class="sidebar-footer">
                 <form method="post" action="{{ path('app_logout') }}">
                     <input type="hidden" name="_token" value="{{ csrf_token('logout') }}">
-                    <button type="submit" class="logout-btn" style="width:100%;border:none;cursor:pointer;font-family:'Inter',sans-serif;">
+                    <button type="submit" class="logout-btn">
                         <i class="fas fa-arrow-right-from-bracket"></i> Déconnexion
                     </button>
                 </form>

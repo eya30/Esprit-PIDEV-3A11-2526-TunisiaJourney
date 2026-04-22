@@ -54,7 +54,7 @@ class AISummaryService
 
         // Chemin complet vers python.exe pour que XAMPP/PHP le trouve
         $process = new Process([
-            'C:\\Users\\chaim_if4qa5x\\AppData\\Local\\Programs\\Python\\Python312\\python.exe',
+            'C:\\Users\\Maram\\AppData\\Local\\Programs\\Python\\Python311\\python.exe',
             $this->mlPath . '/predict.py',
             $jsonPayload,
         ]);

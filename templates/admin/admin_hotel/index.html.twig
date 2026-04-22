@@ -1,0 +1,911 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Gestion des Hôtels{% endblock %}
+{% block page_title %}Liste des hôtels{% endblock %}
+
+{% block body %}
+<div class="page-header mb-4">
+    <p class="page-header-subtitle">Gérez l'ensemble de vos hôtels</p>
+</div>
+
+<!-- ========== ICÔNE DE NOTIFICATION AVEC POPUP ========== -->
+<div style="position: relative; display: inline-block; float: right; margin-top: -50px;">
+    <button id="notificationBellBtn" style="background: none; border: none; cursor: pointer; position: relative; padding: 10px;">
+        <i class="fas fa-bell" style="font-size: 24px; color: #93032E;"></i>
+        <span id="notificationBadge" class="notification-badge" style="display: none;">0</span>
+    </button>
+    
+    <!-- Popup de notifications -->
+    <div id="notificationPopup" class="notification-popup" style="display: none;">
+        <div class="notification-popup-header">
+            <h4><i class="fas fa-bell"></i> Notifications</h4>
+            <button id="closeNotificationPopup" class="close-popup">&times;</button>
+        </div>
+        <div id="notificationList" class="notification-popup-body">
+            <div class="loading">Chargement...</div>
+        </div>
+        <div class="notification-popup-footer">
+            <a href="{{ path('app_admin_notifications_chambres') }}">Voir toutes les notifications</a>
+        </div>
+    </div>
+</div>
+
+<!-- Barre de recherche dynamique -->
+<div class="search-bar-wrapper mb-4">
+    <div class="search-input-group">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" id="searchInput" class="form-control search-input" 
+               placeholder="Rechercher par nom, ville ou adresse..." 
+               value="{{ search }}" autocomplete="off">
+        <button id="clearSearch" class="clear-search-btn" style="display: {% if search %}flex{% else %}none{% endif %};">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    <div class="search-info">
+        <i class="fas fa-spinner fa-spin" id="searchSpinner" style="display: none;"></i>
+        <span id="resultCount">{{ total_count }}</span> hôtel(s) trouvé(s)
+    </div>
+</div>
+
+<div class="d-flex justify-content-end mb-4">
+    <a href="{{ path('admin_hotel_new') }}" class="btn-elegant">
+        <i class="fas fa-plus me-2"></i> Nouvel hôtel
+    </a>
+</div>
+
+<div class="admin-table">
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="width: 80px">Image</th>
+                    <th>Nom</th>
+                    <th>Ville</th>
+                    <th>Adresse</th>
+                    <th>Étoiles</th>
+                    <th>Status</th>
+                    <th style="width: 160px">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="hotelsTableBody">
+                {% for hotel in hotels %}
+                <tr class="hotel-row">
+                    <td class="image-cell">
+                        {% if hotel.image %}
+                            <img src="{{ asset('uploads/hotels/' ~ hotel.image) }}" class="hotel-thumbnail" alt="{{ hotel.nom }}">
+                        {% else %}
+                            <div class="thumbnail-placeholder">
+                                <i class="fas fa-hotel"></i>
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td class="hotel-name">{{ hotel.nom }}</td>
+                    <td class="hotel-ville">{{ hotel.ville }}</td>
+                    <td class="hotel-adresse">{{ hotel.adresse|slice(0, 40) }}{% if hotel.adresse|length > 40 %}...{% endif %}</td>
+                    <td class="hotel-etoiles">
+                        {% for i in 1..hotel.etoiles %}
+                            <i class="fas fa-star" style="color: #F59E0B;"></i>
+                        {% endfor %}
+                        {% if hotel.etoiles < 5 %}
+                            {% for i in hotel.etoiles+1..5 %}
+                                <i class="far fa-star" style="color: #D1D5DB;"></i>
+                            {% endfor %}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if hotel.status == 'disponible' %}
+                            <span class="status-badge status-disponible">
+                                <i class="fas fa-check-circle me-1"></i> Disponible
+                            </span>
+                        {% elseif hotel.status == 'indisponible' %}
+                            <span class="status-badge status-indisponible">
+                                <i class="fas fa-times-circle me-1"></i> Indisponible
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-maintenance">
+                                <i class="fas fa-tools me-1"></i> Maintenance
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{{ path('admin_hotel_chambres', {'id': hotel.idH}) }}" class="action-btn chambres-btn" title="Voir les chambres">
+                                <i class="fas fa-bed"></i>
+                            </a>
+                            <a href="{{ path('admin_hotel_edit', {'id': hotel.idH}) }}" class="action-btn edit-btn" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form method="post" action="{{ path('admin_hotel_delete', {'id': hotel.idH}) }}" style="display: inline-block;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_hotel_' ~ hotel.idH) }}">
+                                <button type="submit" class="action-btn delete-btn" onclick="return confirm('Supprimer cet hôtel ?')" title="Supprimer">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center py-5">
+                        <i class="fas fa-hotel fa-3x mb-3" style="color: #E8DFD1;"></i>
+                        <p class="text-muted mb-0">Aucun hôtel trouvé</p>
+                        <a href="{{ path('admin_hotel_new') }}" class="btn-elegant mt-3" style="display: inline-block;">Créer un hôtel</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if total_pages > 1 %}
+<div class="pagination-wrapper">
+    <div class="pagination-info">
+        Affichage de <strong>{{ hotels|length }}</strong> sur <strong>{{ total_count }}</strong> hôtel(s)
+    </div>
+    <nav class="pagination-nav">
+        <ul class="pagination" id="paginationList">
+            <li class="page-item {% if current_page == 1 %}disabled{% endif %}">
+                <a class="page-link" href="#" data-page="{{ current_page - 1 }}">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
+            {% for i in 1..total_pages %}
+                <li class="page-item {% if i == current_page %}active{% endif %}">
+                    <a class="page-link" href="#" data-page="{{ i }}">{{ i }}</a>
+                </li>
+            {% endfor %}
+            <li class="page-item {% if current_page == total_pages %}disabled{% endif %}">
+                <a class="page-link" href="#" data-page="{{ current_page + 1 }}">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+{% endif %}
+
+<style>
+    .page-header-subtitle {
+        font-size: 0.9rem;
+        color: #93032E;
+        font-weight: 500;
+        margin: 0;
+    }
+    
+    /* Search Bar */
+    .search-bar-wrapper {
+        background: white;
+        border-radius: 20px;
+        padding: 16px 24px;
+        border: 1px solid #F0E8DD;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        transition: all 0.3s;
+    }
+    
+    .search-input-group {
+        position: relative;
+        flex: 1;
+        min-width: 280px;
+    }
+    
+    .search-icon {
+        position: absolute;
+        left: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #C49A6C;
+        font-size: 1rem;
+    }
+    
+    .search-input {
+        width: 100%;
+        padding: 14px 45px 14px 45px;
+        border: 1px solid #E8DFD1;
+        border-radius: 50px;
+        font-size: 14px;
+        background: #FEF9F0;
+        transition: all 0.3s;
+    }
+    
+    .search-input:focus {
+        outline: none;
+        border-color: #93032E;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(147,3,46,0.1);
+    }
+    
+    .clear-search-btn {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #9CA3AF;
+        cursor: pointer;
+        padding: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.2s;
+    }
+    
+    .clear-search-btn:hover {
+        color: #93032E;
+    }
+    
+    .search-info {
+        font-size: 0.85rem;
+        color: #9CA3AF;
+        white-space: nowrap;
+    }
+    
+    .search-info span {
+        color: #93032E;
+        font-weight: 600;
+    }
+    
+    /* Table */
+    .admin-table {
+        background: white;
+        border-radius: 24px;
+        border: 1px solid #F0E8DD;
+        overflow: hidden;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+    }
+    
+    .admin-table th {
+        background: linear-gradient(135deg, #FEF9F0 0%, #FFF5F0 100%);
+        padding: 16px 20px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #93032E;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        border-bottom: 1px solid #F0E8DD;
+    }
+    
+    .admin-table td {
+        padding: 16px 20px;
+        font-size: 13px;
+        border-bottom: 1px solid #F5F0E8;
+        color: #4A3B2F;
+        vertical-align: middle;
+        background: white;
+    }
+    
+    .admin-table tr:hover td {
+        background: #FFF9F0;
+    }
+    
+    /* Images */
+    .hotel-thumbnail {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 1px solid #F0E8DD;
+        transition: all 0.3s;
+    }
+    
+    .hotel-thumbnail:hover {
+        transform: scale(1.05);
+        border-color: #93032E;
+        box-shadow: 0 4px 12px rgba(147,3,46,0.15);
+    }
+    
+    .thumbnail-placeholder {
+        width: 60px;
+        height: 60px;
+        background: #FEF9F0;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #C49A6C;
+        font-size: 1.5rem;
+        border: 1px solid #F0E8DD;
+    }
+    
+    .hotel-name {
+        font-weight: 700;
+        color: #2C1810;
+        font-size: 0.95rem;
+    }
+    
+    .hotel-ville {
+        font-weight: 500;
+        color: #6B7280;
+    }
+    
+    .hotel-adresse {
+        max-width: 250px;
+        color: #9CA3AF;
+        font-size: 0.8rem;
+    }
+    
+    .hotel-etoiles i {
+        font-size: 12px;
+        margin-right: 2px;
+    }
+    
+    /* Status Badges */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 14px;
+        border-radius: 30px;
+        font-size: 12px;
+        font-weight: 600;
+        gap: 6px;
+    }
+    
+    .status-disponible {
+        background: #D1FAE5;
+        color: #059669;
+    }
+    
+    .status-indisponible {
+        background: #FEE2E2;
+        color: #DC2626;
+    }
+    
+    .status-maintenance {
+        background: #FEF3C7;
+        color: #D97706;
+    }
+    
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .action-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        font-size: 1rem;
+        text-decoration: none;
+    }
+    
+    .chambres-btn {
+        background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+        color: #2563EB;
+    }
+    
+    .chambres-btn:hover {
+        background: linear-gradient(135deg, #2563EB, #1D4ED8);
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 14px rgba(37,99,235,0.3);
+    }
+    
+    .edit-btn {
+        background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+        color: #D97706;
+    }
+    
+    .edit-btn:hover {
+        background: linear-gradient(135deg, #D97706, #B45309);
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 14px rgba(217,119,6,0.3);
+    }
+    
+    .delete-btn {
+        background: linear-gradient(135deg, #FEE2E2, #FECACA);
+        color: #DC2626;
+    }
+    
+    .delete-btn:hover {
+        background: linear-gradient(135deg, #DC2626, #B91C1C);
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 14px rgba(220,38,38,0.3);
+    }
+    
+    /* Elegant Button */
+    .btn-elegant {
+        background: linear-gradient(135deg, #93032E, #6B0221);
+        border: none;
+        padding: 12px 28px;
+        border-radius: 50px;
+        font-size: 13px;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        box-shadow: 0 4px 12px rgba(147,3,46,0.2);
+    }
+    
+    .btn-elegant:hover {
+        background: linear-gradient(135deg, #6B0221, #4A0116);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(147,3,46,0.3);
+        color: white;
+    }
+    
+    /* Notification Bell Styles */
+    .notification-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: #DC2626;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+    
+    .notification-popup {
+        position: absolute;
+        top: 50px;
+        right: 0;
+        width: 400px;
+        max-width: 90vw;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        z-index: 1000;
+        border: 1px solid #F0E8DD;
+        overflow: hidden;
+    }
+    
+    .notification-popup-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        background: linear-gradient(135deg, #93032E, #6B0221);
+        color: white;
+    }
+    
+    .notification-popup-header h4 {
+        margin: 0;
+        font-size: 1rem;
+    }
+    
+    .close-popup {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+    }
+    
+    .close-popup:hover {
+        opacity: 0.8;
+    }
+    
+    .notification-popup-body {
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 10px;
+    }
+    
+    .notification-popup-body .loading {
+        text-align: center;
+        padding: 20px;
+        color: #9CA3AF;
+    }
+    
+    .notification-item {
+        padding: 12px;
+        border-bottom: 1px solid #F0E8DD;
+        transition: background 0.2s;
+        cursor: pointer;
+    }
+    
+    .notification-item:hover {
+        background: #FFF9F0;
+    }
+    
+    .notification-item.unread {
+        background: #FEF3C7;
+        border-left: 3px solid #DC2626;
+    }
+    
+    .notification-item .notification-title {
+        font-weight: 600;
+        color: #2C1810;
+        font-size: 0.9rem;
+    }
+    
+    .notification-item .notification-text {
+        font-size: 0.8rem;
+        color: #6B7280;
+        margin-top: 4px;
+    }
+    
+    .notification-item .notification-date {
+        font-size: 0.7rem;
+        color: #9CA3AF;
+        margin-top: 4px;
+    }
+    
+    .notification-popup-footer {
+        padding: 12px;
+        text-align: center;
+        border-top: 1px solid #F0E8DD;
+        background: #FEF9F0;
+    }
+    
+    .notification-popup-footer a {
+        color: #93032E;
+        text-decoration: none;
+        font-size: 0.85rem;
+    }
+    
+    .notification-popup-footer a:hover {
+        text-decoration: underline;
+    }
+    
+    /* Pagination */
+    .pagination-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 28px;
+        padding: 8px 0;
+    }
+    
+    .pagination-info {
+        font-size: 0.85rem;
+        color: #9CA3AF;
+    }
+    
+    .pagination-info strong {
+        color: #93032E;
+        font-weight: 600;
+    }
+    
+    .pagination {
+        margin: 0;
+        gap: 8px;
+    }
+    
+    .page-item {
+        list-style: none;
+    }
+    
+    .page-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        background: white;
+        border: 1px solid #E8DFD1;
+        color: #4A3B2F;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: all 0.3s;
+        text-decoration: none;
+    }
+    
+    .page-link:hover {
+        background: #FFF9F0;
+        border-color: #93032E;
+        color: #93032E;
+        transform: translateY(-2px);
+    }
+    
+    .page-item.active .page-link {
+        background: linear-gradient(135deg, #93032E, #6B0221);
+        border-color: #93032E;
+        color: white;
+        box-shadow: 0 4px 10px rgba(147,3,46,0.2);
+    }
+    
+    .page-item.disabled .page-link {
+        background: #FEF9F0;
+        border-color: #F0E8DD;
+        color: #D1D5DB;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    @media (max-width: 768px) {
+        .search-bar-wrapper {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .search-info {
+            text-align: center;
+        }
+        .pagination-wrapper {
+            flex-direction: column;
+            gap: 16px;
+            align-items: center;
+        }
+        .admin-table {
+            overflow-x: auto;
+        }
+        .action-buttons {
+            flex-direction: column;
+            gap: 6px;
+        }
+        .notification-popup {
+            width: 90vw;
+            right: -40px;
+        }
+    }
+</style>
+
+<script>
+    let searchTimeout;
+    let currentPage = {{ current_page }};
+    let isSearching = false;
+    
+    const searchInput = document.getElementById('searchInput');
+    const clearSearchBtn = document.getElementById('clearSearch');
+    const searchSpinner = document.getElementById('searchSpinner');
+    const hotelsTableBody = document.getElementById('hotelsTableBody');
+    const resultCountSpan = document.getElementById('resultCount');
+    
+    function performSearch() {
+        const searchValue = searchInput.value;
+        isSearching = true;
+        searchSpinner.style.display = 'inline-block';
+        
+        fetch(`{{ path('admin_hotel_index') }}?search=${encodeURIComponent(searchValue)}&page=${currentPage}&ajax=1`)
+            .then(response => response.json())
+            .then(data => {
+                let html = '';
+                if (data.hotels.length === 0) {
+                    html = `<tr>
+                        <td colspan="7" class="text-center py-5">
+                            <i class="fas fa-hotel fa-3x mb-3" style="color: #E8DFD1;"></i>
+                            <p class="text-muted mb-0">Aucun hôtel trouvé</p>
+                            <a href="{{ path('admin_hotel_new') }}" class="btn-elegant mt-3" style="display: inline-block;">Créer un hôtel</a>
+                        </td>
+                    </tr>`;
+                } else {
+                    for (const hotel of data.hotels) {
+                        const stars = getStars(hotel.etoiles);
+                        const statusBadge = getStatusBadge(hotel.status);
+                        html += `<tr class="hotel-row">
+                            <td class="image-cell">
+                                ${hotel.image ? 
+                                    `<img src="{{ asset('uploads/hotels/') }}${hotel.image}" class="hotel-thumbnail" alt="${escapeHtml(hotel.nom)}">` : 
+                                    `<div class="thumbnail-placeholder"><i class="fas fa-hotel"></i></div>`
+                                }
+                            </td>
+                            <td class="hotel-name">${escapeHtml(hotel.nom)}</td>
+                            <td class="hotel-ville">${escapeHtml(hotel.ville)}</td>
+                            <td class="hotel-adresse">${escapeHtml(hotel.adresse).substring(0, 40)}${hotel.adresse && hotel.adresse.length > 40 ? '...' : ''}</td>
+                            <td class="hotel-etoiles">${stars}</td>
+                            <td>${statusBadge}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="/admin/hotel/${hotel.idH}/chambres" class="action-btn chambres-btn" title="Voir les chambres">
+                                        <i class="fas fa-bed"></i>
+                                    </a>
+                                    <a href="/admin/hotel/${hotel.idH}/edit" class="action-btn edit-btn" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form method="post" action="/admin/hotel/${hotel.idH}/delete" style="display: inline-block;">
+                                        <input type="hidden" name="_token" value="${data.csrf_token}">
+                                        <button type="submit" class="action-btn delete-btn" onclick="return confirm('Supprimer cet hôtel ?')" title="Supprimer">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>`;
+                    }
+                }
+                
+                hotelsTableBody.innerHTML = html;
+                resultCountSpan.textContent = data.total_count;
+                
+                const paginationInfo = document.querySelectorAll('.pagination-info strong');
+                if (paginationInfo.length >= 2) {
+                    paginationInfo[0].textContent = data.hotels.length;
+                    paginationInfo[1].textContent = data.total_count;
+                }
+                
+                updatePagination(data.current_page, data.total_pages);
+                searchSpinner.style.display = 'none';
+                isSearching = false;
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                searchSpinner.style.display = 'none';
+                isSearching = false;
+            });
+    }
+    
+    function getStars(etoiles) {
+        let stars = '';
+        for (let i = 1; i <= etoiles; i++) {
+            stars += '<i class="fas fa-star" style="color: #F59E0B;"></i>';
+        }
+        for (let i = etoiles + 1; i <= 5; i++) {
+            stars += '<i class="far fa-star" style="color: #D1D5DB;"></i>';
+        }
+        return stars;
+    }
+    
+    function getStatusBadge(status) {
+        if (status === 'disponible') {
+            return '<span class="status-badge status-disponible"><i class="fas fa-check-circle me-1"></i> Disponible</span>';
+        } else if (status === 'indisponible') {
+            return '<span class="status-badge status-indisponible"><i class="fas fa-times-circle me-1"></i> Indisponible</span>';
+        } else {
+            return '<span class="status-badge status-maintenance"><i class="fas fa-tools me-1"></i> Maintenance</span>';
+        }
+    }
+    
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    function updatePagination(currentPage, totalPages) {
+        const paginationList = document.getElementById('paginationList');
+        if (!paginationList) return;
+        
+        let html = '';
+        html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" data-page="${currentPage - 1}">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        </li>`;
+        for (let i = 1; i <= totalPages; i++) {
+            html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                <a class="page-link" href="#" data-page="${i}">${i}</a>
+            </li>`;
+        }
+        html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+            <a class="page-link" href="#" data-page="${currentPage + 1}">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        </li>`;
+        
+        paginationList.innerHTML = html;
+        attachPaginationEvents();
+    }
+    
+    function attachPaginationEvents() {
+        document.querySelectorAll('.page-link[data-page]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const page = parseInt(this.getAttribute('data-page'));
+                if (page && !isNaN(page) && !this.parentElement.classList.contains('disabled') && !isSearching) {
+                    currentPage = page;
+                    performSearch();
+                }
+            });
+        });
+    }
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            currentPage = 1;
+            if (this.value.length > 2 || this.value.length === 0) {
+                searchTimeout = setTimeout(performSearch, 500);
+            }
+            clearSearchBtn.style.display = this.value.length > 0 ? 'flex' : 'none';
+        });
+    }
+    
+    if (clearSearchBtn) {
+        clearSearchBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            performSearch();
+        });
+    }
+    
+    attachPaginationEvents();
+    
+    // ========== NOTIFICATIONS POPUP ==========
+    const notificationBtn = document.getElementById('notificationBellBtn');
+    const notificationPopup = document.getElementById('notificationPopup');
+    const closePopup = document.getElementById('closeNotificationPopup');
+    const notificationListDiv = document.getElementById('notificationList');
+    const notificationBadge = document.getElementById('notificationBadge');
+    
+    function loadNotifications() {
+        fetch('/api/notifications/chambres')
+            .then(response => response.json())
+            .then(data => {
+                if (data.total > 0) {
+                    notificationBadge.style.display = 'flex';
+                    notificationBadge.textContent = data.total > 99 ? '99+' : data.total;
+                } else {
+                    notificationBadge.style.display = 'none';
+                }
+                
+                if (data.notifications && data.notifications.length > 0) {
+                    let html = '';
+                    for (const notif of data.notifications) {
+                        html += `
+                            <div class="notification-item ${notif.statut_notification === 'non_lue' ? 'unread' : ''}" data-id="${notif.id}">
+                                <div class="notification-title">
+                                    <i class="fas fa-exclamation-triangle" style="color: #DC2626;"></i>
+                                    ${escapeHtml(notif.hotel_nom)}
+                                </div>
+                                <div class="notification-text">
+                                    ${escapeHtml(notif.prenom)} ${escapeHtml(notif.nom)}: "${escapeHtml(notif.commentaire).substring(0, 80)}${notif.commentaire && notif.commentaire.length > 80 ? '...' : ''}"
+                                </div>
+                                <div class="notification-date">
+                                    ${new Date(notif.date_creation).toLocaleDateString('fr-FR')}
+                                </div>
+                            </div>
+                        `;
+                    }
+                    notificationListDiv.innerHTML = html;
+                    
+                    document.querySelectorAll('.notification-item').forEach(item => {
+                        item.addEventListener('click', function() {
+                            const id = this.dataset.id;
+                            window.location.href = `/admin/notifications/chambres/marquer-lue/${id}`;
+                        });
+                    });
+                } else {
+                    notificationListDiv.innerHTML = '<div class="loading"><i class="fas fa-check-circle"></i> Aucune notification</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                notificationListDiv.innerHTML = '<div class="loading">Erreur de chargement</div>';
+            });
+    }
+    
+    if (notificationBtn) {
+        notificationBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (notificationPopup.style.display === 'block') {
+                notificationPopup.style.display = 'none';
+            } else {
+                loadNotifications();
+                notificationPopup.style.display = 'block';
+            }
+        });
+    }
+    
+    if (closePopup) {
+        closePopup.addEventListener('click', function() {
+            notificationPopup.style.display = 'none';
+        });
+    }
+    
+    document.addEventListener('click', function(e) {
+        if (notificationPopup && notificationBtn) {
+            if (!notificationPopup.contains(e.target) && !notificationBtn.contains(e.target)) {
+                notificationPopup.style.display = 'none';
+            }
+        }
+    });
+    
+    // Charger les notifications au chargement
+    loadNotifications();
+    setInterval(loadNotifications, 30000);
+</script>
+{% endblock %}

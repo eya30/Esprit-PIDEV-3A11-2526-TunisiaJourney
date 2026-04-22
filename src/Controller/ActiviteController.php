@@ -10,6 +10,7 @@ use App\Form\ActiviteType;
 use App\Form\AvisActType;
 use App\Repository\ActiviteRepository;
 use App\Repository\AvisActRepository;
+use App\Repository\ListeAttenteRepository;
 use App\Service\AISummaryService;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -60,37 +61,53 @@ class ActiviteController extends AbstractController
     public function show(
         Activite          $activite,
         Connection        $connection,
-        AvisActRepository $avisRepo
+        AvisActRepository $avisRepo,
+        ListeAttenteRepository $listeRepo
     ): Response {
-        $placesReservees   = (int) $connection->fetchOne(
-            "SELECT COALESCE(SUM(NombrePlaces), 0) FROM ReservationAct WHERE IDAct = ?",
+        // Compter UNIQUEMENT les réservations CONFIRMEES
+        $placesReservees = (int) $connection->fetchOne(
+            "SELECT COALESCE(SUM(NombrePlaces), 0) FROM ReservationAct WHERE IDAct = ? AND status = 'confirmé'",
             [$activite->getIDAct()]
         );
         $placesDisponibles = $activite->getCapaciteM() - $placesReservees;
+        
+        $estComplet = $placesDisponibles <= 0;
+        
+        $estEnListeAttente = false;
+        $positionListe = null;
+        
+        /** @var \App\Entity\User|null $user */
+        $user = $this->getUser();
+        if ($user && $estComplet) {
+            $estEnListeAttente = $listeRepo->estDejaInscrit($activite->getIDAct(), $user->getEmail());
+            if ($estEnListeAttente) {
+                $positionListe = $listeRepo->getPositionDansFile($activite->getIDAct(), $user->getEmail());
+            }
+        }
 
-        $avis        = $avisRepo->findByActivite($activite);
+        $avis = $avisRepo->findByActivite($activite);
         $moyenneNote = $avisRepo->getMoyenneNote($activite);
-        $formAvis    = $this->createForm(AvisActType::class, new AvisAct(), [
+        $formAvis = $this->createForm(AvisActType::class, new AvisAct(), [
             'action' => $this->generateUrl('app_avis_new', ['IDAct' => $activite->getIDAct()]),
             'method' => 'POST',
         ]);
 
-        // Récupération de la clé API avec vérification
         $apiKey = $_ENV['EXCHANGERATE_API_KEY'] ?? '';
-        
-        // Tester si la clé API est valide (optionnel)
         $apiKeyValid = !empty($apiKey);
 
         return $this->render('activite/showactv.html.twig', [
-            'activite'            => $activite,
-            'placesDisponibles'   => $placesDisponibles,
-            'reservation'         => new ReservationAct(),
-            'errors'              => [],
-            'avis'                => $avis,
-            'moyenneNote'         => $moyenneNote,
-            'formAvis'            => $formAvis->createView(),
-            'exchangeRateApiKey'  => $apiKey,
-            'apiKeyValid'         => $apiKeyValid,
+            'activite' => $activite,
+            'placesDisponibles' => $placesDisponibles,
+            'estComplet' => $estComplet,
+            'estEnListeAttente' => $estEnListeAttente,
+            'positionListe' => $positionListe,
+            'reservation' => new ReservationAct(),
+            'errors' => [],
+            'avis' => $avis,
+            'moyenneNote' => $moyenneNote,
+            'formAvis' => $formAvis->createView(),
+            'exchangeRateApiKey' => $apiKey,
+            'apiKeyValid' => $apiKeyValid,
         ]);
     }
 
@@ -107,16 +124,12 @@ class ActiviteController extends AbstractController
         ]);
     }
 
-    
-// ── Remplace uniquement la méthode newAvis dans ActiviteController ──
-
     #[Route('/{IDAct}/avis', name: 'app_avis_new', methods: ['POST'])]
     public function newAvis(
-        Request                $request,
-        Activite               $activite,
+        Request $request,
+        Activite $activite,
         EntityManagerInterface $entityManager
     ): Response {
-        // ── Récupérer l'utilisateur connecté ──
         /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
 
@@ -127,19 +140,16 @@ class ActiviteController extends AbstractController
 
         $avis = new AvisAct();
         $avis->setActivite($activite);
-
-        // ── Nom = Prénom + Nom de l'utilisateur connecté ──
         $avis->setNom($user->getPrenom() . ' ' . $user->getNom());
 
         $form = $this->createForm(AvisActType::class, $avis);
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
-
             $postData = $request->request->all();
             $formName = $form->getName();
-            $noteRaw  = $postData[$formName]['note'] ?? '';
-            $note     = (int) $noteRaw;
+            $noteRaw = $postData[$formName]['note'] ?? '';
+            $note = (int) $noteRaw;
 
             if ($note < 1 || $note > 5) {
                 $this->addFlash('error', 'Veuillez sélectionner une note entre 1 et 5.');
@@ -196,28 +206,28 @@ class ActiviteController extends AbstractController
 
     #[Route('/evenement/{IDEv}', name: 'app_activite_by_evenement', methods: ['GET'])]
     public function activitesByEvenement(
-        Evenement          $evenement,
+        Evenement $evenement,
         ActiviteRepository $activiteRepository,
-        Connection         $connection
+        Connection $connection
     ): Response {
         $activites = $activiteRepository->findBy(['evenement' => $evenement]);
 
         if (empty($activites)) {
             return $this->render('evenement/activites_ev.html.twig', [
-                'evenement'     => $evenement,
-                'activites'     => [],
-                'placesData'    => [],
+                'evenement' => $evenement,
+                'activites' => [],
+                'placesData' => [],
                 'typesActivite' => [],
             ]);
         }
 
-        $ids          = array_map(fn($a) => $a->getIDAct(), $activites);
+        $ids = array_map(fn($a) => $a->getIDAct(), $activites);
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
 
         $reservations = $connection->fetchAllAssociative(
             "SELECT IDAct, COALESCE(SUM(NombrePlaces), 0) AS totalReserve
              FROM reservationact
-             WHERE IDAct IN ($placeholders)
+             WHERE IDAct IN ($placeholders) AND status = 'confirmé'
              GROUP BY IDAct",
             $ids
         );
@@ -227,25 +237,25 @@ class ActiviteController extends AbstractController
             $reserveMap[(int)$row['IDAct']] = (int)$row['totalReserve'];
         }
 
-        $placesData    = [];
+        $placesData = [];
         $typesActivite = [];
 
         foreach ($activites as $activite) {
-            $id          = $activite->getIDAct();
-            $capacite    = $activite->getCapaciteM();
-            $reserve     = $reserveMap[$id] ?? 0;
-            $restantes   = max(0, $capacite - $reserve);
+            $id = $activite->getIDAct();
+            $capacite = $activite->getCapaciteM();
+            $reserve = $reserveMap[$id] ?? 0;
+            $restantes = max(0, $capacite - $reserve);
             $pourcentage = $capacite > 0 ? round(($reserve / $capacite) * 100) : 100;
 
-            if ($pourcentage >= 100)    $disponibilite = 'soldout';
+            if ($pourcentage >= 100) $disponibilite = 'soldout';
             elseif ($pourcentage >= 80) $disponibilite = 'warning';
-            else                        $disponibilite = 'available';
+            else $disponibilite = 'available';
 
             $placesData[$id] = [
-                'placesRestantes'        => $restantes,
-                'placesReservees'        => $reserve,
+                'placesRestantes' => $restantes,
+                'placesReservees' => $reserve,
                 'pourcentageRemplissage' => $pourcentage,
-                'disponibilite'          => $disponibilite,
+                'disponibilite' => $disponibilite,
             ];
 
             $type = $activite->getTypeActivite();
@@ -257,9 +267,9 @@ class ActiviteController extends AbstractController
         sort($typesActivite);
 
         return $this->render('evenement/activites_ev.html.twig', [
-            'evenement'     => $evenement,
-            'activites'     => $activites,
-            'placesData'    => $placesData,
+            'evenement' => $evenement,
+            'activites' => $activites,
+            'placesData' => $placesData,
             'typesActivite' => $typesActivite,
         ]);
     }

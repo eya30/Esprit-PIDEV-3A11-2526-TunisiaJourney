@@ -1,0 +1,74 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Confirmation - Liste d'attente{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-0 rounded-4">
+                <div class="card-body text-center p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-bell fa-4x" style="color: #E31B23;"></i>
+                    </div>
+                    <h2 class="mb-3" style="font-family: 'Cormorant Garamond', serif; font-weight: 800;">Une place s'est libérée !</h2>
+                    <p class="mb-4 text-muted">
+                        Bonjour <strong>{{ attente.prenomUtilisateur }} {{ attente.nomUtilisateur }}</strong>,<br>
+                        Vous avez été sélectionné(e) pour réserver une place à cette activité.
+                    </p>
+                    <div class="alert alert-warning rounded-3">
+                        <i class="fas fa-clock me-2"></i>
+                        Délai de confirmation : <strong>2 heures</strong>
+                    </div>
+                    <button id="btnConfirmer" class="btn btn-danger btn-lg px-5 rounded-pill">
+                        <i class="fas fa-check-circle me-2"></i>Confirmer ma présence
+                    </button>
+                    <div id="loadingMsg" style="display:none;" class="mt-3 text-muted">
+                        <i class="fas fa-spinner fa-spin me-2"></i> Confirmation en cours...
+                    </div>
+                    <div id="successMsg" style="display:none;" class="mt-3 text-success">
+                        <i class="fas fa-check-circle me-2"></i> Réservation confirmée !
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('btnConfirmer').addEventListener('click', async function() {
+    const btn = this;
+    const token = '{{ token }}';
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Confirmation...';
+    document.getElementById('loadingMsg').style.display = 'block';
+    
+    try {
+        const response = await fetch('/liste-attente/api/confirmer/' + token, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const result = await response.json();
+        
+        if (result.success) {
+            document.getElementById('loadingMsg').style.display = 'none';
+            document.getElementById('successMsg').style.display = 'block';
+            btn.style.display = 'none';
+            setTimeout(() => {
+                window.location.href = '{{ path('app_activite_show', {'IDAct': attente.idActivite}) }}';
+            }, 2000);
+        } else {
+            alert(result.message);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Confirmer ma présence';
+            document.getElementById('loadingMsg').style.display = 'none';
+        }
+    } catch(e) {
+        alert('Erreur lors de la confirmation');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Confirmer ma présence';
+        document.getElementById('loadingMsg').style.display = 'none';
+    }
+});
+</script>
+{% endblock %}

@@ -30,7 +30,7 @@ class ReservationActApiController extends AbstractController
         return $user->getEmail();
     }
 
-    // ── Lister les réservations de l'utilisateur connecté ────────────────────
+    // ── Lister les réservations CONFIRMÉES de l'utilisateur connecté ─────────
 
     #[Route('/reservations-act', name: 'api_reservations_act', methods: ['GET'])]
     public function getReservations(Connection $connection): JsonResponse
@@ -38,8 +38,9 @@ class ReservationActApiController extends AbstractController
         $email = $this->getUserEmail();
         if ($email instanceof JsonResponse) return $email;
 
+        // MODIFICATION : Ne retourner que les réservations avec status = 'confirmé'
         $reservations = $connection->fetchAllAssociative(
-            "SELECT * FROM ReservationAct WHERE Email = ? ORDER BY IDRes DESC",
+            "SELECT * FROM ReservationAct WHERE Email = ? AND status = 'confirmé' ORDER BY IDRes DESC",
             [$email]
         );
 
@@ -55,7 +56,7 @@ class ReservationActApiController extends AbstractController
         if ($email instanceof JsonResponse) return $email;
 
         $reservation = $connection->fetchAssociative(
-            "SELECT * FROM ReservationAct WHERE IDRes = ? AND Email = ?",
+            "SELECT * FROM ReservationAct WHERE IDRes = ? AND Email = ? AND status = 'confirmé'",
             [$id, $email]
         );
 
@@ -80,13 +81,14 @@ class ReservationActApiController extends AbstractController
 
         $data = json_decode($request->getContent(), true);
 
+        // MODIFICATION : Vérifier aussi que la réservation n'est pas annulée
         $existing = $connection->fetchAssociative(
-            "SELECT * FROM ReservationAct WHERE IDRes = ? AND Email = ?",
+            "SELECT * FROM ReservationAct WHERE IDRes = ? AND Email = ? AND status = 'confirmé'",
             [$id, $email]
         );
 
         if (!$existing) {
-            return $this->json(['error' => 'Réservation non trouvée'], 404);
+            return $this->json(['error' => 'Réservation non trouvée ou annulée'], 404);
         }
 
         $reservation = new ReservationAct();
@@ -111,36 +113,18 @@ class ReservationActApiController extends AbstractController
         }
 
         $connection->executeStatement(
-            "UPDATE ReservationAct SET telephone = ?, Email = ?, NombrePlaces = ? WHERE IDRes = ? AND Email = ?",
+            "UPDATE ReservationAct SET telephone = ?, Email = ?, NombrePlaces = ? WHERE IDRes = ? AND Email = ? AND status = 'confirmé'",
             [
                 $reservation->getTelephone(),
                 $reservation->getEmail(),
                 $reservation->getNombrePlaces(),
                 $id,
-                $email, // double vérification propriétaire au UPDATE
+                $email,
             ]
         );
 
         return $this->json(['success' => true]);
     }
 
-    // ── Supprimer une réservation (vérification propriétaire) ────────────────
-
-    #[Route('/reservations-act/{id}', name: 'api_reservation_act_delete', methods: ['DELETE'])]
-    public function deleteReservation(Connection $connection, int $id): JsonResponse
-    {
-        $email = $this->getUserEmail();
-        if ($email instanceof JsonResponse) return $email;
-
-        $deleted = $connection->executeStatement(
-            "DELETE FROM ReservationAct WHERE IDRes = ? AND Email = ?",
-            [$id, $email]
-        );
-
-        if ($deleted === 0) {
-            return $this->json(['error' => 'Réservation non trouvée'], 404);
-        }
-
-        return $this->json(['success' => true]);
-    }
+   
 }

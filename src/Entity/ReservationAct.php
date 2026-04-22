@@ -11,6 +11,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'ReservationAct')]
 class ReservationAct
 {
+    // ── Constantes pour les statuts ──────────────────────────────────────────
+    public const STATUS_CONFIRMED = 'confirmé';
+    public const STATUS_CANCELLED = 'annulé';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: "IDRes", type: "integer")]
@@ -81,6 +85,10 @@ class ReservationAct
     )]
     private ?string $telephone = null;
 
+    // ── NOUVEAU CHAMP STATUS ─────────────────────────────────────────────────
+    #[ORM\Column(type: "string", length: 20, options: ["default" => "confirmé"])]
+    private ?string $status = self::STATUS_CONFIRMED;
+
     // ── Getters / Setters ────────────────────────────────────────────────────
 
     public function getIDRes(): ?int { return $this->IDRes; }
@@ -111,4 +119,29 @@ class ReservationAct
 
     public function getTelephone(): ?string { return $this->telephone; }
     public function setTelephone(?string $telephone): static { $this->telephone = $telephone; return $this; }
+
+    // ── NOUVEAUX GETTERS/SETTERS POUR STATUS ─────────────────────────────────
+    public function getStatus(): ?string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): static
+    {
+        if (!in_array($status, [self::STATUS_CONFIRMED, self::STATUS_CANCELLED])) {
+            throw new \InvalidArgumentException("Statut invalide. Valeurs acceptées : 'confirmé', 'annulé'");
+        }
+        $this->status = $status;
+        return $this;
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->status === self::STATUS_CANCELLED;
+    }
+
+    public function isConfirmed(): bool
+    {
+        return $this->status === self::STATUS_CONFIRMED;
+    }
 }

@@ -81,3 +81,15 @@ services:
             $accountSid: '%env(TWILIO_ACCOUNT_SID)%'
             $authToken: '%env(TWILIO_AUTH_TOKEN)%'
             $fromNumber: '%env(TWILIO_WHATSAPP_NUMBER)%'
+   # Ajoutez cette ligne dans la section services
+    App\Service\BrevoEmailService:
+        arguments:
+            $httpClient: '@http_client'
+            $logger: '@logger'
+    # SMS Service avec Twilio   
+    App\Service\SmsService:
+        arguments:
+            $accountSid: '%env(TWILIO_ACCOUNT_SID)%'
+            $authToken: '%env(TWILIO_AUTH_TOKEN)%'
+            $twilioPhoneNumber: '%env(TWILIO_PHONE_NUMBER)%'
+

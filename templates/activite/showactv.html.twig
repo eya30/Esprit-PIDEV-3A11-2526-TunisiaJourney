@@ -431,8 +431,12 @@
                 </div>
             </div>
 
-            {% if isSoldout %}
-                <span class="btn-complet"><i class="fas fa-times-circle"></i> Complet</span>
+                {% if isSoldout %}
+                <div class="d-flex gap-3 align-items-center flex-wrap">
+                    <span class="btn-complet"><i class="fas fa-times-circle"></i> Complet</span>
+                    {% include 'activite/_waiting_button.html.twig' %}
+                </div>
+                <div id="messageListeAttente" class="mt-2"></div>
             {% else %}
                 <a href="{{ path('app_reservationact_new', {'IDAct': activite.IDAct}) }}" class="btn-reserve">
                     Réserver <i class="fas fa-arrow-right"></i>

@@ -5,7 +5,7 @@
             "repo": "github.com/symfony/recipes",
             "branch": "main",
             "version": "1.0",
-            "ref": "87424683adc81d7dc305eefec1fced883084aab9"
+            "ref": "fdd756167454623e21f1d769c5b814b243782a67"
         }
     },
     "doctrine/doctrine-bundle": {
@@ -39,7 +39,7 @@
         "version": "v6.10.0"
     },
     "knpuniversity/oauth2-client-bundle": {
-        "version": "2.20",
+        "version": "2.18",
         "recipe": {
             "repo": "github.com/symfony/recipes-contrib",
             "branch": "main",
@@ -89,10 +89,7 @@
             "branch": "main",
             "version": "19.0",
             "ref": "d6829c693e3927a8972c7671d74a1a5c505712b0"
-        },
-        "files": [
-            "./config/packages/stripe.yaml"
-        ]
+        }
     },
     "symfony/asset-mapper": {
         "version": "6.4",
@@ -170,7 +167,7 @@
             "repo": "github.com/symfony/recipes",
             "branch": "main",
             "version": "6.4",
-            "ref": "32126346f25e19cee8c86674cbaab56ccd1e98a3"
+            "ref": "08c492c28925bf921d98bc26fd815ae8a38b33d9"
         },
         "files": [
             "./config/packages/cache.yaml",
@@ -291,7 +288,7 @@
         ]
     },
     "symfony/stimulus-bundle": {
-        "version": "2.34",
+        "version": "2.35",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -332,15 +329,24 @@
             "repo": "github.com/symfony/recipes",
             "branch": "main",
             "version": "6.4",
-            "ref": "cab5fd2a13a45c266d45a7d9337e28dee6272877"
+            "ref": "f250159ebe99153d0c640a3e7742876fc7453f2c"
         },
         "files": [
             "./config/packages/twig.yaml",
             "./templates/base.html.twig"
         ]
     },
+    "symfony/twilio-notifier": {
+        "version": "6.4",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "5.0",
+            "ref": "295c79af6b41fb4b6aa18f6f63eaa02051ebba5b"
+        }
+    },
     "symfony/ux-turbo": {
-        "version": "2.34",
+        "version": "2.35",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -373,18 +379,6 @@
             "./config/routes/web_profiler.yaml"
         ]
     },
-    "symfony/webapp-pack": {
-        "version": "1.3",
-        "recipe": {
-            "repo": "github.com/symfony/recipes",
-            "branch": "main",
-            "version": "1.0",
-            "ref": "b9e6cc8e7b6069d0e8a816665809a423864eb4dd"
-        },
-        "files": [
-            "./config/packages/messenger.yaml"
-        ]
-    },
     "tattali/calendar-bundle": {
         "version": "1.3",
         "recipe": {
@@ -404,9 +398,6 @@
             "branch": "main",
             "version": "1.13",
             "ref": "1b3064c2f6b255c2bc2f56461aaeb76b11e07e36"
-        },
-        "files": [
-            "./config/packages/vich_uploader.yaml"
-        ]
+        }
     }
 }

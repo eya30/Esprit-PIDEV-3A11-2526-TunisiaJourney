@@ -20,6 +20,12 @@ class ReservationActEditController extends AbstractController
             throw $this->createNotFoundException('Réservation non trouvée');
         }
 
+        // ── NOUVEAU : Empêcher la modification d'une réservation annulée ──
+        if (isset($reservation['status']) && $reservation['status'] === 'annulé') {
+            $this->addFlash('error', 'Impossible de modifier une réservation annulée.');
+            return $this->redirectToRoute('app_evenement_index');
+        }
+
         return $this->render('evenement/editreservationAct.html.twig', [
             'reservation' => $reservation,
         ]);
