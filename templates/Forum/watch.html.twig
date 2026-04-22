@@ -1,0 +1,969 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ publication.nom }} — TunisiaJourney{% endblock %}
+
+{% block stylesheets %}
+<style>
+:root{--dr:#93032E;--dr2:#6B0221;--or:#FF6B35;--gold:#FFD700;--sand:#FDF5E6;--soft:#F5CAC3;--bg-warm:#FEF9F0;--border:#E8DFD1;--dark:#2C3E50;}
+.video-page{background:var(--bg-warm);min-height:100vh;}
+.video-container{max-width:1200px;margin:0 auto;padding:2rem;}
+.nav-buttons{display:flex;gap:12px;margin-bottom:1.5rem;flex-wrap:wrap;}
+.btn-nav-video{background:linear-gradient(135deg,var(--dr),var(--soft));color:white;border:none;padding:10px 24px;border-radius:40px;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .3s;text-decoration:none;display:inline-flex;align-items:center;gap:8px;}
+.btn-nav-video:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(147,3,46,.3);color:white;}
+.btn-nav-image{background:white;border:2px solid var(--border);color:var(--dr);padding:10px 24px;border-radius:40px;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .3s;text-decoration:none;display:inline-flex;align-items:center;gap:8px;}
+.btn-nav-image:hover{background:var(--dr);color:white;border-color:var(--dr);transform:translateY(-2px);}
+.video-player-wrapper{background:#000;border-radius:24px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,.2);margin-bottom:2rem;}
+.video-player{width:100%;aspect-ratio:16/9;background:#000;}
+.video-player iframe{width:100%;height:100%;border:none;}
+.video-player video{width:100%;height:100%;object-fit:contain;background:#000;}
+.video-info{background:white;border-radius:20px;padding:1.5rem;margin-bottom:1.5rem;border:1px solid var(--border);}
+.video-title{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700;color:var(--dr);margin-bottom:.5rem;}
+.video-meta{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--border);}
+.video-forum-badge{background:linear-gradient(135deg,var(--dr),var(--soft));color:white;padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:600;}
+.video-date{color:#888;font-size:.8rem;display:flex;align-items:center;gap:5px;}
+.video-description{color:#555;line-height:1.7;font-size:.95rem;margin-bottom:1rem;}
+.video-actions{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;padding-top:.5rem;}
+.vote-buttons{display:flex;gap:10px;}
+.vote-btn{display:flex;align-items:center;gap:6px;padding:8px 18px;border-radius:30px;border:1.5px solid var(--border);background:white;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .3s;}
+.vote-btn.liked{background:rgba(147,3,46,.1);border-color:var(--dr);color:var(--dr);}
+.vote-btn.disliked{background:rgba(192,57,43,.1);border-color:#c0392b;color:#c0392b;}
+.vote-btn:hover{transform:translateY(-2px);}
+.translate-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:15px;margin-bottom:1.5rem;background:white;border-radius:20px;padding:12px 20px;border:1px solid var(--border);}
+.translate-header-left{display:flex;align-items:center;gap:12px;}
+.translate-header-left i{font-size:1.2rem;color:var(--dr);}
+.translate-header-left span{font-weight:600;color:var(--dark);}
+.lang-wrapper{display:flex;align-items:center;gap:10px;background:#FEF9F0;padding:6px 15px;border-radius:30px;border:1px solid var(--border);}
+.lang-wrapper i{color:#93032E;font-size:.9rem;}
+.lang-select{padding:6px 12px;border-radius:20px;border:1px solid #E8DFD1;background:white;cursor:pointer;font-size:.8rem;outline:none;}
+.lang-refresh-btn{background:none;border:none;cursor:pointer;color:#93032E;font-size:1rem;padding:5px;border-radius:50%;transition:all .2s;display:flex;align-items:center;justify-content:center;}
+.lang-refresh-btn:hover{background:rgba(147,3,46,.1);transform:rotate(180deg);}
+.comments-section{background:white;border-radius:20px;padding:1.5rem;border:1px solid var(--border);}
+.comments-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;}
+.comments-header h3{font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--dr);margin:0;display:flex;align-items:center;gap:10px;}
+.comments-count{background:var(--bg-warm);padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:600;color:var(--dr);}
+.comment-form{background:var(--bg-warm);border-radius:16px;padding:1.2rem;margin-bottom:1.5rem;border:1px solid var(--border);}
+.emoji-strip{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;padding:8px 12px;background:var(--bg-warm);border-radius:40px;border:1px solid var(--border);}
+.emoji-btn{background:white;border:1px solid var(--border);border-radius:40px;font-size:1rem;cursor:pointer;padding:4px 9px;transition:all .2s;width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;}
+.emoji-btn:hover{transform:scale(1.15);background:var(--dr);color:white;border-color:var(--dr);}
+#emojiSearchInputWatch{transition:all .3s ease;}
+#emojiSearchInputWatch:focus{outline:none;border-color:var(--dr);box-shadow:0 0 0 3px rgba(147,3,46,.1);}
+.loading-emojis{display:inline-flex;align-items:center;gap:8px;}
+.comment-textarea{width:100%;border:2px solid var(--border);border-radius:14px;padding:12px;font-size:.88rem;resize:vertical;font-family:inherit;transition:all .3s;margin-bottom:10px;box-sizing:border-box;}
+.comment-textarea:focus{outline:none;border-color:var(--dr);box-shadow:0 0 0 3px rgba(147,3,46,.1);}
+.comment-tags-input{width:100%;border:2px solid var(--border);border-radius:30px;padding:10px 15px;font-size:.83rem;margin-bottom:10px;transition:all .3s;box-sizing:border-box;}
+.comment-tags-input:focus{outline:none;border-color:var(--dr);}
+.ai-tags-container-watch{background:linear-gradient(135deg,rgba(102,126,234,0.05),rgba(118,75,162,0.05));border-radius:16px;padding:8px 12px;margin-bottom:12px;transition:all 0.3s ease;}
+.ai-tag-suggestion{display:inline-flex;align-items:center;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:24px;padding:5px 14px;margin:0 6px 6px 0;font-size:0.75rem;font-weight:500;cursor:pointer;transition:all 0.25s ease;gap:5px;}
+.ai-tag-suggestion:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(102,126,234,0.4);background:linear-gradient(135deg,#764ba2,#667eea);}
+.ai-tag-suggestion i{font-size:0.7rem;}
+.submit-comment-btn{background:linear-gradient(135deg,var(--dr),var(--or));color:white;border:none;padding:12px 24px;border-radius:40px;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .3s;width:100%;}
+.submit-comment-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 20px rgba(147,3,46,.4);}
+.submit-comment-btn:disabled{opacity:.6;cursor:not-allowed;}
+.comments-list{max-height:600px;overflow-y:auto;}
+.comment-item{background:var(--bg-warm);border-radius:14px;padding:12px 15px;margin-bottom:10px;border-left:3px solid var(--dr);}
+.comment-header{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
+.comment-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--dr),var(--soft));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:.75rem;flex-shrink:0;}
+.comment-author{font-weight:700;color:var(--dark);font-size:.85rem;}
+.comment-date{font-size:.68rem;color:#aaa;}
+.comment-text{color:#555;font-size:.85rem;line-height:1.55;margin-bottom:8px;}
+.comment-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;}
+.comment-tag{background:rgba(147,3,46,.1);color:var(--dr);padding:2px 8px;border-radius:12px;font-size:.65rem;font-weight:600;}
+.comment-actions{display:flex;gap:8px;padding-top:6px;border-top:1px solid var(--border);align-items:center;flex-wrap:wrap;}
+.like-comment-btn{background:none;border:none;cursor:pointer;font-size:.75rem;color:#aaa;display:flex;align-items:center;gap:4px;transition:all .2s;padding:3px 8px;border-radius:14px;}
+.like-comment-btn:hover,.like-comment-btn.liked{color:#e74c3c;background:rgba(231,76,60,.06);}
+.reply-comment-btn{background:none;border:1px solid rgba(147,3,46,.2);cursor:pointer;font-size:.72rem;color:#93032E;display:flex;align-items:center;gap:4px;transition:all .2s;padding:4px 10px;border-radius:18px;font-weight:500;}
+.reply-comment-btn:hover{background:rgba(147,3,46,.08);border-color:var(--dr);}
+.btn-report-comment{display:inline-flex;align-items:center;gap:4px;background:none;border:1px solid rgba(147,3,46,.2);cursor:pointer;font-size:.72rem;color:var(--dr);padding:4px 10px;border-radius:14px;transition:all .2s;}
+.btn-report-comment:hover{background:rgba(147,3,46,.08);border-color:var(--dr);}
+.reply-textarea{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:8px 12px;font-size:.8rem;resize:none;margin-top:8px;box-sizing:border-box;font-family:inherit;}
+.reply-textarea:focus{outline:none;border-color:var(--dr);}
+.reply-submit{background:var(--dr);color:white;border:none;padding:6px 14px;border-radius:20px;font-size:.72rem;cursor:pointer;margin-top:6px;font-weight:600;}
+.reply-submit:hover{background:var(--dr2);}
+.reply-cancel{background:#F5F0E8;color:#4A3B2F;border:none;padding:6px 12px;border-radius:20px;font-size:.72rem;cursor:pointer;margin-top:6px;}
+.replies-list{margin-top:8px;padding-left:15px;border-left:2px solid var(--border);}
+.reply-item{background:white;border-radius:10px;padding:8px 12px;margin-bottom:6px;border-left:2px solid #C49A6C;font-size:.8rem;color:#555;}
+.empty-comments{text-align:center;padding:2rem;color:#aaa;}
+.symfony-error{display:none;background:#FEF2F2;border:1.5px solid #FECACA;border-left:4px solid #EF4444;border-radius:12px;padding:10px 14px;margin-bottom:10px;font-size:.83rem;font-weight:600;color:#B91C1C;align-items:center;gap:8px;}
+.symfony-error.visible{display:flex;}
+.loading-spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-radius:50%;border-top-color:white;animation:spin .6s linear infinite;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast-notification{position:fixed;bottom:20px;right:20px;color:white;padding:10px 20px;border-radius:40px;font-size:.8rem;font-weight:600;z-index:10001;animation:toastIn .3s ease;box-shadow:0 6px 20px rgba(0,0,0,.2);}
+@keyframes toastIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.report-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);z-index:20000;align-items:center;justify-content:center;}
+.report-modal.open{display:flex;}
+.report-modal-box{background:white;border-radius:22px;max-width:430px;width:92%;padding:1.8rem;box-shadow:0 20px 50px rgba(0,0,0,.3);animation:slideUp .35s cubic-bezier(.2,.9,.4,1.1);}
+@keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+.report-modal-title{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700;color:var(--dr);margin-bottom:1.2rem;display:flex;align-items:center;gap:9px;}
+.report-option{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;cursor:pointer;transition:background .2s;margin-bottom:5px;}
+.report-option:hover{background:var(--bg-warm);}
+.report-option input[type=radio]{accent-color:var(--dr);width:18px;height:18px;cursor:pointer;flex-shrink:0;}
+.report-option label{font-size:.88rem;color:var(--dark);cursor:pointer;line-height:1.4;}
+.report-modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:1.4rem;padding-top:1rem;border-top:1px solid var(--border);}
+.btn-cancel-report{background:#F5F0E8;color:#4A3B2F;border:none;padding:9px 20px;border-radius:22px;font-size:.85rem;font-weight:600;cursor:pointer;}
+.btn-cancel-report:hover{background:#e0d8ce;}
+.btn-submit-report{background:linear-gradient(135deg,var(--dr),var(--or));color:white;border:none;padding:9px 22px;border-radius:22px;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .3s;}
+.btn-submit-report:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 5px 16px rgba(147,3,46,.35);}
+.btn-submit-report:disabled{opacity:.5;cursor:not-allowed;background:linear-gradient(135deg,#aaa,#ddd);}
+.mic-btn{transition:all 0.3s ease;cursor:pointer;}
+.mic-btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(59,130,246,0.4);}
+.mic-btn.listening{animation:pulse 1.5s infinite;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,0.4);}70%{box-shadow:0 0 0 10px rgba(239,68,68,0);}100%{box-shadow:0 0 0 0 rgba(239,68,68,0);}}
+.btn-gif{background:linear-gradient(135deg,#8B5CF6,#6D28D9);color:white;border:none;padding:6px 14px;border-radius:20px;font-size:.75rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all 0.3s;}
+.btn-gif:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(139,92,246,0.4);}
+.gif-picker-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(5px);z-index:20000;align-items:center;justify-content:center;}
+.gif-picker-modal.open{display:flex;}
+.gif-picker-container{background:white;border-radius:20px;width:90%;max-width:800px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,.3);}
+.gif-picker-header{padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:white;}
+.gif-picker-header h3{margin:0;font-family:'Cormorant Garamond',serif;color:var(--dr);display:flex;align-items:center;gap:8px;}
+.gif-search-bar{display:flex;gap:10px;padding:1rem 1.5rem;background:#FEF9F0;border-bottom:1px solid var(--border);}
+.gif-search-input{flex:1;padding:10px 15px;border:2px solid var(--border);border-radius:40px;font-size:.85rem;outline:none;}
+.gif-search-input:focus{border-color:var(--dr);}
+.gif-search-btn{background:linear-gradient(135deg,var(--dr),#C49A6C);color:white;border:none;padding:10px 20px;border-radius:40px;cursor:pointer;font-weight:600;}
+.gif-search-btn:hover{transform:translateY(-2px);}
+.gif-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding:1.5rem;overflow-y:auto;max-height:500px;}
+.gif-item{cursor:pointer;border-radius:10px;overflow:hidden;transition:all 0.3s;background:#F5F0E8;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;}
+.gif-item img{width:100%;height:100%;object-fit:cover;}
+.gif-item:hover{transform:scale(1.05);box-shadow:0 5px 15px rgba(0,0,0,.2);}
+.gif-loading,.gif-no-results{text-align:center;padding:2rem;color:#aaa;}
+.gif-picker-footer{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:.75rem;color:#aaa;background:white;}
+.gif-load-more{background:#F5F0E8;border:none;padding:8px 16px;border-radius:20px;cursor:pointer;font-size:.75rem;}
+.gif-load-more:hover{background:var(--dr);color:white;}
+.comment-gif{max-width:100%;max-height:200px;border-radius:10px;margin:5px 0;display:block;}
+.comment-lang-selector{display:inline-flex;align-items:center;gap:4px;}
+.comment-lang-select{padding:3px 8px;border-radius:14px;border:1px solid #E8DFD1;background:white;font-size:.7rem;cursor:pointer;outline:none;color:#555;max-width:120px;}
+.comment-lang-select:focus{border-color:#3B82F6;}
+.btn-translate-comment-inline{background:none;border:1px solid rgba(59,130,246,.3);color:#3B82F6;border-radius:14px;padding:3px 10px;font-size:.7rem;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.btn-translate-comment-inline:hover{background:rgba(59,130,246,.08);}
+.comment-translate-bar{margin-top:6px;padding:8px 10px;background:#EFF6FF;border-radius:10px;border:1px solid #BFDBFE;font-size:.78rem;display:none;}
+.comment-translate-bar.visible{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.btn-replace-translation{background:#93032E;color:white;border:none;border-radius:10px;padding:4px 12px;font-size:.72rem;font-weight:600;cursor:pointer;}
+.btn-replace-translation:hover{background:#6B0221;}
+.btn-cancel-translation{background:#F5F0E8;color:#555;border:none;border-radius:10px;padding:4px 10px;font-size:.72rem;cursor:pointer;}
+#watchGifPreview img{max-height:120px;max-width:200px;border-radius:10px;border:2px solid #8B5CF6;}
+@media(max-width:768px){
+    .video-container{padding:1rem;}
+    .video-title{font-size:1.3rem;}
+    .video-actions{flex-direction:column;align-items:flex-start;}
+    .translate-header{flex-direction:column;align-items:stretch;}
+    .lang-wrapper{justify-content:center;}
+    .gif-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));}
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="video-page">
+    <div class="video-container">
+        <div class="nav-buttons">
+            <a href="{{ path('app_forum_public') }}" class="btn-nav-video"><i class="fas fa-video"></i> <span data-translate="true">Vidéos</span></a>
+            <a href="{{ path('app_forum_public') }}" class="btn-nav-image"><i class="fas fa-image"></i> <span data-translate="true">Photos</span></a>
+        </div>
+
+        <div class="video-player-wrapper">
+            <div class="video-player">
+                {% if publication.isYoutubeVideo() and publication.youtubeId %}
+                    <iframe src="https://www.youtube.com/embed/{{ publication.youtubeId }}?autoplay=1&rel=0&modestbranding=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                {% elseif publication.isVimeoVideo() and publication.vimeoId %}
+                    <iframe src="https://player.vimeo.com/video/{{ publication.vimeoId }}?autoplay=1&dnt=1" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                {% else %}
+                    <video src="{{ publication.video starts with 'http' ? publication.video : asset('uploads/publications/' ~ publication.video) }}" controls autoplay></video>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="translate-header">
+            <div class="translate-header-left">
+                <i class="fas fa-language"></i>
+                <span data-translate="true">Traduire cette page :</span>
+            </div>
+            <div class="lang-wrapper">
+                <i class="fas fa-globe"></i>
+                <select id="pageLangSelect" class="lang-select">
+                    <option value="fr">🇫🇷 Français</option>
+                    <option value="en">🇬🇧 English</option>
+                    <option value="ar">🇸🇦 العربية</option>
+                    <option value="es">🇪🇸 Español</option>
+                    <option value="de">🇩🇪 Deutsch</option>
+                    <option value="it">🇮🇹 Italiano</option>
+                    <option value="pt">🇵🇹 Português</option>
+                    <option value="ru">🇷🇺 Русский</option>
+                </select>
+                <button id="resetTranslationBtn" class="lang-refresh-btn" title="Réinitialiser">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="video-info">
+            <h1 class="video-title" data-translate="true">{{ publication.nom }}</h1>
+            <div class="video-meta">
+                <span class="video-forum-badge"><i class="fas fa-comments"></i> {{ publication.forum.nom }}</span>
+                <span class="video-date"><i class="fas fa-calendar"></i> {{ publication.dateCreation|date('d/m/Y') }}</span>
+                <span class="video-date"><i class="fas fa-eye"></i> {{ publication.vues|default(0) }} <span data-translate="true">vues</span></span>
+            </div>
+            <p class="video-description" data-translate="true">{{ publication.description|default('Aucune description.') }}</p>
+            <div class="video-actions">
+                <div class="vote-buttons">
+                    <button class="vote-btn" id="likeBtn" onclick="vote('like')">👍 <span id="likeCount">{{ likes|default(0) }}</span></button>
+                    <button class="vote-btn" id="dislikeBtn" onclick="vote('dislike')">👎 <span id="dislikeCount">{{ dislikes|default(0) }}</span></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="comments-section">
+            <div class="comments-header">
+                <h3><i class="fas fa-comment-dots"></i> <span data-translate="true">Commentaires</span></h3>
+                <span class="comments-count" id="commentsCount">{{ publication.commentaires|length }} <span data-translate="true">commentaire(s)</span></span>
+            </div>
+
+            <div class="comment-form">
+                <div class="emoji-strip" id="dynamicEmojiStripWatch">
+                    <div style="display:flex;gap:8px;align-items:center;width:100%;flex-wrap:wrap;">
+                        <div id="emojiListWatch" style="display:flex;gap:6px;flex-wrap:wrap;flex:1;">
+                            <span class="loading-emojis" style="font-size:.7rem;color:#aaa;">
+                                <i class="fas fa-spinner fa-spin"></i> Chargement des emojis...
+                            </span>
+                        </div>
+                        <div style="display:flex;gap:4px;">
+                            <button type="button" id="searchEmojiBtnWatch" class="emoji-btn" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;" onclick="toggleEmojiSearchWatch()">
+                                <i class="fas fa-search"></i> 🔍
+                            </button>
+                            <button type="button" id="refreshEmojisBtnWatch" class="emoji-btn" onclick="refreshEmojisWatch()">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="emojiSearchContainerWatch" style="display:none;margin-top:10px;width:100%;">
+                        <div style="display:flex;gap:8px;">
+                            <input type="text" id="emojiSearchInputWatch" placeholder="Rechercher un emoji..." style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:20px;font-size:.8rem;">
+                            <button onclick="searchEmojisWatch()" style="background:linear-gradient(135deg,var(--dr),var(--or));color:white;border:none;padding:8px 16px;border-radius:20px;cursor:pointer;">Rechercher</button>
+                        </div>
+                        <div id="emojiSearchResultsWatch" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;max-height:150px;overflow-y:auto;padding:8px;background:var(--bg-warm);border-radius:12px;"></div>
+                    </div>
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:8px;gap:8px;">
+                    <button type="button" class="btn-gif" onclick="openGifPickerWatch()">
+                        <i class="fas fa-grin-tears"></i> GIF
+                    </button>
+                    <button type="button" class="mic-btn" id="micBtnWatch" onclick="toggleSpeechRecognitionWatch('commentText')" style="background:linear-gradient(135deg,#3B82F6,#2563EB);color:white;border:none;padding:6px 14px;border-radius:20px;font-size:.75rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;">
+                        <i class="fas fa-microphone"></i> Dicter
+                    </button>
+                </div>
+                <div class="symfony-error" id="errorDesc"><i class="fas fa-exclamation-circle"></i><span id="errorDescText"></span></div>
+                <textarea id="commentText" class="comment-textarea" rows="3" placeholder="Partagez votre avis sur cette vidéo... (min. 3 caractères)"></textarea>
+                <div class="symfony-error" id="errorTags" style="margin-bottom:10px;"><i class="fas fa-exclamation-circle"></i><span id="errorTagsText"></span></div>
+                <input type="text" id="commentTags" class="comment-tags-input" placeholder="🏷️ Tags : voyage, plage, culture...">
+                
+                <div id="aiTagsContainerWatch" class="ai-tags-container-watch">
+                    <span style="font-size:.75rem;color:#aaa;font-style:italic;">
+                        <i class="fas fa-magic" style="font-size:.65rem;margin-right:3px;"></i>
+                        ✨ Écrivez votre commentaire pour des suggestions de tags personnalisées
+                    </span>
+                </div>
+                
+                <button id="submitCommentBtn" class="submit-comment-btn" onclick="submitCommentWatch()">
+                    <i class="fas fa-paper-plane"></i> <span data-translate="true">Publier mon commentaire</span>
+                </button>
+            </div>
+
+            <div id="commentsList" class="comments-list">
+                {% for comment in publication.commentaires %}
+                    {% if not comment.isCancelled %}
+                    <div class="comment-item" id="comment-{{ comment.idC }}">
+                        <div class="comment-header">
+                            <div class="comment-avatar">V</div>
+                            <span class="comment-author">Voyageur TunisiaJourney</span>
+                            <span class="comment-date">{{ comment.dateCreation|date('d/m/Y') }}</span>
+                        </div>
+                        <div class="comment-text" id="cmt-text-watch-{{ comment.idC }}" data-original-text="{{ comment.description|e('html_attr') }}"></div>
+                        {% if comment.tags %}
+                            <div class="comment-tags">
+                                {% for tag in comment.tags|split(',') %}
+                                    <span class="comment-tag">#{{ tag|trim }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="comment-actions">
+                            <button class="like-comment-btn" id="likeCommentBtn-{{ comment.idC }}" onclick="likeCommentWatch({{ comment.idC }})">
+                                <span id="likeHeart-{{ comment.idC }}">🤍</span>
+                                <span id="likeCommentCount-{{ comment.idC }}">0</span>
+                            </button>
+                            <button class="reply-comment-btn" onclick="toggleReplyWatch({{ comment.idC }})">
+                                <i class="fas fa-reply"></i> <span data-translate="true">Répondre</span>
+                            </button>
+                            <button class="btn-report-comment" onclick="openReportModalWatch({{ comment.idC }})">
+                                <i class="fas fa-flag"></i> <span data-translate="true">Signaler</span>
+                            </button>
+                            <div style="margin-left:auto;" id="langBtn-{{ comment.idC }}"></div>
+                        </div>
+                        <div class="comment-translate-bar" id="translateBar-{{ comment.idC }}">
+                            <span id="translatePreview-{{ comment.idC }}" style="flex:1;color:#1D4ED8;font-size:.8rem;"></span>
+                            <button class="btn-replace-translation" onclick="replaceCommentWatch({{ comment.idC }})">Remplacer</button>
+                            <button class="btn-cancel-translation" onclick="cancelTranslationWatch({{ comment.idC }})">Annuler</button>
+                        </div>
+                        <div id="replyForm-{{ comment.idC }}" style="display:none;">
+                            <textarea id="replyText-{{ comment.idC }}" class="reply-textarea" rows="2" placeholder="Votre réponse..."></textarea>
+                            <div style="display:flex;gap:7px;margin-top:6px;justify-content:flex-end;">
+                                <button class="reply-cancel" onclick="toggleReplyWatch({{ comment.idC }})"><span data-translate="true">Annuler</span></button>
+                                <button class="reply-submit" onclick="submitReplyWatch({{ comment.idC }})"><i class="fas fa-paper-plane"></i> <span data-translate="true">Répondre</span></button>
+                            </div>
+                        </div>
+                        <div id="replies-{{ comment.idC }}" class="replies-list"></div>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="empty-comments">
+                        <i class="fas fa-comment-slash" style="font-size:2rem;opacity:.3;margin-bottom:.5rem;display:block;"></i>
+                        <p data-translate="true">Soyez le premier à commenter cette vidéo !</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="report-modal" id="reportModal">
+    <div class="report-modal-box">
+        <div class="report-modal-title"><i class="fas fa-flag"></i><span data-translate="true">Signaler ce commentaire</span></div>
+        <p style="font-size:.8rem;color:#888;margin-bottom:1rem;" data-translate="true">Aidez-nous à maintenir une communauté respectueuse.</p>
+        <form id="reportForm">
+            <div class="report-option"><input type="radio" name="reportReason" id="r1" value="langage_inapproprié"><label for="r1">🤬 <span data-translate="true">Langage inapproprié</span></label></div>
+            <div class="report-option"><input type="radio" name="reportReason" id="r2" value="propos_injurieux"><label for="r2">💢 <span data-translate="true">Propos injurieux</span></label></div>
+            <div class="report-option"><input type="radio" name="reportReason" id="r3" value="discrimination"><label for="r3">⚠️ <span data-translate="true">Discrimination</span></label></div>
+            <div class="report-option"><input type="radio" name="reportReason" id="r4" value="spam"><label for="r4">📢 <span data-translate="true">Spam ou publicité</span></label></div>
+            <div class="report-option"><input type="radio" name="reportReason" id="r5" value="contenu_offensant"><label for="r5">🚫 <span data-translate="true">Contenu offensant</span></label></div>
+            <div class="report-option"><input type="radio" name="reportReason" id="r6" value="autre"><label for="r6">❓ <span data-translate="true">Autre</span></label></div>
+        </form>
+        <div class="report-modal-actions">
+            <button class="btn-cancel-report" onclick="closeReportModalWatch()"><span data-translate="true">Annuler</span></button>
+            <button class="btn-submit-report" id="reportSubmitBtn" onclick="submitReportWatch()" disabled>
+                <i class="fas fa-flag me-1"></i> <span data-translate="true">Signaler</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="gif-picker-modal" id="gifPickerModal">
+    <div class="gif-picker-container">
+        <div class="gif-picker-header">
+            <h3><i class="fas fa-grin-tears"></i> <span data-translate="true">Choisir un GIF</span></h3>
+            <button onclick="closeGifPickerWatch()" style="background:var(--bg-warm);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:1rem;">✕</button>
+        </div>
+        <div class="gif-search-bar">
+            <input type="text" id="gifSearchInput" class="gif-search-input" placeholder="🔍 Rechercher un GIF..." onkeypress="if(event.key==='Enter') searchGifsWatch()">
+            <button class="gif-search-btn" onclick="searchGifsWatch()"><i class="fas fa-search"></i> Rechercher</button>
+        </div>
+        <div id="gifGrid" class="gif-grid">
+            <div class="gif-loading"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>
+        </div>
+        <div class="gif-picker-footer">
+            <span>✨ GIFs animés - GIPHY</span>
+            <button class="gif-load-more" onclick="loadMoreGifsWatch()"><i class="fas fa-plus"></i> Charger plus</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+const publicationId = {{ publication.idP }};
+var commentLikes = {};
+var reportTargetCommentId = null;
+var originalPageContent = null;
+var currentGifPage = 0;
+var currentGifQuery = '';
+var pendingTranslationsWatch = {};
+var emojiSearchVisibleWatch = false;
+var currentEmojisWatch = [];
+
+document.querySelectorAll('[id^="likeCommentCount-"]').forEach(function(el) {
+    var id = el.id.replace('likeCommentCount-', '');
+    commentLikes[id] = {liked: false, count: parseInt(el.textContent) || 0};
+});
+
+function escapeHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function showToast(msg, type, duration) {
+    var c = {success:'#27ae60',error:'#c0392b',warn:'#e07b39',info:'#2980b9'};
+    var t = document.createElement('div');
+    t.className = 'toast-notification';
+    t.style.background = c[type] || c.success;
+    t.innerHTML = msg;
+    document.body.appendChild(t);
+    setTimeout(function(){t.style.opacity='0';t.style.transition='.3s';setTimeout(function(){t.remove();},300);}, duration||3500);
+}
+
+async function loadDynamicEmojisWatch() {
+    var emojiList = document.getElementById('emojiListWatch');
+    if (!emojiList) return;
+    emojiList.innerHTML = '<span class="loading-emojis" style="font-size:.7rem;color:#aaa;"><i class="fas fa-spinner fa-spin"></i> Chargement des emojis...</span>';
+    try {
+        var emojis = await window.EmojiService.getTravelEmojis(30);
+        currentEmojisWatch = emojis;
+        if (emojis && emojis.length > 0) {
+            var html = '';
+            emojis.forEach(function(emoji) {
+                var character = emoji.character || emoji.emoji || emoji;
+                var slug = emoji.slug || '';
+                html += `<button type="button" class="emoji-btn" onclick="addEmojiWatch('${character}')" title="${slug}">${character}</button>`;
+            });
+            emojiList.innerHTML = html;
+        } else {
+            emojiList.innerHTML = '<span style="font-size:.7rem;color:#aaa;">⚠️ Aucun emoji disponible</span>';
+        }
+    } catch (error) {
+        console.error('Erreur chargement emojis:', error);
+        emojiList.innerHTML = '<span style="font-size:.7rem;color:#aaa;">⚠️ Erreur chargement emojis</span>';
+    }
+}
+
+function toggleEmojiSearchWatch() {
+    var container = document.getElementById('emojiSearchContainerWatch');
+    var searchBtn = document.getElementById('searchEmojiBtnWatch');
+    if (emojiSearchVisibleWatch) {
+        container.style.display = 'none';
+        emojiSearchVisibleWatch = false;
+        searchBtn.style.background = 'linear-gradient(135deg,#667eea,#764ba2)';
+    } else {
+        container.style.display = 'block';
+        emojiSearchVisibleWatch = true;
+        searchBtn.style.background = 'linear-gradient(135deg,var(--dr),var(--or))';
+        document.getElementById('emojiSearchInputWatch').focus();
+    }
+}
+
+async function searchEmojisWatch() {
+    var query = document.getElementById('emojiSearchInputWatch').value.trim();
+    var resultsContainer = document.getElementById('emojiSearchResultsWatch');
+    if (!query) {
+        resultsContainer.innerHTML = '<span style="font-size:.7rem;color:#aaa;">Entrez un terme de recherche</span>';
+        return;
+    }
+    resultsContainer.innerHTML = '<span style="font-size:.7rem;color:#aaa;"><i class="fas fa-spinner fa-spin"></i> Recherche...</span>';
+    try {
+        var emojis = await window.EmojiService.searchEmojis(query, 20);
+        if (emojis && emojis.length > 0) {
+            var html = '';
+            emojis.forEach(function(emoji) {
+                var character = emoji.character || emoji.emoji || emoji;
+                var slug = emoji.slug || '';
+                html += `<button type="button" class="emoji-btn" onclick="addEmojiWatch('${character}'); toggleEmojiSearchWatch();" title="${slug}">${character}</button>`;
+            });
+            resultsContainer.innerHTML = html;
+        } else {
+            resultsContainer.innerHTML = '<span style="font-size:.7rem;color:#aaa;">❌ Aucun emoji trouvé pour "' + escapeHtml(query) + '"</span>';
+        }
+    } catch (error) {
+        resultsContainer.innerHTML = '<span style="font-size:.7rem;color:#aaa;">❌ Erreur de recherche</span>';
+    }
+}
+
+async function refreshEmojisWatch() {
+    window.EmojiService.clearCache();
+    await loadDynamicEmojisWatch();
+    showToast('✨ Emojis actualisés !', 'success', 2000);
+}
+
+function addEmojiWatch(e) {
+    var ta = document.getElementById('commentText');
+    var pos = ta.selectionStart || ta.value.length;
+    ta.value = ta.value.slice(0, pos) + e + ta.value.slice(pos);
+    ta.focus();
+    ta.setSelectionRange(pos + e.length, pos + e.length);
+}
+
+async function fetchAITagsWatch(commentText) {
+    if (!commentText || commentText.trim().length < 8) {
+        var container = document.getElementById('aiTagsContainerWatch');
+        if (container) {
+            container.innerHTML = '<span style="font-size:.75rem;color:#aaa;font-style:italic;">' +
+                '<i class="fas fa-magic" style="font-size:.65rem;margin-right:3px;"></i> ' +
+                '✍️ Écrivez au moins 8 caractères pour des suggestions de tags personnalisées</span>';
+        }
+        return;
+    }
+    var container = document.getElementById('aiTagsContainerWatch');
+    if (!container) return;
+    container.innerHTML = '<span style="font-size:.7rem;color:#aaa;"><i class="fas fa-spinner fa-spin"></i> Analyse de votre texte pour des suggestions pertinentes...</span>';
+    try {
+        var existingTags = document.getElementById('commentTags')?.value || '';
+        var response = await fetch('/api/tags/suggest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: commentText, existingTags: existingTags, maxTags: 6 })
+        });
+        var data = await response.json();
+        if (data.success && data.tags && data.tags.length > 0) {
+            var html = '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;">' +
+                       '<span style="font-size:.7rem;color:var(--dr);font-weight:600;margin-right:8px;">' +
+                       '<i class="fas fa-robot"></i> IA suggère :</span>';
+            data.tags.forEach(function(tag) {
+                html += '<span class="ai-tag-suggestion" onclick="addTagWatch(\'' + escapeHtml(tag) + '\')">' +
+                        '<i class="fas fa-tag"></i> #' + escapeHtml(tag) + '</span>';
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        } else {
+            container.innerHTML = '<span style="font-size:.75rem;color:#aaa;font-style:italic;">' +
+                '<i class="fas fa-lightbulb"></i> Continuez à écrire pour des suggestions personnalisées</span>';
+        }
+    } catch (error) {
+        console.error('Erreur chargement tags IA:', error);
+        container.innerHTML = '<span style="font-size:.75rem;color:#aaa;font-style:italic;">' +
+            '<i class="fas fa-tag"></i> Suggestions de tags disponibles automatiquement</span>';
+    }
+}
+
+function setupTagSuggestionListenerWatch() {
+    var textarea = document.getElementById('commentText');
+    if (textarea) {
+        var debounceTimer;
+        textarea.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(function() {
+                var text = textarea.value;
+                if (text.length > 10) {
+                    fetchAITagsWatch(text);
+                }
+            }, 700);
+        });
+    }
+}
+
+function saveOriginalPageContent() {
+    if (!originalPageContent) { var container = document.querySelector('.video-container'); if (container) originalPageContent = container.cloneNode(true); }
+}
+async function translatePage() {
+    var targetLang = document.getElementById('pageLangSelect').value;
+    if (targetLang === 'fr') { resetPageTranslation(); return; }
+    saveOriginalPageContent();
+    var els = document.querySelectorAll('[data-translate="true"]');
+    if (!els.length) { showToast('⚠️ Aucun texte à traduire','warn'); return; }
+    showToast('🌐 Traduction en cours...','info',2000);
+    for (var el of els) {
+        var ot = el.getAttribute('data-original-text') || el.textContent;
+        if (!ot || ot.trim().length < 3) continue;
+        if (!el.getAttribute('data-original-text')) el.setAttribute('data-original-text', ot);
+        try {
+            var resp = await fetch('/api/translation/translate-page', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:ot,targetLang:targetLang})});
+            var data = await resp.json();
+            if (data.success) el.textContent = data.translated;
+        } catch(e) { console.error(e); }
+    }
+    showToast('✅ Page traduite !','success');
+}
+function resetPageTranslation() {
+    if (originalPageContent) {
+        var container = document.querySelector('.video-container');
+        if (container) { container.innerHTML = originalPageContent.innerHTML; originalPageContent = null; showToast('🔄 Page restaurée','success'); reinitCommentTextsWatch(); }
+        var select = document.getElementById('pageLangSelect');
+        if (select) select.value = 'fr';
+    }
+}
+
+function toggleSpeechRecognitionWatch(textareaId) {
+    var service = window.SpeechRecognitionService;
+    if (!service) { showToast('⚠️ Reconnaissance vocale non disponible','warn'); return; }
+    var pageLang = document.getElementById('pageLangSelect')?.value || 'fr';
+    service.setLanguage(pageLang);
+    if (service.isListening) service.stopListening();
+    else service.startListening(textareaId, function(){});
+}
+
+function openGifPickerWatch() {
+    document.getElementById('gifPickerModal').classList.add('open');
+    loadTrendingGifsWatch();
+}
+function closeGifPickerWatch() {
+    document.getElementById('gifPickerModal').classList.remove('open');
+}
+async function loadTrendingGifsWatch() {
+    var service = window.GiphyService;
+    if (!service || !service.isConfigured()) { document.getElementById('gifGrid').innerHTML = '<div class="gif-no-results">⚠️ Service GIF non configuré</div>'; return; }
+    currentGifQuery = '';
+    document.getElementById('gifGrid').innerHTML = '<div class="gif-loading"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
+    var result = await service.getTrending(20, 0);
+    if (result.success && result.gifs.length > 0) { displayGifsWatch(result.gifs); currentGifPage = 1; }
+    else document.getElementById('gifGrid').innerHTML = '<div class="gif-no-results">❌ Aucun GIF trouvé</div>';
+}
+async function searchGifsWatch() {
+    var query = document.getElementById('gifSearchInput').value.trim();
+    var service = window.GiphyService;
+    if (!service || !service.isConfigured()) return;
+    if (!query) { loadTrendingGifsWatch(); return; }
+    currentGifQuery = query;
+    document.getElementById('gifGrid').innerHTML = '<div class="gif-loading"><i class="fas fa-spinner fa-spin"></i> Recherche...</div>';
+    var result = await service.search(query, 20, 0);
+    if (result.success && result.gifs.length > 0) { displayGifsWatch(result.gifs); currentGifPage = 1; }
+    else document.getElementById('gifGrid').innerHTML = '<div class="gif-no-results">❌ Aucun résultat pour "' + escapeHtml(query) + '"</div>';
+}
+async function loadMoreGifsWatch() {
+    var service = window.GiphyService;
+    if (!service || !service.isConfigured()) return;
+    var offset = currentGifPage * 20;
+    var result = currentGifQuery ? await service.search(currentGifQuery, 20, offset) : await service.getTrending(20, offset);
+    if (result.success && result.gifs.length > 0) { displayGifsWatch(result.gifs, true); currentGifPage++; }
+    else showToast('Plus aucun GIF','info');
+}
+function displayGifsWatch(gifs, append) {
+    var grid = document.getElementById('gifGrid');
+    if (!append) grid.innerHTML = '';
+    gifs.forEach(function(gif) {
+        var gifUrl = window.GiphyService.getGifUrl(gif, 'fixed_height');
+        var item = document.createElement('div');
+        item.className = 'gif-item';
+        item.innerHTML = '<img src="' + gifUrl + '" alt="GIF" loading="lazy">';
+        item.onclick = function() { insertGifToCommentWatch(gif); };
+        grid.appendChild(item);
+    });
+}
+function insertGifToCommentWatch(gif) {
+    var textarea = document.getElementById('commentText');
+    if (!textarea) return;
+    var gifUrl = window.GiphyService.getGifUrl(gif, 'fixed_height');
+    var gifMarker = '[[GIF:' + gifUrl + ']]';
+    var cursorPos = textarea.selectionStart;
+    var currentValue = textarea.value;
+    var newValue = currentValue.slice(0, cursorPos) + '\n' + gifMarker + '\n' + currentValue.slice(cursorPos);
+    textarea.value = newValue;
+    textarea.dispatchEvent(new Event('input', {bubbles: true}));
+    showWatchGifPreview(gifUrl);
+    closeGifPickerWatch();
+    showToast('✅ GIF ajouté au commentaire !', 'success');
+}
+function showWatchGifPreview(gifUrl) {
+    var existing = document.getElementById('watchGifPreview');
+    if (existing) existing.remove();
+    var textarea = document.getElementById('commentText');
+    if (!textarea) return;
+    var preview = document.createElement('div');
+    preview.id = 'watchGifPreview';
+    preview.style.cssText = 'margin-top:6px;position:relative;display:inline-block;';
+    preview.innerHTML = '<img src="' + gifUrl + '" style="max-height:120px;max-width:200px;border-radius:10px;border:2px solid #8B5CF6;" alt="Aperçu GIF">' +
+        '<button onclick="removeWatchGifPreview()" style="position:absolute;top:-6px;right:-6px;background:#EF4444;color:white;border:none;border-radius:50%;width:20px;height:20px;font-size:10px;cursor:pointer;line-height:1;">✕</button>';
+    textarea.parentNode.insertBefore(preview, textarea.nextSibling);
+}
+function removeWatchGifPreview() {
+    var preview = document.getElementById('watchGifPreview');
+    if (preview) preview.remove();
+    var textarea = document.getElementById('commentText');
+    if (textarea) {
+        textarea.value = textarea.value.replace(/\n?\[\[GIF:https?:\/\/[^\]]+\]\]\n?/g, '');
+    }
+}
+
+async function vote(type) {
+    try {
+        var r = await fetch('/publication/' + publicationId + '/vote', {method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded','X-Requested-With':'XMLHttpRequest'},body:'type='+type});
+        var data = await r.json();
+        if (data.success) {
+            document.getElementById('likeCount').textContent = data.likes;
+            document.getElementById('dislikeCount').textContent = data.dislikes;
+            document.getElementById('likeBtn').classList.toggle('liked', data.userVote === 'like');
+            document.getElementById('dislikeBtn').classList.toggle('disliked', data.userVote === 'dislike');
+            showToast(type==='like'?'👍 Like ajouté !':'👎 Dislike ajouté !','success');
+        }
+    } catch(e) {}
+}
+
+function showServerErrorWatch(field, message) {
+    clearServerErrorsWatch();
+    if (field === 'description') {
+        document.getElementById('errorDescText').textContent = message;
+        document.getElementById('errorDesc').classList.add('visible');
+        document.getElementById('commentText').style.borderColor = '#EF4444';
+        document.getElementById('commentText').focus();
+    } else if (field === 'tags') {
+        document.getElementById('errorTagsText').textContent = message;
+        document.getElementById('errorTags').classList.add('visible');
+        document.getElementById('commentTags').style.borderColor = '#EF4444';
+        document.getElementById('commentTags').focus();
+    }
+}
+function clearServerErrorsWatch() {
+    document.getElementById('errorDesc').classList.remove('visible');
+    document.getElementById('errorDescText').textContent = '';
+    document.getElementById('commentText').style.borderColor = '';
+    document.getElementById('errorTags').classList.remove('visible');
+    document.getElementById('errorTagsText').textContent = '';
+    document.getElementById('commentTags').style.borderColor = '';
+}
+
+function buildCommentHTMLWatch(c) {
+    var ld = commentLikes[c.id] || {liked:false, count:0};
+    var tags = c.tags ? '<div class="comment-tags">' +
+        c.tags.split(',').map(function(t){ return '<span class="comment-tag">#' + escapeHtml(t.trim()) + '</span>'; }).join('') + '</div>' : '';
+    return '<div class="comment-item" id="comment-' + c.id + '">' +
+        '<div class="comment-header">' +
+        '<div class="comment-avatar">V</div>' +
+        '<span class="comment-author">Voyageur TunisiaJourney</span>' +
+        '<span class="comment-date">' + escapeHtml(c.date) + '</span>' +
+        '</div>' +
+        '<div class="comment-text" id="cmt-text-watch-' + c.id + '"></div>' +
+        tags +
+        '<div class="comment-actions">' +
+        '<button class="like-comment-btn ' + (ld.liked?'liked':'') + '" id="likeCommentBtn-' + c.id + '" onclick="likeCommentWatch(' + c.id + ')">' +
+        '<span id="likeHeart-' + c.id + '">' + (ld.liked?'❤️':'🤍') + '</span>' +
+        '<span id="likeCommentCount-' + c.id + '">' + ld.count + '</span></button>' +
+        '<button class="reply-comment-btn" onclick="toggleReplyWatch(' + c.id + ')"><i class="fas fa-reply"></i> Répondre</button>' +
+        '<button class="btn-report-comment" onclick="openReportModalWatch(' + c.id + ')"><i class="fas fa-flag"></i> Signaler</button>' +
+        '<div style="margin-left:auto;" id="langBtn-' + c.id + '">' + buildLangButtonWatch(c.id) + '</div>' +
+        '</div>' +
+        '<div class="comment-translate-bar" id="translateBar-' + c.id + '">' +
+        '<span id="translatePreview-' + c.id + '" style="flex:1;color:#1D4ED8;font-size:.8rem;"></span>' +
+        '<button class="btn-replace-translation" onclick="replaceCommentWatch(' + c.id + ')">Remplacer</button>' +
+        '<button class="btn-cancel-translation" onclick="cancelTranslationWatch(' + c.id + ')">Annuler</button>' +
+        '</div>' +
+        '<div id="replyForm-' + c.id + '" style="display:none;">' +
+        '<textarea id="replyText-' + c.id + '" class="reply-textarea" rows="2" placeholder="Votre réponse..."></textarea>' +
+        '<div style="display:flex;gap:7px;margin-top:6px;justify-content:flex-end;">' +
+        '<button class="reply-cancel" onclick="toggleReplyWatch(' + c.id + ')">Annuler</button>' +
+        '<button class="reply-submit" onclick="submitReplyWatch(' + c.id + ')"><i class="fas fa-paper-plane"></i> Répondre</button>' +
+        '</div></div>' +
+        '<div id="replies-' + c.id + '" class="replies-list"></div>' +
+        '</div>';
+}
+
+async function loadCommentsWatch() {
+    try {
+        var r = await fetch('/commentaire/publication/' + publicationId + '/comments', {headers:{'X-Requested-With':'XMLHttpRequest','Accept':'application/json'}});
+        var data = await r.json();
+        if (data.success && data.comments) {
+            var list = document.getElementById('commentsList');
+            if (data.comments.length === 0) {
+                list.innerHTML = '<div class="empty-comments"><i class="fas fa-comment-slash"></i><p>Soyez le premier à commenter !</p></div>';
+            } else {
+                list.innerHTML = data.comments.map(function(c) { return buildCommentHTMLWatch(c); }).join('');
+                data.comments.forEach(function(c) {
+                    var el = document.getElementById('cmt-text-watch-' + c.id);
+                    if (el) {
+                        el.innerHTML = window.renderCommentText(c.description);
+                    }
+                });
+                injectLangButtonsWatch(data.comments);
+            }
+            data.comments.forEach(function(c) { commentLikes[c.id] = {liked:false,count:c.likes||0}; });
+        }
+    } catch(e) { console.error('Erreur loadComments:', e); }
+}
+
+function buildLangButtonWatch(commentId) {
+    var langs = [
+        {code:'fr',label:'🇫🇷 Français'},{code:'en',label:'🇬🇧 English'},
+        {code:'ar',label:'🇸🇦 العربية'},{code:'es',label:'🇪🇸 Español'},
+        {code:'de',label:'🇩🇪 Deutsch'},{code:'it',label:'🇮🇹 Italiano'},
+        {code:'pt',label:'🇵🇹 Português'},{code:'ru',label:'🇷🇺 Русский'},
+    ];
+    var options = langs.map(function(l) { return '<option value="' + l.code + '">' + l.label + '</option>'; }).join('');
+    return '<div class="comment-lang-selector">' +
+        '<select class="comment-lang-select" id="langSelect-' + commentId + '"><option value="">🌐 Langue</option>' + options + '</select>' +
+        '<button class="btn-translate-comment-inline" onclick="translateCommentWatch(' + commentId + ')"><i class="fas fa-language"></i> Traduire</button>' +
+        '</div>';
+}
+function injectLangButtonsWatch(comments) {
+    comments.forEach(function(c) {
+        var el = document.getElementById('langBtn-' + c.id);
+        if (el) el.innerHTML = buildLangButtonWatch(c.id);
+    });
+}
+
+function likeCommentWatch(id) {
+    if (!commentLikes[id]) commentLikes[id] = {liked:false,count:0};
+    var d = commentLikes[id];
+    d.liked = !d.liked;
+    d.count += d.liked ? 1 : -1;
+    var h = document.getElementById('likeHeart-' + id);
+    var cnt = document.getElementById('likeCommentCount-' + id);
+    var b = document.getElementById('likeCommentBtn-' + id);
+    if (h) h.textContent = d.liked ? '❤️' : '🤍';
+    if (cnt) cnt.textContent = d.count;
+    if (b) b.classList.toggle('liked', d.liked);
+    if (h && d.liked) { h.style.transform = 'scale(1.4)'; setTimeout(function(){h.style.transform='';},180); }
+}
+
+function toggleReplyWatch(id) {
+    var f = document.getElementById('replyForm-' + id);
+    if (f) { var show = f.style.display === 'none'; f.style.display = show ? 'block' : 'none'; if (show) { var ta = document.getElementById('replyText-' + id); if (ta) ta.focus(); } }
+}
+async function submitReplyWatch(commentId) {
+    var ta = document.getElementById('replyText-' + commentId);
+    var text = ta ? ta.value.trim() : '';
+    if (text.length < 2) { showToast('⚠️ La réponse doit contenir au moins 2 caractères','warn'); return; }
+    try {
+        var r = await fetch('/commentaire/api/new/' + publicationId, {method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({description:text,tags:''})});
+        var data = await r.json();
+        if (data.success) {
+            var repliesDiv = document.getElementById('replies-' + commentId);
+            if (repliesDiv) repliesDiv.insertAdjacentHTML('beforeend','<div class="reply-item">' + escapeHtml(text) + '</div>');
+            if (ta) ta.value = '';
+            toggleReplyWatch(commentId);
+            showToast('💬 Réponse publiée !','success');
+        } else { showToast('❌ ' + (data.error||'Erreur'),'error'); }
+    } catch(e) { showToast('❌ Erreur de connexion','error'); }
+}
+
+function addEmojiWatch(emoji) {
+    var ta = document.getElementById('commentText');
+    var pos = ta.selectionStart || ta.value.length;
+    ta.value = ta.value.slice(0, pos) + emoji + ta.value.slice(pos);
+    ta.focus();
+    ta.setSelectionRange(pos + emoji.length, pos + emoji.length);
+}
+function addTagWatch(tag) {
+    var input = document.getElementById('commentTags');
+    var current = input.value.trim();
+    if (current) { input.value = current + ', ' + tag; }
+    else { input.value = tag; }
+    input.focus();
+}
+
+async function submitCommentWatch() {
+    var text = document.getElementById('commentText').value;
+    var tags = document.getElementById('commentTags').value;
+    var btn = document.getElementById('submitCommentBtn');
+    var orig = btn.innerHTML;
+    clearServerErrorsWatch();
+    btn.innerHTML = '<span class="loading-spinner"></span> Publication...';
+    btn.disabled = true;
+    try {
+        var r = await fetch('/commentaire/api/new/' + publicationId, {method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({description:text,tags:tags})});
+        var data = await r.json();
+        if (data.success) {
+            document.getElementById('commentText').value = '';
+            document.getElementById('commentTags').value = '';
+            var prev = document.getElementById('watchGifPreview');
+            if (prev) prev.remove();
+            clearServerErrorsWatch();
+            await loadCommentsWatch();
+            document.getElementById('commentsCount').textContent = data.total + ' commentaire(s)';
+            showToast('✅ Commentaire publié !','success');
+        } else {
+            showServerErrorWatch(data.field || 'description', data.error || 'Erreur.');
+            showToast('❌ ' + (data.error||'Erreur'),'error');
+        }
+    } catch(e) {
+        console.error('Erreur submitComment:', e);
+        showServerErrorWatch('description','Erreur de connexion.');
+        showToast('❌ Erreur','error');
+    } finally {
+        btn.innerHTML = orig;
+        btn.disabled = false;
+    }
+}
+
+async function translateCommentWatch(commentId) {
+    var select = document.getElementById('langSelect-' + commentId);
+    var targetLang = select ? select.value : '';
+    if (!targetLang) { showToast('⚠️ Choisissez une langue','warn'); if (select) select.focus(); return; }
+    var bar = document.getElementById('translateBar-' + commentId);
+    var preview = document.getElementById('translatePreview-' + commentId);
+    bar.classList.add('visible');
+    preview.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Traduction...';
+    try {
+        var r = await fetch('/commentaire/api/translate/' + commentId, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({targetLang:targetLang})});
+        var data = await r.json();
+        if (data.success) {
+            pendingTranslationsWatch[commentId] = {original:data.original,translated:data.translated,targetLang:targetLang};
+            preview.innerHTML = '<strong>Aperçu :</strong> ' + escapeHtml(data.translated);
+            showToast('✅ Traduction prête !','success');
+        } else { preview.innerHTML = '<span style="color:red;">❌ Erreur</span>'; }
+    } catch(e) { preview.innerHTML = '<span style="color:red;">❌ Erreur connexion</span>'; }
+}
+async function replaceCommentWatch(commentId) {
+    var t = pendingTranslationsWatch[commentId];
+    if (!t || !confirm('Remplacer ce commentaire par sa traduction ?')) return;
+    try {
+        var r = await fetch('/commentaire/api/replace/' + commentId, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({newText:t.translated,targetLang:t.targetLang})});
+        var data = await r.json();
+        if (data.success) {
+            var el = document.getElementById('cmt-text-watch-' + commentId);
+            if (el) el.innerHTML = window.renderCommentText(t.translated);
+            cancelTranslationWatch(commentId);
+            showToast('✅ Commentaire remplacé !','success');
+        }
+    } catch(e) { showToast('❌ Erreur','error'); }
+}
+function cancelTranslationWatch(commentId) {
+    var bar = document.getElementById('translateBar-' + commentId);
+    if (bar) bar.classList.remove('visible');
+    delete pendingTranslationsWatch[commentId];
+}
+
+function openReportModalWatch(commentId) {
+    reportTargetCommentId = commentId;
+    document.querySelectorAll('#reportForm input[type=radio]').forEach(function(r){r.checked=false;});
+    document.getElementById('reportSubmitBtn').disabled = true;
+    document.getElementById('reportModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeReportModalWatch() {
+    document.getElementById('reportModal').classList.remove('open');
+    document.body.style.overflow = '';
+    reportTargetCommentId = null;
+}
+document.getElementById('reportForm').addEventListener('change', function() {
+    var sel = document.querySelector('#reportForm input[name="reportReason"]:checked');
+    document.getElementById('reportSubmitBtn').disabled = !sel;
+});
+document.getElementById('reportModal').addEventListener('click', function(e){if(e.target===this)closeReportModalWatch();});
+async function submitReportWatch() {
+    var sel = document.querySelector('#reportForm input[name="reportReason"]:checked');
+    if (!sel || !reportTargetCommentId) return;
+    var btn = document.getElementById('reportSubmitBtn');
+    var orig = btn.innerHTML;
+    btn.innerHTML = '<span class="loading-spinner"></span>';
+    btn.disabled = true;
+    try {
+        await fetch('/signalement/new', {method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({type:'comment',targetId:reportTargetCommentId,reason:sel.value})});
+        showToast('🚩 Signalement envoyé !','success',4000);
+    } catch(e) {}
+    btn.innerHTML = orig;
+    btn.disabled = false;
+    closeReportModalWatch();
+}
+
+function reinitCommentTextsWatch() {
+    document.querySelectorAll('.comment-text[data-original-text]').forEach(function(el) {
+        var text = el.getAttribute('data-original-text') || '';
+        el.innerHTML = window.renderCommentText(text);
+    });
+    document.querySelectorAll('[id^="langBtn-"]').forEach(function(el) {
+        var commentId = el.id.replace('langBtn-', '');
+        el.innerHTML = buildLangButtonWatch(commentId);
+    });
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { closeReportModalWatch(); closeGifPickerWatch(); }
+});
+
+document.addEventListener('DOMContentLoaded', async function() {
+    reinitCommentTextsWatch();
+    setupTagSuggestionListenerWatch();
+    await loadDynamicEmojisWatch();
+    var select = document.getElementById('pageLangSelect');
+    var resetBtn = document.getElementById('resetTranslationBtn');
+    if (select) select.addEventListener('change', translatePage);
+    if (resetBtn) resetBtn.addEventListener('click', resetPageTranslation);
+    try {
+        var r = await fetch('/publication/' + publicationId + '/likes', {headers:{'X-Requested-With':'XMLHttpRequest'}});
+        var data = await r.json();
+        if (data.likes !== undefined) {
+            document.getElementById('likeCount').textContent = data.likes;
+            document.getElementById('dislikeCount').textContent = data.dislikes;
+            document.getElementById('likeBtn').classList.toggle('liked', data.userVote === 'like');
+            document.getElementById('dislikeBtn').classList.toggle('disliked', data.userVote === 'dislike');
+        }
+    } catch(e) {}
+});
+</script>
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<script src="{{ asset('js/speech-recognition.js') }}"></script>
+<script src="{{ asset('js/translation.js') }}"></script>
+<script src="{{ asset('js/giphy-service.js') }}"></script>
+<script src="{{ asset('js/render-comment.js') }}"></script>
+<script src="{{ asset('js/emoji-service.js') }}"></script>
+{% endblock %}

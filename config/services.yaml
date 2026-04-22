@@ -1,0 +1,88 @@
+parameters:
+    publications_directory: '%kernel.project_dir%/public/uploads/publications'
+    commentaires_directory:  '%kernel.project_dir%/public/uploads/commentaires'
+    app.locales:             ['fr', 'en', 'ar', 'es', 'de', 'it', 'pt', 'ru']
+    app.default_locale:      'fr'
+    gemini_api_key: '%env(GEMINI_API_KEY)%'
+
+services:
+    _defaults:
+        autowire:      true
+        autoconfigure: true
+        public:        false
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+            - '../src/Tests/'
+
+    # Service de traduction
+    App\Service\TranslationService:
+        public: true
+        arguments:
+            $logger: '@logger'
+
+    # Service de suggestion de tags
+    App\Service\TagSuggestionService:
+        public: true
+        arguments:
+            $logger: '@logger'
+            $httpClient: '@http_client'
+
+    # Service de médias intelligents (recherche d'images/vidéos par ville)
+    App\Service\MediaIntelligentService:
+        public: true
+        arguments:
+            $client: '@http_client'
+
+    # Service Ollama pour génération IA de contenu tunisien
+    App\Service\OllamaService:
+        public: true
+        arguments:
+            $client: '@http_client'
+            $mediaService: '@App\Service\MediaIntelligentService'
+
+    # Contrôleur de traduction
+    App\Controller\TranslationController:
+        public: true
+        arguments:
+            $translationService: '@App\Service\TranslationService'
+
+    # Contrôleur de suggestion de tags
+    App\Controller\TagSuggestionController:
+        public: true
+        arguments:
+            $tagSuggestionService: '@App\Service\TagSuggestionService'
+
+    # Service Emoji
+    App\Service\EmojiService:
+        public: true
+        arguments:
+            $httpClient: '@http_client'
+            $logger: '@logger'
+
+    # Contrôleur Emoji
+    App\Controller\EmojiController:
+        public: true
+        arguments:
+            $emojiService: '@App\Service\EmojiService'
+
+    # Service Gemini Chatbot (remplace DeepSeek)
+    App\Service\GeminiChatbotService:
+        public: true
+        arguments:
+            $httpClient: '@http_client'
+            $params: '@parameter_bag'
+            $logger: '@logger'
+
+    # Alias pour HttpClientInterface
+    Symfony\Contracts\HttpClient\HttpClientInterface:
+        alias: 'http_client'
+        public: true
+
+    # ProfileController
+    App\Controller\ProfileController:
+        public: true

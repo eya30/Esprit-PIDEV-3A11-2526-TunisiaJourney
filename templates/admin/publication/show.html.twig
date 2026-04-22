@@ -1,0 +1,518 @@
+{% extends 'admin/dashboard/base_admin.html.twig' %}
+
+{% block title %}{{ publication.nom }} — Commentaires{% endblock %}
+{% block page_title %}{{ publication.nom }}{% endblock %}
+
+{% block body %}
+
+<style>
+.tj-btn-primary { background:#93032E; color:white; border:none; padding:9px 18px; border-radius:40px; font-size:0.85rem; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:6px; transition:all 0.2s; }
+.tj-btn-primary:hover { background:#6B0221; color:white; transform:translateY(-2px); box-shadow:0 4px 14px rgba(147,3,46,0.3); }
+.tj-btn-back { background:#F3F4F6; color:#6B7280; border:none; padding:9px 18px; border-radius:40px; font-size:0.85rem; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:6px; transition:all 0.2s; }
+.tj-btn-back:hover { background:#E5E7EB; color:#374151; }
+.tj-empty { background:white; border-radius:20px; border:1px solid #F0E8DD; padding:3rem; text-align:center; }
+.tj-table-wrap { background:white; border-radius:20px; border:1px solid #F0E8DD; overflow:hidden; }
+.tj-table { width:100%; border-collapse:collapse; }
+.tj-table thead tr { background:#FEF9F0; border-bottom:2px solid #F0E8DD; }
+.tj-table th { padding:14px 20px; font-size:0.72rem; font-weight:700; color:#93032E; text-transform:uppercase; letter-spacing:0.6px; }
+.tj-table td { padding:14px 20px; font-size:0.87rem; border-bottom:1px solid #F5F0E8; color:#4A3B2F; vertical-align:middle; }
+.tj-table tr:last-child td { border-bottom:none; }
+.tj-table tbody tr:hover td { background:#FFF9F0; }
+.row-cancelled td { opacity:0.65; background:#F9FAFB !important; }
+.tj-badge { padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:600; display:inline-block; }
+.tj-badge-wine { background:#FEF9F0; color:#93032E; border:1px solid #F0E8DD; }
+.tj-badge-orange { background:#FEF3C7; color:#B45309; }
+.tj-badge-grey { background:#F3F4F6; color:#6B7280; }
+.tj-actions { display:flex; gap:8px; justify-content:center; }
+.action-btn { width:34px; height:34px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; transition:all 0.2s; cursor:pointer; border:none; font-size:0.9rem; text-decoration:none; }
+.block-btn { background:#FEF2F2; color:#EF4444; }
+.block-btn:hover { background:#EF4444; color:white; transform:translateY(-2px); }
+.unblock-btn { background:#E0F2E9; color:#047857; }
+.unblock-btn:hover { background:#047857; color:white; transform:translateY(-2px); }
+
+/* ── BARRE RECHERCHE ── */
+.search-wrap { position: relative; }
+.search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #C49A6C; font-size: 0.9rem; }
+.search-input { width: 100%; padding: 10px 14px 10px 38px; border: 1px solid #E8DFD1; border-radius: 10px; font-size: 0.87rem; background: #FEF9F0; color: #2C1810; outline: none; transition: all 0.2s; min-width: 260px; }
+.search-input:focus { border-color: #93032E; background: white; box-shadow: 0 0 0 3px rgba(147,3,46,0.06); }
+
+/* ── PAGINATION STYLES ── */
+.pagination-container { 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    gap: 8px; 
+    margin-top: 24px; 
+    margin-bottom: 16px; 
+    flex-wrap: wrap; 
+}
+.pagination-btn { 
+    min-width: 40px; 
+    height: 40px; 
+    padding: 0 12px; 
+    border-radius: 8px; 
+    border: 1px solid #E8DFD1; 
+    background: white; 
+    color: #4A3B2F; 
+    font-size: 0.87rem; 
+    font-weight: 500; 
+    cursor: pointer; 
+    transition: all 0.2s; 
+    display: inline-flex; 
+    align-items: center; 
+    justify-content: center; 
+}
+.pagination-btn:hover:not(:disabled) { 
+    background: #FEF9F0; 
+    border-color: #93032E; 
+    color: #93032E; 
+    transform: translateY(-1px); 
+}
+.pagination-btn.active { 
+    background: #93032E; 
+    color: white; 
+    border-color: #93032E; 
+    cursor: default; 
+}
+.pagination-btn:disabled { 
+    opacity: 0.5; 
+    cursor: not-allowed; 
+    background: #F9FAFB; 
+}
+.pagination-dots { 
+    padding: 0 8px; 
+    color: #9CA3AF; 
+    font-size: 0.9rem; 
+}
+
+/* ── SELECTEUR PAR PAGE ── */
+.rows-per-page-select {
+    margin-left: 12px;
+    padding: 8px 12px;
+    border: 1px solid #E8DFD1;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    background: #FEF9F0;
+    color: #2C1810;
+    cursor: pointer;
+    outline: none;
+}
+.rows-per-page-select:hover {
+    border-color: #93032E;
+}
+
+/* ── FILTRE STATUT ── */
+.filter-select { 
+    padding: 10px 14px; 
+    border: 1px solid #E8DFD1; 
+    border-radius: 10px; 
+    font-size: 0.87rem; 
+    background: #FEF9F0; 
+    color: #2C1810; 
+    outline: none; 
+    cursor: pointer; 
+    transition: all 0.2s; 
+}
+.filter-select:focus { 
+    border-color: #93032E; 
+}
+
+.reset-btn { 
+    padding: 10px 16px; 
+    background: #FEF2F2; 
+    color: #EF4444; 
+    border: 1px solid #FECACA; 
+    border-radius: 10px; 
+    font-size: 0.85rem; 
+    font-weight: 600; 
+    cursor: pointer; 
+    transition: all 0.2s; 
+    display: inline-flex; 
+    align-items: center; 
+}
+.reset-btn:hover { 
+    background: #EF4444; 
+    color: white; 
+}
+</style>
+
+{# ── FLASH MESSAGES ── #}
+{% for label, messages in app.flashes %}
+    {% for message in messages %}
+        {% if label == 'success' or label == 'error' %}
+        <div style="margin-bottom:14px; padding:12px 18px; border-radius:12px; font-size:0.87rem; font-weight:500; display:flex; align-items:center; gap:10px;
+            {% if label == 'success' %}background:#E0F2E9; color:#047857; border:1px solid #A7F3D0;
+            {% else %}background:#FEF2F2; color:#DC2626; border:1px solid #FECACA;{% endif %}">
+            <i class="fas fa-{% if label == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
+            {{ message }}
+        </div>
+        {% endif %}
+    {% endfor %}
+{% endfor %}
+
+{# ── EN-TÊTE ── #}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-1" style="font-family:'Playfair Display',serif; color:#2C1810;">{{ publication.nom }}</h4>
+        <p class="mb-0" style="font-size:0.85rem; color:#6B7280;">
+            Forum : <strong style="color:#93032E;">{{ publication.forum.nom }}</strong> &nbsp;·&nbsp;
+            <span id="countBadge" style="background:#FEF9F0; color:#93032E; border:1px solid #F0E8DD; padding:3px 12px; border-radius:20px; font-size:0.78rem; font-weight:600;">
+                {{ publication.commentaires|length }} commentaires
+            </span>
+        </p>
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <a href="{{ path('app_commentaire_new', {idP: publication.idP}) }}" class="tj-btn-primary">
+            <i class="fas fa-plus me-2"></i> Ajouter commentaire
+        </a>
+        {# ✅ Bouton retour vers les publications du forum #}
+        <a href="{{ path('app_forum_show', {idF: publication.forum.idF}) }}" class="tj-btn-back">
+            <i class="fas fa-arrow-left me-2"></i> Retour publications
+        </a>
+    </div>
+</div>
+
+{# ── DÉTAIL PUBLICATION ── #}
+<div class="tj-table-wrap mb-4" style="padding:1.5rem;">
+    <div style="display:flex; gap:1.5rem; flex-wrap:wrap; align-items:flex-start;">
+        {% if publication.image %}
+            {% if publication.image starts with 'http' %}
+                <img src="{{ publication.image }}"
+                     style="width:140px; height:140px; object-fit:cover; border-radius:16px; border:1px solid #F0E8DD; flex-shrink:0;"
+                     onerror="this.onerror=null; this.style.display='none';">
+            {% else %}
+                <img src="{{ asset('uploads/publications/' ~ publication.image) }}"
+                     style="width:140px; height:140px; object-fit:cover; border-radius:16px; border:1px solid #F0E8DD; flex-shrink:0;"
+                     onerror="this.onerror=null; this.style.display='none';">
+            {% endif %}
+        {% else %}
+            <div style="width:140px; height:140px; background:#FEF9F0; border-radius:16px; border:1px solid #F0E8DD; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <i class="fas fa-image" style="font-size:2rem; color:#E8DFD1;"></i>
+            </div>
+        {% endif %}
+        <div style="flex:1;">
+            <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+                <span class="tj-badge tj-badge-wine"><i class="fas fa-comments me-1"></i>{{ publication.forum.nom }}</span>
+                <span class="tj-badge tj-badge-orange"><i class="fas fa-calendar me-1"></i>{{ publication.dateCreation|date('d/m/Y') }}</span>
+            </div>
+            <p style="color:#4A3B2F; line-height:1.7; font-size:0.9rem; margin:0;">{{ publication.description }}</p>
+        </div>
+    </div>
+</div>
+
+{# ── BARRE RECHERCHE + FILTRES ── #}
+<div class="filters-bar mb-4" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; background:white; padding:16px 20px; border-radius:16px; border:1px solid #F0E8DD; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+    <div class="search-wrap" style="flex:1; min-width:200px;">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" id="searchCommentaire" placeholder="Rechercher par contenu..." class="search-input" oninput="filterAndPaginate()">
+    </div>
+    
+    <select id="filterStatus" class="filter-select" onchange="filterAndPaginate()">
+        <option value="">Tous les statuts</option>
+        <option value="normal">✓ Actifs</option>
+        <option value="cancelled">✗ Bloqués</option>
+    </select>
+    
+    <button class="reset-btn" onclick="resetFilters()">
+        <i class="fas fa-times me-1"></i> Réinitialiser
+    </button>
+</div>
+
+{# ── TABLEAU COMMENTAIRES ── #}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 style="font-family:'Playfair Display',serif; color:#2C1810; margin:0;">
+        <i class="fas fa-comments me-2" style="color:#93032E;"></i>Commentaires
+    </h5>
+</div>
+
+{% if publication.commentaires is empty %}
+    <div class="tj-empty">
+        <i class="fas fa-comment-slash" style="font-size:3rem; color:#E8DFD1; margin-bottom:1rem;"></i>
+        <p style="color:#9CA3AF; margin-bottom:1rem;">Aucun commentaire pour cette publication.</p>
+        <a href="{{ path('app_commentaire_new', {idP: publication.idP}) }}" class="tj-btn-primary">
+            <i class="fas fa-plus me-2"></i>Ajouter un commentaire
+        </a>
+    </div>
+{% else %}
+<div class="tj-table-wrap">
+    <div id="noResults" style="display:none;" class="tj-empty" style="margin:0; border-radius:0;">
+        <i class="fas fa-search" style="font-size:2rem; color:#E8DFD1; margin-bottom:0.5rem;"></i>
+        <p style="color:#9CA3AF;">Aucun commentaire ne correspond à votre recherche.</p>
+    </div>
+    <table class="tj-table" id="commentairesTable">
+        <thead>
+            <tr>
+                <th>COMMENTAIRE</th>
+                <th>TAGS</th>
+                <th>DATE</th>
+                <th style="text-align:center;">ACTIONS</th>
+            </tr>
+        </thead>
+        <tbody id="commentairesBody">
+            {% for com in publication.commentaires %}
+            <tr class="{% if com.isCancelled %}row-cancelled{% endif %}" 
+                data-description="{{ com.description|lower|e('js') }}"
+                data-status="{% if com.isCancelled %}cancelled{% else %}normal{% endif %}"
+                data-date="{{ com.dateCreation|date('Y-m-d') }}"
+                data-original-index="{{ loop.index0 }}">
+                <td style="max-width:300px;">
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <div style="width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#93032E,#C49A6C); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; flex-shrink:0; font-size:0.85rem;">U</div>
+                        <div>
+                            <div style="font-size:0.87rem; color:#4A3B2F; line-height:1.5;">
+                                {{ com.description|slice(0,100) }}{% if com.description|length > 100 %}…{% endif %}
+                            </div>
+                            {% if com.image %}
+                                <img src="{{ asset('uploads/commentaires/' ~ com.image) }}"
+                                     style="max-height:60px; border-radius:6px; margin-top:6px; border:1px solid #F0E8DD;">
+                            {% endif %}
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    {% if com.tags %}
+                        <div style="display:flex; flex-wrap:wrap; gap:4px;">
+                            {% for tag in com.tags|split(',') %}
+                                <span class="tj-badge tj-badge-wine" style="font-size:0.7rem; padding:2px 8px;">{{ tag|trim }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <span style="color:#D1D5DB; font-size:0.8rem;">—</span>
+                    {% endif %}
+                </td>
+                <td><span class="tj-badge tj-badge-grey">{{ com.dateCreation|date('d/m/Y') }}</span></td>
+                <td style="text-align:center;">
+                    <div class="tj-actions">
+                        {# ✅ BLOQUER (si pas bloqué) ── #}
+                        {% if not com.isCancelled %}
+                            <form method="post" action="{{ path('app_commentaire_cancel', {idC: com.idC}) }}"
+                                  onsubmit="return confirm('Bloquer ce commentaire ?')" style="display:inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ com.idC) }}">
+                                <button class="action-btn block-btn" title="Bloquer le commentaire">
+                                    <i class="fas fa-lock"></i>
+                                </button>
+                            </form>
+                        {% endif %}
+
+                        {# ✅ DÉBLOQUER (si bloqué) ── #}
+                        {% if com.isCancelled %}
+                            <form method="post" action="{{ path('app_commentaire_uncancel', {idC: com.idC}) }}"
+                                  onsubmit="return confirm('Débloquer ce commentaire ?')" style="display:inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('uncancel' ~ com.idC) }}">
+                                <button class="action-btn unblock-btn" title="Débloquer le commentaire">
+                                    <i class="fas fa-unlock"></i>
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{# ── PAGINATION ── #}
+<div class="pagination-container" id="paginationContainer">
+    <!-- La pagination sera générée ici dynamiquement -->
+</div>
+{% endif %}
+
+<script>
+let currentPage = 1;
+let rowsPerPage = 5;
+let allRows = [];
+let filteredRows = [];
+
+// Initialisation : récupérer toutes les lignes
+function init() {
+    const tbody = document.getElementById('commentairesBody');
+    if (!tbody) return;
+    
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    allRows = rows.map((row, index) => ({
+        row: row,
+        description: row.getAttribute('data-description') || '',
+        status: row.getAttribute('data-status') || '',
+        date: row.getAttribute('data-date') || '',
+        originalIndex: parseInt(row.getAttribute('data-original-index')) || index
+    }));
+    
+    filterAndPaginate();
+}
+
+// Filtrer les lignes selon la recherche et le statut
+function filterRows() {
+    const search = document.getElementById('searchCommentaire').value.toLowerCase().trim();
+    const status = document.getElementById('filterStatus').value;
+    
+    filteredRows = allRows.filter(item => {
+        const matchSearch = search === '' || item.description.includes(search);
+        const matchStatus = status === '' || item.status === status;
+        return matchSearch && matchStatus;
+    });
+    
+    return filteredRows;
+}
+
+// Mettre à jour l'affichage avec pagination
+function updateDisplay() {
+    // Filtrer d'abord
+    let workingRows = filterRows();
+    
+    // Pagination
+    const totalPages = Math.ceil(workingRows.length / rowsPerPage);
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    const pageRows = workingRows.slice(start, end);
+    
+    // Cacher toutes les lignes
+    allRows.forEach(item => {
+        item.row.style.display = 'none';
+    });
+    
+    // Afficher les lignes de la page courante
+    pageRows.forEach(item => {
+        item.row.style.display = '';
+    });
+    
+    // Mettre à jour le compteur
+    const count = workingRows.length;
+    const badge = document.getElementById('countBadge');
+    if (badge) badge.textContent = count + ' commentaire' + (count !== 1 ? 's' : '');
+    
+    // Mettre à jour le message "aucun résultat"
+    const noResults = document.getElementById('noResults');
+    const tableWrap = document.querySelector('.tj-table-wrap');
+    if (noResults && tableWrap) {
+        if (workingRows.length === 0) {
+            noResults.style.display = 'block';
+            tableWrap.style.borderRadius = '20px';
+        } else {
+            noResults.style.display = 'none';
+        }
+    }
+    
+    // Générer la pagination
+    renderPagination(workingRows.length, totalPages);
+}
+
+// Rendu de la pagination
+function renderPagination(totalItems, totalPages) {
+    const container = document.getElementById('paginationContainer');
+    if (!container) return;
+    
+    if (totalPages <= 1) {
+        container.style.display = 'none';
+        return;
+    }
+    
+    container.style.display = 'flex';
+    let html = '';
+    
+    // Bouton Précédent
+    html += `<button class="pagination-btn" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+        <i class="fas fa-chevron-left"></i>
+    </button>`;
+    
+    // Calcul des pages à afficher
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, currentPage + 2);
+    
+    // Ajuster pour avoir toujours 5 pages si possible
+    if (endPage - startPage < 4) {
+        if (startPage === 1) {
+            endPage = Math.min(totalPages, startPage + 4);
+        } else if (endPage === totalPages) {
+            startPage = Math.max(1, endPage - 4);
+        }
+    }
+    
+    // Première page si nécessaire
+    if (startPage > 1) {
+        html += `<button class="pagination-btn" onclick="goToPage(1)">1</button>`;
+        if (startPage > 2) {
+            html += `<span class="pagination-dots">...</span>`;
+        }
+    }
+    
+    // Pages numérotées
+    for (let i = startPage; i <= endPage; i++) {
+        html += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+    }
+    
+    // Dernière page si nécessaire
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            html += `<span class="pagination-dots">...</span>`;
+        }
+        html += `<button class="pagination-btn" onclick="goToPage(${totalPages})">${totalPages}</button>`;
+    }
+    
+    // Bouton Suivant
+    html += `<button class="pagination-btn" onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+        <i class="fas fa-chevron-right"></i>
+    </button>`;
+    
+    // Sélecteur de nombre de lignes par page
+    html += `<select class="rows-per-page-select" onchange="changeRowsPerPage(this)">
+        <option value="5" ${rowsPerPage === 5 ? 'selected' : ''}>5 par page</option>
+        <option value="10" ${rowsPerPage === 10 ? 'selected' : ''}>10 par page</option>
+        <option value="20" ${rowsPerPage === 20 ? 'selected' : ''}>20 par page</option>
+        <option value="50" ${rowsPerPage === 50 ? 'selected' : ''}>50 par page</option>
+        <option value="-1" ${rowsPerPage === -1 ? 'selected' : ''}>Tout afficher</option>
+    </select>`;
+    
+    // Affichage du nombre total
+    html += `<span style="font-size:0.8rem; color:#9CA3AF; margin-left: 8px;">
+        ${totalItems} commentaire${totalItems !== 1 ? 's' : ''}
+    </span>`;
+    
+    container.innerHTML = html;
+}
+
+// Changer de page
+function goToPage(page) {
+    const workingRows = filterRows();
+    const totalPages = Math.ceil(workingRows.length / rowsPerPage);
+    
+    if (page < 1 || page > totalPages) return;
+    currentPage = page;
+    updateDisplay();
+}
+
+// Changer le nombre de lignes par page
+function changeRowsPerPage(select) {
+    const value = parseInt(select.value);
+    rowsPerPage = value === -1 ? Infinity : value;
+    currentPage = 1;
+    updateDisplay();
+}
+
+// Fonction principale de filtrage et pagination
+function filterAndPaginate() {
+    currentPage = 1;
+    updateDisplay();
+}
+
+// Reset complet des filtres
+function resetFilters() {
+    document.getElementById('searchCommentaire').value = '';
+    document.getElementById('filterStatus').value = '';
+    currentPage = 1;
+    updateDisplay();
+}
+
+// Initialisation au chargement
+document.addEventListener('DOMContentLoaded', function() { 
+    init(); 
+});
+
+// Forcer rechargement après retour arrière (évite bugs de cache)
+window.addEventListener('pageshow', function(event) { 
+    if (event.persisted) { 
+        location.reload(); 
+    } 
+});
+</script>
+{% endblock %}

@@ -1,0 +1,354 @@
+{% extends 'admin/dashboard/base_admin.html.twig' %}
+{% block title %}Nouveau Commentaire{% endblock %}
+{% block page_title %}Nouveau Commentaire{% endblock %}
+
+{% block body %}
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+    <div>
+        <h4 style="font-family:'Playfair Display',serif; color:#2C1810; margin:0;">Ajouter un commentaire</h4>
+        <p style="font-size:0.85rem; color:#6B7280; margin:4px 0 0;">
+            Publication : <strong style="color:#93032E;">{{ publication.nom }}</strong>
+        </p>
+    </div>
+    <a href="{{ path('app_publication_show', {idP: publication.idP}) }}"
+       style="background:#F3F4F6; color:#6B7280; border:none; padding:9px 18px; border-radius:40px; font-size:0.85rem; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+        <i class="fas fa-arrow-left"></i> Retour
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div style="background:white; border-radius:24px; padding:32px; border:1px solid #F0E8DD; box-shadow:0 4px 12px rgba(0,0,0,.05);">
+
+            {# ── Erreurs Symfony ── #}
+            {% if errors is defined and errors|length > 0 %}
+                <div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:12px; padding:12px 16px; margin-bottom:20px; color:#DC2626; font-size:.85rem;">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Veuillez corriger les erreurs :</strong>
+                    <ul style="margin:8px 0 0 20px;">
+                        {% for field, msg in errors %}<li>{{ msg }}</li>{% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <form method="POST" action="{{ path('app_commentaire_new', {idP: publication.idP}) }}" novalidate>
+
+                {# ── COMMENTAIRE ── #}
+                <div style="margin-bottom:1rem;">
+                    <label style="display:block; font-size:.85rem; font-weight:700; color:#2C1810; margin-bottom:8px;">
+                        Commentaire <span style="color:#EF4444;">*</span>
+                    </label>
+                    <div style="display:flex; align-items:flex-start; background:#FEF9F0; border:1.5px solid {% if errors is defined and errors.description is defined %}#EF4444{% else %}#E8DFD1{% endif %}; border-radius:12px; overflow:hidden; transition:border-color .2s;"
+                         id="descWrapper">
+                        <i class="fas fa-comment-alt" style="padding:14px 0 0 14px; color:#C49A6C; font-size:.95rem; flex-shrink:0;"></i>
+                        <textarea id="descInput" name="description" rows="5"
+                                  placeholder="Commencez par une lettre, minimum 3 caractères..."
+                                  style="border:none; background:transparent; padding:12px 14px; font-size:.87rem; width:100%; outline:none; resize:vertical; color:#2C1810;">{{ old.description|default('') }}</textarea>
+                    </div>
+                    {% if errors is defined and errors.description is defined %}
+                        <div style="display:flex; align-items:center; gap:8px; background:#FEF2F2; border:1px solid #FECACA; border-radius:10px; padding:8px 14px; margin-top:6px; color:#DC2626; font-size:.82rem; font-weight:500;">
+                            <i class="fas fa-exclamation-circle"></i>{{ errors.description }}
+                        </div>
+                    {% endif %}
+                    <div style="font-size:.73rem; color:#9CA3AF; margin-top:4px;">
+                        Doit commencer par une lettre et contenir au moins 3 caractères.
+                    </div>
+                </div>
+
+                {# ── SÉLECTEUR D'EMOJIS ── #}
+                <div style="margin-bottom:1.4rem;">
+                    <label style="display:block; font-size:.82rem; font-weight:600; color:#4A3B2F; margin-bottom:8px;">
+                        <i class="bi bi-emoji-smile" style="color:#C49A6C;"></i>
+                        <i class="fas fa-smile me-1" style="color:#C49A6C;"></i> Ajouter un emoji
+                    </label>
+
+                    {# Catégories #}
+                    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;" id="emojiCats">
+                        <button type="button" class="emoji-cat-btn active" data-cat="smileys" onclick="showCat('smileys', this)">😊 Smileys</button>
+                        <button type="button" class="emoji-cat-btn" data-cat="nature"   onclick="showCat('nature', this)">🌿 Nature</button>
+                        <button type="button" class="emoji-cat-btn" data-cat="voyage"   onclick="showCat('voyage', this)">✈️ Voyage</button>
+                        <button type="button" class="emoji-cat-btn" data-cat="food"     onclick="showCat('food', this)">🍕 Food</button>
+                        <button type="button" class="emoji-cat-btn" data-cat="symboles" onclick="showCat('symboles', this)">⭐ Symboles</button>
+                    </div>
+
+                    {# Panneaux d'emojis par catégorie #}
+                    <div style="background:#FFF9F0; border:1px solid #F0E8DD; border-radius:14px; padding:12px;">
+
+                        <div class="emoji-panel" id="cat-smileys">
+                            {% set smileys = ['😊','😂','❤️','👍','🔥','🎉','😍','🤔','👏','😢','🙏','✨','😎','🤩','💯','🥰','😅','🤣','😭','💪','😃','😁','😆','😇','🥳','😤','😡','😳','🤗','😴','🤐','😬','🙃','😏','😒','😞','😟','😕','🙁','☹️'] %}
+                            {% for emoji in smileys %}
+                                <button type="button" class="emoji-btn" onclick="insertEmoji('{{ emoji }}')" title="{{ emoji }}">{{ emoji }}</button>
+                            {% endfor %}
+                        </div>
+
+                        <div class="emoji-panel" id="cat-nature" style="display:none;">
+                            {% set nature = ['🌿','🌺','🌸','🌼','🌻','🌹','🌷','🍀','🌱','🌲','🌳','🌴','🍃','🌾','🍂','🍁','🍄','🌊','🌙','⭐','☀️','🌈','⚡','❄️','🔥','💧','🌍','🏔️','🗻','🌋','🏞️','🌅','🌄','🌠','🌌','🌀','🌤️','⛅','🌦️','🌧️'] %}
+                            {% for emoji in nature %}
+                                <button type="button" class="emoji-btn" onclick="insertEmoji('{{ emoji }}')" title="{{ emoji }}">{{ emoji }}</button>
+                            {% endfor %}
+                        </div>
+
+                        <div class="emoji-panel" id="cat-voyage" style="display:none;">
+                            {% set voyage = ['✈️','🧳','🗺️','🏖️','🏝️','🗼','🏰','🏯','⛩️','🕌','🕍','⛪','🏛️','🏟️','🎡','🎢','🎠','🏕️','🌁','🌃','🌆','🌇','🌉','🛫','🛬','🚀','🛸','🚂','🚢','⛵','🚁','🛥️','🚗','🏍️','🚲','🎒','🧭','📷','🎫'] %}
+                            {% for emoji in voyage %}
+                                <button type="button" class="emoji-btn" onclick="insertEmoji('{{ emoji }}')" title="{{ emoji }}">{{ emoji }}</button>
+                            {% endfor %}
+                        </div>
+
+                        <div class="emoji-panel" id="cat-food" style="display:none;">
+                            {% set food = ['🍕','☕','🍔','🍟','🌮','🌯','🥗','🍜','🍣','🍩','🍪','🎂','🍰','🧁','🍫','🍬','🍭','🥤','🍺','🍷','🥂','🍾','🥃','🧃','🍵','🧋','🥐','🥖','🥨','🧀','🥚','🍳','🥞','🧇','🥓','🌽','🥦','🥕','🍇','🍓'] %}
+                            {% for emoji in food %}
+                                <button type="button" class="emoji-btn" onclick="insertEmoji('{{ emoji }}')" title="{{ emoji }}">{{ emoji }}</button>
+                            {% endfor %}
+                        </div>
+
+                        <div class="emoji-panel" id="cat-symboles" style="display:none;">
+                            {% set symboles = ['⭐','💫','✨','🌟','💥','❗','❓','💡','🔑','🎯','🏆','🥇','🎖️','🏅','🎗️','🎀','🎁','🎊','🎈','🎆','🎇','🧨','✅','❌','⚠️','🔔','📢','💬','📌','📍','🔒','🔓','💎','👑','🌐','📱','💻','⌚','📚','🎵'] %}
+                            {% for emoji in symboles %}
+                                <button type="button" class="emoji-btn" onclick="insertEmoji('{{ emoji }}')" title="{{ emoji }}">{{ emoji }}</button>
+                            {% endfor %}
+                        </div>
+
+                    </div>
+
+                    {# Barre recherche d'emoji #}
+                    <div style="margin-top:10px; position:relative;">
+                        <i class="fas fa-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#C49A6C; font-size:.8rem;"></i>
+                        <input type="text" id="emojiSearch"
+                               placeholder="Rechercher un emoji..."
+                               oninput="searchEmoji(this.value)"
+                               style="width:100%; padding:9px 14px 9px 34px; border:1px solid #F0E8DD; border-radius:10px; font-size:.83rem; background:#FEF9F0; outline:none; box-sizing:border-box; color:#4A3B2F;">
+                    </div>
+                    <div id="emojiSearchResults" style="display:none; margin-top:8px; background:#FFF9F0; border:1px solid #F0E8DD; border-radius:12px; padding:10px; display:none; flex-wrap:wrap; gap:5px;"></div>
+                </div>
+
+                {# ── TAGS ── #}
+                <div style="margin-bottom:1.4rem;">
+                    <label style="display:block; font-size:.85rem; font-weight:700; color:#2C1810; margin-bottom:8px;">
+                        Tags <span style="font-weight:400; color:#9CA3AF; font-size:.8rem;">(optionnel, séparés par virgule)</span>
+                    </label>
+                    <div style="display:flex; align-items:center; background:#FEF9F0; border:1.5px solid {% if errors is defined and errors.tags is defined %}#EF4444{% else %}#E8DFD1{% endif %}; border-radius:12px; overflow:hidden;">
+                        <i class="fas fa-tags" style="padding:12px 0 12px 14px; color:#C49A6C; font-size:.95rem; flex-shrink:0;"></i>
+                        <input type="text" name="tags"
+                               placeholder="ex: voyage, tunisie, conseil"
+                               value="{{ old.tags|default('') }}"
+                               style="border:none; background:transparent; padding:12px 14px; font-size:.87rem; width:100%; outline:none; color:#2C1810;">
+                    </div>
+                    {% if errors is defined and errors.tags is defined %}
+                        <div style="display:flex; align-items:center; gap:8px; background:#FEF2F2; border:1px solid #FECACA; border-radius:10px; padding:8px 14px; margin-top:6px; color:#DC2626; font-size:.82rem; font-weight:500;">
+                            <i class="fas fa-exclamation-circle"></i>{{ errors.tags }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div style="display:flex; gap:10px; margin-top:28px; padding-top:22px; border-top:1px solid #F0E8DD; justify-content:flex-end;">
+                    <a href="{{ path('app_publication_show', {idP: publication.idP}) }}"
+                       style="background:transparent; border:1.5px solid #E8DFD1; padding:11px 22px; border-radius:40px; font-size:.88rem; font-weight:500; color:#4A3B2F; text-decoration:none; display:inline-flex; align-items:center;">
+                        <i class="fas fa-arrow-left me-2"></i>Annuler
+                    </a>
+                    <button type="submit"
+                            style="background:#93032E; border:none; padding:11px 26px; border-radius:40px; font-size:.88rem; font-weight:600; color:white; cursor:pointer; display:inline-flex; align-items:center;">
+                        <i class="fas fa-save me-2"></i>Ajouter
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    {# ── CARTE INFO ── #}
+    <div class="col-md-4">
+        <div style="background:white; border-radius:20px; padding:20px; border:1px solid #F0E8DD; box-shadow:0 4px 12px rgba(0,0,0,.04); position:sticky; top:20px;">
+            <h5 style="font-size:1rem; font-weight:700; color:#2C1810; margin-bottom:14px; display:flex; align-items:center;">
+                <i class="fas fa-info-circle me-2" style="color:#93032E;"></i>Règles
+            </h5>
+            <div style="font-size:.83rem; color:#6B7280; line-height:1.9;">
+                <p style="margin:0;">✅ Commence par une lettre</p>
+                <p style="margin:0;">✅ Minimum 3 caractères</p>
+                <p style="margin:0;">✅ Maximum 500 caractères</p>
+                <p style="margin:0;">😊 Emojis autorisés</p>
+                <p style="margin:0;">❌ Pas de symboles en début</p>
+            </div>
+
+            {# Aperçu du commentaire en temps réel #}
+            <div style="margin-top:18px; padding-top:16px; border-top:1px solid #F0E8DD;">
+                <div style="font-size:.8rem; font-weight:700; color:#2C1810; margin-bottom:8px;">
+                    <i class="fas fa-eye me-1" style="color:#C49A6C;"></i>Aperçu
+                </div>
+                <div id="preview"
+                     style="background:#FEF9F0; border:1px solid #F0E8DD; border-radius:12px; padding:12px; font-size:.83rem; color:#4A3B2F; min-height:60px; line-height:1.6; word-break:break-word;">
+                    <span style="color:#D1D5DB; font-style:italic;">Votre commentaire apparaîtra ici…</span>
+                </div>
+                <div id="charCount" style="font-size:.72rem; color:#9CA3AF; margin-top:5px; text-align:right;">0 / 500</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ── Boutons catégorie ── */
+.emoji-cat-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1.5px solid #F0E8DD;
+    background: #F9F9F9;
+    color: #6B7280;
+    font-size: .78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .18s;
+}
+.emoji-cat-btn:hover  { background: #FEF9F0; border-color: #C49A6C; color: #93032E; }
+.emoji-cat-btn.active { background: #93032E; border-color: #93032E; color: white; }
+
+/* ── Boutons emoji ── */
+.emoji-btn {
+    background: white;
+    border: 1px solid #F0E8DD;
+    border-radius: 8px;
+    padding: 5px 7px;
+    font-size: 1.15rem;
+    cursor: pointer;
+    transition: all .15s;
+    line-height: 1;
+    min-width: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.emoji-btn:hover {
+    background: #FEF9F0;
+    transform: scale(1.28);
+    border-color: #C49A6C;
+    box-shadow: 0 2px 8px rgba(196,154,108,.25);
+}
+</style>
+
+<script>
+// ── All emojis flat list pour la recherche ──
+const ALL_EMOJIS = [
+    '😊','😂','❤️','👍','🔥','🎉','😍','🤔','👏','😢','🙏','✨','😎','🤩','💯','🥰','😅','🤣','😭','💪','😃','😁','😆','😇','🥳','😤','😡','😳','🤗','😴','🤐','😬','🙃','😏','😒','😞','😟','😕','🙁','☹️',
+    '🌿','🌺','🌸','🌼','🌻','🌹','🌷','🍀','🌱','🌲','🌳','🌴','🍃','🌾','🍂','🍁','🍄','🌊','🌙','⭐','☀️','🌈','⚡','❄️','💧','🌍','🏔️','🗻','🌋','🏞️','🌅','🌄','🌠','🌌','🌀','🌤️','⛅','🌦️','🌧️',
+    '✈️','🧳','🗺️','🏖️','🏝️','🗼','🏰','🏯','⛩️','🕌','🕍','⛪','🏛️','🏟️','🎡','🎢','🎠','🏕️','🌁','🌃','🌆','🌇','🌉','🛫','🛬','🚀','🛸','🚂','🚢','⛵','🚁','🛥️','🚗','🏍️','🚲','🎒','🧭','📷','🎫',
+    '🍕','☕','🍔','🍟','🌮','🌯','🥗','🍜','🍣','🍩','🍪','🎂','🍰','🧁','🍫','🍬','🍭','🥤','🍺','🍷','🥂','🍾','🥃','🧃','🍵','🧋','🥐','🥖','🥨','🧀','🥚','🍳','🥞','🧇','🥓','🌽','🥦','🥕','🍇','🍓',
+    '💫','🌟','💥','❗','❓','💡','🔑','🎯','🏆','🥇','🎖️','🏅','🎗️','🎀','🎁','🎊','🎈','🎆','🎇','🧨','✅','❌','⚠️','🔔','📢','💬','📌','📍','🔒','🔓','💎','👑','🌐','📱','💻','⌚','📚','🎵'
+];
+
+// ── Insérer emoji dans le textarea ──
+function insertEmoji(emoji) {
+    const ta  = document.getElementById('descInput');
+    const s   = ta.selectionStart;
+    const e   = ta.selectionEnd;
+    ta.value  = ta.value.substring(0, s) + emoji + ta.value.substring(e);
+    ta.selectionStart = ta.selectionEnd = s + emoji.length;
+    ta.focus();
+    updatePreview();
+}
+
+// ── Switcher catégorie ──
+function showCat(cat, btn) {
+    document.querySelectorAll('.emoji-panel').forEach(p => p.style.display = 'none');
+    document.getElementById('cat-' + cat).style.display = 'flex';
+    document.getElementById('cat-' + cat).style.flexWrap = 'wrap';
+    document.getElementById('cat-' + cat).style.gap = '5px';
+
+    document.querySelectorAll('.emoji-cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Cacher résultats recherche
+    document.getElementById('emojiSearchResults').style.display = 'none';
+    document.getElementById('emojiSearch').value = '';
+}
+
+// ── Recherche d'emoji ──
+function searchEmoji(query) {
+    const q       = query.trim();
+    const results = document.getElementById('emojiSearchResults');
+
+    if (q === '') {
+        results.style.display = 'none';
+        // Ré-afficher le panneau actif
+        const activeCat = document.querySelector('.emoji-cat-btn.active');
+        if (activeCat) {
+            const cat = activeCat.getAttribute('data-cat');
+            document.getElementById('cat-' + cat).style.display = 'flex';
+        }
+        return;
+    }
+
+    // Cacher tous les panneaux pendant la recherche
+    document.querySelectorAll('.emoji-panel').forEach(p => p.style.display = 'none');
+
+    // Filtrer (simple : chercher le code unicode ou afficher tout si query courte)
+    const filtered = ALL_EMOJIS.filter(e => {
+        // On cherche juste si l'emoji contient des caractères proches (fallback : tout montrer)
+        return true; // afficher tous — on peut affiner avec une map nom→emoji
+    });
+
+    results.innerHTML = '';
+    results.style.display = 'flex';
+
+    // Afficher les N premiers emojis (tous si query courte, limiter sinon)
+    const toShow = q.length >= 2 ? ALL_EMOJIS.slice(0, 40) : ALL_EMOJIS;
+    toShow.forEach(emoji => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'emoji-btn';
+        btn.textContent = emoji;
+        btn.title = emoji;
+        btn.onclick = () => insertEmoji(emoji);
+        results.appendChild(btn);
+    });
+}
+
+// ── Aperçu en temps réel + compteur ──
+function updatePreview() {
+    const val     = document.getElementById('descInput').value;
+    const preview = document.getElementById('preview');
+    const counter = document.getElementById('charCount');
+
+    if (val.trim() === '') {
+        preview.innerHTML = '<span style="color:#D1D5DB; font-style:italic;">Votre commentaire apparaîtra ici…</span>';
+    } else {
+        // Échapper le HTML mais garder les emojis
+        const escaped = val.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        preview.innerHTML = escaped;
+    }
+
+    const len = val.length;
+    counter.textContent = len + ' / 500';
+    counter.style.color = len > 450 ? '#EF4444' : len > 350 ? '#F59E0B' : '#9CA3AF';
+}
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded', function () {
+    // Afficher la première catégorie
+    const firstPanel = document.getElementById('cat-smileys');
+    if (firstPanel) {
+        firstPanel.style.display = 'flex';
+        firstPanel.style.flexWrap = 'wrap';
+        firstPanel.style.gap = '5px';
+    }
+
+    // Écouter les changements dans le textarea
+    document.getElementById('descInput').addEventListener('input', updatePreview);
+
+    // Focus wrapper
+    document.getElementById('descInput').addEventListener('focus', function () {
+        document.getElementById('descWrapper').style.borderColor = '#93032E';
+        document.getElementById('descWrapper').style.boxShadow = '0 0 0 3px rgba(147,3,46,.07)';
+        document.getElementById('descWrapper').style.background = 'white';
+    });
+    document.getElementById('descInput').addEventListener('blur', function () {
+        document.getElementById('descWrapper').style.borderColor = '#E8DFD1';
+        document.getElementById('descWrapper').style.boxShadow = 'none';
+        document.getElementById('descWrapper').style.background = '#FEF9F0';
+    });
+
+    // Pré-remplir aperçu si old value présente
+    updatePreview();
+});
+</script>
+
+{% endblock %}

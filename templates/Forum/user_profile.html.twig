@@ -1,0 +1,900 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Profil Voyageur #{{ userId }} — TunisiaJourney{% endblock %}
+
+{% block stylesheets %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Josefin+Sans:wght@300;400;600;700&display=swap');
+
+:root {
+    --dr:#93032E; --dr2:#6B0221; --or:#FF6B35;
+    --gold:#C9A84C; --sand:#FDF5E6; --soft:#F5CAC3;
+    --bg-warm:#FEF9F0; --border:#E8DFD1; --dark:#2C3E50;
+    --cream:#FAF3E8; --rouge-pale:#FDEAEA;
+}
+* { box-sizing: border-box; }
+
+/* ══ HERO ══ */
+.profile-hero {
+    position: relative; min-height: 340px;
+    background: linear-gradient(135deg, #1a0a0f 0%, #3d0f1e 40%, #6B0221 70%, #93032E 100%);
+    overflow: hidden;
+}
+.profile-hero::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 20% 50%, rgba(255,107,53,.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 30%, rgba(201,168,76,.12) 0%, transparent 50%);
+}
+.profile-hero::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 100px;
+    background: linear-gradient(to top, var(--sand), transparent); pointer-events: none;
+}
+.hero-pattern {
+    position: absolute; inset: 0; opacity: .06;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.profile-hero-content {
+    position: relative; z-index: 2; max-width: 900px; margin: 0 auto;
+    padding: 3rem 2rem 6rem; display: flex; align-items: flex-end; gap: 2rem; flex-wrap: wrap;
+}
+.profile-avatar-wrap { position: relative; flex-shrink: 0; }
+.profile-avatar {
+    width: 130px; height: 130px; border-radius: 50%;
+    border: 4px solid var(--gold); overflow: hidden;
+    background: linear-gradient(135deg, #93032E, #FF6B35);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: transform .3s;
+    box-shadow: 0 8px 32px rgba(0,0,0,.4), 0 0 0 6px rgba(201,168,76,.2);
+}
+.profile-avatar:hover { transform: scale(1.05); }
+.profile-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.profile-avatar-letter { font-family: 'Cormorant Garamond', serif; font-size: 3.5rem; font-weight: 700; color: white; }
+.avatar-edit-btn {
+    position: absolute; bottom: 4px; right: 4px; width: 32px; height: 32px;
+    border-radius: 50%; background: var(--gold); border: 2px solid white;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: .8rem; color: white; transition: all .2s;
+}
+.avatar-edit-btn:hover { background: var(--dr); transform: scale(1.1); }
+.profile-info { flex: 1; min-width: 200px; }
+.profile-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 700; color: white;
+    margin-bottom: .3rem; letter-spacing: 1px; text-shadow: 0 2px 12px rgba(0,0,0,.5);
+}
+.profile-tagline {
+    color: rgba(255,255,255,.75); font-family: 'Josefin Sans', sans-serif;
+    font-size: .88rem; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1rem;
+}
+.profile-stats-row { display: flex; gap: 1.4rem; flex-wrap: wrap; }
+.profile-stat {
+    text-align: center; background: rgba(255,255,255,.1); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,.18); border-radius: 16px; padding: .6rem 1.2rem; min-width: 70px;
+}
+.profile-stat-value { font-family: 'Cormorant Garamond', serif; font-size: 1.7rem; font-weight: 700; color: var(--gold); line-height: 1; }
+.profile-stat-label { font-size: .65rem; color: rgba(255,255,255,.7); text-transform: uppercase; letter-spacing: 1px; font-family: 'Josefin Sans', sans-serif; margin-top: 2px; }
+
+/* ══ BODY ══ */
+.profile-body { max-width: 900px; margin: -1rem auto 0; padding: 0 1.5rem 4rem; position: relative; z-index: 3; }
+
+/* ══ BIO ══ */
+.bio-card {
+    background: white; border-radius: 24px; border: 1px solid var(--border);
+    padding: 1.8rem; margin-bottom: 2rem; box-shadow: 0 4px 24px rgba(147,3,46,.07);
+    position: relative; overflow: hidden;
+}
+.bio-card::before { content: '✦'; position: absolute; top: -10px; right: 20px; font-size: 5rem; color: rgba(147,3,46,.04); pointer-events: none; }
+.bio-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.bio-title { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; color: var(--dr); font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.btn-edit-bio { background: var(--bg-warm); border: 1px solid var(--border); color: var(--dr); padding: 6px 14px; border-radius: 20px; font-size: .78rem; font-weight: 600; cursor: pointer; transition: all .2s; font-family: 'Josefin Sans', sans-serif; }
+.btn-edit-bio:hover { background: var(--dr); color: white; }
+.bio-text { color: #666; font-size: .9rem; line-height: 1.7; font-family: 'Josefin Sans', sans-serif; font-style: italic; }
+.bio-placeholder { color: #ccc; font-style: italic; font-size: .88rem; }
+.bio-edit-form { display: none; margin-top: .8rem; }
+.bio-textarea { width: 100%; border: 2px solid var(--border); border-radius: 14px; padding: 12px; font-size: .88rem; resize: vertical; font-family: 'Josefin Sans', sans-serif; min-height: 90px; outline: none; transition: border-color .2s; }
+.bio-textarea:focus { border-color: var(--dr); }
+.bio-save-btn { background: var(--dr); color: white; border: none; padding: 8px 20px; border-radius: 20px; font-size: .8rem; font-weight: 600; cursor: pointer; margin-top: 8px; transition: all .2s; }
+.bio-save-btn:hover { background: var(--dr2); }
+.interests-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+.interest-badge { background: var(--bg-warm); border: 1px solid var(--border); color: var(--dr); padding: 5px 14px; border-radius: 20px; font-size: .75rem; font-weight: 600; font-family: 'Josefin Sans', sans-serif; display: flex; align-items: center; gap: 5px; }
+.interest-badge.add-btn { cursor: pointer; border-style: dashed; color: #aaa; transition: all .2s; }
+.interest-badge.add-btn:hover { border-color: var(--dr); color: var(--dr); background: white; }
+
+/* ══ AVENTURES ══ */
+.adventures-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+.adventures-title { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 700; color: var(--dr); display: flex; align-items: center; gap: 10px; }
+.adventures-title::after { content: '✦'; color: var(--gold); font-size: 1rem; }
+.btn-add-adventure { background: linear-gradient(135deg, var(--dr), var(--or)); color: white; border: none; padding: 10px 22px; border-radius: 40px; font-size: .83rem; font-weight: 700; cursor: pointer; transition: all .3s; display: flex; align-items: center; gap: 8px; font-family: 'Josefin Sans', sans-serif; text-decoration: none; }
+.btn-add-adventure:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(147,3,46,.35); color: white; }
+.adventures-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.4rem; }
+.adventure-card { background: white; border-radius: 20px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 4px 18px rgba(0,0,0,.06); transition: all .3s; cursor: pointer; text-decoration: none; display: block; color: inherit; }
+.adventure-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(147,3,46,.14); border-color: var(--soft); color: inherit; }
+.adventure-media { position: relative; height: 180px; background: linear-gradient(135deg, #1a0a0f, #3d0f1e); overflow: hidden; }
+.adventure-media img, .adventure-media video { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s; }
+.adventure-card:hover .adventure-media img { transform: scale(1.06); }
+.adventure-media-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 3rem; opacity: .3; color: white; }
+.adventure-type-badge { position: absolute; top: 10px; left: 10px; background: rgba(147,3,46,.85); color: white; padding: 3px 10px; border-radius: 12px; font-size: .65rem; font-weight: 700; font-family: 'Josefin Sans', sans-serif; text-transform: uppercase; letter-spacing: .5px; backdrop-filter: blur(4px); }
+.adventure-play-badge { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,.25); backdrop-filter: blur(4px); border: 2px solid rgba(255,255,255,.5); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; }
+.adventure-forum-badge { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,.55); color: white; padding: 2px 8px; border-radius: 10px; font-size: .62rem; backdrop-filter: blur(4px); }
+.adventure-body { padding: 1rem 1.1rem .9rem; }
+.adventure-title { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; font-weight: 700; color: var(--dr); margin-bottom: .35rem; line-height: 1.3; }
+.adventure-desc { color: #888; font-size: .78rem; line-height: 1.5; margin-bottom: .6rem; font-family: 'Josefin Sans', sans-serif; }
+.adventure-footer { display: flex; align-items: center; justify-content: space-between; padding-top: .6rem; border-top: 1px solid var(--border); font-size: .72rem; color: #aaa; font-family: 'Josefin Sans', sans-serif; }
+.adventure-footer i { color: var(--gold); }
+.adventure-card-empty { background: var(--bg-warm); border-radius: 20px; border: 2px dashed var(--border); height: 280px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all .3s; text-align: center; padding: 1.5rem; color: #bbb; text-decoration: none; }
+.adventure-card-empty:hover { border-color: var(--dr); background: rgba(147,3,46,.04); color: var(--dr); transform: translateY(-4px); }
+.adventure-card-empty i { font-size: 2.5rem; margin-bottom: .8rem; opacity: .4; }
+.adventure-card-empty p { font-size: .82rem; font-family: 'Josefin Sans', sans-serif; margin: 0; }
+.empty-adventures { text-align: center; padding: 4rem 2rem; background: white; border-radius: 24px; border: 1px solid var(--border); }
+.empty-adventures i { font-size: 4rem; color: var(--soft); margin-bottom: 1rem; display: block; }
+.empty-adventures h3 { font-family: 'Cormorant Garamond', serif; color: var(--dr); font-size: 1.6rem; }
+.empty-adventures p { color: #888; font-family: 'Josefin Sans', sans-serif; font-size: .9rem; }
+
+/* ══ WELCOME ══ */
+.welcome-banner { background: linear-gradient(135deg, #E0F2E9, #D1FAE5); border: 1.5px solid #A7F3D0; border-radius: 20px; padding: 1.2rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 14px; animation: slideDown .5s cubic-bezier(.2,.9,.4,1.1); }
+@keyframes slideDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
+.welcome-banner i { font-size: 1.8rem; color: #047857; }
+.welcome-banner-text { flex: 1; }
+.welcome-banner-title { font-weight: 700; color: #047857; font-family: 'Josefin Sans', sans-serif; font-size: .95rem; }
+.welcome-banner-sub { color: #065F46; font-size: .8rem; margin-top: 2px; }
+.welcome-close { background: none; border: none; color: #aaa; font-size: 1.2rem; cursor: pointer; padding: 4px; border-radius: 50%; transition: all .2s; }
+.welcome-close:hover { background: rgba(0,0,0,.06); }
+
+/* ══ MODAL PARTAGE ══ */
+.share-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); backdrop-filter: blur(5px); z-index: 15000; align-items: center; justify-content: center; }
+.share-modal.open { display: flex; }
+.share-modal-box { background: white; border-radius: 28px; max-width: 550px; width: 92%; max-height: 85vh; overflow-y: auto; padding: 1.5rem; }
+.share-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.share-modal-header h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 700; color: var(--dr); }
+.modal-close { background: var(--bg-warm); border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; transition: all .2s; }
+.modal-close:hover { background: var(--dr); color: white; transform: rotate(90deg); }
+.share-tabs { display: flex; gap: 10px; margin-bottom: 1.5rem; background: var(--bg-warm); padding: 6px; border-radius: 60px; }
+.share-tab-btn { flex: 1; padding: 10px; border-radius: 50px; border: none; background: transparent; cursor: pointer; font-weight: 600; transition: all .2s; }
+.share-tab-btn.active { background: linear-gradient(135deg, var(--dr), #C49A6C); color: white; }
+.share-form-group { margin-bottom: 1rem; }
+.share-form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--dark); }
+.share-input, .forum-select { width: 100%; padding: 12px 14px; border: 2px solid var(--border); border-radius: 14px; font-size: 0.9rem; outline: none; transition: all .2s; }
+.share-input:focus, .forum-select:focus { border-color: var(--dr); }
+.share-textarea { min-height: 100px; resize: vertical; }
+.share-upload-zone { border: 2px dashed var(--border); border-radius: 16px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all .2s; }
+.share-upload-zone:hover { border-color: var(--dr); background: rgba(147,3,46,.05); }
+.share-upload-zone i { font-size: 2rem; color: #C49A6C; margin-bottom: 0.5rem; }
+.share-submit-btn { width: 100%; background: linear-gradient(135deg, var(--dr), var(--or)); color: white; border: none; padding: 14px; border-radius: 50px; font-weight: 700; cursor: pointer; margin-top: 1rem; }
+
+/* ══ TOAST ══ */
+.toast-notification { position: fixed; bottom: 20px; right: 20px; color: white; padding: 11px 22px; border-radius: 46px; font-size: .82rem; font-weight: 600; z-index: 9999; box-shadow: 0 7px 24px rgba(0,0,0,.22); animation: toastIn .3s ease; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ══ MODAL AVATAR ══ */
+.avatar-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.75); backdrop-filter: blur(6px); z-index: 20000; align-items: center; justify-content: center; }
+.avatar-modal.open { display: flex; }
+.avatar-modal-box { background: white; border-radius: 28px; max-width: 550px; width: 92%; padding: 2rem; max-height: 90vh; overflow-y: auto; }
+.avatar-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.avatar-modal-header h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 700; color: var(--dr); }
+.avatar-upload-zone { border: 2px dashed var(--border); border-radius: 20px; padding: 2rem; text-align: center; cursor: pointer; transition: all .3s; background: var(--bg-warm); margin-bottom: 1.5rem; }
+.avatar-upload-zone:hover { border-color: var(--dr); background: rgba(147,3,46,.04); }
+.avatar-upload-zone i { font-size: 2.5rem; color: var(--gold); margin-bottom: .6rem; display: block; }
+.avatar-upload-zone p { font-size: .85rem; color: #888; font-family: 'Josefin Sans', sans-serif; margin: 0; }
+.avatar-upload-zone .upload-hint { font-size: .75rem; color: #bbb; margin-top: 5px; }
+.style-label { font-size: .85rem; font-weight: 700; color: var(--dark); margin-bottom: .7rem; display: block; font-family: 'Josefin Sans', sans-serif; }
+
+/* GRILLE 6 STYLES */
+.style-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
+.style-option { border: 2px solid var(--border); border-radius: 14px; padding: 0.75rem 0.5rem; cursor: pointer; transition: all 0.25s ease; text-align: center; background: white; font-family: 'Josefin Sans', sans-serif; position: relative; }
+.style-option:hover { border-color: var(--dr); background: var(--rouge-pale); transform: translateY(-2px); }
+.style-option.active { border-color: var(--dr); background: var(--dr); color: white; }
+.style-option .style-icon { font-size: 1.8rem; display: block; margin-bottom: 0.25rem; }
+.style-option .style-name { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.style-option .style-api-tag { font-size: 0.55rem; opacity: 0.7; display: block; margin-top: 0.25rem; font-style: italic; }
+.style-option.active .style-api-tag { opacity: 0.9; }
+
+.avatar-result-wrap { display: none; text-align: center; margin-bottom: 1.5rem; animation: fadeIn .4s ease; }
+@keyframes fadeIn { from { opacity:0; transform: scale(.95); } to { opacity:1; transform: scale(1); } }
+.avatar-compare { display: flex; gap: 1rem; justify-content: center; align-items: center; flex-wrap: wrap; }
+.avatar-compare-item { flex: 1; min-width: 120px; text-align: center; }
+.avatar-compare-item img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid var(--border); }
+.avatar-compare-item img.result { border-color: var(--gold); box-shadow: 0 4px 20px rgba(201,168,76,.4); }
+.avatar-compare-label { font-size: .72rem; color: #aaa; font-family: 'Josefin Sans', sans-serif; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px; }
+.compare-arrow { font-size: 1.5rem; color: var(--gold); }
+.avatar-loading { display: none; text-align: center; padding: 2rem; }
+.avatar-loading .spinner { width: 48px; height: 48px; border: 4px solid var(--border); border-top-color: var(--dr); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.avatar-loading p { color: #888; font-size: .85rem; font-family: 'Josefin Sans', sans-serif; }
+.avatar-modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 1rem; flex-wrap: wrap; }
+.btn-primary { background: linear-gradient(135deg, var(--dr), var(--or)); color: white; border: none; padding: 11px 26px; border-radius: 24px; cursor: pointer; font-weight: 700; font-family: 'Josefin Sans', sans-serif; transition: all .2s; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(147,3,46,.3); }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-secondary { background: var(--bg-warm); border: 1px solid var(--border); padding: 11px 20px; border-radius: 24px; cursor: pointer; font-weight: 600; font-family: 'Josefin Sans', sans-serif; transition: all .2s; }
+.btn-secondary:hover { background: var(--border); }
+.btn-apply { display: none; background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; border: none; padding: 11px 26px; border-radius: 24px; cursor: pointer; font-weight: 700; font-family: 'Josefin Sans', sans-serif; transition: all .2s; }
+.btn-apply:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(39,174,96,.3); }
+
+@media (max-width: 640px) {
+    .profile-hero-content { flex-direction: column; align-items: center; text-align: center; padding-bottom: 5rem; }
+    .profile-stats-row { justify-content: center; }
+    .adventures-grid { grid-template-columns: 1fr; }
+    .profile-body { padding: 0 1rem 3rem; }
+    .share-modal-box { width: 95%; margin: 1rem; }
+    .style-grid { grid-template-columns: repeat(2, 1fr); }
+    .avatar-modal-footer { justify-content: center; }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+
+<section class="profile-hero">
+    <div class="hero-pattern"></div>
+    <div class="profile-hero-content">
+        <div class="profile-avatar-wrap">
+            <div class="profile-avatar" id="profileAvatarEl" onclick="{% if isOwner %}openAvatarModal(){% endif %}">
+                {% if app.session.get('avatar_' ~ userId) %}
+                    <img src="{{ app.session.get('avatar_' ~ userId) }}" alt="Avatar" id="avatarImg">
+                {% else %}
+                    <span class="profile-avatar-letter">{{ app.user ? app.user.prenom|first|upper : 'V' }}</span>
+                {% endif %}
+            </div>
+            {% if isOwner %}
+                <div class="avatar-edit-btn" onclick="openAvatarModal()" title="Transformer mon avatar">
+                    <i class="fas fa-magic"></i>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="profile-info">
+            <div class="profile-name" id="profileName">
+                Voyageur TunisiaJourney {% if isOwner %}<span style="font-size:1rem;opacity:.6;">(vous)</span>{% endif %}
+            </div>
+            <div class="profile-tagline">
+                <i class="fas fa-map-marker-alt" style="color:var(--gold);"></i>
+                Explorateur de la Tunisie magnifique
+            </div>
+            <div class="profile-stats-row">
+                <div class="profile-stat">
+                    <div class="profile-stat-value">{{ publications|length }}</div>
+                    <div class="profile-stat-label">Aventures</div>
+                </div>
+                <div class="profile-stat">
+                    {% set totalLikes = 0 %}
+                    {% for pub in publications %}{% set totalLikes = totalLikes + pub.countLikes() %}{% endfor %}
+                    <div class="profile-stat-value">{{ totalLikes }}</div>
+                    <div class="profile-stat-label">Likes</div>
+                </div>
+                <div class="profile-stat">
+                    {% set totalVues = 0 %}
+                    {% for pub in publications %}{% set totalVues = totalVues + pub.vues %}{% endfor %}
+                    <div class="profile-stat-value">{{ totalVues }}</div>
+                    <div class="profile-stat-label">Vues</div>
+                </div>
+                <div class="profile-stat">
+                    {% set totalComs = 0 %}
+                    {% for pub in publications %}{% set totalComs = totalComs + pub.commentaires|length %}{% endfor %}
+                    <div class="profile-stat-value">{{ totalComs }}</div>
+                    <div class="profile-stat-label">Commentaires</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="profile-body">
+
+    {% if profileJustCreated %}
+    <div class="welcome-banner" id="welcomeBanner">
+        <i class="fas fa-star"></i>
+        <div class="welcome-banner-text">
+            <div class="welcome-banner-title">🎉 Bienvenue sur votre espace voyageur !</div>
+            <div class="welcome-banner-sub">Cliquez sur votre avatar pour le transformer en style animé 🎌</div>
+        </div>
+        <button class="welcome-close" onclick="document.getElementById('welcomeBanner').remove()">✕</button>
+    </div>
+    {% endif %}
+
+    <!-- BIO -->
+    <div class="bio-card">
+        <div class="bio-header">
+            <div class="bio-title"><i class="fas fa-feather-alt" style="color:var(--gold);"></i> À propos</div>
+            {% if isOwner %}
+            <button class="btn-edit-bio" onclick="toggleBioEdit()"><i class="fas fa-pen me-1"></i> Modifier</button>
+            {% endif %}
+        </div>
+        <div id="bioDisplay">
+            <div class="bio-text" id="bioText">
+                {% if app.session.get('bio_' ~ userId) %}
+                    {{ app.session.get('bio_' ~ userId) }}
+                {% else %}
+                    <span class="bio-placeholder">
+                        {% if isOwner %}Cliquez sur "Modifier" pour ajouter votre bio...{% else %}Aucune bio pour ce voyageur.{% endif %}
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+        {% if isOwner %}
+        <div class="bio-edit-form" id="bioEditForm">
+            <textarea class="bio-textarea" id="bioInput" placeholder="Parlez de vous..." maxlength="400">{{ app.session.get('bio_' ~ userId, '') }}</textarea>
+            <div style="display:flex;gap:8px;align-items:center;">
+                <button class="bio-save-btn" onclick="saveBio()"><i class="fas fa-check me-1"></i> Enregistrer</button>
+                <button class="bio-save-btn" style="background:#F5F0E8;color:#4A3B2F;" onclick="toggleBioEdit()">Annuler</button>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="interests-row" id="interestsRow">
+            {% set interests = app.session.get('interests_' ~ userId, ['voyage', 'Tunisie', 'plage']) %}
+            {% if interests is iterable %}
+                {% for interest in interests %}
+                    <span class="interest-badge">
+                        {% set icons = {'voyage': '✈️', 'Tunisie': '🇹🇳', 'plage': '🏖️', 'cuisine': '🍽️', 'histoire': '🏛️', 'désert': '🐪', 'médina': '🕌', 'nature': '🌿'} %}
+                        {{ icons[interest] ?? '🌟' }} {{ interest }}
+                    </span>
+                {% endfor %}
+            {% endif %}
+            {% if isOwner %}
+            <span class="interest-badge add-btn" onclick="addInterest()"><i class="fas fa-plus"></i> Ajouter</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- AVENTURES -->
+    <div class="adventures-header">
+        <div class="adventures-title">{% if isOwner %}Mes aventures{% else %}Ses aventures{% endif %}</div>
+        {% if isOwner %}
+        <button class="btn-add-adventure" onclick="openShareModal()">
+            <i class="fas fa-plus-circle"></i> Nouvelle aventure
+        </button>
+        {% endif %}
+    </div>
+
+    {% if publications is empty %}
+    <div class="empty-adventures">
+        <i class="fas fa-map-marked-alt"></i>
+        <h3>Aucune aventure partagée</h3>
+        <p>{% if isOwner %}Commencez par partager votre première aventure !{% else %}Ce voyageur n'a pas encore partagé d'aventure.{% endif %}</p>
+        {% if isOwner %}
+        <button class="btn-add-adventure" onclick="openShareModal()" style="margin: 1rem auto 0; width: fit-content;">
+            <i class="fas fa-plus-circle"></i> Partager une aventure
+        </button>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="adventures-grid">
+        {% for pub in publications %}
+        <a href="{{ path('app_publication_watch', {idP: pub.idP}) }}" class="adventure-card">
+            <div class="adventure-media">
+                {% if pub.image %}
+                    <img src="{{ pub.image starts with 'http' ? pub.image : asset('uploads/publications/' ~ pub.image) }}" alt="{{ pub.nom }}" loading="lazy">
+                {% elseif pub.video %}
+                    <div class="adventure-media-placeholder"><i class="fas fa-play-circle"></i></div>
+                {% else %}
+                    <div class="adventure-media-placeholder"><i class="fas fa-comment-dots"></i></div>
+                {% endif %}
+                <span class="adventure-type-badge">
+                    {% if pub.video %}<i class="fas fa-video me-1"></i>Vidéo{% elseif pub.image %}<i class="fas fa-image me-1"></i>Photo{% else %}<i class="fas fa-pen me-1"></i>Post{% endif %}
+                </span>
+                {% if pub.video %}<div class="adventure-play-badge"><i class="fas fa-play"></i></div>{% endif %}
+                <span class="adventure-forum-badge">{{ pub.forum.nom }}</span>
+            </div>
+            <div class="adventure-body">
+                <div class="adventure-title">{{ pub.nom|slice(0, 50) }}{% if pub.nom|length > 50 %}…{% endif %}</div>
+                {% if pub.description %}<div class="adventure-desc">{{ pub.description|slice(0, 80) }}{% if pub.description|length > 80 %}…{% endif %}</div>{% endif %}
+                <div class="adventure-footer">
+                    <span><i class="fas fa-calendar-alt"></i> {{ pub.dateCreation|date('d/m/Y') }}</span>
+                    <span><i class="fas fa-heart"></i> {{ pub.countLikes() }} &nbsp; <i class="fas fa-eye"></i> {{ pub.vues }}</span>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+        {% if isOwner %}
+        <button class="adventure-card-empty" onclick="openShareModal()">
+            <i class="fas fa-plus-circle"></i>
+            <p>Ajouter une nouvelle aventure</p>
+        </button>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- ══ MODAL PARTAGE ══ -->
+<div class="share-modal" id="shareModal">
+    <div class="share-modal-box">
+        <div class="share-modal-header">
+            <h3><i class="fas fa-globe-africa"></i> Partager votre aventure</h3>
+            <button class="modal-close" onclick="closeShareModal()">✕</button>
+        </div>
+        <div class="share-tabs">
+            <button class="share-tab-btn active" onclick="switchShareTab('photo')"><i class="fas fa-image"></i> Photo</button>
+            <button class="share-tab-btn" onclick="switchShareTab('video')"><i class="fas fa-video"></i> Vidéo</button>
+            <button class="share-tab-btn" onclick="switchShareTab('link')"><i class="fas fa-link"></i> Lien</button>
+        </div>
+        <div class="share-form-group">
+            <label>Forum <span style="color:red">*</span></label>
+            <select class="forum-select" id="shareForumId">
+                <option value="">-- Choisissez un forum --</option>
+                {% for forum in forums %}{% if forum.status == 'actif' %}<option value="{{ forum.idF }}">{{ forum.nom }} — {{ forum.theme }}</option>{% endif %}{% endfor %}
+            </select>
+        </div>
+        <div class="share-form-group">
+            <label>Titre <span style="color:red">*</span></label>
+            <input type="text" class="share-input" id="shareTitle" placeholder="Ex: Coucher de soleil à Djerba 🌅" maxlength="100">
+        </div>
+        <div class="share-form-group">
+            <label>Description</label>
+            <textarea class="share-input share-textarea" id="shareDescription" placeholder="Décrivez votre aventure..."></textarea>
+        </div>
+        <div id="sharePhotoSection">
+            <div class="share-form-group">
+                <label>Image</label>
+                <div class="share-upload-zone" onclick="document.getElementById('sharePhotoFile').click()">
+                    <i class="fas fa-cloud-upload-alt"></i><p>Cliquez pour ajouter une photo</p>
+                </div>
+                <input type="file" id="sharePhotoFile" accept="image/*" style="display:none;" onchange="previewShareFile(this,'photo')">
+                <div id="sharePhotoPreview" style="display:none;margin-top:10px;">
+                    <img id="sharePhotoImg" src="" style="max-width:100%;border-radius:12px;">
+                    <button onclick="removeSharePreview('photo')" style="margin-top:5px;background:#ef4444;color:white;border:none;padding:4px 12px;border-radius:20px;cursor:pointer;">Supprimer</button>
+                </div>
+            </div>
+        </div>
+        <div id="shareVideoSection" style="display:none;">
+            <div class="share-form-group">
+                <label>Vidéo</label>
+                <div class="share-upload-zone" onclick="document.getElementById('shareVideoFile').click()">
+                    <i class="fas fa-film"></i><p>Cliquez pour ajouter une vidéo</p>
+                </div>
+                <input type="file" id="shareVideoFile" accept="video/*" style="display:none;" onchange="previewShareFile(this,'video')">
+                <div id="shareVideoPreview" style="display:none;margin-top:10px;">
+                    <video id="shareVideoEl" controls style="max-width:100%;border-radius:12px;"></video>
+                    <button onclick="removeSharePreview('video')" style="margin-top:5px;background:#ef4444;color:white;border:none;padding:4px 12px;border-radius:20px;cursor:pointer;">Supprimer</button>
+                </div>
+            </div>
+        </div>
+        <div id="shareLinkSection" style="display:none;">
+            <div class="share-form-group">
+                <label>Lien vidéo (YouTube, Vimeo)</label>
+                <input type="url" class="share-input" id="shareVideoUrl" placeholder="https://www.youtube.com/watch?v=...">
+            </div>
+        </div>
+        <button class="share-submit-btn" id="shareSubmitBtn" onclick="submitShareAdventure()">
+            <i class="fas fa-paper-plane"></i> Publier mon aventure
+        </button>
+    </div>
+</div>
+
+<!-- ══ MODAL AVATAR ══ -->
+<div class="avatar-modal" id="avatarModal">
+    <div class="avatar-modal-box">
+        <div class="avatar-modal-header">
+            <h3><i class="fas fa-magic"></i> Transformer mon avatar</h3>
+            <button class="modal-close" onclick="closeAvatarModal()">✕</button>
+        </div>
+
+        <div class="avatar-upload-zone" id="avatarUploadZone" onclick="document.getElementById('avatarFileInput').click()">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Cliquez pour choisir une photo de votre visage</p>
+            <p class="upload-hint">JPG, PNG, WebP · Max 10 Mo</p>
+        </div>
+        <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/jpg,image/webp" style="display:none;" onchange="onAvatarFileSelected(this)">
+
+        <!-- GRILLE 6 STYLES -->
+        <div class="style-grid">
+            <div class="style-option active" data-style="anime" onclick="selectStyle(this)">
+                <span class="style-icon">🎌</span>
+                <span class="style-name">Anime</span>
+                <span class="style-api-tag">ghibli</span>
+            </div>
+            <div class="style-option" data-style="cartoon" onclick="selectStyle(this)">
+                <span class="style-icon">🎮</span>
+                <span class="style-name">Cartoon</span>
+                <span class="style-api-tag">pixar</span>
+            </div>
+            <div class="style-option" data-style="sketch" onclick="selectStyle(this)">
+                <span class="style-icon">✏️</span>
+                <span class="style-name">Sketch</span>
+                <span class="style-api-tag">croquis</span>
+            </div>
+            <div class="style-option" data-style="oil" onclick="selectStyle(this)">
+                <span class="style-icon">🎨</span>
+                <span class="style-name">Oil Painting</span>
+                <span class="style-api-tag">peinture</span>
+            </div>
+            <div class="style-option" data-style="pixel" onclick="selectStyle(this)">
+                <span class="style-icon">👾</span>
+                <span class="style-name">Pixel Art</span>
+                <span class="style-api-tag">retro</span>
+            </div>
+        </div>
+
+        <div class="avatar-loading" id="avatarLoading">
+            <div class="spinner"></div>
+            <p>Transformation en cours… ✨<br><small style="opacity:0.7;">Première génération : 30-60s (chargement du modèle)</small></p>
+        </div>
+
+        <div class="avatar-result-wrap" id="avatarResultWrap">
+            <div class="avatar-compare">
+                <div class="avatar-compare-item">
+                    <img id="avatarOriginalPreview" src="" alt="Original">
+                    <div class="avatar-compare-label">📷 Original</div>
+                </div>
+                <div class="compare-arrow">→</div>
+                <div class="avatar-compare-item">
+                    <img id="avatarResultImg" src="" alt="Avatar" class="result">
+                    <div class="avatar-compare-label">✨ Avatar généré</div>
+                </div>
+            </div>
+            <p id="avatarNote" style="font-size:0.75rem;color:#888;margin-top:10px;"></p>
+        </div>
+
+        <div class="avatar-modal-footer">
+            <button class="btn-secondary" onclick="resetAvatarModal()"><i class="fas fa-redo"></i> Recommencer</button>
+            <button class="btn-primary" id="btnTransform" onclick="transformAvatar()" disabled><i class="fas fa-magic"></i> Transformer</button>
+            <button class="btn-apply" id="btnApply" onclick="applyAvatarResult()"><i class="fas fa-check"></i> Appliquer</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<script>
+'use strict';
+const userId  = {{ userId }};
+const isOwner = {{ isOwner ? 'true' : 'false' }};
+let shareTabCurrent = 'photo';
+
+// ═══════════════════════════════════════════════════════
+//   AVATAR — état global
+// ═══════════════════════════════════════════════════════
+let selectedStyle   = 'anime';
+let selectedFile    = null;
+let selectedFileUrl = null;
+let resultAvatarUrl = null;
+
+// ═══════════════════════════════════════════════════════
+//   MODAL AVATAR
+// ═══════════════════════════════════════════════════════
+function openAvatarModal() {
+    if (!isOwner) return;
+    resetAvatarModal();
+    document.getElementById('avatarModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeAvatarModal() {
+    document.getElementById('avatarModal').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function resetAvatarModal() {
+    selectedFile    = null;
+    selectedFileUrl = null;
+    resultAvatarUrl = null;
+    document.getElementById('avatarFileInput').value = '';
+    document.getElementById('avatarLoading').style.display    = 'none';
+    document.getElementById('avatarResultWrap').style.display = 'none';
+    document.getElementById('btnTransform').disabled  = true;
+    document.getElementById('btnApply').style.display = 'none';
+    
+    const zone = document.getElementById('avatarUploadZone');
+    zone.style.display = 'block';
+    zone.innerHTML = `
+        <i class="fas fa-cloud-upload-alt"></i>
+        <p>Cliquez pour choisir une photo de votre visage</p>
+        <p class="upload-hint">JPG, PNG, WebP · Max 10 Mo</p>`;
+    
+    document.querySelectorAll('.style-option').forEach(o => o.classList.remove('active'));
+    document.querySelector('.style-option[data-style="anime"]').classList.add('active');
+    selectedStyle = 'anime';
+}
+
+function selectStyle(el) {
+    document.querySelectorAll('.style-option').forEach(o => o.classList.remove('active'));
+    el.classList.add('active');
+    selectedStyle = el.dataset.style;
+    console.log(`🎨 Style sélectionné: ${selectedStyle}`);
+}
+
+function onAvatarFileSelected(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) { 
+        showToast('❌ Image trop grande (max 10 Mo)', 'error'); 
+        return; 
+    }
+
+    selectedFile    = file;
+    selectedFileUrl = URL.createObjectURL(file);
+
+    const zone = document.getElementById('avatarUploadZone');
+    zone.innerHTML = `
+        <img src="${selectedFileUrl}" style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid var(--gold);margin-bottom:8px;">
+        <p style="color:var(--dr);font-weight:700;font-size:.85rem;">${file.name}</p>
+        <p class="upload-hint">Cliquez pour changer</p>`;
+
+    document.getElementById('btnTransform').disabled = false;
+}
+
+// ═══════════════════════════════════════════════════════
+//   TRANSFORMATION — via proxy Symfony (API gratuite)
+// ═══════════════════════════════════════════════════════
+async function transformAvatar() {
+    if (!selectedFile) { 
+        showToast('⚠️ Veuillez d\'abord sélectionner une photo', 'warn'); 
+        return; 
+    }
+
+    console.log(`🚀 Transformation demandée - Style: ${selectedStyle}`);
+
+    document.getElementById('avatarLoading').style.display    = 'block';
+    document.getElementById('avatarResultWrap').style.display = 'none';
+    document.getElementById('btnTransform').disabled  = true;
+    document.getElementById('btnApply').style.display = 'none';
+
+    try {
+        const formData = new FormData();
+        formData.append('image', selectedFile);
+        formData.append('style', selectedStyle);
+
+        const response = await fetch('/profile/proxy-cartoon', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+        
+        console.log('📦 Réponse reçue:', data);
+
+        // Gérer le cas où l'API retourne un fallback (image originale)
+        if (!data.success && data.fallback) {
+            resultAvatarUrl = data.fallback;
+            document.getElementById('avatarNote').textContent = 
+                `⚠️ ${data.message || 'Style non disponible - image originale conservée'}`;
+            showAvatarResult(resultAvatarUrl);
+            showToast('⚠️ ' + (data.message || 'Transformation non disponible'), 'warn');
+            return;
+        }
+
+        // Succès : l'API a généré une image
+        if (data.success && data.image) {
+            resultAvatarUrl = data.image;
+            document.getElementById('avatarNote').textContent = 
+                `✅ Style "${data.style}" appliqué (modèle: ${data.model || 'IA'})`;
+            showAvatarResult(resultAvatarUrl);
+            console.log(`✅ Transformation réussie !`);
+            showToast('✨ Avatar généré avec succès !', 'success');
+        } else {
+            throw new Error(data.error || 'Erreur inconnue');
+        }
+
+    } catch (err) {
+        console.error('Avatar transform error:', err);
+        document.getElementById('avatarLoading').style.display = 'none';
+        document.getElementById('btnTransform').disabled = false;
+        showToast('❌ ' + err.message, 'error');
+        
+        // Proposer de réessayer avec le debug
+        if (err.message.includes('Token')) {
+            showToast('🔑 Token API invalide - vérifiez votre configuration', 'error');
+        }
+    }
+}
+
+function showAvatarResult(resultUrl) {
+    document.getElementById('avatarLoading').style.display = 'none';
+    document.getElementById('avatarOriginalPreview').src = selectedFileUrl;
+    document.getElementById('avatarResultImg').src       = resultUrl;
+    document.getElementById('avatarResultWrap').style.display = 'block';
+    document.getElementById('btnApply').style.display   = 'inline-flex';
+    document.getElementById('btnTransform').disabled    = false;
+}
+
+function applyAvatarResult() {
+    if (!resultAvatarUrl) return;
+    
+    document.getElementById('profileAvatarEl').innerHTML =
+        `<img src="${resultAvatarUrl}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    localStorage.setItem('avatar_' + userId, resultAvatarUrl);
+    
+    fetch('/profile/update-avatar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ avatar: resultAvatarUrl })
+    }).catch(() => {});
+    
+    closeAvatarModal();
+    showToast('🎉 Avatar appliqué !', 'success');
+}
+
+// ═══════════════════════════════════════════════════════
+//   BIO
+// ═══════════════════════════════════════════════════════
+function toggleBioEdit() {
+    const form    = document.getElementById('bioEditForm');
+    const display = document.getElementById('bioDisplay');
+    const hidden  = form.style.display === 'none' || form.style.display === '';
+    form.style.display    = hidden ? 'block' : 'none';
+    display.style.display = hidden ? 'none'  : 'block';
+    if (hidden) document.getElementById('bioInput').focus();
+}
+
+function saveBio() {
+    const bio = document.getElementById('bioInput').value.trim();
+    fetch('/profile/update-bio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bio })
+    }).catch(() => {});
+    localStorage.setItem('bio_' + userId, bio);
+    document.getElementById('bioText').innerHTML = bio
+        || '<span class="bio-placeholder">Cliquez sur "Modifier" pour ajouter votre bio...</span>';
+    toggleBioEdit();
+    showToast('✅ Bio enregistrée !', 'success');
+}
+
+// ═══════════════════════════════════════════════════════
+//   INTÉRÊTS
+// ═══════════════════════════════════════════════════════
+const interestOptions = ['voyage','Tunisie','plage','cuisine','histoire','désert','médina','nature','photo','randonnée'];
+const interestIcons   = {'voyage':'✈️','Tunisie':'🇹🇳','plage':'🏖️','cuisine':'🍽️','histoire':'🏛️','désert':'🐪','médina':'🕌','nature':'🌿','photo':'📸','randonnée':'🥾'};
+
+function addInterest() {
+    const cur   = JSON.parse(localStorage.getItem('interests_' + userId) || '["voyage","Tunisie","plage"]');
+    const avail = interestOptions.filter(i => !cur.includes(i));
+    if (!avail.length) { showToast('Tous les intérêts sont déjà ajoutés !', 'warn'); return; }
+    cur.push(avail[0]);
+    localStorage.setItem('interests_' + userId, JSON.stringify(cur));
+    fetch('/profile/update-interests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ interests: cur })
+    }).catch(() => {});
+    renderInterests(cur);
+    showToast('🌟 Intérêt ajouté !', 'success');
+}
+
+function renderInterests(list) {
+    const row = document.getElementById('interestsRow');
+    if (!row) return;
+    row.innerHTML = list.map(i => `<span class="interest-badge">${interestIcons[i]||'🌟'} ${i}</span>`).join('')
+        + (isOwner ? `<span class="interest-badge add-btn" onclick="addInterest()"><i class="fas fa-plus"></i> Ajouter</span>` : '');
+}
+
+// ═══════════════════════════════════════════════════════
+//   MODAL PARTAGE
+// ═══════════════════════════════════════════════════════
+function openShareModal()  { 
+    document.getElementById('shareModal').classList.add('open'); 
+    document.body.style.overflow = 'hidden'; 
+}
+
+function closeShareModal() {
+    document.getElementById('shareModal').classList.remove('open');
+    document.body.style.overflow = '';
+    ['shareForumId','shareTitle','shareDescription','sharePhotoFile','shareVideoFile','shareVideoUrl'].forEach(id => { 
+        const e = document.getElementById(id); 
+        if(e) e.value=''; 
+    });
+    document.getElementById('sharePhotoPreview').style.display = 'none';
+    document.getElementById('shareVideoPreview').style.display = 'none';
+}
+
+function switchShareTab(tab) {
+    shareTabCurrent = tab;
+    document.querySelectorAll('.share-tab-btn').forEach((b,i)=>b.classList.toggle('active',(tab==='photo'&&i===0)||(tab==='video'&&i===1)||(tab==='link'&&i===2)));
+    document.getElementById('sharePhotoSection').style.display = tab==='photo' ? 'block' : 'none';
+    document.getElementById('shareVideoSection').style.display = tab==='video' ? 'block' : 'none';
+    document.getElementById('shareLinkSection').style.display  = tab==='link'  ? 'block' : 'none';
+}
+
+function previewShareFile(input, type) {
+    const file = input.files[0]; 
+    if (!file) return;
+    if (type==='photo') { 
+        const r=new FileReader(); 
+        r.onload=e=>{document.getElementById('sharePhotoImg').src=e.target.result;document.getElementById('sharePhotoPreview').style.display='block';}; 
+        r.readAsDataURL(file); 
+    } else { 
+        document.getElementById('shareVideoEl').src=URL.createObjectURL(file); 
+        document.getElementById('shareVideoPreview').style.display='block'; 
+    }
+}
+
+function removeSharePreview(type) {
+    if(type==='photo'){
+        document.getElementById('sharePhotoPreview').style.display='none';
+        document.getElementById('sharePhotoFile').value='';
+    } else {
+        document.getElementById('shareVideoPreview').style.display='none';
+        document.getElementById('shareVideoFile').value='';
+    }
+}
+
+async function submitShareAdventure() {
+    const forumId = document.getElementById('shareForumId').value;
+    const title   = document.getElementById('shareTitle').value.trim();
+    if (!forumId) { showToast('Veuillez sélectionner un forum','error'); return; }
+    if (!title || title.length<3) { showToast('Le titre doit contenir au moins 3 caractères','error'); return; }
+    const btn=document.getElementById('shareSubmitBtn'), orig=btn.innerHTML;
+    btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Publication...'; btn.disabled=true;
+    try {
+        const fd=new FormData();
+        fd.append('forumId',forumId); 
+        fd.append('title',title);
+        fd.append('description',document.getElementById('shareDescription').value.trim());
+        if(shareTabCurrent==='photo'){
+            const f=document.getElementById('sharePhotoFile').files[0];
+            if(f) fd.append('image',f);
+        } else if(shareTabCurrent==='video'){
+            const f=document.getElementById('shareVideoFile').files[0];
+            if(f) fd.append('video',f);
+        } else {
+            const u=document.getElementById('shareVideoUrl').value.trim();
+            if(u) fd.append('videoUrl',u);
+        }
+        const res=await fetch('/publication/api/new',{method:'POST',body:fd,headers:{'X-Requested-With':'XMLHttpRequest'}});
+        const data=await res.json();
+        if(data.success){
+            showToast('🎉 Publication ajoutée !','success');
+            closeShareModal();
+            setTimeout(()=>{window.location.href=data.profileUrl;},1500);
+        } else {
+            showToast('❌ '+(data.error||'Erreur'),'error');
+        }
+    } catch(e){
+        showToast('❌ Erreur de connexion','error');
+    } finally {
+        btn.innerHTML=orig;
+        btn.disabled=false;
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+//   TOAST
+// ═══════════════════════════════════════════════════════
+function showToast(msg, type) {
+    const colors={success:'#27ae60',error:'#c0392b',warn:'#e07b39',info:'#2980b9'};
+    const t=document.createElement('div');
+    t.className='toast-notification'; 
+    t.style.background=colors[type]||colors.success; 
+    t.innerHTML=msg;
+    document.body.appendChild(t);
+    setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300);},4000);
+}
+
+// ═══════════════════════════════════════════════════════
+//   INIT
+// ═══════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+    const savedAvatar = localStorage.getItem('avatar_' + userId);
+    if (savedAvatar) {
+        document.getElementById('profileAvatarEl').innerHTML =
+            `<img src="${savedAvatar}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    }
+    const savedBio = localStorage.getItem('bio_' + userId);
+    if (savedBio) {
+        document.getElementById('bioText').textContent = savedBio;
+        const bi = document.getElementById('bioInput');
+        if (bi) bi.value = savedBio;
+    }
+    const savedInterests = localStorage.getItem('interests_' + userId);
+    if (savedInterests) {
+        try { renderInterests(JSON.parse(savedInterests)); } catch(e) {}
+    }
+    
+    console.log('🎨 Profil chargé - Styles disponibles: anime, cartoon, sketch, oil, pixel');
+});
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { 
+        closeShareModal(); 
+        closeAvatarModal(); 
+    }
+});
+
+document.getElementById('shareModal')?.addEventListener('click', e => {
+    if (e.target === document.getElementById('shareModal')) closeShareModal();
+});
+document.getElementById('avatarModal')?.addEventListener('click', e => {
+    if (e.target === document.getElementById('avatarModal')) closeAvatarModal();
+});
+</script>
+{% endblock %}
