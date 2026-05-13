@@ -1,27 +1,27 @@
 # 🌍 TunisiaJourney — Plateforme Web
 
-
 > Une plateforme de voyage complète développée avec Symfony 6.4, permettant aux utilisateurs de découvrir, réserver et gérer leurs expériences de voyage en Tunisie.
 
 ---
 
 ## 📌 Table des matières
 
-- [À propos du projet](#à-propos-du-projet)
+- [Overview](#overview)
 - [Fonctionnalités](#fonctionnalités)
-- [Technologies utilisées](#technologies-utilisées)
+- [Tech Stack](#tech-stack)
 - [Installation](#installation)
 - [Variables d'environnement](#variables-denvironnement)
 - [Base de données](#base-de-données)
-- [Lancement](#lancement)
+- [Getting Started](#getting-started)
 - [Structure du projet](#structure-du-projet)
 - [Équipe](#équipe)
+- [Acknowledgments](#acknowledgments)
 
 ---
 
-## 🧭 À propos du projet
+## 🧭 Overview
 
-**TunisiaJourney** est une plateforme intégrée de gestion de voyages développée dans le cadre du projet intégré de 3ème année ingénierie à l'**École Supérieure Privée d'Ingénierie et de Technologies — Esprit**.
+**TunisiaJourney** is a full-featured travel management platform developed as part of the coursework for **PIDEV 3A** at **[Esprit School of Engineering](https://esprit.tn)**. It explores integrated web and desktop development with a focus on security, real-time features, and a seamless user experience.
 
 Le projet combine une **application web Symfony 6.4** et une **application desktop JavaFX**, toutes deux connectées à une base de données **MySQL** partagée.
 
@@ -64,19 +64,28 @@ Le projet combine une **application web Symfony 6.4** et une **application deskt
 
 ---
 
-## 🛠 Technologies utilisées
+## 🛠 Tech Stack
 
-| Couche | Technologie |
-|--------|------------|
-| Backend | PHP 8.2, Symfony 6.4 |
-| Frontend | Twig, Bootstrap, JavaScript |
-| Base de données | MySQL 8.0 / MariaDB |
-| ORM | Doctrine ORM |
-| Authentification | KnpU OAuth2, Google OAuth |
+### Frontend
+- Twig, Bootstrap, JavaScript
+
+### Backend
+- PHP 8.2, Symfony 6.4
+- Doctrine ORM
+- Python 3.x + Flask (reconnaissance faciale)
+
+### Base de données
+- MySQL 8.0 / MariaDB
+
+### Other Tools
+
+| Catégorie | Technologie |
+|-----------|------------|
+| Authentification | KnpU OAuth2, Google OAuth, TOTP |
 | Email | Brevo API |
 | Reconnaissance faciale | DeepFace, ArcFace (Flask Python) |
 | Upload d'images | ImgBB API |
-| Sécurité | reCAPTCHA, BCrypt, TOTP |
+| Sécurité | reCAPTCHA, BCrypt |
 | Tunneling | ngrok |
 
 ---
@@ -120,8 +129,8 @@ GOOGLE_CLIENT_ID=votre_client_id
 GOOGLE_CLIENT_SECRET=votre_client_secret
 
 # Brevo Email
-BREVO_API_KEY=votre_cle_api_brevo
-BREVO_SENDER_EMAIL=votre_email@gmail.com
+BREVO_API_KEY_MERIEM=votre_cle_api_brevo
+BREVO_SENDER_EMAIL_MERIEM=votre_email@gmail.com
 
 # ImgBB
 IMGBB_API_KEY=votre_cle_imgbb
@@ -148,7 +157,7 @@ php bin/console cache:clear
 
 ---
 
-## ▶️ Lancement
+## ▶️ Getting Started
 
 ```bash
 # Démarrer le serveur Symfony
@@ -166,7 +175,7 @@ Accédez à l'application sur : `http://localhost:8000`
 
 ---
 
-## 📁 Structure du projet
+## 📁 Directory Structure
 
 ```
 Esprit-PIDEV-3A11-2526-TunisiaJourney/
@@ -190,7 +199,7 @@ Esprit-PIDEV-3A11-2526-TunisiaJourney/
 | Nom | Module |
 |-----|--------|
 | Meriem Bennour | Gestion des utilisateurs & Sécurité |
-| Eya Boughdiri | Gestion des produits et commandes  |
+| Eya Boughdiri | Gestion des produits et commandes |
 | Maram Balti | Hôtels & Réservations |
 | Souha Mzoughi | Gestion des voyages |
 | Chaima Bjeoui | Événements & Activités |
@@ -198,9 +207,11 @@ Esprit-PIDEV-3A11-2526-TunisiaJourney/
 
 ---
 
-## 🏫 Contexte académique
+## 🏫 Acknowledgments
 
-- **Établissement :** Esprit — École Supérieure Privée d'Ingénierie et de Technologies
+This project was completed under the guidance of our professors at **[Esprit School of Engineering](https://esprit.tn)** — École Supérieure Privée d'Ingénierie et de Technologies.
+
+- **Établissement :** Esprit School of Engineering
 - **Niveau :** 3ème année ingénierie
 - **Année universitaire :** 2025–2026
 - **Type de projet :** Projet Intégré (PI)
@@ -209,7 +220,4 @@ Esprit-PIDEV-3A11-2526-TunisiaJourney/
 
 ## 🏷 Mots-clés / Topics
 
-`symfony` `php` `javafx` `mysql` `voyage` `tunisie` `oauth2` `2fa` `reconnaissance-faciale` `brevo` `doctrine` `twig` `projet-integre` `esprit` `plateforme-web` `deepface` `bcrypt` `totp`
-
----
-
+`symfony` `php` `javafx` `mysql` `voyage` `tunisie` `oauth2` `2fa` `reconnaissance-faciale` `brevo` `doctrine` `twig` `projet-integre` `esprit` `plateforme-web` `deepface` `bcrypt` `totp` `esprit-school-of-engineering`
