@@ -20,7 +20,10 @@ class AdminReservationChController extends AbstractController
         $page = max(1, $request->query->getInt('page', 1));
         $search = $request->query->get('search', '');
         $sort = $request->query->get('sort', 'idRes');
-        $direction = $request->query->get('direction', 'DESC');
+        // FIX :43 — $request->query->get() retourne mixed, strtoupper() attend string.
+        // On cast en string avant d'appeler strtoupper().
+        $directionRaw = $request->query->get('direction', 'DESC');
+        $direction = strtoupper((string) $directionRaw) === 'ASC' ? 'ASC' : 'DESC';
         
         // Récupérer les informations de la chambre
         $chambre = $connection->fetchAssociative("
@@ -39,8 +42,6 @@ class AdminReservationChController extends AbstractController
         if (!in_array($sort, $allowedSorts)) {
             $sort = 'idRes';
         }
-        
-        $direction = strtoupper($direction) === 'ASC' ? 'ASC' : 'DESC';
         
         // Construction de la requête avec recherche
         $searchCondition = "";
@@ -129,7 +130,9 @@ class AdminReservationChController extends AbstractController
     #[Route('/{id}/delete', name: 'admin_reservationch_delete', methods: ['POST'])]
     public function delete(Request $request, Connection $connection, int $id): Response
     {
-        if ($this->isCsrfTokenValid('delete_reservationch_' . $id, $request->request->get('_token'))) {
+        // FIX :132 — isCsrfTokenValid() attend string|null, get() retourne mixed.
+        $token = $request->request->get('_token');
+        if ($this->isCsrfTokenValid('delete_reservationch_' . $id, is_string($token) ? $token : null)) {
             $connection->executeStatement("DELETE FROM reservation_chambre WHERE idRes = ?", [$id]);
             $this->addFlash('success', 'Réservation supprimée avec succès !');
         }

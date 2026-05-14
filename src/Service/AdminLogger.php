@@ -69,6 +69,8 @@ class AdminLogger
 
     /**
      * Helper : construit la chaîne de détails à partir d'un tableau de diff
+     *
+     *  @param array<int, string|null> $diffs
      */
     public static function buildDetails(array $diffs): ?string
     {

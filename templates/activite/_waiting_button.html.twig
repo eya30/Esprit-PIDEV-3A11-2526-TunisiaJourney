@@ -1,0 +1,150 @@
+{% set estComplet = placesDisponibles is defined and placesDisponibles <= 0 %}
+
+{% if estComplet %}
+    <div class="waiting-list-container mt-3">
+        {% if app.user %}
+            {% if not estEnListeAttente %}
+                <button id="btnListeAttente" 
+                        data-activite-id="{{ activite.IDAct }}"
+                        class="btn-waiting">
+                    <i class="fas fa-clock"></i>
+                    <span>S'inscrire en liste d'attente</span>
+                </button>
+            {% else %}
+                <button class="btn-waiting-active" disabled>
+                    <i class="fas fa-check-circle"></i>
+                    <span>En liste d'attente (position #{{ positionListe }})</span>
+                </button>
+            {% endif %}
+        {% else %}
+            <a href="{{ path('app_login') }}" class="btn-waiting-login">
+                <i class="fas fa-sign-in-alt"></i>
+                <span>Connectez-vous pour la liste d'attente</span>
+            </a>
+        {% endif %}
+        
+        <div id="waitingListMessage-{{ activite.IDAct }}" class="mt-2"></div>
+    </div>
+
+    <style>
+        .btn-waiting {
+            background: #FF6B35;
+            border: none;
+            color: white;
+            padding: 12px 28px;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        .btn-waiting:hover {
+            background: #e05a2a;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255,107,53,0.3);
+        }
+        .btn-waiting-active {
+            background: #6c757d;
+            border: none;
+            color: white;
+            padding: 12px 28px;
+            border-radius: 30px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .btn-waiting-login {
+            background: transparent;
+            border: 2px solid #FF6B35;
+            color: #FF6B35;
+            padding: 10px 26px;
+            border-radius: 30px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        .btn-waiting-login:hover {
+            background: #FF6B35;
+            color: white;
+            transform: translateY(-2px);
+            text-decoration: none;
+        }
+        .alert-waiting-success {
+            background: #d4edda;
+            color: #155724;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+        .alert-waiting-warning {
+            background: #fff3cd;
+            color: #856404;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+    </style>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const btn = document.getElementById('btnListeAttente');
+        if (!btn) return;
+        
+        const activiteId = btn.dataset.activiteId;
+        const msgDiv = document.getElementById('waitingListMessage-' + activiteId);
+        
+        btn.addEventListener('click', async function() {
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Inscription...';
+            
+            try {
+                const response = await fetch('/liste-attente/inscrire/' + activiteId, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    msgDiv.innerHTML = '<div class="alert-waiting-success"><i class="fas fa-check-circle me-1"></i> ' + result.message + '</div>';
+                    btn.innerHTML = '<i class="fas fa-check-circle"></i> Inscrit (position ' + result.position + ')';
+                    btn.disabled = true;
+                    btn.classList.remove('btn-waiting');
+                    btn.classList.add('btn-waiting-active');
+                    
+                    setTimeout(() => {
+                        msgDiv.innerHTML = '';
+                    }, 5000);
+                } else {
+                    msgDiv.innerHTML = '<div class="alert-waiting-warning"><i class="fas fa-exclamation-triangle me-1"></i> ' + result.message + '</div>';
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                    
+                    setTimeout(() => {
+                        msgDiv.innerHTML = '';
+                    }, 5000);
+                }
+            } catch(e) {
+                msgDiv.innerHTML = '<div class="alert-waiting-warning"><i class="fas fa-exclamation-triangle me-1"></i> Erreur lors de l\'inscription</div>';
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+                
+                setTimeout(() => {
+                    msgDiv.innerHTML = '';
+                }, 5000);
+            }
+        });
+    });
+    </script>
+{% endif %}

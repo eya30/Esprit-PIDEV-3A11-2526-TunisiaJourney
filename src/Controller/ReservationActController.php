@@ -6,6 +6,7 @@ use App\Entity\ListeAttente;
 use App\Repository\CodePromoRepository;
 use App\Repository\ListeAttenteRepository;
 use App\Repository\ReservationActRepository;
+use App\Service\SmsActService;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -50,51 +51,82 @@ class ReservationActController extends AbstractController
             throw $this->createNotFoundException('Activité non trouvée');
         }
 
-        $imagePath = $this->getParameter('kernel.project_dir') . '/public/images/billet.jpg';
-        $imageBase64 = file_exists($imagePath)
-            ? 'data:image/jpeg;base64,' . base64_encode(file_get_contents($imagePath))
-            : '';
+        // Correction ligne 54: S'assurer que le project_dir est une string
+        $projectDir = $this->getParameter('kernel.project_dir');
+        $projectDir = is_string($projectDir) ? $projectDir : '';
+        $imagePath = $projectDir . '/public/images/billet.jpg';
+        
+        $imageContent = file_exists($imagePath) ? file_get_contents($imagePath) : false;
+        $imageBase64 = ($imageContent !== false) ? 'data:image/jpeg;base64,' . base64_encode($imageContent) : '';
 
         return $this->render('activite/billet.html.twig', [
             'reservation' => $reservation,
-            'activite' => $activite,
+            'activite'    => $activite,
             'imageBase64' => $imageBase64,
         ]);
     }
 
-    private function notifierListeAttente(int $idActivite, EntityManagerInterface $em, ListeAttenteRepository $repo): void
-    {
-        $prochain = $repo->trouverProchainEnAttente($idActivite);
+    /**
+     * @param int $idActivite
+     * @param EntityManagerInterface $em
+     * @param ListeAttenteRepository $repo
+     * @param SmsActService $smsActService
+     * @return void
+     */
+    private function notifierListeAttente(
+        int                    $idActivite,
+        EntityManagerInterface $em,
+        ListeAttenteRepository $repo,
+        SmsActService          $smsActService
+    ): void {
+        error_log("=== NOTIFIER LISTE ATTENTE ===");
+        error_log("📌 Activité ID: " . $idActivite);
         
+        $prochain = $repo->trouverProchainEnAttente($idActivite);
+
         if (!$prochain) {
+            error_log("❌ Aucune personne en liste d'attente");
             return;
         }
         
+        error_log("✅ Personne trouvée: " . $prochain->getEmailUtilisateur());
+        error_log("📞 Téléphone: " . $prochain->getTelephoneUtilisateur());
+
         $prochain->setStatut(ListeAttente::STATUT_NOTIFIE);
         $prochain->setDateNotification(new \DateTime());
         $prochain->setDateLimiteConfirmation((new \DateTime())->modify('+2 hours'));
         $em->flush();
-        
+
         $telephone = $prochain->getTelephoneUtilisateur();
-        $token = $prochain->getTokenConfirmation();
-        $url = $this->generateUrl('liste_attente_confirmer_page', ['token' => $token], 0);
-        $fullUrl = ($_ENV['NGROK_URL'] ?? 'https://' . $_SERVER['HTTP_HOST']) . $url;
+        error_log("📞 Téléphone après récupération: " . $telephone);
+
+        if (empty($telephone)) {
+            error_log("❌ Numéro de téléphone vide");
+            return;
+        }
+
+        $token     = $prochain->getTokenConfirmation();
+        $url       = $this->generateUrl('liste_attente_confirmer_page', ['token' => $token], 0);
+        $ngrokBase = rtrim($_ENV['NGROK_URL'] ?? 'https://' . ($_SERVER['HTTP_HOST'] ?? 'localhost'), " /");
+        $fullUrl   = $ngrokBase . $url;
         
-        // À remplacer par ton bundle SMS
-        // try {
-        //     $this->smsBundle->send($telephone, "Une place s'est libérée ! Confirmez ici : " . $fullUrl);
-        // } catch (\Exception $e) {
-        //     // Log erreur
-        // }
+        error_log("🔗 URL confirmation: " . $fullUrl);
+
+        $message = $smsActService->generatePlaceMessage($fullUrl);
+        error_log("📝 Message SMS: " . $message);
+        
+        $result = $smsActService->sendSms($telephone, $message);
+        error_log("📊 Résultat envoi SMS: " . ($result ? "SUCCÈS" : "ÉCHEC"));
     }
 
     #[Route('/{IDRes}/cancel', name: 'app_reservationact_cancel', methods: ['POST'])]
     public function cancelReservation(
-        int $IDRes,
+        int                      $IDRes,
         ReservationActRepository $repo,
-        Connection $connection,
-        EntityManagerInterface $em,
-        ListeAttenteRepository $listeRepo
+        Connection               $connection,
+        EntityManagerInterface   $em,
+        ListeAttenteRepository   $listeRepo,
+        SmsActService            $smsActService
     ): JsonResponse {
         $reservation = $repo->find($IDRes);
 
@@ -108,9 +140,12 @@ class ReservationActController extends AbstractController
 
         $idActivite = $reservation->getIDAct();
         
-        $repo->cancelReservation($reservation);
+        if ($idActivite === null) {
+            return new JsonResponse(['success' => false, 'message' => 'ID activité invalide'], 400);
+        }
         
-        $this->notifierListeAttente($idActivite, $em, $listeRepo);
+        $repo->cancelReservation($reservation);
+        $this->notifierListeAttente($idActivite, $em, $listeRepo, $smsActService);
 
         return new JsonResponse(['success' => true, 'message' => 'Réservation annulée avec succès']);
     }
@@ -120,42 +155,39 @@ class ReservationActController extends AbstractController
         string $prenom,
         string $email,
         string $titreActivite,
-        int $nombrePlaces,
-        float $prixTotal,
-        int $IDRes
+        int    $nombrePlaces,
+        float  $prixTotal,
+        int    $IDRes
     ): void {
         $apiKey = $_ENV['BREVO_API_KEY'] ?? '';
         if (!$apiKey) return;
 
         try {
-            $ngrokUrl = rtrim($_ENV['NGROK_URL'] ?? 'http://localhost', '/');
+            $ngrokUrl  = rtrim($_ENV['NGROK_URL'] ?? 'http://localhost', '/');
             $billetUrl = $ngrokUrl . '/reservation-act/billet/' . $IDRes;
 
             $htmlContent = $this->renderView('emails/reservation_confirmation.html.twig', [
-                'nom' => $nom,
-                'prenom' => $prenom,
+                'nom'           => $nom,
+                'prenom'        => $prenom,
                 'titreActivite' => $titreActivite,
-                'nombrePlaces' => $nombrePlaces,
-                'prixTotal' => $prixTotal,
-                'billetUrl' => $billetUrl,
+                'nombrePlaces'  => $nombrePlaces,
+                'prixTotal'     => $prixTotal,
+                'billetUrl'     => $billetUrl,
             ]);
 
-            $brevo = new \Brevo\Brevo($apiKey);
-
-            $sender = new SendTransacEmailRequestSender([
-                'name' => 'TunisiaJourney',
+            $brevo     = new \Brevo\Brevo($apiKey);
+            $sender    = new SendTransacEmailRequestSender([
+                'name'  => 'TunisiaJourney',
                 'email' => 'chaimabejaoui79@gmail.com',
             ]);
-
             $recipient = new SendTransacEmailRequestToItem([
                 'email' => $email,
-                'name' => $prenom . ' ' . $nom,
+                'name'  => $prenom . ' ' . $nom,
             ]);
-
             $emailRequest = new SendTransacEmailRequest([
-                'subject' => '🎟️ Votre billet — ' . $titreActivite,
-                'sender' => $sender,
-                'to' => [$recipient],
+                'subject'     => '🎟️ Votre billet — ' . $titreActivite,
+                'sender'      => $sender,
+                'to'          => [$recipient],
                 'htmlContent' => $htmlContent,
             ]);
 
@@ -168,10 +200,11 @@ class ReservationActController extends AbstractController
 
     #[Route('/verify-promo', name: 'app_reservationact_verify_promo', methods: ['GET'])]
     public function verifyPromo(
-        Request $request,
+        Request             $request,
         CodePromoRepository $codePromoRepository
     ): JsonResponse {
-        $code = trim($request->query->get('code', ''));
+        $codeRaw = $request->query->get('code', '');
+        $code = is_string($codeRaw) ? trim($codeRaw) : '';
 
         if (!$code) {
             return new JsonResponse(['valide' => false, 'message' => 'Aucun code saisi.']);
@@ -188,25 +221,25 @@ class ReservationActController extends AbstractController
         }
 
         return new JsonResponse([
-            'valide' => true,
+            'valide'      => true,
             'pourcentage' => $promo->getPourcentageReduction(),
-            'message' => 'Code valide — ' . $promo->getPourcentageReduction() . '% de réduction !',
+            'message'     => 'Code valide — ' . $promo->getPourcentageReduction() . '% de réduction !',
         ]);
     }
 
     #[Route('/new/{IDAct}', name: 'app_reservationact_new', methods: ['GET', 'POST'])]
     public function new(
-        Request $request,
-        Connection $connection,
-        ValidatorInterface $validator,
-        CodePromoRepository $codePromoRepository,
+        Request                  $request,
+        Connection               $connection,
+        ValidatorInterface       $validator,
+        CodePromoRepository      $codePromoRepository,
         ReservationActRepository $reservationRepo,
-        int $IDAct
+        int                      $IDAct
     ): Response {
         /** @var \App\Entity\User|null $user */
-        $user = $this->getUser();
-        $userId = $user instanceof \App\Entity\User ? $user->getId() : null;
-        $activite = $connection->fetchAssociative(
+        $user      = $this->getUser();
+        $userId    = $user instanceof \App\Entity\User ? $user->getId() : null;
+        $activite  = $connection->fetchAssociative(
             "SELECT * FROM Activite WHERE IDAct = ?",
             [$IDAct]
         );
@@ -215,25 +248,25 @@ class ReservationActController extends AbstractController
             throw $this->createNotFoundException('Activité non trouvée');
         }
 
-        $placesReservees = $reservationRepo->getTotalConfirmedPlacesByActiviteId($IDAct);
+        $placesReservees   = $reservationRepo->getTotalConfirmedPlacesByActiviteId($IDAct);
         $placesDisponibles = (int) $activite['CapaciteM'] - $placesReservees;
 
         $errors = [];
-        $old = ['nom' => '', 'prenom' => '', 'email' => '', 'telephone' => '', 'nombrePlaces' => ''];
+        $old    = ['nom' => '', 'prenom' => '', 'email' => '', 'telephone' => '', 'nombrePlaces' => ''];
         if ($user instanceof \App\Entity\User) {
-            $old['nom'] = $user->getNom();
-            $old['prenom'] = $user->getPrenom();
-            $old['email'] = $user->getEmail();
+            $old['nom']    = $user->getNom() ?? '';
+            $old['prenom'] = $user->getPrenom() ?? '';
+            $old['email']  = $user->getEmail() ?? '';
         }
 
         if ($request->isMethod('POST')) {
 
-            $nom = trim($request->request->get('nom', ''));
-            $prenom = trim($request->request->get('prenom', ''));
-            $email = trim($request->request->get('email', ''));
-            $telephone = trim($request->request->get('telephone', ''));
-            $rawPlaces = trim($request->request->get('nombrePlaces', ''));
-            $codePromo = trim(strtoupper($request->request->get('codePromo', '')));
+            $nom        = trim((string) $request->request->get('nom', ''));
+            $prenom     = trim((string) $request->request->get('prenom', ''));
+            $email      = trim((string) $request->request->get('email', ''));
+            $telephone  = trim((string) $request->request->get('telephone', ''));
+            $rawPlaces  = trim((string) $request->request->get('nombrePlaces', ''));
+            $codePromo  = trim(strtoupper((string) $request->request->get('codePromo', '')));
             $promoReduc = (int) $request->request->get('promoReduction', 0);
 
             $old = compact('nom', 'prenom', 'email', 'telephone') + ['nombrePlaces' => $rawPlaces];
@@ -278,8 +311,8 @@ class ReservationActController extends AbstractController
             if ($request->headers->get('X-Requested-With') === 'XMLHttpRequest') {
                 if (empty($errors)) {
                     $nombrePlaces = (int) $rawPlaces;
-                    $prixBase = (float) $activite['Prix'] * $nombrePlaces;
-                    $prixTotal = $prixBase * (1 - $reductionValidee / 100);
+                    $prixBase     = (float) $activite['Prix'] * $nombrePlaces;
+                    $prixTotal    = $prixBase * (1 - $reductionValidee / 100);
 
                     $connection->executeStatement(
                         "INSERT INTO ReservationAct (id, IDAct, Nom, Prenom, email, telephone, DateReservation, NombrePlaces, Prix, status)
@@ -305,8 +338,8 @@ class ReservationActController extends AbstractController
 
             if (empty($errors)) {
                 $nombrePlaces = (int) $rawPlaces;
-                $prixBase = (float) $activite['Prix'] * $nombrePlaces;
-                $prixTotal = $prixBase * (1 - $reductionValidee / 100);
+                $prixBase     = (float) $activite['Prix'] * $nombrePlaces;
+                $prixTotal    = $prixBase * (1 - $reductionValidee / 100);
 
                 $connection->executeStatement(
                     "INSERT INTO ReservationAct (id, IDAct, Nom, Prenom, email, telephone, DateReservation, NombrePlaces, Prix, status)
@@ -332,11 +365,46 @@ class ReservationActController extends AbstractController
         $apiKey = $_ENV['EXCHANGERATE_API_KEY'] ?? '';
 
         return $this->render('activite/reservationact.html.twig', [
-            'activite' => $activite,
-            'errors' => $errors,
-            'old' => $old,
-            'placesDisponibles' => $placesDisponibles,
+            'activite'           => $activite,
+            'errors'             => $errors,
+            'old'                => $old,
+            'placesDisponibles'  => $placesDisponibles,
             'exchangeRateApiKey' => $apiKey,
+        ]);
+    }
+
+    #[Route('/test-sms', name: 'test_sms', methods: ['GET'])]
+    public function testSms(SmsActService $smsActService): JsonResponse
+    {
+        $numero = '+21698830328';
+        $message = '🧪 Test SMS depuis TunisiaJourney - ' . date('H:i:s');
+        
+        error_log("=== TEST MANUEL SMS ===");
+        error_log("📞 Numéro: " . $numero);
+        error_log("📝 Message: " . $message);
+        
+        $resultat = $smsActService->sendSms($numero, $message);
+        
+        return new JsonResponse([
+            'success' => $resultat,
+            'numero' => $numero,
+            'message' => $message,
+            'resultat' => $resultat ? 'SMS envoyé avec succès' : 'Échec de l\'envoi',
+            'heure' => date('H:i:s')
+        ]);
+    }
+
+    #[Route('/check-twilio', name: 'check_twilio', methods: ['GET'])]
+    public function checkTwilio(): JsonResponse
+    {
+        $accountSid = $_ENV['TWILIO_ACCOUNT_SID_CHAIMA'] ?? '';
+        $authToken = $_ENV['TWILIO_AUTH_TOKEN_CHAIMA'] ?? '';
+        $phoneNumber = $_ENV['TWILIO_PHONE_NUMBER_CHAIMA'] ?? '';
+        
+        return new JsonResponse([
+            'account_sid' => $accountSid ? substr($accountSid, 0, 6) . '...' : 'NON',
+            'auth_token' => $authToken ? '✅ Défini' : '❌ NON',
+            'phone_number' => $phoneNumber ?: '❌ NON',
         ]);
     }
 }

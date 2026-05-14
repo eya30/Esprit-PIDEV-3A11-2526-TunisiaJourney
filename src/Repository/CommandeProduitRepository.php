@@ -7,6 +7,9 @@ use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<CommandeProduit>
+ */
 class CommandeProduitRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -14,7 +17,9 @@ class CommandeProduitRepository extends ServiceEntityRepository
         parent::__construct($registry, CommandeProduit::class);
     }
 
-    // ✅ Récupérer les articles du panier d'un user
+    /**
+     * @return CommandeProduit[]
+     */
     public function findPanierByUser(User $user): array
     {
         return $this->createQueryBuilder('cp')
@@ -25,7 +30,6 @@ class CommandeProduitRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    // ✅ Trouver un article spécifique dans le panier
     public function findPanierItem(User $user, int $produitId): ?CommandeProduit
     {
         return $this->createQueryBuilder('cp')
@@ -39,14 +43,12 @@ class CommandeProduitRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
-    // ✅ Total du panier
     public function getTotalPanier(User $user): float
     {
         $items = $this->findPanierByUser($user);
         return array_reduce($items, fn($carry, $item) => $carry + $item->getSousTotal(), 0.0);
     }
 
-    // ✅ Vider le panier d'un user
     public function clearPanier(User $user): void
     {
         $this->createQueryBuilder('cp')
@@ -57,22 +59,24 @@ class CommandeProduitRepository extends ServiceEntityRepository
             ->getQuery()
             ->execute();
     }
-    public function findPanierItemByProduitAndTaille($user, int $produitId, ?string $taille): ?CommandeProduit
-{
-    $qb = $this->createQueryBuilder('cp')
-        ->where('cp.user = :user')
-        ->andWhere('cp.isPanier = true')
-        ->andWhere('cp.produit = :produitId')
-        ->setParameter('user', $user)
-        ->setParameter('produitId', $produitId);
- 
-    if ($taille === null) {
-        $qb->andWhere('cp.taille IS NULL');
-    } else {
-        $qb->andWhere('cp.taille = :taille')
-           ->setParameter('taille', $taille);
+
+    // ✅ $user now typed as User
+    public function findPanierItemByProduitAndTaille(User $user, int $produitId, ?string $taille): ?CommandeProduit
+    {
+        $qb = $this->createQueryBuilder('cp')
+            ->where('cp.user = :user')
+            ->andWhere('cp.isPanier = true')
+            ->andWhere('cp.produit = :produitId')
+            ->setParameter('user', $user)
+            ->setParameter('produitId', $produitId);
+
+        if ($taille === null) {
+            $qb->andWhere('cp.taille IS NULL');
+        } else {
+            $qb->andWhere('cp.taille = :taille')
+               ->setParameter('taille', $taille);
+        }
+
+        return $qb->getQuery()->getOneOrNullResult();
     }
- 
-    return $qb->getQuery()->getOneOrNullResult();
-}
 }

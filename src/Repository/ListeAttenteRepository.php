@@ -6,6 +6,9 @@ use App\Entity\ListeAttente;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<ListeAttente>
+ */
 class ListeAttenteRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -17,15 +20,18 @@ class ListeAttenteRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('l')
             ->where('l.idActivite = :idActivite')
-            ->andWhere('l.statut IN (:statuts)')
+            ->andWhere('l.statut = :statut')
             ->setParameter('idActivite', $idActivite)
-            ->setParameter('statuts', [ListeAttente::STATUT_EN_ATTENTE, ListeAttente::STATUT_NOTIFIE])
+            ->setParameter('statut', ListeAttente::STATUT_EN_ATTENTE)
             ->orderBy('l.dateInscription', 'ASC')
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
     }
 
+    /**
+     * @return ListeAttente[]
+     */
     public function trouverParEmail(string $email): array
     {
         return $this->createQueryBuilder('l')
@@ -46,14 +52,17 @@ class ListeAttenteRepository extends ServiceEntityRepository
             ->setParameter('idActivite', $idActivite)
             ->setParameter('statuts', [ListeAttente::STATUT_EN_ATTENTE, ListeAttente::STATUT_NOTIFIE])
             ->setParameter('email', $email);
-        
+
         return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
+    /**
+     * @return ListeAttente[]
+     */
     public function trouverInscriptionsExpirees(): array
     {
         $now = new \DateTime();
-        
+
         return $this->createQueryBuilder('l')
             ->where('l.statut = :statutNotifie')
             ->andWhere('l.dateLimiteConfirmation < :now')
@@ -75,7 +84,7 @@ class ListeAttenteRepository extends ServiceEntityRepository
             ->setParameter('statuts', [ListeAttente::STATUT_EN_ATTENTE, ListeAttente::STATUT_NOTIFIE])
             ->getQuery()
             ->getSingleScalarResult();
-        
+
         return $result > 0;
     }
 

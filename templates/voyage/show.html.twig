@@ -14,12 +14,12 @@
         margin-bottom: 2rem;
         transition: all 0.3s ease;
     }
-    
+   
     .back-arrow:hover {
         transform: translateX(-5px);
         color: var(--tunisia-orange);
     }
-    
+   
     .voyage-container {
         display: flex;
         gap: 2rem;
@@ -28,24 +28,24 @@
         overflow: hidden;
         border: 1px solid #F0E8DD;
     }
-    
+   
     .voyage-image {
         flex: 1;
         min-width: 0;
     }
-    
+   
     .voyage-image img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         display: block;
     }
-    
+   
     .voyage-info {
         flex: 1;
         padding: 2rem;
     }
-    
+   
     .voyage-title {
         font-family: 'Cormorant Garamond', serif;
         font-size: 2rem;
@@ -53,20 +53,20 @@
         color: var(--tunisia-red);
         margin-bottom: 1rem;
     }
-    
+   
     .voyage-price {
         font-size: 1.8rem;
         font-weight: 800;
         color: var(--tunisia-red);
         margin: 1rem 0;
     }
-    
+   
     .voyage-price small {
         font-size: 0.9rem;
         font-weight: 400;
         color: #6c757d;
     }
-    
+   
     .voyage-meta {
         display: flex;
         flex-wrap: wrap;
@@ -76,7 +76,7 @@
         border-top: 1px solid #F0E8DD;
         border-bottom: 1px solid #F0E8DD;
     }
-    
+   
     .meta-item {
         display: flex;
         align-items: center;
@@ -84,29 +84,118 @@
         color: #6c757d;
         font-size: 0.9rem;
     }
-    
+   
     .meta-item i {
         color: var(--tunisia-red);
         width: 20px;
     }
-    
+   
     .voyage-description {
         color: #4A3B2F;
         line-height: 1.8;
         margin: 1.5rem 0;
     }
-    
+   
+    /* Convertisseur simple */
+    .currency-converter-simple {
+        background: linear-gradient(135deg, #FEF9F0 0%, #FFF5F0 100%);
+        border-radius: 20px;
+        padding: 1.2rem 1.5rem;
+        margin: 1.5rem 0;
+        border: 1px solid #F0E8DD;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+   
+    .currency-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        color: #2C1810;
+    }
+   
+    .currency-label i {
+        color: var(--tunisia-red);
+        font-size: 1.2rem;
+    }
+   
+    .currency-select {
+        background: white;
+        border: 1px solid #E8DFD1;
+        border-radius: 40px;
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #2C1810;
+        cursor: pointer;
+        transition: all 0.2s;
+        min-width: 180px;
+    }
+   
+    .currency-select:hover {
+        border-color: var(--tunisia-red);
+    }
+   
+    .currency-select:focus {
+        outline: none;
+        border-color: var(--tunisia-red);
+        box-shadow: 0 0 0 2px rgba(147, 3, 46, 0.2);
+    }
+   
+    .converted-price-display {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--tunisia-red);
+        background: white;
+        padding: 0.3rem 1rem;
+        border-radius: 40px;
+        min-width: 180px;
+        text-align: center;
+    }
+   
+    .converted-price-display small {
+        font-size: 0.7rem;
+        font-weight: 400;
+        color: #6c757d;
+    }
+   
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid var(--tunisia-red);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+   
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+   
+    .rate-info {
+        font-size: 0.7rem;
+        color: #9CA3AF;
+        margin-top: 0.3rem;
+        text-align: center;
+    }
+   
     .programmes-section {
         margin-top: 2rem;
     }
-    
+   
     .programmes-section h3 {
         font-size: 1.2rem;
         font-weight: 600;
         margin-bottom: 1rem;
         color: var(--dark-gray);
     }
-    
+   
     .programme-item {
         padding: 0.8rem;
         margin-bottom: 0.8rem;
@@ -114,23 +203,23 @@
         border-radius: 12px;
         transition: all 0.2s;
     }
-    
+   
     .programme-item:hover {
         background: #FFF5F0;
         transform: translateX(5px);
     }
-    
+   
     .programme-name {
         font-weight: 700;
         color: var(--tunisia-red);
         margin-bottom: 0.3rem;
     }
-    
+   
     .programme-date {
         font-size: 0.75rem;
         color: #9CA3AF;
     }
-    
+   
     .btn-programmes {
         display: inline-block;
         background: transparent;
@@ -144,36 +233,42 @@
         margin-top: 1rem;
         font-size: 0.85rem;
     }
-    
+   
     .btn-programmes:hover {
         background: var(--tunisia-red);
         color: white;
         transform: translateY(-2px);
     }
-    
+   
     @media (max-width: 768px) {
         .voyage-container {
             flex-direction: column;
         }
-        
+       
         .voyage-image {
             height: 300px;
         }
-        
+       
         .voyage-info {
             padding: 1.5rem;
         }
-        
+       
         .voyage-title {
             font-size: 1.5rem;
         }
-        
-        .voyage-price {
-            font-size: 1.3rem;
+       
+        .currency-converter-simple {
+            flex-direction: column;
+            text-align: center;
         }
-        
-        .voyage-meta {
-            gap: 1rem;
+       
+        .converted-price-display {
+            min-width: auto;
+            width: 100%;
+        }
+       
+        .currency-select {
+            width: 100%;
         }
     }
 </style>
@@ -183,9 +278,9 @@
 <div class="container py-5">
     <!-- Flèche de retour -->
     <a href="{{ path('app_voyage_index') }}" class="back-arrow">
-        <i class="fas fa-arrow-left"></i> Retour
+        <i class="fas fa-arrow-left"></i> Retour aux voyages
     </a>
-    
+   
     <div class="voyage-container">
         <!-- Image à gauche -->
         <div class="voyage-image">
@@ -195,15 +290,56 @@
                 <img src="https://images.pexels.com/photos/1618750/pexels-photo-1618750.jpeg?auto=compress&cs=tinysrgb&w=800" alt="{{ voyage.nom }}">
             {% endif %}
         </div>
-        
+       
         <!-- Détails à droite -->
         <div class="voyage-info">
             <h1 class="voyage-title">{{ voyage.nom }}</h1>
-            
-            <div class="voyage-price">
-                {{ voyage.prix|number_format(0, ',', ' ') }} <small>DT / personne</small>
+           
+            <!-- Prix avec convertisseur intégré -->
+            <div class="currency-converter-simple">
+                <div class="currency-label">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>Convertir en :</span>
+                </div>
+               
+                <select id="currencySelect" class="currency-select">
+                    <option value="TND">🇹🇳 DT - Dinar Tunisien (prix original)</option>
+                    <option value="EUR" selected>🇪🇺 € - Euro</option>
+                    <option value="USD">🇺🇸 $ - Dollar US</option>
+                    <option value="GBP">🇬🇧 £ - Livre Sterling</option>
+                    <option value="CAD">🇨🇦 C$ - Dollar Canadien</option>
+                    <option value="CHF">🇨🇭 CHF - Franc Suisse</option>
+                    <option value="DZD">🇩🇿 DA - Dinar Algérien</option>
+                    <option value="LYD">🇱🇾 LD - Dinar Libyen</option>
+                    <option value="MAD">🇲🇦 DH - Dirham Marocain</option>
+                    <option value="SAR">🇸🇦 ﷼ - Riyal Saoudien</option>
+                    <option value="AED">🇦🇪 د.إ - Dirham Émirati</option>
+                    <option value="QAR">🇶🇦 ﷼ - Riyal Qatari</option>
+                    <option value="KWD">🇰🇼 KD - Dinar Koweïtien</option>
+                    <option value="BHD">🇧🇭 BD - Dinar Bahreïni</option>
+                    <option value="OMR">🇴🇲 OMR - Rial Omanais</option>
+                    <option value="JOD">🇯🇴 JD - Dinar Jordanien</option>
+                    <option value="CNY">🇨🇳 ¥ - Yuan Chinois</option>
+                    <option value="JPY">🇯🇵 ¥ - Yen Japonais</option>
+                    <option value="TRY">🇹🇷 ₺ - Lire Turque</option>
+                    <option value="RUB">🇷🇺 ₽ - Rouble Russe</option>
+                    <option value="INR">🇮🇳 ₹ - Roupie Indienne</option>
+                    <option value="AUD">🇦🇺 A$ - Dollar Australien</option>
+                    <option value="NZD">🇳🇿 NZ$ - Dollar Néo-Zélandais</option>
+                    <option value="SEK">🇸🇪 kr - Couronne Suédoise</option>
+                    <option value="NOK">🇳🇴 kr - Couronne Norvégienne</option>
+                    <option value="DKK">🇩🇰 kr - Couronne Danoise</option>
+                    <option value="PLN">🇵🇱 zł - Zloty Polonais</option>
+                    <option value="CZK">🇨🇿 Kč - Couronne Tchèque</option>
+                    <option value="HUF">🇭🇺 Ft - Forint Hongrois</option>
+                </select>
+               
+                <div id="convertedPrice" class="converted-price-display">
+                    {{ voyage.prix|number_format(2, ',', ' ') }} <small>DT</small>
+                </div>
             </div>
-            
+            <div id="rateInfo" class="rate-info"></div>
+           
             <div class="voyage-meta">
                 <div class="meta-item">
                     <i class="fas fa-users"></i>
@@ -218,11 +354,11 @@
                     <span>Créé le {{ voyage.dateCreation|date('d/m/Y') }}</span>
                 </div>
             </div>
-            
+           
             <div class="voyage-description">
                 {{ voyage.description }}
             </div>
-            
+           
             <div class="programmes-section">
                 <h3>Programmes disponibles</h3>
                 {% if programmes is defined and programmes|length > 0 %}
@@ -234,7 +370,7 @@
                             </div>
                         </div>
                     {% endfor %}
-                    
+                   
                     {% if programmes|length > 3 %}
                         <div class="text-center">
                             <a href="{{ path('app_voyage_programmes', {'idV': voyage.idV}) }}" class="btn-programmes">
@@ -249,4 +385,62 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const currencySelect = document.getElementById('currencySelect');
+    const convertedPriceDiv = document.getElementById('convertedPrice');
+    const rateInfoDiv = document.getElementById('rateInfo');
+    const originalPrice = {{ voyage.prix }};
+    let currentCurrency = 'EUR'; // Devise par défaut (Euro sélectionné dans la liste)
+   
+    // Fonction pour convertir le prix
+    async function convertPrice(currency) {
+        if (currency === 'TND') {
+            // Afficher le prix original en TND
+            convertedPriceDiv.innerHTML = `${originalPrice.toFixed(2).replace('.', ',')} <small>DT</small>`;
+            rateInfoDiv.innerHTML = '';
+            return;
+        }
+       
+        // Afficher un indicateur de chargement
+        convertedPriceDiv.innerHTML = `<div class="loading-spinner"></div>`;
+       
+        try {
+            const response = await fetch('{{ path("app_convert_price_simple") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: `amount=${originalPrice}&to=${currency}`
+            });
+           
+            const data = await response.json();
+           
+            if (data.success) {
+                convertedPriceDiv.innerHTML = data.formatted;
+                rateInfoDiv.innerHTML = `Taux: 1 DT = ${data.exchange_rate} ${data.converted_currency}`;
+            } else {
+                convertedPriceDiv.innerHTML = `${originalPrice.toFixed(2).replace('.', ',')} <small>DT</small>`;
+                rateInfoDiv.innerHTML = '<span style="color: #991B1B;">⚠️ Service momentanément indisponible, affichage en DT</span>';
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+            convertedPriceDiv.innerHTML = `${originalPrice.toFixed(2).replace('.', ',')} <small>DT</small>`;
+            rateInfoDiv.innerHTML = '<span style="color: #991B1B;">⚠️ Erreur de connexion, affichage en DT</span>';
+        }
+    }
+   
+    // Écouter le changement de devise
+    currencySelect.addEventListener('change', function() {
+        const selectedCurrency = this.value;
+        currentCurrency = selectedCurrency;
+        convertPrice(selectedCurrency);
+    });
+   
+    // Conversion initiale (Euro par défaut)
+    convertPrice('EUR');
+});
+</script>
 {% endblock %}

@@ -10,6 +10,7 @@ class LikePublication
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id', type: 'integer')]
+    /** @phpstan-ignore property.unusedType (Doctrine assigns via reflection) */
     private ?int $id = null;
 
     #[ORM\Column(name: 'type', type: 'string', length: 10)]

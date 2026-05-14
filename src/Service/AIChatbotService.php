@@ -8,9 +8,9 @@ use Psr\Log\LoggerInterface;
 
 class AIChatbotService
 {
-    private $httpClient;
-    private $logger;
-    private $apiKey = 'sk-83566108bd77492c93581a3afed55e0d';
+    private HttpClientInterface $httpClient;
+    private LoggerInterface $logger;
+    private string $apiKey = 'sk-83566108bd77492c93581a3afed55e0d';
     
     public function __construct(HttpClientInterface $httpClient, LoggerInterface $logger)
     {
@@ -18,6 +18,9 @@ class AIChatbotService
         $this->logger = $logger;
     }
     
+    /**
+     * @return array<string, mixed>
+     */
     public function sendMessage(string $message, string $sessionId = 'default'): array
     {
         $message = trim($message);
@@ -79,6 +82,9 @@ Domaines de compétence :
 Sois chaleureux et donne des réponses détaillées en français.";
     }
     
+    /**
+     * @return array<string, mixed>
+     */
     private function getFallbackResponse(): array
     {
         $responses = [

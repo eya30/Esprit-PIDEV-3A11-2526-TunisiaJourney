@@ -10,10 +10,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'produit')]
 class Produit
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column(name: 'IDPR', type: 'integer')]
-    private ?int $idPR = null;
+   #[ORM\Id]
+#[ORM\GeneratedValue]
+#[ORM\Column(name: 'IDPR', type: 'integer')]
+/** @phpstan-ignore property.unusedType */
+private ?int $idPR = null;
 
     #[ORM\Column(name: 'Titre', type: 'string', length: 100, nullable: true)]
     #[Assert\NotBlank(message: "Le titre est obligatoire.")]

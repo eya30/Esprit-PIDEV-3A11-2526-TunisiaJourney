@@ -1,9 +1,5 @@
 <?php
 // src/Service/GeminiChatbotService.php
-// ──────────────────────────────────────────────────────────────────────────────
-// Utilise OpenRouter.ai — 100% GRATUIT, pas de carte bancaire requise
-// Modèles gratuits disponibles : mistral, llama, gemma, etc.
-// ──────────────────────────────────────────────────────────────────────────────
 
 namespace App\Service;
 
@@ -17,29 +13,32 @@ class GeminiChatbotService
     private HttpClientInterface $httpClient;
     private LoggerInterface $logger;
 
-    // ── Modèles 100% gratuits sur OpenRouter ────────────────────────────────
-    // Si le premier ne répond pas, le suivant est essayé automatiquement
     private const FREE_MODELS = [
-        'openrouter/free',                              // ← routeur automatique (MEILLEUR)
-    'meta-llama/llama-3.3-70b-instruct:free',       // LLaMA 3.3 70B
-    'deepseek/deepseek-r1-distill-llama-70b:free',  // DeepSeek R1
-    'qwen/qwen3-8b:free',                           // Qwen3 8B
-    'google/gemma-2-9b-it:free',                    // Gemma 2 9B
-    'mistralai/mistral-7b-instruct:free',           // Mistral 7B
-];
+        'openrouter/free',
+        'meta-llama/llama-3.3-70b-instruct:free',
+        'deepseek/deepseek-r1-distill-llama-70b:free',
+        'qwen/qwen3-8b:free',
+        'google/gemma-2-9b-it:free',
+        'mistralai/mistral-7b-instruct:free',
+    ];
+
     public function __construct(
         HttpClientInterface $httpClient,
         ParameterBagInterface $params,
         LoggerInterface $logger
     ) {
-        $this->apiKey     = $params->get('gemini_api_key'); // même paramètre .env
+        $apiKey           = $params->get('gemini_api_key_forum');
+        $this->apiKey     = is_string($apiKey) ? $apiKey : '';
         $this->httpClient = $httpClient;
         $this->logger     = $logger;
     }
 
+    /**
+     * @param array<int, array{role: string, content: string}> $conversationHistory
+     * @return array{success: bool, response: string, error: string|null}
+     */
     public function sendMessage(string $message, array $conversationHistory = []): array
     {
-        // ── Vérifier la clé API ──────────────────────────────────────────
         if (empty($this->apiKey) || str_starts_with($this->apiKey, 'your_')) {
             return [
                 'success'  => false,
@@ -48,7 +47,6 @@ class GeminiChatbotService
             ];
         }
 
-        // ── Construire les messages au format OpenAI (compatible OpenRouter) ─
         $messages = [
             ['role' => 'system', 'content' => $this->getSystemPrompt()],
         ];
@@ -62,7 +60,6 @@ class GeminiChatbotService
 
         $messages[] = ['role' => 'user', 'content' => $message];
 
-        // ── Essayer chaque modèle gratuit jusqu'à succès ─────────────────
         foreach (self::FREE_MODELS as $model) {
             $result = $this->callOpenRouter($model, $messages);
 
@@ -70,17 +67,14 @@ class GeminiChatbotService
                 return $result;
             }
 
-            // Si quota dépassé sur ce modèle → essayer le suivant
             if (isset($result['retry']) && $result['retry']) {
                 $this->logger->warning('[OpenRouter] Modèle ' . $model . ' indisponible, essai suivant...');
                 continue;
             }
 
-            // Erreur bloquante (clé invalide, etc.) → arrêter
             return $result;
         }
 
-        // Tous les modèles ont échoué
         return [
             'success'  => false,
             'response' => '⚠️ Tous les modèles gratuits sont temporairement indisponibles. Réessayez dans quelques minutes.',
@@ -88,7 +82,10 @@ class GeminiChatbotService
         ];
     }
 
-    // ── Appel à l'API OpenRouter ─────────────────────────────────────────────
+    /**
+     * @param array<int, array{role: string, content: string}> $messages
+     * @return array{success: bool, response: string, error: string|null, retry?: bool}
+     */
     private function callOpenRouter(string $model, array $messages): array
     {
         try {
@@ -96,7 +93,7 @@ class GeminiChatbotService
                 'headers' => [
                     'Content-Type'  => 'application/json',
                     'Authorization' => 'Bearer ' . $this->apiKey,
-                    'HTTP-Referer'  => 'https://tunisiajourney.com', // votre site
+                    'HTTP-Referer'  => 'https://tunisiajourney.com',
                     'X-Title'       => 'TunisiaJourney Chatbot',
                 ],
                 'json' => [
@@ -111,12 +108,10 @@ class GeminiChatbotService
             $statusCode = $response->getStatusCode();
             $data       = $response->toArray(false);
 
-            // ── Erreurs HTTP ─────────────────────────────────────────────
             if ($statusCode !== 200) {
                 $apiError = $data['error']['message'] ?? ('HTTP ' . $statusCode);
                 $this->logger->error('[OpenRouter] ' . $model . ' — Erreur : ' . $apiError);
 
-                // Clé invalide → erreur bloquante
                 if (in_array($statusCode, [401, 403])) {
                     return [
                         'success'  => false,
@@ -126,7 +121,6 @@ class GeminiChatbotService
                     ];
                 }
 
-                // Quota / surcharge → essayer modèle suivant
                 return [
                     'success'  => false,
                     'response' => '',
@@ -135,7 +129,6 @@ class GeminiChatbotService
                 ];
             }
 
-            // ── Extraire la réponse ──────────────────────────────────────
             $text = $data['choices'][0]['message']['content'] ?? null;
 
             if (empty($text)) {
@@ -149,7 +142,7 @@ class GeminiChatbotService
 
             return [
                 'success'  => true,
-                'response' => $this->cleanResponse($text),
+                'response' => $this->cleanResponse((string) $text),
                 'error'    => null,
             ];
 
@@ -164,23 +157,19 @@ class GeminiChatbotService
         }
     }
 
-    // ── Nettoyage de la réponse ──────────────────────────────────────────────
     private function cleanResponse(string $text): string
     {
-        // Supprimer les caractères de contrôle invisibles (sans toucher \n \r)
-        $text = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $text);
+        // Fix ligne 174 : preg_replace peut retourner null → cast (string)
+        $text = (string) preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $text);
+        $text = (string) preg_replace('/\n{3,}/', "\n\n", $text);
 
-        // Maximum 2 sauts de ligne consécutifs
-        $text = preg_replace('/\n{3,}/', "\n\n", $text);
-
-        // Nettoyer les espaces inutiles par ligne
+        // Fix ligne 177 : explode attend string, $text est garanti string après le cast
         $lines = explode("\n", $text);
         $lines = array_map('trim', $lines);
 
         return trim(implode("\n", $lines));
     }
 
-    // ── Prompt système ───────────────────────────────────────────────────────
     private function getSystemPrompt(): string
     {
         return "Tu es un assistant intelligent et chaleureux pour TunisiaJourney, un forum de voyage en Tunisie.

@@ -6,7 +6,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class MyMemoryTranslateService
 {
-    private $httpClient;
+    private HttpClientInterface $httpClient;
 
     public function __construct(HttpClientInterface $httpClient)
     {
@@ -35,18 +35,18 @@ class MyMemoryTranslateService
             ]);
 
             $data = $response->toArray();
-            
+           
             if (isset($data['responseData']['translatedText'])) {
                 $translatedText = $data['responseData']['translatedText'];
-                
+               
                 // MyMemory retourne parfois le texte original avec "******", on nettoie
                 $translatedText = str_replace('******', '', $translatedText);
-                
+               
                 if (!empty($translatedText) && $translatedText !== $text) {
                     return $translatedText;
                 }
             }
-            
+           
             return $text;
         } catch (\Exception $e) {
             error_log('MyMemory error: ' . $e->getMessage());
@@ -56,6 +56,9 @@ class MyMemoryTranslateService
 
     /**
      * Traduit plusieurs textes à la fois
+     *
+     * @param array<int|string, string> $texts
+     * @return array<int|string, string>
      */
     public function translateMultiple(array $texts, string $targetLanguage = 'en', string $sourceLanguage = 'fr'): array
     {

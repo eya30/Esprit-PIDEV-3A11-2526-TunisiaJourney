@@ -7,6 +7,9 @@ use App\Entity\Activite;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<AvisAct>
+ */
 class AvisActRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -15,8 +18,7 @@ class AvisActRepository extends ServiceEntityRepository
     }
 
     /**
-     * Récupère tous les avis d'une activité (par objet Activite)
-     * du plus récent au plus ancien
+     * @return AvisAct[]
      */
     public function findByActivite(Activite $activite): array
     {
@@ -29,8 +31,7 @@ class AvisActRepository extends ServiceEntityRepository
     }
 
     /**
-     * Récupère tous les avis d'une activité (par ID)
-     * du plus récent au plus ancien
+     * @return AvisAct[]
      */
     public function findByActiviteId(int $activiteId): array
     {
@@ -42,9 +43,6 @@ class AvisActRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    /**
-     * Calcule la note moyenne d'une activité (par objet Activite)
-     */
     public function getMoyenneNote(Activite $activite): float
     {
         $result = $this->createQueryBuilder('a')
@@ -57,9 +55,6 @@ class AvisActRepository extends ServiceEntityRepository
         return $result ? round((float)$result, 1) : 0;
     }
 
-    /**
-     * Calcule la note moyenne d'une activité (par ID)
-     */
     public function getMoyenneNoteByActiviteId(int $activiteId): float
     {
         $result = $this->createQueryBuilder('a')
@@ -73,7 +68,7 @@ class AvisActRepository extends ServiceEntityRepository
     }
 
     /**
-     * Récupère les 5 derniers avis d'une activité
+     * @return AvisAct[]
      */
     public function findLastAvisByActivite(Activite $activite, int $limit = 5): array
     {
@@ -86,12 +81,9 @@ class AvisActRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    /**
-     * Compte le nombre d'avis pour une activité
-     */
     public function countByActivite(Activite $activite): int
     {
-        return $this->createQueryBuilder('a')
+        return (int) $this->createQueryBuilder('a')
             ->select('COUNT(a.idAv)')
             ->where('a.activite = :activite')
             ->setParameter('activite', $activite)
@@ -100,8 +92,7 @@ class AvisActRepository extends ServiceEntityRepository
     }
 
     /**
-     * Récupère la répartition des notes pour une activité
-     * Retourne un tableau [1=>nb, 2=>nb, 3=>nb, 4=>nb, 5=>nb]
+     * @return array<int, int>
      */
     public function getNoteRepartition(Activite $activite): array
     {
@@ -121,7 +112,7 @@ class AvisActRepository extends ServiceEntityRepository
     }
 
     /**
-     * Récupère tous les avis avec leurs commentaires (non vides)
+     * @return AvisAct[]
      */
     public function findAvisWithCommentaire(Activite $activite): array
     {

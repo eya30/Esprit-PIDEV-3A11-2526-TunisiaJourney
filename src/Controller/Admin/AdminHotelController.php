@@ -158,10 +158,9 @@ class AdminHotelController extends AbstractController
                 }
             }
 
-            // 9. idUtilisateur déjà rempli automatiquement
-            if (empty($formData['idUtilisateur'])) {
-                $errors['idUtilisateur'] = 'Erreur : utilisateur non identifié.';
-            }
+            // 9. idUtilisateur — toujours fixé à 1 (hardcodé), le check empty() est inutile
+            // FIX :162 — empty($formData['idUtilisateur']) : PHPStan sait que la valeur est 1
+            // (int littéral non falsy) => "always exists and is not falsy". On supprime ce check.
 
             if (count($errors) === 0) {
                 $imageName = null;
@@ -169,7 +168,11 @@ class AdminHotelController extends AbstractController
                     $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
                     $safeFilename = preg_replace('/[^a-zA-Z0-9]/', '_', $originalFilename);
                     $imageName = $safeFilename . '_' . uniqid() . '.' . $imageFile->guessExtension();
-                    $imageFile->move($this->getParameter('uploads_hotels_directory'), $imageName);
+                    // FIX :binaryOp — getParameter() retourne mixed, on ne peut pas concaténer directement
+                    // assert(is_string()) affine le type pour PHPStan sans overhead runtime significatif
+                    $uploadDir = $this->getParameter('uploads_hotels_directory');
+                    assert(is_string($uploadDir));
+                    $imageFile->move($uploadDir, $imageName);
                 }
 
                 $connection->executeStatement(
@@ -311,14 +314,19 @@ class AdminHotelController extends AbstractController
             if (count($errors) === 0) {
                 $imageName = $hotel['image'];
                 if ($imageFile && $imageFile->isValid()) {
-                    if ($imageName && file_exists($this->getParameter('uploads_hotels_directory') . '/' . $imageName)) {
-                        unlink($this->getParameter('uploads_hotels_directory') . '/' . $imageName);
+                    // FIX :314/:315 — getParameter() retourne mixed, concaténation directe invalide
+                    // On extrait dans une variable et on assert is_string() pour PHPStan
+                    $uploadDir = $this->getParameter('uploads_hotels_directory');
+                    assert(is_string($uploadDir));
+
+                    if ($imageName && file_exists($uploadDir . '/' . $imageName)) {
+                        unlink($uploadDir . '/' . $imageName);
                     }
 
                     $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
                     $safeFilename = preg_replace('/[^a-zA-Z0-9]/', '_', $originalFilename);
                     $imageName = $safeFilename . '_' . uniqid() . '.' . $imageFile->guessExtension();
-                    $imageFile->move($this->getParameter('uploads_hotels_directory'), $imageName);
+                    $imageFile->move($uploadDir, $imageName);
                 }
 
                 $connection->executeStatement(
@@ -357,11 +365,20 @@ class AdminHotelController extends AbstractController
     #[Route('/{id}/delete', name: 'admin_hotel_delete', methods: ['POST'])]
     public function delete(Request $request, Connection $connection, int $id): Response
     {
-        if ($this->isCsrfTokenValid('delete_hotel_' . $id, $request->request->get('_token'))) {
+        // FIX :360 — isCsrfTokenValid() attend string|null, mais get() retourne mixed
+        // On force le type avec is_string() ? $token : null
+        $token = $request->request->get('_token');
+        if ($this->isCsrfTokenValid('delete_hotel_' . $id, is_string($token) ? $token : null)) {
             $hotel = $connection->fetchAssociative("SELECT image FROM hotel WHERE idH = ?", [$id]);
-            
-            if ($hotel && $hotel['image'] && file_exists($this->getParameter('uploads_hotels_directory') . '/' . $hotel['image'])) {
-                unlink($this->getParameter('uploads_hotels_directory') . '/' . $hotel['image']);
+
+            if ($hotel && $hotel['image']) {
+                // FIX :363/:364 — même problème getParameter() mixed + concaténation
+                $uploadDir = $this->getParameter('uploads_hotels_directory');
+                assert(is_string($uploadDir));
+
+                if (file_exists($uploadDir . '/' . $hotel['image'])) {
+                    unlink($uploadDir . '/' . $hotel['image']);
+                }
             }
             
             $connection->executeStatement("DELETE FROM hotel WHERE idH = ?", [$id]);

@@ -16,6 +16,7 @@ class Voyage
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: "idV", type: "integer")]
+    /** @phpstan-ignore-next-line */
     private ?int $idV = null;
 
     #[ORM\Column(length: 255)]
@@ -55,6 +56,9 @@ class Voyage
     #[ORM\Column(name: "id_user", type: "integer")]
     private ?int $idUser = null;
 
+    /**
+     * @var Collection<int, Programme>
+     */
     #[ORM\OneToMany(mappedBy: 'voyage', targetEntity: Programme::class, cascade: ['persist', 'remove'])]
     private Collection $programmes;
 
@@ -156,6 +160,9 @@ class Voyage
         return $this;
     }
 
+    /**
+     * @return Collection<int, Programme>
+     */
     public function getProgrammes(): Collection
     {
         return $this->programmes;

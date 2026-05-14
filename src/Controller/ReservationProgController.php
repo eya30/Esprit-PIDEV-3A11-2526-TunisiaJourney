@@ -29,33 +29,34 @@ class ReservationProgController extends AbstractController
 
         // ✅ VÉRIFICATION : Seuls les MEMBRES (connectés) peuvent réserver
         $user = $this->getUser();
-        
+
         if (!$user) {
             $this->addFlash('warning', '⚠️ Veuillez vous connecter ou créer un compte pour effectuer une réservation.');
             return $this->redirectToRoute('app_login');
         }
-        
-        $userRepo = $entityManager->getRepository(User::class);
-        $completeUser = null;
-        
-        if (method_exists($user, 'getId')) {
-            $completeUser = $userRepo->find($user->getId());
-        } else {
-            $completeUser = $userRepo->findOneBy(['email' => $user->getUserIdentifier()]);
+
+        // FIX P1013 — getUser() retourne UserInterface qui ne déclare pas getId().
+        // Le instanceof garantit à Intelephense et PHPStan le type concret User.
+        if (!$user instanceof User) {
+            $this->addFlash('error', 'Type d\'utilisateur non reconnu.');
+            return $this->redirectToRoute('app_login');
         }
-        
+
+        $userRepo     = $entityManager->getRepository(User::class);
+        $completeUser = $userRepo->find($user->getId());
+
         if (!$completeUser) {
             $this->addFlash('error', 'Utilisateur non trouvé.');
             return $this->redirectToRoute('app_programme_show', ['idProg' => $idProg]);
         }
-        
+
         $userRole = $completeUser->getRole() ?? '';
-        
+
         if (strtoupper($userRole) === 'ADMIN') {
             $this->addFlash('error', '❌ Les administrateurs ne peuvent pas effectuer de réservation.');
             return $this->redirectToRoute('app_programme_show', ['idProg' => $idProg]);
         }
-        
+
         if (strtoupper($userRole) !== 'MEMBRE') {
             $this->addFlash('error', '❌ Seuls les membres peuvent effectuer des réservations.');
             return $this->redirectToRoute('app_programme_show', ['idProg' => $idProg]);
@@ -68,23 +69,31 @@ class ReservationProgController extends AbstractController
             return $this->redirectToRoute('app_voyage_index');
         }
 
-        $nom = trim($request->request->get('nom', ''));
-        $prenom = trim($request->request->get('prenom', ''));
-        $telephone = trim($request->request->get('telephone', ''));
-        $email = trim($request->request->get('email', ''));
-        $nbre = $request->request->get('nbre', '');
+        // FIX :71–:74 — request->get() retourne mixed ; on force string avant trim()
+        $nom       = trim((string)$request->request->get('nom', ''));
+        $prenom    = trim((string)$request->request->get('prenom', ''));
+        $telephone = trim((string)$request->request->get('telephone', ''));
+        $email     = trim((string)$request->request->get('email', ''));
+        $nbre      = $request->request->get('nbre', '');
 
-        if (empty($nom) && $completeUser->getNom()) {
+        if ($nom === '' && $completeUser->getNom()) {
             $nom = $completeUser->getNom();
         }
-        if (empty($prenom) && $completeUser->getPrenom()) {
+        if ($prenom === '' && $completeUser->getPrenom()) {
             $prenom = $completeUser->getPrenom();
         }
-        if (empty($telephone) && $completeUser->getTelephone()) {
+        if ($telephone === '' && $completeUser->getTelephone()) {
             $telephone = $completeUser->getTelephone();
         }
-        if (empty($email) && $completeUser->getEmail()) {
+        if ($email === '' && $completeUser->getEmail()) {
             $email = $completeUser->getEmail();
+        }
+
+        // FIX :96 — getIdProg() peut retourner null ; on garantit une string
+        $idProgramme = $programme->getIdProg();
+        if ($idProgramme === null) {
+            $this->addFlash('error', 'Identifiant du programme invalide.');
+            return $this->redirectToRoute('app_voyage_index');
         }
 
         $reservation = new ReservationProg();
@@ -93,7 +102,7 @@ class ReservationProgController extends AbstractController
         $reservation->setTelephone($telephone);
         $reservation->setEmail($email);
         $reservation->setNbre(is_numeric($nbre) ? (int)$nbre : 0);
-        $reservation->setIdP($programme->getIdProg());
+        $reservation->setIdP($idProgramme);
         $reservation->setDateProgramme(new \DateTime());
         $reservation->setStatutPaiement('en_attente');
         $reservation->setUserId($completeUser->getId());
@@ -105,55 +114,70 @@ class ReservationProgController extends AbstractController
                 $this->addFlash('error', $error->getMessage());
             }
             return $this->redirectToRoute('app_programme_show', [
-                'idProg' => $programme->getIdProg()
+                'idProg' => $idProgramme,
             ]);
         }
 
-        $prixTotal = $programme->getVoyage()->getPrix() * (int)$nbre;
+        // FIX :112 — getVoyage() peut retourner null
+        $voyage = $programme->getVoyage();
+        if ($voyage === null) {
+            $this->addFlash('error', 'Aucun voyage associé à ce programme.');
+            return $this->redirectToRoute('app_programme_show', ['idProg' => $idProgramme]);
+        }
+
+        $prixTotal = $voyage->getPrix() * (int)$nbre;
         $reservation->setPrixProg((float)$prixTotal);
+
+        // FIX :120 — getDateDebut() peut retourner null
+        $dateDebut = $programme->getDateDebut();
+        if ($dateDebut === null) {
+            $this->addFlash('error', 'Date de début du programme non définie.');
+            return $this->redirectToRoute('app_programme_show', ['idProg' => $idProgramme]);
+        }
+
+        // FIX :127/:129/:138 — getNom()/getLieu() peuvent retourner null ; on cast en string
+        $programmeNom   = (string)($programme->getNom() ?? '');
+        $lieu           = (string)($programme->getLieu() ?? '');
+        $programmeDate  = $dateDebut->format('d/m/Y');
+        $clientFullName = $prenom . ' ' . $nom;
 
         try {
             $entityManager->persist($reservation);
             $entityManager->flush();
-            
-            $clientFullName = $prenom . ' ' . $nom;
-            $programmeDate = $programme->getDateDebut()->format('d/m/Y');
-            $lieu = $programme->getLieu();
-            
-            // Envoi des emails avec BrevoEmailService (API directe)
+
             $emailSent = $emailService->sendReservationConfirmation(
                 $email,
                 $clientFullName,
-                $programme->getNom(),
+                $programmeNom,
                 $programmeDate,
                 $lieu,
                 (int)$nbre,
                 $prixTotal
             );
-            
+
             $emailService->sendAdminNotification(
                 $clientFullName,
                 $email,
                 $telephone,
-                $programme->getNom(),
+                $programmeNom,
                 (int)$nbre,
                 $prixTotal
             );
-            
+
             if ($emailSent) {
                 $this->addFlash('success', '✅ Réservation créée ! Email envoyé.');
             } else {
                 $this->addFlash('success', '✅ Réservation créée !');
             }
-            
+
             return $this->redirectToRoute('stripe_checkout', ['idReservation' => $reservation->getIdRP()]);
-            
+
         } catch (\Exception $e) {
             $this->addFlash('error', 'Erreur lors de la sauvegarde : ' . $e->getMessage());
         }
 
         return $this->redirectToRoute('app_programme_show', [
-            'idProg' => $programme->getIdProg()
+            'idProg' => $idProgramme,
         ]);
     }
 

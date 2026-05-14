@@ -22,24 +22,24 @@ class StripeeService
         return $this->publicKey;
     }
 
+    /**
+     * @param array<int, array{name: string, price: float, quantity: int, description?: string}> $items
+     */
     public function createCheckoutSession(array $items, string $successUrl, string $cancelUrl): Session
     {
         $lineItems = [];
 
         foreach ($items as $item) {
-            // ✅ Stripe ne supporte pas TND — conversion TND → EUR (1 TND ≈ 0.30 EUR)
-            // On utilise EUR et on convertit le prix
-            $prixEur = round($item['price'] * 0.30, 2);
-            $amountCents = intval($prixEur * 100); // Stripe attend des centimes
+            $prixEur      = round($item['price'] * 0.30, 2);
+            $amountCents  = intval($prixEur * 100);
 
-            // Minimum 50 centimes
             if ($amountCents < 50) {
                 $amountCents = 50;
             }
 
             $lineItems[] = [
                 'price_data' => [
-                    'currency'     => 'eur', // ✅ EUR supporté par Stripe
+                    'currency'     => 'eur',
                     'product_data' => [
                         'name'        => $item['name'],
                         'description' => sprintf(

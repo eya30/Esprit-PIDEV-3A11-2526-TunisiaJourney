@@ -1,15 +1,31 @@
 parameters:
+    uploads_directory: '%kernel.project_dir%/public/uploads/evenements'
+    uploads_activites_directory: '%kernel.project_dir%/public/uploads/activites'
+    produits_directory: '%kernel.project_dir%/public/uploads/produits'
+    voyages_images_directory: '%kernel.project_dir%/public/uploads/voyages'
+    programmes_images_directory: '%kernel.project_dir%/public/uploads/programmes'
+    uploads_voyages_directory: '%kernel.project_dir%/public/uploads/voyages'
+    uploads_programmes_directory: '%kernel.project_dir%/public/uploads/programmes'
     publications_directory: '%kernel.project_dir%/public/uploads/publications'
-    commentaires_directory:  '%kernel.project_dir%/public/uploads/commentaires'
-    app.locales:             ['fr', 'en', 'ar', 'es', 'de', 'it', 'pt', 'ru']
-    app.default_locale:      'fr'
+    commentaires_directory: '%kernel.project_dir%/public/uploads/commentaires'
+    app.locales: ['fr', 'en', 'ar', 'es', 'de', 'it', 'pt', 'ru']
+    app.default_locale: 'fr'
+    imgbb_api_key: '%env(IMGBB_API_KEY)%'
+    recaptcha_site_key: '%env(RECAPTCHA_SITE_KEY)%'
+    recaptcha_secret_key: '%env(RECAPTCHA_SECRET_KEY)%'
+    FACE_API_KEY: '%env(FACE_API_KEY)%'
+    FACE_API_SECRET: '%env(FACE_API_SECRET)%'
+    brevo_api_key: '%env(BREVO_API_KEY)%'
+    brevo_sender_email: '%env(BREVO_SENDER_EMAIL)%'
+    stripe_public_key: '%env(STRIPE_PUBLIC_KEY)%'
+    stripe_secret_key: '%env(STRIPE_SECRET_KEY)%'
     gemini_api_key: '%env(GEMINI_API_KEY)%'
+    gemini_api_key_forum: '%env(GEMINI_API_KEY_FORUM)%'
 
 services:
     _defaults:
-        autowire:      true
+        autowire: true
         autoconfigure: true
-        public:        false
 
     App\:
         resource: '../src/'
@@ -19,58 +35,18 @@ services:
             - '../src/Kernel.php'
             - '../src/Tests/'
 
-    # Service de traduction
-    App\Service\TranslationService:
-        public: true
+    App\Service\AISummaryService:
         arguments:
-            $logger: '@logger'
+            $projectDir: '%kernel.project_dir%'
 
-    # Service de suggestion de tags
-    App\Service\TagSuggestionService:
-        public: true
+    App\Service\GeminiAIService:
         arguments:
-            $logger: '@logger'
-            $httpClient: '@http_client'
+            $apiKey: '%env(GEMINI_API_KEY)%'
 
-    # Service de médias intelligents (recherche d'images/vidéos par ville)
-    App\Service\MediaIntelligentService:
-        public: true
+    App\Service\GeminiEAIService:
         arguments:
-            $client: '@http_client'
+            $apiKey: '%env(GEMINII_API_KEY)%'
 
-    # Service Ollama pour génération IA de contenu tunisien
-    App\Service\OllamaService:
-        public: true
-        arguments:
-            $client: '@http_client'
-            $mediaService: '@App\Service\MediaIntelligentService'
-
-    # Contrôleur de traduction
-    App\Controller\TranslationController:
-        public: true
-        arguments:
-            $translationService: '@App\Service\TranslationService'
-
-    # Contrôleur de suggestion de tags
-    App\Controller\TagSuggestionController:
-        public: true
-        arguments:
-            $tagSuggestionService: '@App\Service\TagSuggestionService'
-
-    # Service Emoji
-    App\Service\EmojiService:
-        public: true
-        arguments:
-            $httpClient: '@http_client'
-            $logger: '@logger'
-
-    # Contrôleur Emoji
-    App\Controller\EmojiController:
-        public: true
-        arguments:
-            $emojiService: '@App\Service\EmojiService'
-
-    # Service Gemini Chatbot (remplace DeepSeek)
     App\Service\GeminiChatbotService:
         public: true
         arguments:
@@ -78,11 +54,110 @@ services:
             $params: '@parameter_bag'
             $logger: '@logger'
 
-    # Alias pour HttpClientInterface
+    App\Service\StripeService:
+        arguments:
+            $stripeSecretKey: '%env(STRIPE_SECRET_KEY)%'
+            $stripePublicKey: '%env(STRIPE_PUBLIC_KEY)%'
+            $logger: '@logger'
+            $entityManager: '@doctrine.orm.entity_manager'
+
+    App\Service\StripeeService:
+        arguments:
+            $secretKey: '%env(STRIPEE_SECRET_KEY)%'
+            $publicKey: '%env(STRIPEE_PUBLIC_KEY)%'
+        public: true
+
+    App\Service\DiscordNotifierService:
+        arguments:
+            $connection: '@doctrine.dbal.default_connection'
+            $logger: '@logger'
+
+    App\EventListener\DiscordNewReservationListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
+
+    App\Service\WhatsAppService:
+        arguments:
+            $accountSid: '%env(TWILIO_ACCOUNT_SID)%'
+            $authToken: '%env(TWILIO_AUTH_TOKEN)%'
+            $fromNumber: '%env(TWILIO_WHATSAPP_NUMBER)%'
+
+    App\Service\BrevoEmailService:
+        arguments:
+            $httpClient: '@http_client'
+            $logger: '@logger'
+
+    App\Service\SmsService:
+        arguments:
+            $accountSid: '%env(TWILIO_ACCOUNT_SID)%'
+            $authToken: '%env(TWILIO_AUTH_TOKEN)%'
+            $twilioPhoneNumber: '%env(TWILIO_PHONE_NUMBER)%'
+
+    App\Service\TranslationService:
+        public: true
+        arguments:
+            $logger: '@logger'
+
+    App\Service\TagSuggestionService:
+        public: true
+        arguments:
+            $logger: '@logger'
+            $httpClient: '@http_client'
+
+    App\Service\MediaIntelligentService:
+        public: true
+        arguments:
+            $client: '@http_client'
+
+    App\Service\OllamaService:
+        public: true
+        arguments:
+            $client: '@http_client'
+            $mediaService: '@App\Service\MediaIntelligentService'
+
+    App\Controller\TranslationController:
+        public: true
+        arguments:
+            $translationService: '@App\Service\TranslationService'
+
+    App\Controller\TagSuggestionController:
+        public: true
+        arguments:
+            $tagSuggestionService: '@App\Service\TagSuggestionService'
+
+    App\Service\EmojiService:
+        public: true
+        arguments:
+            $httpClient: '@http_client'
+            $logger: '@logger'
+
+    App\Controller\EmojiController:
+        public: true
+        arguments:
+            $emojiService: '@App\Service\EmojiService'
+
     Symfony\Contracts\HttpClient\HttpClientInterface:
         alias: 'http_client'
         public: true
 
-    # ProfileController
     App\Controller\ProfileController:
         public: true
+
+    # ============================================
+    # MON SERVICE SMS PERSO (Chaima)
+    # ============================================
+    App\Service\SmsActService:
+        arguments:
+            $accountSid: '%env(TWILIO_ACCOUNT_SID_CHAIMA)%'
+            $authToken: '%env(TWILIO_AUTH_TOKEN_CHAIMA)%'
+            $twilioPhoneNumber: '%env(TWILIO_PHONE_NUMBER_CHAIMA)%'
+    
+    # ============================================
+    # SERVICE DE CONVERSION DE DEVISES (Taux de change)
+    # ============================================
+    App\Service\CurrencyProgService:
+        autowire: true
+        autoconfigure: true
+        arguments:
+            $httpClient: '@http_client'
+            $logger: '@logger'

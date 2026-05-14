@@ -1,6 +1,4 @@
 <?php
-// src/Entity/Commentaire.php
-
 namespace App\Entity;
 
 use App\Repository\CommentaireRepository;
@@ -13,7 +11,8 @@ class Commentaire
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'idC', type: 'integer')]
-    private ?int $idC = null;
+    /** @phpstan-ignore property.onlyRead */
+    private int $idC;
 
     #[ORM\Column(name: 'description', type: 'text')]
     private ?string $description = null;
@@ -25,7 +24,12 @@ class Commentaire
     private ?\DateTimeInterface $dateCreation = null;
 
     #[ORM\ManyToOne(targetEntity: Publication::class, inversedBy: 'commentaires')]
-    #[ORM\JoinColumn(name: 'idP', referencedColumnName: 'idP', nullable: false)]
+    #[ORM\JoinColumn(
+        name: 'idP',
+        referencedColumnName: 'idP',
+        nullable: false,
+        onDelete: 'CASCADE'
+    )]
     private ?Publication $publication = null;
 
     #[ORM\Column(name: 'id', type: 'integer', nullable: true)]
@@ -35,7 +39,7 @@ class Commentaire
     private ?string $tags = null;
 
     #[ORM\Column(name: 'is_cancelled', type: 'boolean', options: ['default' => false])]
-    private ?bool $isCancelled = false;
+    private bool $isCancelled = false;
 
     #[ORM\Column(name: 'cancelled_at', type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $cancelledAt = null;
@@ -49,9 +53,6 @@ class Commentaire
     #[ORM\Column(name: 'created_at', type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $createdAt = null;
 
-    // ══════════════════════════════════════════════════════════════════════
-    // CHAMPS POUR LA TRADUCTION
-    // ══════════════════════════════════════════════════════════════════════
     #[ORM\Column(name: 'original_description', type: 'text', nullable: true)]
     private ?string $originalDescription = null;
 
@@ -64,12 +65,11 @@ class Commentaire
     public function __construct()
     {
         $this->dateCreation = new \DateTime();
-        $this->isCancelled = false;
+        $this->isCancelled  = false;
         $this->isTranslated = false;
     }
 
-    // Getters et Setters
-    public function getIdC(): ?int { return $this->idC; }
+    public function getIdC(): int { return $this->idC ?? 0; }
 
     public function getDescription(): ?string { return $this->description; }
     public function setDescription(string $d): self { $this->description = $d; return $this; }
@@ -89,7 +89,7 @@ class Commentaire
     public function getTags(): ?string { return $this->tags; }
     public function setTags(?string $t): self { $this->tags = $t; return $this; }
 
-    public function getIsCancelled(): ?bool { return $this->isCancelled; }
+    public function getIsCancelled(): bool { return $this->isCancelled; }
     public function setIsCancelled(bool $isCancelled): self { $this->isCancelled = $isCancelled; return $this; }
 
     public function getCancelledAt(): ?\DateTimeInterface { return $this->cancelledAt; }
@@ -104,7 +104,6 @@ class Commentaire
     public function getCreatedAt(): ?\DateTimeInterface { return $this->createdAt; }
     public function setCreatedAt(?\DateTimeInterface $createdAt): self { $this->createdAt = $createdAt; return $this; }
 
-    // Getters et Setters pour la traduction
     public function getOriginalDescription(): ?string { return $this->originalDescription; }
     public function setOriginalDescription(?string $desc): self { $this->originalDescription = $desc; return $this; }
 

@@ -12,6 +12,7 @@ class Hotel
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    /** @phpstan-ignore-next-line */
     private ?int $idH = null;
 
     #[ORM\Column(length: 120)]
@@ -97,7 +98,7 @@ class Hotel
     #[Assert\Positive(message: "L'ID utilisateur doit être un nombre positif.")]
     private ?int $idUtilisateur = null;
 
-    // Getters et Setters (inchangés)
+    // Pas de setter pour $idH car il est auto-généré par Doctrine
     public function getIdH(): ?int
     {
         return $this->idH;

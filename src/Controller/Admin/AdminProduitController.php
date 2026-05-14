@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Form\FormInterface;
 use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/admin/produit')]
@@ -18,10 +19,10 @@ class AdminProduitController extends AbstractController
     #[Route('', name: 'admin_produit_index')]
     public function index(ProduitRepository $repo, Request $request, PaginatorInterface $paginator): Response
     {
-        $searchTerm = $request->query->get('q', null);
-        $cat        = $request->query->get('category', null);
-        $sortBy     = $request->query->get('sort', 'p.idPR');
-        $direction  = $request->query->get('direction', 'desc');
+        $searchTerm = $request->query->getString('q') ?: null;
+        $cat        = $request->query->getString('category') ?: null;
+        $sortBy     = $request->query->getString('sort', 'p.idPR');
+        $direction  = $request->query->getString('direction', 'desc');
 
         $pagination = $paginator->paginate(
             $repo->getQueryForPagination($searchTerm, $cat, $sortBy, $direction),
@@ -29,15 +30,14 @@ class AdminProduitController extends AbstractController
             10
         );
 
-        // ✅ Produits nécessitant réapprovisionnement
         $produitsReappro = $repo->findNeedsReappro();
 
         return $this->render('admin/produit/index.html.twig', [
-            'produits'        => $pagination,
-            'lastSearch'      => $searchTerm,
-            'currentSort'     => $sortBy,
-            'currentDirection'=> $direction,
-            'produitsReappro' => $produitsReappro, // ✅ Suggestions réappro
+            'produits'         => $pagination,
+            'lastSearch'       => $searchTerm,
+            'currentSort'      => $sortBy,
+            'currentDirection' => $direction,
+            'produitsReappro'  => $produitsReappro,
         ]);
     }
 
@@ -92,12 +92,16 @@ class AdminProduitController extends AbstractController
         return $this->redirectToRoute('admin_produit_index');
     }
 
-    private function handleImage($form, Produit $produit): void
+    private function handleImage(FormInterface $form, Produit $produit): void
     {
         $file = $form->get('imageFile')->getData();
         if (!$file) return;
 
-        $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/produits';
+        $projectDir = $this->getParameter('kernel.project_dir');
+        if (!is_string($projectDir)) {
+            throw new \RuntimeException('kernel.project_dir parameter is not a string.');
+        }
+        $uploadDir = $projectDir . '/public/uploads/produits';
         if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
         $ancienneImage = $produit->getImage();

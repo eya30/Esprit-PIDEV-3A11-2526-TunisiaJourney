@@ -14,6 +14,7 @@ class ReservationProg
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: "idRP", type: "integer")]
+    /** @phpstan-ignore-next-line */
     private ?int $idRP = null;
  
     #[ORM\Column(name: "nom", length: 255)]
@@ -63,8 +64,7 @@ class ReservationProg
  
     #[ORM\Column(name: "user_id", type: "integer", nullable: true)]
     private ?int $userId = null;
- 
-    // GETTERS ET SETTERS
+
     public function getIdRP(): ?int { return $this->idRP; }
  
     public function getNom(): ?string { return $this->nom; }

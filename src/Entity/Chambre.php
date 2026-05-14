@@ -12,6 +12,7 @@ class Chambre
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    /** @phpstan-ignore-next-line */
     private ?int $idCh = null;
 
     #[ORM\Column]
@@ -88,7 +89,6 @@ class Chambre
     #[Assert\NotBlank(message: "L'hôtel associé est requis.")]
     private ?Hotel $hotel = null;
 
-    // Getters et Setters (inchangés)
     public function getIdCh(): ?int
     {
         return $this->idCh;

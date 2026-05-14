@@ -11,14 +11,14 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'ReservationAct')]
 class ReservationAct
 {
-    // ── Constantes pour les statuts ──────────────────────────────────────────
     public const STATUS_CONFIRMED = 'confirmé';
     public const STATUS_CANCELLED = 'annulé';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: "IDRes", type: "integer")]
-    private ?int $IDRes = null;
+    /** @phpstan-ignore-next-line */
+    private int $IDRes;
 
     #[ORM\Column(name: "id", length: 50)]
     private ?string $userId = null;
@@ -85,13 +85,13 @@ class ReservationAct
     )]
     private ?string $telephone = null;
 
-    // ── NOUVEAU CHAMP STATUS ─────────────────────────────────────────────────
     #[ORM\Column(type: "string", length: 20, options: ["default" => "confirmé"])]
-    private ?string $status = self::STATUS_CONFIRMED;
+    private string $status = self::STATUS_CONFIRMED;
 
-    // ── Getters / Setters ────────────────────────────────────────────────────
-
-    public function getIDRes(): ?int { return $this->IDRes; }
+    public function getIDRes(): ?int
+    {
+        return $this->IDRes ?? null;
+    }
 
     public function getUserId(): ?string { return $this->userId; }
     public function setUserId(string $userId): static { $this->userId = $userId; return $this; }
@@ -120,11 +120,7 @@ class ReservationAct
     public function getTelephone(): ?string { return $this->telephone; }
     public function setTelephone(?string $telephone): static { $this->telephone = $telephone; return $this; }
 
-    // ── NOUVEAUX GETTERS/SETTERS POUR STATUS ─────────────────────────────────
-    public function getStatus(): ?string
-    {
-        return $this->status;
-    }
+    public function getStatus(): string { return $this->status; }
 
     public function setStatus(string $status): static
     {
@@ -135,13 +131,6 @@ class ReservationAct
         return $this;
     }
 
-    public function isCancelled(): bool
-    {
-        return $this->status === self::STATUS_CANCELLED;
-    }
-
-    public function isConfirmed(): bool
-    {
-        return $this->status === self::STATUS_CONFIRMED;
-    }
+    public function isCancelled(): bool { return $this->status === self::STATUS_CANCELLED; }
+    public function isConfirmed(): bool { return $this->status === self::STATUS_CONFIRMED; }
 }

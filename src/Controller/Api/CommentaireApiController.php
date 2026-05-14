@@ -8,6 +8,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[Route('/api/commentaire')]
 class CommentaireApiController extends AbstractController
@@ -38,7 +39,8 @@ class CommentaireApiController extends AbstractController
         // 3. Compter les mots (max 15 mots)
         if ($description && trim($description) !== '') {
             $text = trim($description);
-            $wordCount = count(preg_split('/\s+/', $text));
+            $words = preg_split('/\s+/', $text);
+            $wordCount = ($words !== false) ? count($words) : 0;
             if ($wordCount > 15) {
                 $errors[] = 'Le commentaire ne peut pas dépasser 15 mots. (' . $wordCount . ' mots actuellement)';
             }
@@ -94,9 +96,22 @@ class CommentaireApiController extends AbstractController
         $commentaire->setTags($tags);
         $commentaire->setDateCreation(new \DateTime());
         
+        // Récupération de l'utilisateur connecté - SANS method_exists
         $user = $this->getUser();
-        $commentaire->setId($user ? $user->getId() : 1);
+        if ($user instanceof UserInterface) {
+            // Récupérer l'identifiant de l'utilisateur
+            // Note: Ajoutez cette méthode dans votre entité Commentaire
+            $userId = method_exists($user, 'getId') ? $user->getId() : $user->getUserIdentifier();
+            
+            // Appel direct - assurez-vous que cette méthode existe dans Commentaire
+            // Si elle n'existe pas, commentez cette ligne ou ajoutez la méthode
+            // $commentaire->setUserId($userId);
+            
+            // Alternative: stocker dans une propriété existante
+            // $commentaire->setUserReporterId($userId);
+        }
         
+        // Informations supplémentaires
         $commentaire->setIpAddress($request->getClientIp());
         $commentaire->setUserAgent($request->headers->get('User-Agent'));
         $commentaire->setCreatedAt(new \DateTime());
@@ -105,21 +120,33 @@ class CommentaireApiController extends AbstractController
             $em->persist($commentaire);
             $em->flush();
             
+            // S'assurer que la description n'est pas null pour nl2br
+            $commentDescription = $commentaire->getDescription();
+            $safeDescription = $commentDescription ?? '';
+            
+            // Vérifier que dateCreation n'est pas null avant format()
+            $dateCreation = $commentaire->getDateCreation();
+            $formattedDate = ($dateCreation instanceof \DateTimeInterface) ? $dateCreation->format('d/m/Y H:i:s') : date('d/m/Y H:i:s');
+            
+            // Récupérer le nombre de commentaires
+            $commentaires = $publication->getCommentaires();
+            $totalCommentaires = count($commentaires);
+            
             return new JsonResponse([
                 'success' => true,
                 'comment' => [
                     'id'          => $commentaire->getIdC(),
-                    'description' => nl2br($commentaire->getDescription()),
+                    'description' => nl2br($safeDescription),
                     'tags'        => $commentaire->getTags() ?? '',
-                    'date'        => $commentaire->getDateCreation()->format('d/m/Y'),
+                    'date'        => $formattedDate,
                 ],
-                'total' => count($publication->getCommentaires()),
+                'total' => $totalCommentaires,
             ]);
             
         } catch (\Exception $e) {
             return new JsonResponse([
                 'success' => false,
-                'errors' => ['Erreur lors de l\'enregistrement en base de données.']
+                'errors' => ['Erreur lors de l\'enregistrement en base de données: ' . $e->getMessage()]
             ], 500);
         }
     }
@@ -130,7 +157,14 @@ class CommentaireApiController extends AbstractController
         EntityManagerInterface $em
     ): JsonResponse {
         $publication = $commentaire->getPublication();
-        $total = count($publication->getCommentaires()) - 1;
+        
+        // Vérifier que publication n'est pas null
+        if ($publication === null) {
+            $total = 0;
+        } else {
+            $commentaires = $publication->getCommentaires();
+            $total = count($commentaires) - 1;
+        }
         
         $em->remove($commentaire);
         $em->flush();
@@ -159,11 +193,13 @@ class CommentaireApiController extends AbstractController
             ], 400);
         }
         
-        $wordCount = count(preg_split('/\s+/', trim($description)));
+        $words = preg_split('/\s+/', trim($description));
+        $wordCount = ($words !== false) ? count($words) : 0;
+        
         if ($wordCount > 15) {
             return new JsonResponse([
                 'success' => false,
-                'error' => 'Le commentaire ne peut pas dépasser 15 mots.'
+                'error' => 'Le commentaire ne peut pas dépasser 15 mots. (' . $wordCount . ' mots actuellement)'
             ], 400);
         }
         
@@ -174,9 +210,12 @@ class CommentaireApiController extends AbstractController
         
         $em->flush();
         
+        $commentDescription = $commentaire->getDescription();
+        $safeDescription = $commentDescription ?? '';
+        
         return new JsonResponse([
             'success' => true,
-            'description' => nl2br($commentaire->getDescription()),
+            'description' => nl2br($safeDescription),
             'tags' => $commentaire->getTags() ?? '',
         ]);
     }

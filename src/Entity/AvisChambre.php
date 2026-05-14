@@ -4,6 +4,7 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\AvisChambreRepository;
 
 #[ORM\Entity(repositoryClass: AvisChambreRepository::class)]
 #[ORM\Table(name: 'avis_chambre')]
@@ -12,6 +13,7 @@ class AvisChambre
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    /** @phpstan-ignore-next-line */
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'avisChambres')]
@@ -19,7 +21,7 @@ class AvisChambre
     private ?User $utilisateur = null;
 
     // ========== LES 9 NOTES ==========
-    
+   
     #[ORM\Column(name: 'note_confort')]
     private ?int $noteConfort = null;
 
@@ -65,7 +67,7 @@ class AvisChambre
     private bool $estPublie = true;
 
     // ========== NOUVELLES PROPRIÉTÉS POUR L'ANALYSE DE SENTIMENT ==========
-    
+   
     #[ORM\Column(type: 'string', length: 20, nullable: true)]
     private ?string $sentiment = null;
 
@@ -273,10 +275,10 @@ class AvisChambre
      */
     public function getNoteMoyenne(): float
     {
-        $total = $this->noteConfort + $this->noteServices + $this->noteEquipements + 
-                 $this->noteProprete + $this->notePersonnel + $this->noteEmplacement + 
+        $total = $this->noteConfort + $this->noteServices + $this->noteEquipements +
+                 $this->noteProprete + $this->notePersonnel + $this->noteEmplacement +
                  $this->noteRestauration + $this->notePrixQualite + $this->noteCalme;
-        
+       
         return round($total / 9, 1);
     }
 }

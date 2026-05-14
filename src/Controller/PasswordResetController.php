@@ -15,9 +15,6 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class PasswordResetController extends AbstractController
 {
-    // ══════════════════════════════════════════════════════════════
-    // ÉTAPE 1 — Page "Mot de passe oublié" (GET + POST)
-    // ══════════════════════════════════════════════════════════════
     #[Route('/forgot-password', name: 'app_forgot_password', methods: ['GET', 'POST'])]
     public function forgotPassword(
         Request $request,
@@ -33,13 +30,13 @@ class PasswordResetController extends AbstractController
             ]);
         }
 
-        // Vérification CSRF
-        if (!$this->isCsrfTokenValid('forgot_password', $request->request->get('_csrf_token'))) {
+        // Vérification CSRF — (string) cast pour PHPStan
+        if (!$this->isCsrfTokenValid('forgot_password', (string) $request->request->get('_csrf_token'))) {
             $this->addFlash('reset_error', 'Token invalide. Veuillez réessayer.');
             return $this->redirectToRoute('app_forgot_password');
         }
 
-        $email = strtolower(trim($request->request->get('email', '')));
+        $email = strtolower(trim((string) $request->request->get('email', '')));
 
         $user = $em->getRepository(User::class)
             ->createQueryBuilder('u')
@@ -49,14 +46,12 @@ class PasswordResetController extends AbstractController
             ->getOneOrNullResult();
 
         if ($user) {
-            // Supprimer les anciens tokens de cet utilisateur
             $oldTokens = $em->getRepository(PasswordResetToken::class)->findBy(['user' => $user]);
             foreach ($oldTokens as $old) {
                 $em->remove($old);
             }
             $em->flush();
 
-            // Générer un token sécurisé
             $rawToken = bin2hex(random_bytes(32));
 
             $resetToken = new PasswordResetToken();
@@ -67,19 +62,15 @@ class PasswordResetController extends AbstractController
             $em->persist($resetToken);
             $em->flush();
 
-            // Construire le lien absolu
             $resetUrl = $this->generateUrl(
                 'app_reset_password',
                 ['token' => $rawToken],
                 \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL
             );
 
-            // Envoyer l'email — récupère l'erreur si elle existe
             $emailError = $this->sendResetEmail($httpClient, $params, $user, $resetUrl);
 
-            // En développement : afficher l'erreur Brevo si elle existe
             if ($emailError !== null) {
-                // En prod tu peux commenter ce flash et logger l'erreur
                 $this->addFlash('reset_error', 'Erreur envoi email : ' . $emailError);
                 return $this->render('user/forgot_password.html.twig', [
                     'sent'       => false,
@@ -88,16 +79,12 @@ class PasswordResetController extends AbstractController
             }
         }
 
-        // Toujours afficher le même écran de succès (sécurité)
         return $this->render('user/forgot_password.html.twig', [
             'sent'       => true,
             'sent_email' => $email,
         ]);
     }
 
-    // ══════════════════════════════════════════════════════════════
-    // ÉTAPE 2 — Page de reset (GET = afficher form, POST = reset)
-    // ══════════════════════════════════════════════════════════════
     #[Route('/reset-password/{token}', name: 'app_reset_password', methods: ['GET', 'POST'])]
     public function resetPassword(
         string $token,
@@ -128,14 +115,16 @@ class PasswordResetController extends AbstractController
             ]);
         }
 
-        if (!$this->isCsrfTokenValid('reset_password', $request->request->get('_csrf_token'))) {
+        // (string) cast pour PHPStan
+        if (!$this->isCsrfTokenValid('reset_password', (string) $request->request->get('_csrf_token'))) {
             $this->addFlash('reset_error', 'Token invalide. Veuillez réessayer.');
             return $this->redirectToRoute('app_reset_password', ['token' => $token]);
         }
 
-        $newPassword     = $request->request->get('new_password', '');
-        $confirmPassword = $request->request->get('confirm_password', '');
+        $newPassword     = (string) $request->request->get('new_password', '');
+        $confirmPassword = (string) $request->request->get('confirm_password', '');
 
+        // (string) cast pour PHPStan
         if (strlen($newPassword) < 8) {
             $this->addFlash('reset_error', 'Le mot de passe doit contenir au moins 8 caractères.');
             return $this->redirectToRoute('app_reset_password', ['token' => $token]);
@@ -146,7 +135,13 @@ class PasswordResetController extends AbstractController
             return $this->redirectToRoute('app_reset_password', ['token' => $token]);
         }
 
+        // Vérification que $user n'est pas null (ligne 150)
         $user = $resetToken->getUser();
+        if (!$user instanceof User) {
+            $this->addFlash('reset_error', 'Utilisateur introuvable.');
+            return $this->redirectToRoute('app_forgot_password');
+        }
+
         $user->setMotDePasse($hasher->hashPassword($user, $newPassword));
 
         $em->remove($resetToken);
@@ -156,10 +151,6 @@ class PasswordResetController extends AbstractController
         return $this->redirectToRoute('app_login');
     }
 
-    // ══════════════════════════════════════════════════════════════
-    // MÉTHODE PRIVÉE — Envoi email via Brevo API
-    // Retourne null si succès, ou le message d'erreur si échec
-    // ══════════════════════════════════════════════════════════════
     private function sendResetEmail(
         HttpClientInterface $httpClient,
         ParameterBagInterface $params,
@@ -170,7 +161,6 @@ class PasswordResetController extends AbstractController
         $apiKey      = $params->get('brevo_api_key');
         $senderEmail = $params->get('brevo_sender_email');
 
-        // Vérification que les paramètres ne sont pas vides
         if (empty($apiKey) || $apiKey === 'xkeysib-XXXXXXXX') {
             return 'BREVO_API_KEY manquante ou invalide dans .env.local';
         }
@@ -201,28 +191,24 @@ class PasswordResetController extends AbstractController
                 ],
             ]);
 
-            // Forcer la lecture de la réponse (le HttpClient est lazy)
             $statusCode = $response->getStatusCode();
-           
-            // Brevo renvoie 201 pour un email envoyé avec succès
+
             if ($statusCode !== 201 && $statusCode !== 200) {
-                $body = $response->getContent(false); // false = ne pas lever d'exception
+                $body = $response->getContent(false);
                 return 'Brevo a répondu avec le code ' . $statusCode . ' : ' . $body;
             }
 
-            return null; // succès
+            return null;
 
         } catch (\Exception $e) {
             return $e->getMessage();
         }
     }
 
-    // ══════════════════════════════════════════════════════════════
-    // MÉTHODE PRIVÉE — Template HTML de l'email
-    // ══════════════════════════════════════════════════════════════
     private function buildEmailHtml(User $user, string $resetUrl): string
     {
-        $prenom = htmlspecialchars($user->getPrenom());
+        // (string) cast pour PHPStan ligne 225
+        $prenom = htmlspecialchars((string) $user->getPrenom());
         $url    = htmlspecialchars($resetUrl);
 
         return <<<HTML
@@ -233,13 +219,10 @@ class PasswordResetController extends AbstractController
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body style="margin:0;padding:0;background:#F5EDD8;font-family:'DM Sans',Arial,sans-serif;">
-
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5EDD8;padding:40px 0;">
     <tr>
       <td align="center">
         <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-
-          <!-- En-tête bordeaux -->
           <tr>
             <td style="background:linear-gradient(135deg,#C94040 0%,#A0231F 50%,#2A1010 100%);padding:40px 40px 30px;text-align:center;">
               <div style="width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.15);margin:0 auto 16px;border:2px solid rgba(255,255,255,0.3);display:inline-flex;align-items:center;justify-content:center;">
@@ -252,8 +235,6 @@ class PasswordResetController extends AbstractController
               <p style="color:rgba(255,255,255,0.7);font-size:12px;letter-spacing:2px;margin:0;text-transform:uppercase;">Réinitialisation du mot de passe</p>
             </td>
           </tr>
-
-          <!-- Corps -->
           <tr>
             <td style="padding:40px 44px;">
               <p style="color:#1A2E4A;font-size:18px;font-weight:600;margin:0 0 12px;">Bonjour {$prenom} 👋</p>
@@ -262,7 +243,6 @@ class PasswordResetController extends AbstractController
                 Cliquez sur le bouton ci-dessous pour choisir un nouveau mot de passe.<br>
                 Ce lien est valable <strong>1 heure</strong>.
               </p>
-
               <table cellpadding="0" cellspacing="0" style="margin:0 auto 28px;">
                 <tr>
                   <td style="border-radius:50px;background:linear-gradient(90deg,#A0231F,#C0392B);box-shadow:0 5px 16px rgba(160,35,31,0.35);">
@@ -272,17 +252,13 @@ class PasswordResetController extends AbstractController
                   </td>
                 </tr>
               </table>
-
               <hr style="border:none;border-top:1px solid #F0E8D8;margin:0 0 24px;">
-
               <p style="color:#888;font-size:12px;line-height:1.6;margin:0 0 6px;">Si le bouton ne fonctionne pas, copiez ce lien :</p>
               <p style="margin:0;">
                 <a href="{$url}" style="color:#A0231F;font-size:12px;word-break:break-all;">{$url}</a>
               </p>
             </td>
           </tr>
-
-          <!-- Avertissement -->
           <tr>
             <td style="background:#FDF6EC;padding:20px 44px;border-top:1px solid #F0E8D8;">
               <p style="color:#888;font-size:12px;line-height:1.6;margin:0;">
@@ -291,8 +267,6 @@ class PasswordResetController extends AbstractController
               </p>
             </td>
           </tr>
-
-          <!-- Footer -->
           <tr>
             <td style="background:#1A2E4A;padding:20px 44px;text-align:center;">
               <p style="color:rgba(255,255,255,0.5);font-size:11px;margin:0;">
@@ -301,12 +275,10 @@ class PasswordResetController extends AbstractController
               </p>
             </td>
           </tr>
-
         </table>
       </td>
     </tr>
   </table>
-
 </body>
 </html>
 HTML;

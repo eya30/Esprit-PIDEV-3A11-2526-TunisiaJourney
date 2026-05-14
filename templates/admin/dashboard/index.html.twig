@@ -1,7 +1,7 @@
-{% extends 'admin/dashboard/base_admin.html.twig' %}
+{% extends 'admin/base_admin.html.twig' %}
 
-{% block title %}Tableau de bord Forum{% endblock %}
-{% block page_title %}Tableau de bord Forum{% endblock %}
+{% block title %}Tableau de bord{% endblock %}
+{% block page_title %}Tableau de bord{% endblock %}
 
 {% block body %}
 <!-- Statistiques -->
@@ -10,19 +10,15 @@
         <div class="stat-card">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <div class="stat-number">{{ totalForums|default(0) }}</div>
-                    <div class="stat-label">Forums</div>
+                    <div class="stat-number">{{ stats.voyages|default(0) }}</div>
+                    <div class="stat-label">Voyages</div>
                 </div>
                 <div class="stat-icon">
-                    <i class="fas fa-chat-square-dots"></i>
+                    <i class="fas fa-plane"></i>
                 </div>
             </div>
             <div class="stat-trend">
-                {% set evolForums = evolutionForums|default({'trend': 'up', 'percentage': 12}) %}
-                <span class="trend-{{ evolForums.trend }}">
-                    <i class="fas fa-arrow-{{ evolForums.trend == 'up' ? 'up' : 'down' }}"></i>
-                    +{{ evolForums.percentage }}%
-                </span>
+                <span class="trend-up"><i class="fas fa-arrow-up"></i> +{{ stats.voyages|default(0) > 0 ? (stats.voyages|default(0) / 10)|round : 12 }}%</span>
                 <span class="trend-text">depuis le mois dernier</span>
             </div>
         </div>
@@ -31,19 +27,32 @@
         <div class="stat-card">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <div class="stat-number">{{ totalPublications|default(0) }}</div>
-                    <div class="stat-label">Publications</div>
+                    <div class="stat-number">{{ stats.programmes|default(0) }}</div>
+                    <div class="stat-label">Programmes</div>
                 </div>
                 <div class="stat-icon">
-                    <i class="fas fa-file-alt"></i>
+                    <i class="fas fa-calendar-alt"></i>
                 </div>
             </div>
             <div class="stat-trend">
-                {% set evolPubs = evolutionPublications|default({'trend': 'up', 'percentage': 8}) %}
-                <span class="trend-{{ evolPubs.trend }}">
-                    <i class="fas fa-arrow-{{ evolPubs.trend == 'up' ? 'up' : 'down' }}"></i>
-                    +{{ evolPubs.percentage }}%
-                </span>
+                <span class="trend-up"><i class="fas fa-arrow-up"></i> +{{ stats.programmes|default(0) > 0 ? (stats.programmes|default(0) / 10)|round : 8 }}%</span>
+                <span class="trend-text">nouveaux programmes</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-number">{{ stats.reservations|default(0) }}</div>
+                    <div class="stat-label">Réservations</div>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-ticket-alt"></i>
+                </div>
+            </div>
+            <div class="stat-trend">
+                <span class="trend-up"><i class="fas fa-arrow-up"></i> +{{ stats.reservations|default(0) > 0 ? (stats.reservations|default(0) / 10)|round : 23 }}%</span>
                 <span class="trend-text">ce mois</span>
             </div>
         </div>
@@ -52,74 +61,27 @@
         <div class="stat-card">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <div class="stat-number">{{ totalCommentaires|default(0) }}</div>
-                    <div class="stat-label">Commentaires</div>
+                    <div class="stat-number">{{ stats.clients|default(0) }}</div>
+                    <div class="stat-label">Utilisateurs</div>
                 </div>
                 <div class="stat-icon">
-                    <i class="fas fa-comments"></i>
+                    <i class="fas fa-users"></i>
                 </div>
             </div>
             <div class="stat-trend">
-                {% set evolComs = evolutionCommentaires|default({'trend': 'up', 'percentage': 15}) %}
-                <span class="trend-{{ evolComs.trend }}">
-                    <i class="fas fa-arrow-{{ evolComs.trend == 'up' ? 'up' : 'down' }}"></i>
-                    +{{ evolComs.percentage }}%
-                </span>
-                <span class="trend-text">interactions</span>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="stat-number">{{ avgParForum|default(0) }}</div>
-                    <div class="stat-label">Moyenne/forum</div>
-                </div>
-                <div class="stat-icon">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-            </div>
-            <div class="stat-trend">
-                <span class="trend-text">publications par forum</span>
+                <span class="trend-up"><i class="fas fa-arrow-up"></i> +{{ stats.clients|default(0) > 0 ? (stats.clients|default(0) / 10)|round : 15 }}%</span>
+                <span class="trend-text">nouveaux membres</span>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Forum le plus actif -->
-{% if forumPlusActif %}
-<div class="row g-4 mb-5">
-    <div class="col-12">
-        <div class="card-dashboard">
-            <div class="card-header-dashboard">
-                <h5 class="mb-0"><i class="fas fa-trophy me-2"></i> Forum le plus actif</h5>
-            </div>
-            <div class="card-body-dashboard text-center">
-                <i class="fas fa-star" style="color: #f39c12; font-size: 48px;"></i>
-                <h3 style="color: #E31B23; margin: 15px 0;">{{ forumPlusActif.nom }}</h3>
-                <div class="row justify-content-center mt-3">
-                    <div class="col-6">
-                        <div style="font-size: 32px; font-weight: bold; color: #2C3E50;">{{ forumPlusActif.publications }}</div>
-                        <div style="color: #6c757d;">Publications</div>
-                    </div>
-                    <div class="col-6">
-                        <div style="font-size: 32px; font-weight: bold; color: #2C3E50;">{{ forumPlusActif.commentaires }}</div>
-                        <div style="color: #6c757d;">Commentaires</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
-
-<!-- Graphique et Top Forums -->
+<!-- Graphique et Destinations Populaires -->
 <div class="row g-4 mb-5">
     <div class="col-md-8">
         <div class="card-dashboard">
             <div class="card-header-dashboard">
-                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i> Évolution des publications</h5>
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i> Évolution des réservations</h5>
                 <select class="chart-select" id="chartPeriod" style="padding: 6px 12px; border: 1px solid #E8DFD1; border-radius: 10px; background: white;">
                     <option value="week">Cette semaine</option>
                     <option value="month">Ce mois</option>
@@ -127,42 +89,53 @@
                 </select>
             </div>
             <div class="card-body-dashboard">
-                <canvas id="evolutionChart" height="250"></canvas>
+                <canvas id="reservationsChart" height="250"></canvas>
             </div>
         </div>
     </div>
     <div class="col-md-4">
         <div class="card-dashboard">
             <div class="card-header-dashboard">
-                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i> Top Forums</h5>
+                <h5 class="mb-0"><i class="fas fa-star me-2"></i> Destinations populaires</h5>
             </div>
             <div class="card-body-dashboard">
                 <div class="destination-list">
-                    {# ✅ CORRECTION : on utilise topForumsPublications (tableau trié avec 'nom' et 'count')  #}
-                    {# ✅ CORRECTION : maxPubs calculé UNE SEULE FOIS avant la boucle, guard > 0 anti division par zéro #}
-                    {% set maxPubs = topForumsPublications|length > 0 ? topForumsPublications[0].count : 0 %}
-
-                    {% for forum in topForumsPublications|default([]) %}
+                    {% for destination in destinations_populaires|default([]) %}
                         <div class="destination-item">
                             <div class="destination-info">
-                                <i class="fas fa-chat-square-dots"></i>
-                                <span>{{ forum.nom }}</span>
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>{{ destination.nom }}</span>
                             </div>
-                            <div class="destination-percent">{{ forum.count }}</div>
+                            <div class="destination-percent">{{ destination.pourcentage }}%</div>
                         </div>
                         <div class="progress-bar">
-                            {# ✅ CORRECTION : si maxPubs = 0, percent = 0 (pas de division par zéro) #}
-                            {% set percent = maxPubs > 0 ? (forum.count / maxPubs * 100)|round : 0 %}
-                            <div class="progress-fill" style="width: {{ percent }}%"></div>
+                            <div class="progress-fill" style="width: {{ destination.pourcentage }}%"></div>
                         </div>
                     {% else %}
                         <div class="destination-item">
                             <div class="destination-info">
-                                <i class="fas fa-chat-square-dots"></i>
-                                <span>Aucun forum</span>
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Sidi Bou Said</span>
                             </div>
-                            <div class="destination-percent">0</div>
+                            <div class="destination-percent">78%</div>
                         </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 78%"></div></div>
+                        <div class="destination-item">
+                            <div class="destination-info">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Djerba</span>
+                            </div>
+                            <div class="destination-percent">65%</div>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 65%"></div></div>
+                        <div class="destination-item">
+                            <div class="destination-info">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Sahara</span>
+                            </div>
+                            <div class="destination-percent">52%</div>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 52%"></div></div>
                     {% endfor %}
                 </div>
             </div>
@@ -170,36 +143,35 @@
     </div>
 </div>
 
-<!-- Dernières publications et commentaires -->
+<!-- Derniers voyages et réservations -->
 <div class="row g-4">
     <div class="col-md-7">
         <div class="card-dashboard">
             <div class="card-header-dashboard">
-                <h5 class="mb-0"><i class="fas fa-clock me-2"></i> Dernières publications</h5>
-                <a href="{{ path('app_publication_index') }}" class="btn-link">Voir tous <i class="fas fa-arrow-right ms-1"></i></a>
+                <h5 class="mb-0"><i class="fas fa-clock me-2"></i> Derniers voyages</h5>
+                <a href="{{ path('admin_voyage_index') }}" class="btn-link">Voir tous <i class="fas fa-arrow-right ms-1"></i></a>
             </div>
             <div class="table-responsive">
                 <table class="table admin-table mb-0" style="border: none;">
                     <thead>
                         <tr>
-                            <th>Titre</th>
-                            <th>Forum</th>
-                            <th>Commentaires</th>
+                            <th>Nom</th>
+                            <th>Prix</th>
+                            <th>Capacité</th>
                             <th>Date</th>
-                        </tr>
-                    </thead>
+                        </thead>
                     <tbody>
-                        {% for pub in dernieres_publications|default([]) %}
-                        <tr>
-                            <td><strong>{{ pub.nom|slice(0, 40) }}{% if pub.nom|length > 40 %}...{% endif %}</strong></td>
-                            <td>{{ pub.forum.nom }}</td>
-                            <td>{{ pub.commentaires|length }}</td>
-                            <td>{{ pub.dateCreation|date('d/m/Y') }}</td>
+                        {% for voyage in derniers_voyages|default([]) %}
+                         <tr>
+                            <td><strong>{{ voyage.nom }}</strong></td>
+                            <td class="price">{{ voyage.prix|number_format(0, ',', ' ') }} DT</td>
+                            <td>{{ voyage.capacite }} pers</td>
+                            <td>{{ voyage.dateCreation|date('d/m/Y') }}</td>
                         </tr>
                         {% else %}
-                        <tr>
-                            <td colspan="4" class="text-center py-4 text-muted">Aucune publication</td>
-                        </tr>
+                         <tr>
+                            <td colspan="4" class="text-center py-4 text-muted">Aucun voyage</td>
+                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -209,29 +181,33 @@
     <div class="col-md-5">
         <div class="card-dashboard">
             <div class="card-header-dashboard">
-                <h5 class="mb-0"><i class="fas fa-comments me-2"></i> Derniers commentaires</h5>
-                <a href="{{ path('app_commentaire_index') }}" class="btn-link">Voir tous <i class="fas fa-arrow-right ms-1"></i></a>
+                <h5 class="mb-0"><i class="fas fa-ticket-alt me-2"></i> Dernières réservations</h5>
+                <a href="{{ path('admin_reservation_index') }}" class="btn-link">Voir tous <i class="fas fa-arrow-right ms-1"></i></a>
             </div>
             <div class="table-responsive">
                 <table class="table admin-table mb-0" style="border: none;">
                     <thead>
-                        <tr>
-                            <th>Commentaire</th>
-                            <th>Publication</th>
-                            <th>Date</th>
+                         <tr>
+                            <th>Client</th>
+                            <th>Total</th>
+                            <th>Statut</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for com in derniers_commentaires|default([]) %}
-                        <tr>
-                            <td>{{ com.description|slice(0, 35) }}{% if com.description|length > 35 %}...{% endif %}</td>
-                            <td>{{ com.publication.nom|slice(0, 20) }}</td>
-                            <td>{{ com.dateCreation|date('d/m/Y') }}</td>
-                        </tr>
+                        {% for reservation in dernieres_reservations|default([]) %}
+                         <tr>
+                            <td>{{ reservation.prenom }} {{ reservation.nom }}</td>
+                            <td class="price">{{ reservation.prixProg|number_format(2, ',', ' ') }} DT</td>
+                            <td>
+                                <span class="badge-status {% if reservation.statutPaiement == 'payé' %}badge-success{% else %}badge-pending{% endif %}">
+                                    {{ reservation.statutPaiement|default('En attente') }}
+                                </span>
+                             </td>
+                         </tr>
                         {% else %}
-                        <tr>
-                            <td colspan="3" class="text-center py-4 text-muted">Aucun commentaire</td>
-                        </tr>
+                         <tr>
+                            <td colspan="3" class="text-center py-4 text-muted">Aucune réservation</td>
+                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -239,144 +215,43 @@
         </div>
     </div>
 </div>
-
-<style>
-.stat-card {
-    background: white;
-    border-radius: 24px;
-    padding: 1.5rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-    transition: all 0.3s ease;
-}
-.stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 40px rgba(227,27,35,0.1);
-}
-.stat-number {
-    font-size: 2.5rem;
-    font-weight: 800;
-    color: #E31B23;
-    line-height: 1;
-}
-.stat-label {
-    font-size: 0.85rem;
-    color: #6c757d;
-    margin-top: 0.5rem;
-}
-.stat-icon {
-    width: 48px;
-    height: 48px;
-    background: linear-gradient(135deg, #E31B23, #F5CAC3);
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.3rem;
-}
-.stat-trend {
-    margin-top: 1rem;
-    font-size: 0.75rem;
-}
-.trend-up   { color: #27ae60; font-weight: 600; }
-.trend-down { color: #c0392b; font-weight: 600; }
-.trend-text { color: #aaa; }
-.card-dashboard {
-    background: white;
-    border-radius: 24px;
-    overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-}
-.card-header-dashboard {
-    padding: 1.2rem 1.5rem;
-    border-bottom: 1px solid #f0ece3;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.card-body-dashboard { padding: 1.5rem; }
-.destination-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-.destination-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.9rem;
-}
-.destination-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.destination-info i { color: #E31B23; width: 20px; }
-.destination-percent { font-weight: 700; color: #2C3E50; }
-.progress-bar {
-    height: 6px;
-    background: #f0ece3;
-    border-radius: 3px;
-    overflow: hidden;
-    margin-top: -0.5rem;
-    margin-bottom: 0.8rem;
-}
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #E31B23, #F5CAC3);
-    border-radius: 3px;
-}
-.admin-table { width: 100%; }
-.admin-table th {
-    padding: 12px 15px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #9aa0ac;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    background: #f8f9fb;
-}
-.admin-table td {
-    padding: 12px 15px;
-    font-size: 0.85rem;
-    color: #555;
-    border-bottom: 1px solid #f0ece3;
-}
-.btn-link { color: #E31B23; text-decoration: none; font-size: 0.8rem; }
-</style>
 {% endblock %}
 
 {% block javascripts %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% set week_data = stats.reservations_week is defined ? stats.reservations_week : '[12,19,15,17,24,28,22]' %}
+{% set month_data = stats.reservations_month is defined ? stats.reservations_month : '[45,52,48,60,55,70,65,72,68,80,85,78,90,88,95,92,100,98,105,110,108,115,120,118,125,130,128,135,140,138]' %}
+{% set year_data = stats.reservations_year is defined ? stats.reservations_year : '[120,145,168,190,210,245,278,310,345,380,420,450]' %}
+
 <script>
-    const evolutionData = {
-        week:  {{ evolution_week|default([4, 6, 8, 5, 7, 9, 12])|json_encode|raw }},
-        month: {{ evolution_month|default([15, 18, 22, 25, 28, 30, 35, 38, 42, 45, 48, 52, 55, 58, 62, 65, 68, 72, 75, 78, 82, 85, 88, 92, 95, 98, 102, 105, 108, 112])|json_encode|raw }},
-        year:  {{ evolution_year|default([45, 52, 68, 85, 102, 125, 148, 172, 195, 218, 245, 278])|json_encode|raw }}
+    // Données réelles des réservations par jour
+    const reservationsData = {
+        week: {{ week_data|raw }},
+        month: {{ month_data|raw }},
+        year: {{ year_data|raw }}
     };
-
+    
     const labels = {
-        week:  ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
-        month: Array.from({length: 30}, (_, i) => i + 1),
-        year:  ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']
+        week: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+        month: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30],
+        year: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']
     };
-
+    
     let chart;
-
+    
     function initChart() {
-        const ctx = document.getElementById('evolutionChart').getContext('2d');
+        const ctx = document.getElementById('reservationsChart').getContext('2d');
         chart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels.week,
                 datasets: [{
-                    label: 'Publications',
-                    data: evolutionData.week,
-                    borderColor: '#E31B23',
-                    backgroundColor: 'rgba(227,27,35,0.05)',
+                    label: 'Réservations',
+                    data: reservationsData.week,
+                    borderColor: '#93032E',
+                    backgroundColor: 'rgba(147,3,46,0.05)',
                     tension: 0.4,
                     fill: true,
-                    pointBackgroundColor: '#E31B23',
+                    pointBackgroundColor: '#93032E',
                     pointBorderColor: '#fff',
                     pointRadius: 4,
                     pointHoverRadius: 6
@@ -385,32 +260,27 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: {
+                    legend: { display: false }
+                },
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: '#F0E8DD' },
-                        title: { display: true, text: 'Nombre de publications' }
-                    },
+                    y: { beginAtZero: true, grid: { color: '#F0E8DD' } },
                     x: { grid: { display: false } }
                 }
             }
         });
     }
-
+    
     function updateChart(period) {
         chart.data.labels = labels[period];
-        chart.data.datasets[0].data = evolutionData[period];
+        chart.data.datasets[0].data = reservationsData[period];
         chart.update();
     }
-
-    const periodSelect = document.getElementById('chartPeriod');
-    if (periodSelect) {
-        periodSelect.addEventListener('change', function(e) {
-            updateChart(e.target.value);
-        });
-    }
-
+    
+    document.getElementById('chartPeriod').addEventListener('change', function(e) {
+        updateChart(e.target.value);
+    });
+    
     initChart();
 </script>
 {% endblock %}

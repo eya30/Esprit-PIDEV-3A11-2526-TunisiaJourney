@@ -43,7 +43,7 @@ class GoogleAuthenticator extends OAuth2Authenticator
 
                 /** @var GoogleUser $googleUser */
                 $googleUser = $client->fetchUserFromToken($accessToken);
-                $email      = strtolower(trim($googleUser->getEmail()));
+                $email = strtolower(trim((string) $googleUser->getEmail()));
 
                 $user = $this->em->getRepository(User::class)
                     ->createQueryBuilder('u')
@@ -61,14 +61,13 @@ class GoogleAuthenticator extends OAuth2Authenticator
                 }
 
                 // Nouveau compte Google
-                $firstName = $googleUser->getFirstName() ?? '';
-                $lastName  = $googleUser->getLastName()  ?? '';
+               $firstName = $googleUser->getFirstName();
+                $lastName  = $googleUser->getLastName();
                 if (!$firstName && !$lastName) {
-                    $parts     = explode(' ', $googleUser->getName() ?? 'Utilisateur Google', 2);
+                    $parts = explode(' ', $googleUser->getName(), 2);
                     $firstName = $parts[0];
                     $lastName  = $parts[1] ?? $parts[0];
                 }
-
                 $user = new User();
                 $user->setNom($lastName  ?: 'Google');
                 $user->setPrenom($firstName ?: 'Utilisateur');

@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\ListeAttenteRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Ignore;
 
 #[ORM\Entity(repositoryClass: ListeAttenteRepository::class)]
 #[ORM\Table(name: 'liste_attente')]
@@ -20,7 +21,8 @@ class ListeAttente
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    /** @phpstan-ignore-next-line */
+    private int $id;
 
     #[ORM\Column(name: 'id_activite', type: 'integer')]
     private ?int $idActivite = null;
@@ -53,12 +55,16 @@ class ListeAttente
     private ?\DateTimeInterface $dateConfirmation = null;
 
     #[ORM\Column(type: 'string', length: 20, options: ['default' => 'en_attente'])]
-    private ?string $statut = self::STATUT_EN_ATTENTE;
+    private string $statut = self::STATUT_EN_ATTENTE;
 
+    /**
+     * Token sensible — exclu de la sérialisation et des stack traces.
+     */
+    #[Ignore]
     #[ORM\Column(name: 'token_confirmation', length: 100, nullable: true)]
     private ?string $tokenConfirmation = null;
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int { return $this->id ?? null; }
 
     public function getIdActivite(): ?int { return $this->idActivite; }
     public function setIdActivite(int $idActivite): self { $this->idActivite = $idActivite; return $this; }
@@ -90,11 +96,17 @@ class ListeAttente
     public function getDateConfirmation(): ?\DateTimeInterface { return $this->dateConfirmation; }
     public function setDateConfirmation(?\DateTimeInterface $dateConfirmation): self { $this->dateConfirmation = $dateConfirmation; return $this; }
 
-    public function getStatut(): ?string { return $this->statut; }
+    public function getStatut(): string { return $this->statut; }
     public function setStatut(string $statut): self { $this->statut = $statut; return $this; }
 
+    // Getter exclu de la sérialisation via #[Ignore] sur la propriété
     public function getTokenConfirmation(): ?string { return $this->tokenConfirmation; }
-    public function setTokenConfirmation(?string $tokenConfirmation): self { $this->tokenConfirmation = $tokenConfirmation; return $this; }
+
+    public function setTokenConfirmation(#[\SensitiveParameter] ?string $tokenConfirmation): self
+    {
+        $this->tokenConfirmation = $tokenConfirmation;
+        return $this;
+    }
 
     public function estEnAttente(): bool { return $this->statut === self::STATUT_EN_ATTENTE; }
     public function estNotifie(): bool { return $this->statut === self::STATUT_NOTIFIE; }

@@ -10,7 +10,11 @@ class TranslationService
 {
     private GoogleTranslate $translator;
     private LoggerInterface $logger;
+
+    /** @var array<string, string> */
     private array $cache = [];
+
+    /** @var array<string, string> */
     private array $supportedLanguages = [
         'fr' => 'Français',
         'en' => 'English',
@@ -31,9 +35,8 @@ class TranslationService
     {
         $this->logger = $logger;
         $this->translator = new GoogleTranslate();
-        // Configuration SSL pour éviter les erreurs
         $this->translator->setOptions([
-            'verify' => false,
+            'verify'  => false,
             'timeout' => 30,
         ]);
     }
@@ -57,15 +60,23 @@ class TranslationService
             }
 
             $this->translator->setTarget($targetLang);
-            $result = $this->translator->translate($text);
+
+            // Fix ligne 62 : translate() peut retourner string|null → fallback sur $text
+            $result = $this->translator->translate($text) ?? $text;
+
             $this->cache[$cacheKey] = $result;
             return $result;
+
         } catch (\Exception $e) {
             $this->logger->error('Translation error: ' . $e->getMessage());
             return $text;
         }
     }
 
+    /**
+     * @param array<int|string, string> $texts
+     * @return array<int|string, string>
+     */
     public function translateBatch(array $texts, string $targetLang = 'fr', ?string $sourceLang = null): array
     {
         $results = [];
@@ -87,6 +98,9 @@ class TranslationService
         }
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function getSupportedLanguages(): array
     {
         return $this->supportedLanguages;

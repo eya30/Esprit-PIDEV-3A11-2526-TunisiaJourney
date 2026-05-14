@@ -13,8 +13,9 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/evenement')]
 class EvenementController extends AbstractController
 {
-    // ── Helpers partagés ────────────────────────────────────────────────────
-
+    /**
+     * @return array{0: string, 1: string, 2: list<string>}
+     */
     private function buildQuery(string $search, string $sort): array
     {
         $where  = '';
@@ -44,6 +45,10 @@ class EvenementController extends AbstractController
         return [$where, $orderBy, $params];
     }
 
+    /**
+     * @param array<int, array<string, mixed>> $evenements
+     * @return array<int, array<string, mixed>>
+     */
     private function enrichEvenements(array $evenements, Connection $connection): array
     {
         if (empty($evenements)) {
@@ -82,8 +87,10 @@ class EvenementController extends AbstractController
         return $evenements;
     }
 
-    // ── Helper : calcul places restantes pour les activités d'un événement ──
-
+    /**
+     * @param array<int, array<string, mixed>> $activites
+     * @return array{0: array<int, array<string, mixed>>, 1: list<string>}
+     */
     private function buildPlacesData(array $activites, Connection $connection): array
     {
         $placesData    = [];
@@ -99,7 +106,7 @@ class EvenementController extends AbstractController
         $reservations = $connection->fetchAllAssociative(
             "SELECT IDAct, COALESCE(SUM(NombrePlaces), 0) AS totalReserve
              FROM reservationact
-             WHERE IDAct IN ($placeholders)
+             WHERE IDAct IN ($placeholders) AND status = 'confirmé'
              GROUP BY IDAct",
             $ids
         );
@@ -110,19 +117,30 @@ class EvenementController extends AbstractController
         }
 
         foreach ($activites as $activite) {
-            $id          = (int)$activite['IDAct'];
-            $capacite    = (int)$activite['CapaciteM'];
-            $reserve     = $reserveMap[$id] ?? 0;
-            $restantes   = max(0, $capacite - $reserve);
-            $pourcentage = $capacite > 0 ? round(($reserve / $capacite) * 100) : 100;
+            $id       = (int)$activite['IDAct'];
+            $capacite = (int)$activite['CapaciteM'];
+            $reserve  = $reserveMap[$id] ?? 0;
 
-            if ($pourcentage >= 100) {
-                $disponibilite = 'soldout';
-            } elseif ($pourcentage >= 80) {
-                $disponibilite = 'warning';
-            } else {
-                $disponibilite = 'available';
+            if ($capacite <= 0) {
+                $placesData[$id] = [
+                    'placesRestantes'        => 0,
+                    'placesReservees'        => 0,
+                    'pourcentageRemplissage' => 0,
+                    'disponibilite'          => 'available',
+                ];
+                $type = isset($activite['TypeActivite']) ? (string)$activite['TypeActivite'] : null;
+                if ($type !== null && $type !== '' && !in_array($type, $typesActivite, true)) {
+                    $typesActivite[] = $type;
+                }
+                continue;
             }
+
+            $restantes   = max(0, $capacite - $reserve);
+            $pourcentage = round(($reserve / $capacite) * 100);
+
+            if ($pourcentage >= 100)    $disponibilite = 'soldout';
+            elseif ($pourcentage >= 80) $disponibilite = 'warning';
+            else                        $disponibilite = 'available';
 
             $placesData[$id] = [
                 'placesRestantes'        => $restantes,
@@ -131,8 +149,8 @@ class EvenementController extends AbstractController
                 'disponibilite'          => $disponibilite,
             ];
 
-            $type = $activite['TypeActivite'] ?? null;
-            if ($type && !in_array($type, $typesActivite)) {
+            $type = isset($activite['TypeActivite']) ? (string)$activite['TypeActivite'] : null;
+            if ($type !== null && $type !== '' && !in_array($type, $typesActivite, true)) {
                 $typesActivite[] = $type;
             }
         }
@@ -142,8 +160,6 @@ class EvenementController extends AbstractController
         return [$placesData, $typesActivite];
     }
 
-    // ── Page principale ──────────────────────────────────────────────────────
-
     #[Route('/', name: 'app_evenement_index')]
     public function index(Connection $connection, CodePromoRepository $codePromoRepository): Response
     {
@@ -152,8 +168,7 @@ class EvenementController extends AbstractController
         );
         $evenements = $this->enrichEvenements($evenements, $connection);
 
-        // ── Récupérer le premier code promo actif valide aujourd'hui ──
-        $codesValides = $codePromoRepository->findAllValides();
+        $codesValides   = $codePromoRepository->findAllValides();
         $codePromoActif = !empty($codesValides) ? $codesValides[0] : null;
 
         return $this->render('evenement/indexev.html.twig', [
@@ -162,13 +177,11 @@ class EvenementController extends AbstractController
         ]);
     }
 
-    // ── Route AJAX : recherche + tri ─────────────────────────────────────────
-
     #[Route('/search', name: 'app_evenement_search', methods: ['GET'])]
     public function search(Connection $connection, Request $request): JsonResponse
     {
-        $search = trim($request->query->get('search', ''));
-        $sort   = $request->query->get('sort', 'date_asc');
+        $search = trim((string) $request->query->get('search', ''));
+        $sort   = (string) $request->query->get('sort', 'date_asc');
 
         [$where, $orderBy, $params] = $this->buildQuery($search, $sort);
 
@@ -182,15 +195,15 @@ class EvenementController extends AbstractController
         foreach ($evenements as $ev) {
             $placesRestantes = $ev['CapaciteMax'] - ($ev['ReservationsCount'] ?? 0);
             $imageSrc = $ev['Image']
-                ? '/uploads/evenements/' . basename($ev['Image'])
+                ? '/uploads/evenements/' . basename((string) $ev['Image'])
                 : 'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=800';
 
-            $dateDebut    = (new \DateTime($ev['DateDebut']))->format('d/m/Y');
-            $dateFin      = (new \DateTime($ev['DateFin']))->format('d/m/Y');
-            $organisateur = htmlspecialchars(mb_substr($ev['Organisateur'] ?? '', 0, 22));
-            $titre        = htmlspecialchars($ev['Titre']);
-            $lieu         = htmlspecialchars($ev['Lieu']);
-            $desc         = htmlspecialchars(mb_substr($ev['Description'] ?? '', 0, 200));
+            $dateDebut    = (new \DateTime((string) $ev['DateDebut']))->format('d/m/Y');
+            $dateFin      = (new \DateTime((string) $ev['DateFin']))->format('d/m/Y');
+            $organisateur = htmlspecialchars(mb_substr((string) ($ev['Organisateur'] ?? ''), 0, 22));
+            $titre        = htmlspecialchars((string) $ev['Titre']);
+            $lieu         = htmlspecialchars((string) $ev['Lieu']);
+            $desc         = htmlspecialchars(mb_substr((string) ($ev['Description'] ?? ''), 0, 200));
             $idEv         = (int) $ev['IDEv'];
 
             $cards[] = [
@@ -217,14 +230,11 @@ class EvenementController extends AbstractController
         ]);
     }
 
-    // ── Détail d'un événement (MODIFIÉ) ─────────────────────────────────────
-
     #[Route('/{IDEv}', name: 'app_evenement_show')]
     public function show(Connection $connection, int $IDEv): Response
     {
-        // 🔴 MODIFICATION : Ajout de Latitude et Longitude dans la requête
         $evenement = $connection->fetchAssociative(
-            "SELECT *, Latitude, Longitude FROM Evenement WHERE IDEv = ?", 
+            "SELECT *, Latitude, Longitude FROM Evenement WHERE IDEv = ?",
             [$IDEv]
         );
 
@@ -241,7 +251,7 @@ class EvenementController extends AbstractController
         );
 
         $activites = $connection->fetchAllAssociative(
-            "SELECT * FROM Activite WHERE IDEv = ? ORDER BY HeureDebut ASC", 
+            "SELECT * FROM Activite WHERE IDEv = ? ORDER BY HeureDebut ASC",
             [$IDEv]
         );
 
@@ -250,8 +260,6 @@ class EvenementController extends AbstractController
             'activites' => $activites,
         ]);
     }
-
-    // ── Liste des activités d'un événement ───────────────────────────────────
 
     #[Route('/{IDEv}/activites', name: 'app_evenement_activites')]
     public function activites(Connection $connection, int $IDEv): Response

@@ -7,6 +7,9 @@ use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<PanierItem>
+ */
 class PanierItemRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -14,13 +17,14 @@ class PanierItemRepository extends ServiceEntityRepository
         parent::__construct($registry, PanierItem::class);
     }
 
-    // Récupérer tous les articles du panier d'un user
+    /**
+     * @return array<int, PanierItem>
+     */
     public function findByUser(User $user): array
     {
         return $this->findBy(['user' => $user]);
     }
 
-    // Trouver un article spécifique dans le panier d'un user
     public function findOneByUserAndProduit(User $user, int $produitId): ?PanierItem
     {
         return $this->createQueryBuilder('p')
@@ -33,14 +37,12 @@ class PanierItemRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
-    // Calculer le total du panier d'un user
     public function getTotalByUser(User $user): float
     {
         $items = $this->findByUser($user);
         return array_reduce($items, fn($carry, $item) => $carry + $item->getSousTotal(), 0.0);
     }
 
-    // Vider tout le panier d'un user
     public function clearByUser(User $user): void
     {
         $this->createQueryBuilder('p')

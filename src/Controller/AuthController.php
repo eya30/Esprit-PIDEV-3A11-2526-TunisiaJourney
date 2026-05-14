@@ -162,6 +162,9 @@ class AuthController extends AbstractController
             return $this->json(['error' => 'Image manquante']);
         }
 
+        // ligne 222 : imageBase64 doit être string
+        $imageBase64Str = is_string($imageBase64) ? $imageBase64 : '';
+
         $users = $em->getRepository(User::class)
             ->createQueryBuilder('u')
             ->where('u.faceEmbedding IS NOT NULL')
@@ -178,13 +181,15 @@ class AuthController extends AbstractController
 
         foreach ($users as $user) {
             $ch = curl_init('http://127.0.0.1:5001/compare');
+
+            // ligne 181 : CURLOPT_POSTFIELDS doit être string, pas false
             curl_setopt_array($ch, [
                 CURLOPT_POST           => true,
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
-                CURLOPT_POSTFIELDS     => json_encode([
-                    'image_base64' => $imageBase64,
-                    'embedding'    => json_decode($user->getFaceEmbedding(), true),
+                CURLOPT_POSTFIELDS     => (string) json_encode([
+                    'image_base64' => $imageBase64Str,
+                    'embedding'    => json_decode((string) $user->getFaceEmbedding(), true),
                 ]),
                 CURLOPT_TIMEOUT => 30,
             ]);
@@ -192,7 +197,8 @@ class AuthController extends AbstractController
             $out = curl_exec($ch);
             curl_close($ch);
 
-            $result = $out ? json_decode($out, true) : null;
+            // ligne 195 : json_decode attend string
+            $result = is_string($out) ? json_decode($out, true) : null;
 
             if (isset($result['distance']) && $result['distance'] < $bestDistance) {
                 $bestDistance = $result['distance'];
@@ -219,7 +225,7 @@ class AuthController extends AbstractController
                 'distance: ' . round($bestDistance, 3));
 
             // ── Appeler /emotion côté PHP (pas JS) ──
-            $emotionData = $this->callEmotion($request, $imageBase64);
+            $emotionData = $this->callEmotion($request, $imageBase64Str);
             $request->getSession()->set('face_emotion', [
                 'emoji'   => $emotionData['emoji']   ?? '😐',
                 'message' => $emotionData['message'] ?? 'Bonne journée !',
@@ -241,23 +247,28 @@ class AuthController extends AbstractController
         return $this->json(['error' => 'Visage non reconnu']);
     }
 
-    // ── Appel Flask /emotion côté serveur PHP ──
+    /**
+     * Appel Flask /emotion côté serveur PHP
+     *
+     * @return array<string, string>
+     */
     private function callEmotion(Request $request, string $imageBase64): array
     {
         $ch = curl_init('http://127.0.0.1:5001/emotion');
+
+        // ligne 248 : CURLOPT_POSTFIELDS doit être string, pas false
         curl_setopt_array($ch, [
             CURLOPT_POST           => true,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
-            CURLOPT_POSTFIELDS     => json_encode(['image_base64' => $imageBase64]),
+            CURLOPT_POSTFIELDS     => (string) json_encode(['image_base64' => $imageBase64]),
             CURLOPT_TIMEOUT        => 15,
         ]);
         $out = curl_exec($ch);
         curl_close($ch);
-        
 
-        $data = $out ? json_decode($out, true) : null;
-       $request->getSession()->set('emotion_debug', $out);
+        // ligne 259 : json_decode attend string
+        $data = is_string($out) ? json_decode($out, true) : null;
 
         // Mapping de secours si Flask échoue
         $messages = [
@@ -270,12 +281,10 @@ class AuthController extends AbstractController
             'neutral'  => ['emoji' => '😐', 'message' => 'Bonne journée !'],
         ];
 
-        // Si Flask a retourné une émotion valide
         if (isset($data['emotion']) && isset($messages[$data['emotion']])) {
             return $messages[$data['emotion']];
         }
 
-        // Fallback
         return ['emoji' => '😊', 'message' => 'Bienvenue !'];
     }
 }
