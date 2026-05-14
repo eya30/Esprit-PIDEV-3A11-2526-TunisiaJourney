@@ -30,3 +30,5 @@
 .env
 .env.*
 >>>>>>> origin/devvvvv
+.env
+.env.local
