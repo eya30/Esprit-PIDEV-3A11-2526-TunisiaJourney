@@ -1,15 +1,27 @@
 parameters:
+<<<<<<< HEAD
     uploads_directory: '%kernel.project_dir%/public/uploads/evenements'
     uploads_activites_directory: '%kernel.project_dir%/public/uploads/activites'
     produits_directory: '%kernel.project_dir%/public/uploads/produits'
+=======
+    # Paramètres de HEAD (événements et activités)
+    uploads_directory: '%kernel.project_dir%/public/uploads/evenements'
+    uploads_activites_directory: '%kernel.project_dir%/public/uploads/activites'
+    produits_directory: '%kernel.project_dir%/public/uploads/produits'
+    
+    # Paramètres de origin/devvvvv (voyages, programmes, APIs)
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     voyages_images_directory: '%kernel.project_dir%/public/uploads/voyages'
     programmes_images_directory: '%kernel.project_dir%/public/uploads/programmes'
     uploads_voyages_directory: '%kernel.project_dir%/public/uploads/voyages'
     uploads_programmes_directory: '%kernel.project_dir%/public/uploads/programmes'
+<<<<<<< HEAD
     publications_directory: '%kernel.project_dir%/public/uploads/publications'
     commentaires_directory: '%kernel.project_dir%/public/uploads/commentaires'
     app.locales: ['fr', 'en', 'ar', 'es', 'de', 'it', 'pt', 'ru']
     app.default_locale: 'fr'
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     imgbb_api_key: '%env(IMGBB_API_KEY)%'
     recaptcha_site_key: '%env(RECAPTCHA_SITE_KEY)%'
     recaptcha_secret_key: '%env(RECAPTCHA_SECRET_KEY)%'
@@ -19,8 +31,12 @@ parameters:
     brevo_sender_email: '%env(BREVO_SENDER_EMAIL)%'
     stripe_public_key: '%env(STRIPE_PUBLIC_KEY)%'
     stripe_secret_key: '%env(STRIPE_SECRET_KEY)%'
+<<<<<<< HEAD
     gemini_api_key: '%env(GEMINI_API_KEY)%'
     gemini_api_key_forum: '%env(GEMINI_API_KEY_FORUM)%'
+=======
+    gemini_api_key: '%env(GEMINII_API_KEY)%'
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
 services:
     _defaults:
@@ -35,10 +51,15 @@ services:
             - '../src/Kernel.php'
             - '../src/Tests/'
 
+<<<<<<< HEAD
+=======
+    # Service de HEAD
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     App\Service\AISummaryService:
         arguments:
             $projectDir: '%kernel.project_dir%'
 
+<<<<<<< HEAD
     App\Service\GeminiAIService:
         arguments:
             $apiKey: '%env(GEMINI_API_KEY)%'
@@ -54,19 +75,46 @@ services:
             $params: '@parameter_bag'
             $logger: '@logger'
 
+=======
+    # Services de origin/devvvvv
+    App\Service\GeminiAIService:
+        arguments:
+            $apiKey: '%env(GEMINI_API_KEY)%'
+            $connection: '@doctrine.dbal.default_connection'
+            
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     App\Service\StripeService:
         arguments:
             $stripeSecretKey: '%env(STRIPE_SECRET_KEY)%'
             $stripePublicKey: '%env(STRIPE_PUBLIC_KEY)%'
             $logger: '@logger'
             $entityManager: '@doctrine.orm.entity_manager'
+<<<<<<< HEAD
 
+=======
+   
+    App\Service\DiscordNotifierService:
+        arguments:
+            $connection: '@doctrine.dbal.default_connection'
+            $logger: '@logger'
+            
+    App\EventListener\DiscordNewReservationListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
+    App\Service\GeminiEAIService:
+        arguments:
+            $apiKey: '%env(GEMINII_API_KEY)%'
+            $connection: '@doctrine.dbal.default_connection'
+
+    # ✅ StripeService avec injection des clés depuis les paramètres
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     App\Service\StripeeService:
         arguments:
             $secretKey: '%env(STRIPEE_SECRET_KEY)%'
             $publicKey: '%env(STRIPEE_PUBLIC_KEY)%'
         public: true
 
+<<<<<<< HEAD
     App\Service\DiscordNotifierService:
         arguments:
             $connection: '@doctrine.dbal.default_connection'
@@ -76,23 +124,35 @@ services:
         tags:
             - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
 
+=======
+    # ✅ WhatsAppService - CORRIGÉ (indentation)
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     App\Service\WhatsAppService:
         arguments:
             $accountSid: '%env(TWILIO_ACCOUNT_SID)%'
             $authToken: '%env(TWILIO_AUTH_TOKEN)%'
             $fromNumber: '%env(TWILIO_WHATSAPP_NUMBER)%'
+<<<<<<< HEAD
 
+=======
+   # Ajoutez cette ligne dans la section services
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     App\Service\BrevoEmailService:
         arguments:
             $httpClient: '@http_client'
             $logger: '@logger'
+<<<<<<< HEAD
 
+=======
+    # SMS Service avec Twilio   
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     App\Service\SmsService:
         arguments:
             $accountSid: '%env(TWILIO_ACCOUNT_SID)%'
             $authToken: '%env(TWILIO_AUTH_TOKEN)%'
             $twilioPhoneNumber: '%env(TWILIO_PHONE_NUMBER)%'
 
+<<<<<<< HEAD
     App\Service\TranslationService:
         public: true
         arguments:
@@ -161,3 +221,5 @@ services:
         arguments:
             $httpClient: '@http_client'
             $logger: '@logger'
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb

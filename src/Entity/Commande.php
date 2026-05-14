@@ -19,6 +19,7 @@ class Commande
 /** @phpstan-ignore property.unusedType */
 private ?int $id = null;
 
+    // ✅ Propriétés en camelCase — le name: mappe vers la vraie colonne BDD
     #[ORM\Column(name: 'Quantite', nullable: true)]
     #[Assert\Positive(message: "La quantité doit être supérieure à zéro.")]
     private ?int $quantite = 1;
@@ -45,6 +46,14 @@ private ?int $id = null;
     #[ORM\Column(name: 'ModePaiement', length: 50, nullable: true)]
     #[Assert\NotBlank(message: "Le mode de paiement est obligatoire.")]
     private ?string $modePaiement = null;
+<<<<<<< HEAD
+=======
+
+    // ✅ Relation User
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: true)]
+    private ?User $user = null;
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: true)]
@@ -57,9 +66,15 @@ private ?int $id = null;
 
     public function __construct()
     {
+<<<<<<< HEAD
         $this->lignes = new ArrayCollection();
         $this->dateC  = new \DateTime();
         $this->statut = 'En attente';
+=======
+        $this->lignes   = new ArrayCollection();
+        $this->dateC    = new \DateTime();
+        $this->statut   = 'En attente';
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     }
 
     public function getId(): ?int { return $this->id; }
@@ -88,8 +103,11 @@ private ?int $id = null;
     public function getUser(): ?User { return $this->user; }
     public function setUser(?User $user): self { $this->user = $user; return $this; }
 
+<<<<<<< HEAD
     // ✅ Type de retour générique explicite
     /** @return Collection<int, CommandeProduit> */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     public function getLignes(): Collection { return $this->lignes; }
 
     public function addLigne(CommandeProduit $ligne): self

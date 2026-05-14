@@ -23,6 +23,7 @@ class AIReportGenerator
         $this->logger        = $logger;
     }
 
+<<<<<<< HEAD
     /**
      * @return array{
      *     generated_at: string,
@@ -42,6 +43,8 @@ class AIReportGenerator
      *     detailed_voyages: array<int, array<string, mixed>>
      * }
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     public function generateWeeklyReport(): array
     {
         try {
@@ -63,6 +66,7 @@ class AIReportGenerator
                     'end'   => $endDate->format('Y-m-d'),
                 ],
                 'summary' => [
+<<<<<<< HEAD
                     // Suppression des ?? car les offsets existent toujours
                     'total_voyages'      => $voyagesData['total_voyages'],
                     'total_reservations' => $voyagesData['total_reservations'],
@@ -71,11 +75,24 @@ class AIReportGenerator
                     'paid_revenue'       => $revenues['paid_revenue'],
                     'pending_revenue'    => $revenues['pending_revenue'],
                     'avg_occupancy_rate' => $voyagesData['avg_occupancy_rate'],
+=======
+                    'total_voyages'      => $voyagesData['total_voyages']      ?? 0,
+                    'total_reservations' => $voyagesData['total_reservations'] ?? 0,
+                    'total_participants' => $voyagesData['total_participants'] ?? 0,
+                    'total_revenue'      => $revenues['total_revenue']         ?? 0,
+                    'paid_revenue'       => $revenues['paid_revenue']          ?? 0,
+                    'pending_revenue'    => $revenues['pending_revenue']       ?? 0,
+                    'avg_occupancy_rate' => $voyagesData['avg_occupancy_rate'] ?? 0,
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                 ],
                 'best_voyages'     => $bestVoyages,
                 'worst_voyages'    => $worstVoyages,
                 'ai_insights'      => $aiInsights,
+<<<<<<< HEAD
                 'detailed_voyages' => $voyagesData['voyages'],
+=======
+                'detailed_voyages' => $voyagesData['voyages'] ?? [],
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             ];
 
             return $report;
@@ -88,12 +105,15 @@ class AIReportGenerator
 
     /**
      * Génère les insights via Ollama (100% IA locale, pas de texte hardcodé).
+<<<<<<< HEAD
      *
      * @param array<string, mixed> $voyagesData
      * @param array<string, float> $revenues
      * @param array<int, array<string, mixed>> $bestVoyages
      * @param array<int, array<string, mixed>> $worstVoyages
      * @return string
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
      */
     private function generateAIInsightsViaOllama(
         array $voyagesData,
@@ -134,7 +154,11 @@ class AIReportGenerator
         ];
 
         // Appel Ollama
+<<<<<<< HEAD
         $aiText = $this->ollamaService->generate($reportDataForAI);
+=======
+        $aiText = $this->ollamaService->generateFinancialReport($reportDataForAI);
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
         if (!empty($aiText)) {
             return $aiText;
@@ -146,12 +170,15 @@ class AIReportGenerator
 
     /**
      * Fallback statique si Ollama est indisponible.
+<<<<<<< HEAD
      *
      * @param array<string, mixed> $voyagesData
      * @param array<string, float> $revenues
      * @param array<int, array<string, mixed>> $bestVoyages
      * @param array<int, array<string, mixed>> $worstVoyages
      * @return string
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
      */
     private function generateStaticInsights(
         array $voyagesData,
@@ -203,6 +230,7 @@ class AIReportGenerator
         return $summary;
     }
 
+<<<<<<< HEAD
     /**
      * @return array{
      *     voyages: array<int, array<string, mixed>>,
@@ -212,6 +240,8 @@ class AIReportGenerator
      *     avg_occupancy_rate: float
      * }
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     private function getVoyagesPerformance(): array
     {
         try {
@@ -270,9 +300,12 @@ class AIReportGenerator
         }
     }
 
+<<<<<<< HEAD
     /**
      * @return array{total_revenue: float, paid_revenue: float, pending_revenue: float}
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     private function calculateTotalRevenues(): array
     {
         try {
@@ -287,8 +320,13 @@ class AIReportGenerator
             ");
 
             return [
+<<<<<<< HEAD
                 'total_revenue'   => (float)($revenues['total_revenue'] ?? 0),
                 'paid_revenue'    => (float)($revenues['paid_revenue'] ?? 0),
+=======
+                'total_revenue'   => (float)($revenues['total_revenue']   ?? 0),
+                'paid_revenue'    => (float)($revenues['paid_revenue']    ?? 0),
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                 'pending_revenue' => (float)($revenues['pending_revenue'] ?? 0),
             ];
 
@@ -298,10 +336,13 @@ class AIReportGenerator
         }
     }
 
+<<<<<<< HEAD
     /**
      * @param array<string, mixed> $voyagesData
      * @return array<int, array<string, mixed>>
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     private function getBestVoyages(array $voyagesData): array
     {
         $voyages = array_filter($voyagesData['voyages'] ?? [], fn($v) => ($v['paid_revenue'] ?? 0) > 0 || ($v['total_participants'] ?? 0) > 0);
@@ -309,10 +350,13 @@ class AIReportGenerator
         return array_slice($voyages, 0, 5);
     }
 
+<<<<<<< HEAD
     /**
      * @param array<string, mixed> $voyagesData
      * @return array<int, array<string, mixed>>
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     private function getWorstVoyages(array $voyagesData): array
     {
         $voyages = array_filter($voyagesData['voyages'] ?? [], fn($v) => ($v['total_reservations'] ?? 0) > 0);
@@ -320,6 +364,7 @@ class AIReportGenerator
         return array_slice($voyages, 0, 5);
     }
 
+<<<<<<< HEAD
     /**
      * @return array{
      *     generated_at: string,
@@ -339,6 +384,8 @@ class AIReportGenerator
      *     detailed_voyages: array<int, mixed>
      * }
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     private function getDefaultReport(): array
     {
         $now = new \DateTime();
@@ -353,10 +400,13 @@ class AIReportGenerator
         ];
     }
 
+<<<<<<< HEAD
     /**
      * @param array<string, mixed> $report
      * @return string
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     public function generatePDFReport(array $report): string
     {
         try {
@@ -380,10 +430,13 @@ class AIReportGenerator
         }
     }
 
+<<<<<<< HEAD
     /**
      * @param array<string, mixed> $report
      * @return string
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     private function renderReportHTML(array $report): string
     {
         $bestVoyages = $report['best_voyages'] ?? [];
@@ -428,10 +481,17 @@ body { font-family: "DejaVu Sans", Arial, sans-serif; font-size: 11px; color: #1
 </div>
 <table class="stats">
 <tr>
+<<<<<<< HEAD
     <td><div class="value">' . ($report['summary']['total_voyages'] ?? 0) . '</div><div class="label">Voyages</div></td>
     <td><div class="value">' . ($report['summary']['total_reservations'] ?? 0) . '</div><div class="label">Réservations</div></td>
     <td><div class="value">' . ($report['summary']['total_participants'] ?? 0) . '</div><div class="label">Participants</div></td>
     <td><div class="value">' . ($report['summary']['avg_occupancy_rate'] ?? 0) . '%</div><div class="label">Occupation</div></td>
+=======
+<td><div class="value">' . ($report['summary']['total_voyages'] ?? 0) . '</div><div class="label">Voyages</div></td>
+<td><div class="value">' . ($report['summary']['total_reservations'] ?? 0) . '</div><div class="label">Réservations</div></td>
+<td><div class="value">' . ($report['summary']['total_participants'] ?? 0) . '</div><div class="label">Participants</div></td>
+<td><div class="value">' . ($report['summary']['avg_occupancy_rate'] ?? 0) . '%</div><div class="label">Occupation</div></td>
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 </tr>
 </table>
 <div class="revenue-box">
@@ -445,6 +505,7 @@ body { font-family: "DejaVu Sans", Arial, sans-serif; font-size: 11px; color: #1
 
         foreach ($bestVoyages as $v) {
             $html .= '<tr>
+<<<<<<< HEAD
     <td>' . htmlspecialchars($v['nom'] ?? '') . '</td>
     <td>' . ($v['total_participants'] ?? 0) . '</td>
     <td>' . ($v['occupancy_rate'] ?? 0) . '%</td>
@@ -453,6 +514,16 @@ body { font-family: "DejaVu Sans", Arial, sans-serif; font-size: 11px; color: #1
         }
 
         $html .= '<tr>
+=======
+<td>' . htmlspecialchars($v['nom'] ?? '') . '</td>
+<td>' . ($v['total_participants'] ?? 0) . '</td>
+<td>' . ($v['occupancy_rate'] ?? 0) . '%</td>
+<td>' . number_format($v['paid_revenue'] ?? 0, 2) . ' DT</td>
+</tr>';
+        }
+
+        $html .= '</table>
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 <div class="section-title">Insights IA (Ollama)</div>
 <div class="insights">' . nl2br(htmlspecialchars($report['ai_insights'] ?? 'Aucun insight disponible')) . '</div>
 <div class="footer">Rapport généré automatiquement par Ollama AI — TunisiaJourney</div>

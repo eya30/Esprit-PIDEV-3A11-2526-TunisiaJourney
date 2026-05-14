@@ -119,6 +119,7 @@ class ProduitController extends AbstractController
     }
 
     // Supprimer
+<<<<<<< HEAD
    #[Route('/{idPR}/supprimer', name: 'app_produit_delete', methods: ['POST'])]
 public function delete(Request $request, Produit $produit, EntityManagerInterface $em): Response
 {
@@ -126,6 +127,18 @@ public function delete(Request $request, Produit $produit, EntityManagerInterfac
         $em->remove($produit);
         $em->flush();
         $this->addFlash('success', 'Produit supprimé.');
+=======
+    #[Route('/{idPR}/supprimer', name: 'app_produit_delete', methods: ['POST'])]
+    public function delete(Request $request, Produit $produit, EntityManagerInterface $em): Response
+    {
+        if ($this->isCsrfTokenValid('delete' . $produit->getIdPR(), $request->request->get('_token'))) {
+            $em->remove($produit);
+            $em->flush();
+            $this->addFlash('success', 'Produit supprimé.');
+        }
+
+        return $this->redirectToRoute('app_produit_index');
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     }
 
     return $this->redirectToRoute('app_produit_index');

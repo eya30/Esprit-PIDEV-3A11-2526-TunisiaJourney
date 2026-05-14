@@ -13,9 +13,14 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/evenement')]
 class EvenementController extends AbstractController
 {
+<<<<<<< HEAD
     /**
      * @return array{0: string, 1: string, 2: list<string>}
      */
+=======
+    // ── Helpers partagés ────────────────────────────────────────────────────
+
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     private function buildQuery(string $search, string $sort): array
     {
         $where  = '';
@@ -45,10 +50,13 @@ class EvenementController extends AbstractController
         return [$where, $orderBy, $params];
     }
 
+<<<<<<< HEAD
     /**
      * @param array<int, array<string, mixed>> $evenements
      * @return array<int, array<string, mixed>>
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     private function enrichEvenements(array $evenements, Connection $connection): array
     {
         if (empty($evenements)) {
@@ -87,10 +95,15 @@ class EvenementController extends AbstractController
         return $evenements;
     }
 
+<<<<<<< HEAD
     /**
      * @param array<int, array<string, mixed>> $activites
      * @return array{0: array<int, array<string, mixed>>, 1: list<string>}
      */
+=======
+    // ── Helper : calcul places restantes pour les activités d'un événement ──
+
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     private function buildPlacesData(array $activites, Connection $connection): array
     {
         $placesData    = [];
@@ -106,7 +119,11 @@ class EvenementController extends AbstractController
         $reservations = $connection->fetchAllAssociative(
             "SELECT IDAct, COALESCE(SUM(NombrePlaces), 0) AS totalReserve
              FROM reservationact
+<<<<<<< HEAD
              WHERE IDAct IN ($placeholders) AND status = 'confirmé'
+=======
+             WHERE IDAct IN ($placeholders)
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
              GROUP BY IDAct",
             $ids
         );
@@ -117,6 +134,7 @@ class EvenementController extends AbstractController
         }
 
         foreach ($activites as $activite) {
+<<<<<<< HEAD
             $id       = (int)$activite['IDAct'];
             $capacite = (int)$activite['CapaciteM'];
             $reserve  = $reserveMap[$id] ?? 0;
@@ -141,6 +159,21 @@ class EvenementController extends AbstractController
             if ($pourcentage >= 100)    $disponibilite = 'soldout';
             elseif ($pourcentage >= 80) $disponibilite = 'warning';
             else                        $disponibilite = 'available';
+=======
+            $id          = (int)$activite['IDAct'];
+            $capacite    = (int)$activite['CapaciteM'];
+            $reserve     = $reserveMap[$id] ?? 0;
+            $restantes   = max(0, $capacite - $reserve);
+            $pourcentage = $capacite > 0 ? round(($reserve / $capacite) * 100) : 100;
+
+            if ($pourcentage >= 100) {
+                $disponibilite = 'soldout';
+            } elseif ($pourcentage >= 80) {
+                $disponibilite = 'warning';
+            } else {
+                $disponibilite = 'available';
+            }
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
             $placesData[$id] = [
                 'placesRestantes'        => $restantes,
@@ -149,8 +182,13 @@ class EvenementController extends AbstractController
                 'disponibilite'          => $disponibilite,
             ];
 
+<<<<<<< HEAD
             $type = isset($activite['TypeActivite']) ? (string)$activite['TypeActivite'] : null;
             if ($type !== null && $type !== '' && !in_array($type, $typesActivite, true)) {
+=======
+            $type = $activite['TypeActivite'] ?? null;
+            if ($type && !in_array($type, $typesActivite)) {
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                 $typesActivite[] = $type;
             }
         }
@@ -160,6 +198,11 @@ class EvenementController extends AbstractController
         return [$placesData, $typesActivite];
     }
 
+<<<<<<< HEAD
+=======
+    // ── Page principale ──────────────────────────────────────────────────────
+
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     #[Route('/', name: 'app_evenement_index')]
     public function index(Connection $connection, CodePromoRepository $codePromoRepository): Response
     {
@@ -168,7 +211,12 @@ class EvenementController extends AbstractController
         );
         $evenements = $this->enrichEvenements($evenements, $connection);
 
+<<<<<<< HEAD
         $codesValides   = $codePromoRepository->findAllValides();
+=======
+        // ── Récupérer le premier code promo actif valide aujourd'hui ──
+        $codesValides = $codePromoRepository->findAllValides();
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $codePromoActif = !empty($codesValides) ? $codesValides[0] : null;
 
         return $this->render('evenement/indexev.html.twig', [
@@ -177,11 +225,21 @@ class EvenementController extends AbstractController
         ]);
     }
 
+<<<<<<< HEAD
     #[Route('/search', name: 'app_evenement_search', methods: ['GET'])]
     public function search(Connection $connection, Request $request): JsonResponse
     {
         $search = trim((string) $request->query->get('search', ''));
         $sort   = (string) $request->query->get('sort', 'date_asc');
+=======
+    // ── Route AJAX : recherche + tri ─────────────────────────────────────────
+
+    #[Route('/search', name: 'app_evenement_search', methods: ['GET'])]
+    public function search(Connection $connection, Request $request): JsonResponse
+    {
+        $search = trim($request->query->get('search', ''));
+        $sort   = $request->query->get('sort', 'date_asc');
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
         [$where, $orderBy, $params] = $this->buildQuery($search, $sort);
 
@@ -195,6 +253,7 @@ class EvenementController extends AbstractController
         foreach ($evenements as $ev) {
             $placesRestantes = $ev['CapaciteMax'] - ($ev['ReservationsCount'] ?? 0);
             $imageSrc = $ev['Image']
+<<<<<<< HEAD
                 ? '/uploads/evenements/' . basename((string) $ev['Image'])
                 : 'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=800';
 
@@ -204,6 +263,17 @@ class EvenementController extends AbstractController
             $titre        = htmlspecialchars((string) $ev['Titre']);
             $lieu         = htmlspecialchars((string) $ev['Lieu']);
             $desc         = htmlspecialchars(mb_substr((string) ($ev['Description'] ?? ''), 0, 200));
+=======
+                ? '/uploads/evenements/' . basename($ev['Image'])
+                : 'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=800';
+
+            $dateDebut    = (new \DateTime($ev['DateDebut']))->format('d/m/Y');
+            $dateFin      = (new \DateTime($ev['DateFin']))->format('d/m/Y');
+            $organisateur = htmlspecialchars(mb_substr($ev['Organisateur'] ?? '', 0, 22));
+            $titre        = htmlspecialchars($ev['Titre']);
+            $lieu         = htmlspecialchars($ev['Lieu']);
+            $desc         = htmlspecialchars(mb_substr($ev['Description'] ?? '', 0, 200));
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $idEv         = (int) $ev['IDEv'];
 
             $cards[] = [
@@ -230,11 +300,22 @@ class EvenementController extends AbstractController
         ]);
     }
 
+<<<<<<< HEAD
     #[Route('/{IDEv}', name: 'app_evenement_show')]
     public function show(Connection $connection, int $IDEv): Response
     {
         $evenement = $connection->fetchAssociative(
             "SELECT *, Latitude, Longitude FROM Evenement WHERE IDEv = ?",
+=======
+    // ── Détail d'un événement (MODIFIÉ) ─────────────────────────────────────
+
+    #[Route('/{IDEv}', name: 'app_evenement_show')]
+    public function show(Connection $connection, int $IDEv): Response
+    {
+        // 🔴 MODIFICATION : Ajout de Latitude et Longitude dans la requête
+        $evenement = $connection->fetchAssociative(
+            "SELECT *, Latitude, Longitude FROM Evenement WHERE IDEv = ?", 
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             [$IDEv]
         );
 
@@ -251,7 +332,11 @@ class EvenementController extends AbstractController
         );
 
         $activites = $connection->fetchAllAssociative(
+<<<<<<< HEAD
             "SELECT * FROM Activite WHERE IDEv = ? ORDER BY HeureDebut ASC",
+=======
+            "SELECT * FROM Activite WHERE IDEv = ? ORDER BY HeureDebut ASC", 
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             [$IDEv]
         );
 
@@ -261,6 +346,11 @@ class EvenementController extends AbstractController
         ]);
     }
 
+<<<<<<< HEAD
+=======
+    // ── Liste des activités d'un événement ───────────────────────────────────
+
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     #[Route('/{IDEv}/activites', name: 'app_evenement_activites')]
     public function activites(Connection $connection, int $IDEv): Response
     {

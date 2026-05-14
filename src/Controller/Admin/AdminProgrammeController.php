@@ -32,7 +32,11 @@ class AdminProgrammeController extends AbstractController
         $searchCondition = '';
         $params = [];
 
+<<<<<<< HEAD
         if (!empty($search) && is_string($search)) {
+=======
+        if (!empty($search)) {
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $searchCondition = ' WHERE (p.nom LIKE :search OR p.lieu LIKE :search OR p.hotel LIKE :search OR v.nom LIKE :search) ';
             $params['search'] = "%$search%";
         }
@@ -79,7 +83,11 @@ class AdminProgrammeController extends AbstractController
         }
 
         $body  = json_decode($request->getContent(), true);
+<<<<<<< HEAD
         $input = isset($body['input']) && is_string($body['input']) ? trim($body['input']) : '';
+=======
+        $input = trim($body['input'] ?? '');
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
         if (empty($input)) {
             return new JsonResponse(['error' => 'Input vide'], 400);
@@ -150,11 +158,15 @@ class AdminProgrammeController extends AbstractController
         // ── 5. Description via Ollama ─────────────────────────────────────
         $description = '';
         if ($ollama->isAvailable()) {
+<<<<<<< HEAD
             try {
                 $description = $ollama->generateDescription($input . ' à ' . $lieu, []);
             } catch (\Exception $e) {
                 $description = '';
             }
+=======
+            $description = $ollama->generateDescription($input . ' à ' . $lieu, []);
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         }
         if (empty(trim($description))) {
             $description = "Partez à la découverte de {$lieu} lors de ce programme de {$duration} jours. "
@@ -164,6 +176,7 @@ class AdminProgrammeController extends AbstractController
         // ── 6. Activités via Ollama ───────────────────────────────────────
         $activites = '';
         if ($ollama->isAvailable()) {
+<<<<<<< HEAD
             try {
                 $activites = $ollama->generateDescription(
                     "Génère 3 à 4 activités touristiques typiques pour un voyage à {$lieu} en Tunisie.",
@@ -181,6 +194,17 @@ class AdminProgrammeController extends AbstractController
         $activitesFinal = '';
         if (empty(trim($activites))) {
             $activitesFinal = match (true) {
+=======
+            $activites = $ollama->generateInsights(
+                $input,
+                "Génère 3 à 4 activités touristiques typiques pour un voyage à {$lieu} en Tunisie. "
+                . "Réponds UNIQUEMENT avec les activités séparées par des virgules, rien d'autre. "
+                . "Exemple: Balade en chameau, Visite de la médina, Dîner traditionnel"
+            );
+        }
+        if (empty(trim($activites ?? ''))) {
+            $activites = match (true) {
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                 str_contains($inputLower, 'sahara'),
                 str_contains($inputLower, 'désert')  => 'Balade en chameau, Nuit sous tente, Dîner saharien, Lever de soleil sur les dunes',
                 str_contains($inputLower, 'djerba')  => 'Visite du marché, Plage de Sidi Mahrez, Tour de l\'île en vélo, Dégustation de fruits de mer',
@@ -192,8 +216,11 @@ class AdminProgrammeController extends AbstractController
                 str_contains($inputLower, 'chott')   => 'Excursion sur le Chott el-Jérid, Village de sel, Oasis de Chebika, Coucher de soleil',
                 default                              => 'Visite guidée, Dégustation culinaire, Balade découverte, Rencontre avec les artisans locaux',
             };
+<<<<<<< HEAD
         } else {
             $activitesFinal = $activites;
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         }
 
         return new JsonResponse([
@@ -203,7 +230,11 @@ class AdminProgrammeController extends AbstractController
             'dateFin'          => $dateFin->format('Y-m-d'),
             'lieu'             => $lieu,
             'hotel'            => $hotel,
+<<<<<<< HEAD
             'activiteAssociee' => trim($activitesFinal),
+=======
+            'activiteAssociee' => trim($activites),
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         ]);
     }
 
@@ -218,6 +249,7 @@ class AdminProgrammeController extends AbstractController
         $errors   = [];
 
         if ($request->isMethod('POST')) {
+<<<<<<< HEAD
             $nom             = is_string($request->request->get('nom', '')) ? trim($request->request->get('nom', '')) : '';
             $description     = is_string($request->request->get('description', '')) ? trim($request->request->get('description', '')) : '';
             $dateDebut       = $request->request->get('dateDebut', '');
@@ -225,6 +257,15 @@ class AdminProgrammeController extends AbstractController
             $lieu            = is_string($request->request->get('lieu', '')) ? trim($request->request->get('lieu', '')) : '';
             $activiteAssociee = is_string($request->request->get('activiteAssociee', '')) ? trim($request->request->get('activiteAssociee', '')) : '';
             $hotel           = is_string($request->request->get('hotel', '')) ? trim($request->request->get('hotel', '')) : '';
+=======
+            $nom             = trim($request->request->get('nom', ''));
+            $description     = trim($request->request->get('description', ''));
+            $dateDebut       = $request->request->get('dateDebut', '');
+            $dateFin         = $request->request->get('dateFin', '');
+            $lieu            = trim($request->request->get('lieu', ''));
+            $activiteAssociee= trim($request->request->get('activiteAssociee', ''));
+            $hotel           = trim($request->request->get('hotel', ''));
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $idV             = $request->request->get('idV', '');
 
             // Validations
@@ -247,10 +288,15 @@ class AdminProgrammeController extends AbstractController
             }
 
             if (!empty($dateDebut) && !empty($dateFin)) {
+<<<<<<< HEAD
                 $dateDebutStr = is_string($dateDebut) ? $dateDebut : '';
                 $dateFinStr = is_string($dateFin) ? $dateFin : '';
                 $dateDebutObj = \DateTime::createFromFormat('Y-m-d', $dateDebutStr);
                 $dateFinObj   = \DateTime::createFromFormat('Y-m-d', $dateFinStr);
+=======
+                $dateDebutObj = \DateTime::createFromFormat('Y-m-d', $dateDebut);
+                $dateFinObj   = \DateTime::createFromFormat('Y-m-d', $dateFin);
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                 if ($dateDebutObj && $dateFinObj) {
                     if ($dateFinObj <= $dateDebutObj) {
                         $errors['dateFin'] = 'La date de fin doit être postérieure à la date de début.';
@@ -338,6 +384,7 @@ class AdminProgrammeController extends AbstractController
         $errors = [];
 
         if ($request->isMethod('POST')) {
+<<<<<<< HEAD
             $nom             = is_string($request->request->get('nom', '')) ? trim($request->request->get('nom', '')) : '';
             $description     = is_string($request->request->get('description', '')) ? trim($request->request->get('description', '')) : '';
             $dateDebut       = $request->request->get('dateDebut', '');
@@ -345,6 +392,15 @@ class AdminProgrammeController extends AbstractController
             $lieu            = is_string($request->request->get('lieu', '')) ? trim($request->request->get('lieu', '')) : '';
             $activiteAssociee = is_string($request->request->get('activiteAssociee', '')) ? trim($request->request->get('activiteAssociee', '')) : '';
             $hotel           = is_string($request->request->get('hotel', '')) ? trim($request->request->get('hotel', '')) : '';
+=======
+            $nom             = trim($request->request->get('nom', ''));
+            $description     = trim($request->request->get('description', ''));
+            $dateDebut       = $request->request->get('dateDebut', '');
+            $dateFin         = $request->request->get('dateFin', '');
+            $lieu            = trim($request->request->get('lieu', ''));
+            $activiteAssociee= trim($request->request->get('activiteAssociee', ''));
+            $hotel           = trim($request->request->get('hotel', ''));
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $idV             = $request->request->get('idV', '');
 
             if (empty($nom)) {
@@ -358,10 +414,15 @@ class AdminProgrammeController extends AbstractController
             if (empty($dateFin))         $errors['dateFin']         = 'La date de fin est obligatoire.';
 
             if (!empty($dateDebut) && !empty($dateFin)) {
+<<<<<<< HEAD
                 $dateDebutStr = is_string($dateDebut) ? $dateDebut : '';
                 $dateFinStr = is_string($dateFin) ? $dateFin : '';
                 $dateDebutObj = \DateTime::createFromFormat('Y-m-d', $dateDebutStr);
                 $dateFinObj   = \DateTime::createFromFormat('Y-m-d', $dateFinStr);
+=======
+                $dateDebutObj = \DateTime::createFromFormat('Y-m-d', $dateDebut);
+                $dateFinObj   = \DateTime::createFromFormat('Y-m-d', $dateFin);
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                 if ($dateDebutObj && $dateFinObj) {
                     if ($dateFinObj <= $dateDebutObj) {
                         $errors['dateFin'] = 'La date de fin doit être postérieure à la date de début.';
@@ -377,6 +438,7 @@ class AdminProgrammeController extends AbstractController
             if (empty($hotel))           $errors['hotel']            = 'L\'hôtel est obligatoire.';
             if (empty($idV))             $errors['idV']              = 'Veuillez sélectionner un voyage.';
 
+<<<<<<< HEAD
             $uploadsDir = $this->getParameter('uploads_programmes_directory');
             $uploadsDirPath = is_string($uploadsDir) ? $uploadsDir : '';
 
@@ -385,6 +447,11 @@ class AdminProgrammeController extends AbstractController
             
             $existingImage = isset($programme['image']) && is_string($programme['image']) ? $programme['image'] : null;
             $imageName = $existingImage;
+=======
+            // Image
+            $imageFile = $request->files->get('image');
+            $imageName = $programme['image'];
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
             if ($imageFile && $imageFile->isValid()) {
                 if ($imageFile->getSize() > 2 * 1024 * 1024) {
@@ -394,14 +461,23 @@ class AdminProgrammeController extends AbstractController
                     $errors['image'] = 'Format d\'image non autorisé (JPG, PNG uniquement).';
                 }
                 if (!isset($errors['image'])) {
+<<<<<<< HEAD
                     $oldPath = $uploadsDirPath . '/' . ($imageName ?? '');
                     if ($imageName !== null && !empty($imageName) && file_exists($oldPath)) {
+=======
+                    $oldPath = $this->getParameter('uploads_programmes_directory') . '/' . $imageName;
+                    if ($imageName && file_exists($oldPath)) {
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                         unlink($oldPath);
                     }
                     $safeFilename = preg_replace('/[^a-zA-Z0-9]/', '_',
                         pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME));
                     $imageName = $safeFilename . '_' . uniqid() . '.' . $imageFile->guessExtension();
+<<<<<<< HEAD
                     $imageFile->move($uploadsDirPath, $imageName);
+=======
+                    $imageFile->move($this->getParameter('uploads_programmes_directory'), $imageName);
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                 }
             }
 
@@ -424,6 +500,7 @@ class AdminProgrammeController extends AbstractController
             'programme'       => $programme,
             'errors'          => $errors,
             'voyages'         => $voyages,
+<<<<<<< HEAD
             'nom'             => $request->request->get('nom',             $programme['nom'] ?? ''),
             'description'     => $request->request->get('description',     $programme['description'] ?? ''),
             'dateDebut'       => $request->request->get('dateDebut',       $programme['dateDebut'] ?? ''),
@@ -432,6 +509,16 @@ class AdminProgrammeController extends AbstractController
             'activiteAssociee'=> $request->request->get('activiteAssociee',$programme['activiteAssociee'] ?? ''),
             'hotel'           => $request->request->get('hotel',           $programme['hotel'] ?? ''),
             'idV'             => $request->request->get('idV',             $programme['idV'] ?? ''),
+=======
+            'nom'             => $request->request->get('nom',             $programme['nom']),
+            'description'     => $request->request->get('description',     $programme['description']),
+            'dateDebut'       => $request->request->get('dateDebut',       $programme['dateDebut']),
+            'dateFin'         => $request->request->get('dateFin',         $programme['dateFin']),
+            'lieu'            => $request->request->get('lieu',            $programme['lieu']),
+            'activiteAssociee'=> $request->request->get('activiteAssociee',$programme['activiteAssociee']),
+            'hotel'           => $request->request->get('hotel',           $programme['hotel']),
+            'idV'             => $request->request->get('idV',             $programme['idV']),
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         ]);
     }
 
@@ -443,6 +530,7 @@ class AdminProgrammeController extends AbstractController
     public function delete(Request $request, Connection $connection, string $id): Response
     {
         $submittedToken = $request->request->get('_token');
+<<<<<<< HEAD
         $tokenString = is_string($submittedToken) ? $submittedToken : null;
 
         if ($this->isCsrfTokenValid('delete_programme_' . $id, $tokenString)) {
@@ -459,6 +547,16 @@ class AdminProgrammeController extends AbstractController
                     if (file_exists($imagePath)) {
                         unlink($imagePath);
                     }
+=======
+
+        if ($this->isCsrfTokenValid('delete_programme_' . $id, $submittedToken)) {
+            $programme = $connection->fetchAssociative("SELECT image, idV FROM programmes WHERE idProg = ?", [$id]);
+
+            if ($programme) {
+                $imgPath = $this->getParameter('uploads_programmes_directory') . '/' . $programme['image'];
+                if ($programme['image'] && file_exists($imgPath)) {
+                    unlink($imgPath);
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                 }
 
                 $connection->executeStatement("DELETE FROM reservationprog WHERE idP = ?", [$id]);
@@ -500,7 +598,11 @@ class AdminProgrammeController extends AbstractController
                    WHERE rp.idP = ?";
         $params = [$id];
 
+<<<<<<< HEAD
         if (!empty($search) && is_string($search)) {
+=======
+        if (!empty($search)) {
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $sql .= " AND (rp.nom LIKE ? OR rp.prenom LIKE ? OR rp.email LIKE ? OR rp.telephone LIKE ?)";
             $sp = "%$search%";
             $params = array_merge($params, [$sp, $sp, $sp, $sp]);
@@ -553,7 +655,11 @@ class AdminProgrammeController extends AbstractController
                    FROM reservationprog rp WHERE rp.idP = ?";
         $params = [$id];
 
+<<<<<<< HEAD
         if (!empty($search) && is_string($search)) {
+=======
+        if (!empty($search)) {
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $sql .= " AND (rp.nom LIKE ? OR rp.prenom LIKE ? OR rp.email LIKE ? OR rp.telephone LIKE ?)";
             $sp = "%$search%";
             $params = array_merge($params, [$sp, $sp, $sp, $sp]);
@@ -583,6 +689,7 @@ class AdminProgrammeController extends AbstractController
         $options->set('defaultFont', 'DejaVu Sans');
         $options->set('isHtml5ParserEnabled', true);
         $options->set('isRemoteEnabled', true);
+<<<<<<< HEAD
 
         $projectDir = $this->getParameter('kernel.project_dir');
         $projectDirPath = is_string($projectDir) ? $projectDir : '';
@@ -595,13 +702,20 @@ class AdminProgrammeController extends AbstractController
                 $options->set('chroot', $chrootPath);
             }
         }
+=======
+        $options->set('chroot', realpath($this->getParameter('kernel.project_dir')));
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
 
+<<<<<<< HEAD
         $filename = 'reservations_' . ($programme['idProg'] ?? $id) . '_' . date('Y-m-d_H-i') . '.pdf';
+=======
+        $filename = 'reservations_' . $programme['idProg'] . '_' . date('Y-m-d_H-i') . '.pdf';
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
         return new Response($dompdf->output(), 200, [
             'Content-Type'        => 'application/pdf',

@@ -21,7 +21,11 @@ class chambreController extends AbstractController
     public function index(ChambreRepository $chambreRepository): Response
     {
         $chambres = $chambreRepository->findAll();
+<<<<<<< HEAD
        
+=======
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         return $this->render('chambre/index.html.twig', [
             'chambres' => $chambres,
         ]);
@@ -45,7 +49,11 @@ class chambreController extends AbstractController
                 );
                 $chambre->setImage($newFilename);
             }
+<<<<<<< HEAD
            
+=======
+            
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $entityManager->persist($chambre);
             $entityManager->flush();
 
@@ -59,6 +67,7 @@ class chambreController extends AbstractController
         ]);
     }
 
+<<<<<<< HEAD
     // ✅ CORRECTION 1 : Ajout du type "int" pour $idCh
     #[Route('/{idCh}', name: 'app_chambre_show', methods: ['GET'])]
     public function show(Connection $connection, int $idCh, Request $request): Response
@@ -85,16 +94,52 @@ class chambreController extends AbstractController
         $session = $request->getSession();
         $selected_currency = $session->get('selected_currency_ch', 'TND');
        
+=======
+    // MODIFICATION ICI - Ajout de Request $request pour lire la session
+    #[Route('/{idCh}', name: 'app_chambre_show', methods: ['GET'])]
+    public function show(Connection $connection, $idCh, Request $request): Response
+    {
+        // Requête SQL directe pour récupérer la chambre avec les infos de l'hôtel
+        $sql = "SELECT c.*, 
+                       h.idH, 
+                       h.nom as hotel_nom, 
+                       h.etoiles as hotel_etoiles, 
+                       h.ville as hotel_ville, 
+                       h.adresse as hotel_adresse,
+                       h.image as hotel_image
+                FROM chambre c 
+                JOIN hotel h ON c.idH = h.idH 
+                WHERE c.idCh = ?";
+        
+        $chambre = $connection->fetchAssociative($sql, [$idCh]);
+        
+        if (!$chambre) {
+            throw $this->createNotFoundException('Chambre non trouvée');
+        }
+        
+        // ========== RÉCUPÉRATION DE LA DEVISE DEPUIS LA SESSION ==========
+        $session = $request->getSession();
+        $selected_currency = $session->get('selected_currency_ch', 'TND');
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $currencies = [
             'TND' => 'Dinar Tunisien (TND)',
             'EUR' => 'Euro (€)',
             'USD' => 'Dollar US ($)',
         ];
+<<<<<<< HEAD
        
         // Taux de conversion approximatifs
         $taux = 1;
         $symbole = 'TND';
        
+=======
+        
+        // Taux de conversion approximatifs
+        $taux = 1;
+        $symbole = 'TND';
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         if ($selected_currency === 'EUR') {
             $taux = 0.28; // 1 TND ≈ 0.28 EUR
             $symbole = '€';
@@ -102,9 +147,15 @@ class chambreController extends AbstractController
             $taux = 0.31; // 1 TND ≈ 0.31 USD
             $symbole = '$';
         }
+<<<<<<< HEAD
        
         $prix_converti = $chambre['prix_nuit'] * $taux;
        
+=======
+        
+        $prix_converti = $chambre['prix_nuit'] * $taux;
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         return $this->render('chambre/show.html.twig', [
             'chambre' => $chambre,
             'old' => [],
@@ -115,6 +166,7 @@ class chambreController extends AbstractController
         ]);
     }
 
+<<<<<<< HEAD
     // ✅ CORRECTION 2 : Ajout du type "int" pour $idCh
     #[Route('/{idCh}/with-data', name: 'app_chambre_show_with_data', methods: ['GET'])]
     public function showWithData(Connection $connection, int $idCh, Request $request): Response
@@ -137,6 +189,29 @@ class chambreController extends AbstractController
             throw $this->createNotFoundException('Chambre non trouvée');
         }
        
+=======
+    #[Route('/{idCh}/with-data', name: 'app_chambre_show_with_data', methods: ['GET'])]
+    public function showWithData(Connection $connection, $idCh, Request $request): Response
+    {
+        // Même requête pour récupérer la chambre
+        $sql = "SELECT c.*, 
+                       h.idH, 
+                       h.nom as hotel_nom, 
+                       h.etoiles as hotel_etoiles, 
+                       h.ville as hotel_ville, 
+                       h.adresse as hotel_adresse,
+                       h.image as hotel_image
+                FROM chambre c 
+                JOIN hotel h ON c.idH = h.idH 
+                WHERE c.idCh = ?";
+        
+        $chambre = $connection->fetchAssociative($sql, [$idCh]);
+        
+        if (!$chambre) {
+            throw $this->createNotFoundException('Chambre non trouvée');
+        }
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $oldData = [
             'idUtilisateur' => $request->query->get('idUtilisateur', ''),
             'dateDebut' => $request->query->get('dateDebut', ''),
@@ -144,20 +219,35 @@ class chambreController extends AbstractController
             'nbPersonnes' => $request->query->get('nbPersonnes', '1'),
             'telephone' => $request->query->get('telephone', '')
         ];
+<<<<<<< HEAD
        
         // ========== RÉCUPÉRATION DE LA DEVISE DEPUIS LA SESSION ==========
         $session = $request->getSession();
         $selected_currency = $session->get('selected_currency_ch', 'TND');
        
+=======
+        
+        // ========== RÉCUPÉRATION DE LA DEVISE DEPUIS LA SESSION ==========
+        $session = $request->getSession();
+        $selected_currency = $session->get('selected_currency_ch', 'TND');
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $currencies = [
             'TND' => 'Dinar Tunisien (TND)',
             'EUR' => 'Euro (€)',
             'USD' => 'Dollar US ($)',
         ];
+<<<<<<< HEAD
        
         $taux = 1;
         $symbole = 'TND';
        
+=======
+        
+        $taux = 1;
+        $symbole = 'TND';
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         if ($selected_currency === 'EUR') {
             $taux = 0.28;
             $symbole = '€';
@@ -165,9 +255,15 @@ class chambreController extends AbstractController
             $taux = 0.31;
             $symbole = '$';
         }
+<<<<<<< HEAD
        
         $prix_converti = $chambre['prix_nuit'] * $taux;
        
+=======
+        
+        $prix_converti = $chambre['prix_nuit'] * $taux;
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         return $this->render('chambre/show.html.twig', [
             'chambre' => $chambre,
             'old' => $oldData,
@@ -195,7 +291,11 @@ class chambreController extends AbstractController
                 );
                 $chambre->setImage($newFilename);
             }
+<<<<<<< HEAD
            
+=======
+            
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $entityManager->flush();
             $this->addFlash('success', 'Chambre modifiée avec succès !');
             return $this->redirectToRoute('app_chambre_index');
@@ -207,17 +307,24 @@ class chambreController extends AbstractController
         ]);
     }
 
+<<<<<<< HEAD
     // ✅ CORRECTION 3 : Vérification du token CSRF avec is_string()
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     #[Route('/{idCh}', name: 'app_chambre_delete', methods: ['POST'])]
     #[IsGranted('ROLE_ADMIN')]
     public function delete(Request $request, Chambre $chambre, EntityManagerInterface $entityManager): Response
     {
+<<<<<<< HEAD
         $token = $request->request->get('_token');
        
         // Correction : Vérifier que le token est une chaîne de caractères
         $isValid = is_string($token) && $this->isCsrfTokenValid('delete' . $chambre->getIdCh(), $token);
        
         if ($isValid) {
+=======
+        if ($this->isCsrfTokenValid('delete' . $chambre->getIdCh(), $request->request->get('_token'))) {
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $entityManager->remove($chambre);
             $entityManager->flush();
             $this->addFlash('success', 'Chambre supprimée avec succès !');
@@ -225,15 +332,27 @@ class chambreController extends AbstractController
 
         return $this->redirectToRoute('app_chambre_index');
     }
+<<<<<<< HEAD
    
+=======
+    
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     #[Route('/hotel/{idH}', name: 'app_chambre_by_hotel', methods: ['GET'])]
     public function chambresByHotel(Hotel $hotel, ChambreRepository $chambreRepository): Response
     {
         $chambres = $chambreRepository->findBy(['hotel' => $hotel]);
+<<<<<<< HEAD
        
+=======
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         return $this->render('chambre/by_hotel.html.twig', [
             'hotel' => $hotel,
             'chambres' => $chambres,
         ]);
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb

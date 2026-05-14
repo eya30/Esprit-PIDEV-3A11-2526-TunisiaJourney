@@ -3,9 +3,15 @@
 namespace App\Service;
 
 use App\Entity\Activite;
+<<<<<<< HEAD
 use App\Entity\AvisAct;
 use App\Repository\AvisActRepository;
 use Symfony\Component\Process\Process;
+=======
+use App\Repository\AvisActRepository;
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
 class AISummaryService
 {
@@ -18,18 +24,24 @@ class AISummaryService
         $this->mlPath = $projectDir . '/ml';
     }
 
+<<<<<<< HEAD
     /**
      * @return array<string, mixed>
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     public function generateSummary(int $activiteId): array
     {
         $avisList = $this->avisRepo->findByActiviteId($activiteId);
         return $this->runMlAnalysis($avisList);
     }
 
+<<<<<<< HEAD
     /**
      * @return array<string, mixed>
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     public function generateSummaryForActivite(Activite $activite): array
     {
         $avisList = $this->avisRepo->findByActivite($activite);
@@ -45,10 +57,13 @@ class AISummaryService
             : $summary;
     }
 
+<<<<<<< HEAD
     /**
      * @param AvisAct[] $avisList
      * @return array<string, mixed>
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     private function runMlAnalysis(array $avisList): array
     {
         if (empty($avisList)) {
@@ -62,8 +77,14 @@ class AISummaryService
 
         $jsonPayload = json_encode($payload, JSON_UNESCAPED_UNICODE);
 
+<<<<<<< HEAD
         $process = new Process([
             'C:\\Users\\chaim_if4qa5x\\AppData\\Local\\Programs\\Python\\Python312\\python.exe',
+=======
+        // Chemin complet vers python.exe pour que XAMPP/PHP le trouve
+        $process = new Process([
+            'C:\\Users\\Maram\\AppData\\Local\\Programs\\Python\\Python311\\python.exe',
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $this->mlPath . '/predict.py',
             $jsonPayload,
         ]);
@@ -93,9 +114,12 @@ class AISummaryService
         ];
     }
 
+<<<<<<< HEAD
     /**
      * @return array<string, mixed>
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     private function emptyResponse(): array
     {
         return [
@@ -114,10 +138,13 @@ class AISummaryService
         ];
     }
 
+<<<<<<< HEAD
     /**
      * @param AvisAct[] $avisList
      * @return array<string, mixed>
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     private function fallbackResponse(array $avisList, string $errorMsg = ''): array
     {
         $total = count($avisList);

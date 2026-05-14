@@ -30,6 +30,7 @@ class WaitingListApiController extends AbstractController
             [$idActivite]
         );
 
+<<<<<<< HEAD
         // :33 fixed — fetchAssociative() returns array|false
         $placesDisponibles = ($activite !== false) ? ((int) $activite['CapaciteM'] - $placesReservees) : 0;
         $estComplet = $placesDisponibles <= 0;
@@ -50,6 +51,23 @@ class WaitingListApiController extends AbstractController
                 if ($estInscrit) {
                     $data['position'] = $repo->getPositionDansFile($idActivite, $email);
                 }
+=======
+        $placesDisponibles = $activite['CapaciteM'] - $placesReservees;
+        $estComplet = $placesDisponibles <= 0;
+
+        $data = [
+            'estComplet' => $estComplet,
+            'placesDisponibles' => $placesDisponibles,
+            'estConnecte' => $user !== null,
+        ];
+
+        if ($user && $estComplet) {
+            $estInscrit = $repo->estDejaInscrit($idActivite, $user->getEmail());
+            $data['estInscrit'] = $estInscrit;
+            
+            if ($estInscrit) {
+                $data['position'] = $repo->getPositionDansFile($idActivite, $user->getEmail());
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             }
         }
 
@@ -92,7 +110,11 @@ class WaitingListApiController extends AbstractController
         }
 
         if ($attente->getStatut() !== ListeAttente::STATUT_EN_ATTENTE) {
+<<<<<<< HEAD
             return $this->json(['success' => false, 'message' => "Impossible d'annuler, vous avez déjà été notifié"], 400);
+=======
+            return $this->json(['success' => false, 'message' => 'Impossible d\'annuler, vous avez déjà été notifié'], 400);
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         }
 
         $attente->setStatut(ListeAttente::STATUT_ANNULE);
@@ -111,6 +133,7 @@ class WaitingListApiController extends AbstractController
             return $this->json([]);
         }
 
+<<<<<<< HEAD
         // :109 fixed — guard against null email before passing to repository
         $email = $user->getEmail();
         if ($email === null) {
@@ -118,6 +141,9 @@ class WaitingListApiController extends AbstractController
         }
 
         $inscriptions = $repo->trouverParEmail($email);
+=======
+        $inscriptions = $repo->trouverParEmail($user->getEmail());
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
         $data = [];
         foreach ($inscriptions as $inscription) {
@@ -126,6 +152,7 @@ class WaitingListApiController extends AbstractController
                 [$inscription->getIdActivite()]
             );
 
+<<<<<<< HEAD
             // :122 fixed — null-safe operator on nullable DateTimeInterface
             $dateInscription = $inscription->getDateInscription()?->format('d/m/Y H:i');
             $dateLimite      = $inscription->getDateLimiteConfirmation()?->format('d/m/Y H:i');
@@ -151,6 +178,18 @@ class WaitingListApiController extends AbstractController
                 'statut'          => $inscription->getStatut(),
                 'position'        => $position,
                 'dateLimite'      => $dateLimite,
+=======
+            $data[] = [
+                'id' => $inscription->getId(),
+                'idActivite' => $inscription->getIdActivite(),
+                'titreActivite' => $activite['Titre'] ?? 'Activité',
+                'dateInscription' => $inscription->getDateInscription()->format('d/m/Y H:i'),
+                'statut' => $inscription->getStatut(),
+                'position' => $inscription->getStatut() === ListeAttente::STATUT_EN_ATTENTE ? 
+                    $repo->getPositionDansFile($inscription->getIdActivite(), $inscription->getEmailUtilisateur()) : null,
+                'dateLimite' => $inscription->getDateLimiteConfirmation() ? 
+                    $inscription->getDateLimiteConfirmation()->format('d/m/Y H:i') : null,
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             ];
         }
 

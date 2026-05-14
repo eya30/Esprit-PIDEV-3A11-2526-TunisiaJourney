@@ -69,12 +69,19 @@ class AdminLogger
 
     /**
      * Helper : construit la chaîne de détails à partir d'un tableau de diff
+<<<<<<< HEAD
      *
      *  @param array<int, string|null> $diffs
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
      */
     public static function buildDetails(array $diffs): ?string
     {
         $parts = array_filter($diffs);
         return empty($parts) ? null : implode(' | ', $parts);
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb

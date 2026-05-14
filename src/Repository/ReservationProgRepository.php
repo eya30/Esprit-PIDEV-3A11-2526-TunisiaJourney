@@ -16,9 +16,12 @@ class ReservationProgRepository extends ServiceEntityRepository
         parent::__construct($registry, ReservationProg::class);
     }
 
+<<<<<<< HEAD
     /**
      * @return ReservationProg[]
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     public function findReservationsByUser(int $userId): array
     {
         return $this->createQueryBuilder('r')
@@ -29,9 +32,12 @@ class ReservationProgRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+<<<<<<< HEAD
     /**
      * @return ReservationProg[]
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     public function findReservationsByProgramme(string $programmeId): array
     {
         return $this->createQueryBuilder('r')
@@ -42,9 +48,12 @@ class ReservationProgRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+<<<<<<< HEAD
     /**
      * @return ReservationProg[]
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     public function findPaidReservations(): array
     {
         return $this->createQueryBuilder('r')
@@ -63,13 +72,22 @@ class ReservationProgRepository extends ServiceEntityRepository
             ->setParameter('statut', 'payé')
             ->getQuery()
             ->getSingleScalarResult();
+<<<<<<< HEAD
 
         return (float) ($result ?? 0);
+=======
+        
+        return $result ?: 0;
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     }
 
     public function getReservationsCountByPeriod(\DateTime $start, \DateTime $end): int
     {
+<<<<<<< HEAD
         return (int) $this->createQueryBuilder('r')
+=======
+        return $this->createQueryBuilder('r')
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             ->select('COUNT(r.idRP)')
             ->where('r.dateProgramme BETWEEN :start AND :end')
             ->setParameter('start', $start)
@@ -77,4 +95,8 @@ class ReservationProgRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb

@@ -134,6 +134,7 @@
     }
     .form-group input:focus { outline: none; border-color: var(--tunisia-blue); }
 
+<<<<<<< HEAD
     /* ===== CODE PROMO ===== */
     .promo-section {
         background: linear-gradient(135deg, #FFF8E7, #FFF3D4);
@@ -227,6 +228,8 @@
     }
     /* ====================== */
 
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     .btn-submit {
         width: 100%;
         background: var(--tunisia-blue);
@@ -388,6 +391,7 @@
 
                     <div class="form-group">
                         <label>Nombre de personnes <span class="required">*</span></label>
+<<<<<<< HEAD
                         <input type="number" name="nbre" id="prog-nbre" value="1" min="1" max="20">
                         <small style="font-size: 0.7rem; color: #6c757d;">Maximum 20 personnes</small>
                     </div>
@@ -421,6 +425,12 @@
                     </div>
                     {# ============================== #}
 
+=======
+                        <input type="number" name="nbre" value="1" min="1" max="20">
+                        <small style="font-size: 0.7rem; color: #6c757d;">Maximum 20 personnes</small>
+                    </div>
+
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                     <button type="submit" class="btn-submit">
                         Confirmer la réservation
                     </button>
@@ -431,6 +441,7 @@
 </div>
 
 <script>
+<<<<<<< HEAD
     // Prix unitaire du voyage (par personne)
     const prixUnitaire = {{ programme.voyage.prix ?? 0 }};
 
@@ -530,6 +541,8 @@
     }
 
     // ===== Gestion de la modale =====
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     function openModal() {
         document.getElementById('reservationModal').classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -552,4 +565,8 @@
         });
     {% endif %}
 </script>
+<<<<<<< HEAD
 {% endblock %}
+=======
+{% endblock %}
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb

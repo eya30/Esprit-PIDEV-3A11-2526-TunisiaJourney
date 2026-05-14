@@ -12,8 +12,12 @@ class CommandeProduit
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id', type: 'integer')]
+<<<<<<< HEAD
     /** @phpstan-ignore-next-line property.onlyRead */
     private int $id;
+=======
+    private ?int $id = null;
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
     #[ORM\ManyToOne(targetEntity: Commande::class, inversedBy: 'lignes')]
     #[ORM\JoinColumn(name: 'IDCO', referencedColumnName: 'IDCO', nullable: true)]
@@ -36,7 +40,11 @@ class CommandeProduit
     #[ORM\Column(name: 'taille', type: 'string', length: 5, nullable: true)]
     private ?string $taille = null;
 
+<<<<<<< HEAD
     public function getId(): int { return $this->id; }
+=======
+    public function getId(): ?int { return $this->id; }
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
     public function getCommande(): ?Commande { return $this->commande; }
     public function setCommande(?Commande $commande): self { $this->commande = $commande; return $this; }

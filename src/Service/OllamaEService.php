@@ -19,8 +19,11 @@ class OllamaEService
 
     /**
      * Méthode principale qui retourne météo + trafic + prédiction
+<<<<<<< HEAD
      *
      * @return array<string, mixed>
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
      */
     public function getFullPrediction(
         float  $distanceKm,
@@ -34,7 +37,11 @@ class OllamaEService
         $distRestante = round($distanceKm * (1 - $progression / 100), 1);
         $heure = (int)date('H');
         $jourSemaine = $this->getJourSemaine();
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $prompt = <<<PROMPT
 Tu es un expert en logistique et trafic routier en Tunisie.
 
@@ -120,7 +127,11 @@ PROMPT;
 
             $body = $response->toArray();
             $raw = $body['response'] ?? '{}';
+<<<<<<< HEAD
 
+=======
+            
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             return $this->parseFullResponse($raw, $distanceKm, $progression, $statut, $ville);
 
         } catch (\Throwable $e) {
@@ -135,17 +146,24 @@ PROMPT;
         return $jours[(int)date('N') - 1];
     }
 
+<<<<<<< HEAD
     /**
      * @return array<string, mixed>
      */
     private function parseFullResponse(string $raw, float $dist, float $prog, string $statut, string $ville): array
     {
         $clean = trim((string) preg_replace('/```(?:json)?/i', '', $raw));
+=======
+    private function parseFullResponse(string $raw, float $dist, float $prog, string $statut, string $ville): array
+    {
+        $clean = trim(preg_replace('/```(?:json)?/i', '', $raw));
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $data = json_decode($clean, true);
 
         if (is_array($data) && isset($data['meteo']) && isset($data['trafic']) && isset($data['livraison'])) {
             return [
                 'meteo' => [
+<<<<<<< HEAD
                     'label'  => $data['meteo']['label'] ?? 'Ensoleillé',
                     'icon'   => $data['meteo']['icon'] ?? '☀️',
                     'temp'   => $data['meteo']['temp'] ?? '24°C',
@@ -157,12 +175,30 @@ PROMPT;
                     'icon'           => $data['trafic']['icon'] ?? '🟡',
                     'color'          => $data['trafic']['color'] ?? '#F59E0B',
                     'detail'         => $data['trafic']['detail'] ?? "Trafic normal à $ville",
+=======
+                    'label' => $data['meteo']['label'] ?? 'Ensoleillé',
+                    'icon' => $data['meteo']['icon'] ?? '☀️',
+                    'temp' => $data['meteo']['temp'] ?? '24°C',
+                    'color' => $data['meteo']['color'] ?? '#F59E0B',
+                    'impact' => $data['meteo']['impact'] ?? 'normal',
+                ],
+                'trafic' => [
+                    'label' => $data['trafic']['label'] ?? 'Normal',
+                    'icon' => $data['trafic']['icon'] ?? '🟡',
+                    'color' => $data['trafic']['color'] ?? '#F59E0B',
+                    'detail' => $data['trafic']['detail'] ?? "Trafic normal à $ville",
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                     'vitesse_reduite' => $data['trafic']['vitesse_reduite'] ?? 0.0,
                 ],
                 'ia' => [
                     'eta_hours' => max(0, (float)($data['livraison']['eta_hours'] ?? 0)),
+<<<<<<< HEAD
                     'message'   => substr($data['livraison']['message'] ?? 'Livraison en cours', 0, 180),
                     'source'    => 'ollama',
+=======
+                    'message' => substr($data['livraison']['message'] ?? 'Livraison en cours', 0, 180),
+                    'source' => 'ollama',
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                 ],
             ];
         }
@@ -170,6 +206,7 @@ PROMPT;
         return $this->fallbackFull($dist, $prog, $statut, $ville);
     }
 
+<<<<<<< HEAD
     /**
      * @return array<string, mixed>
      */
@@ -193,10 +230,33 @@ PROMPT;
             $trafic = ['label' => 'Normal',  'icon' => '🟡', 'color' => '#F59E0B', 'detail' => "Trafic normal",                    'vitesse_reduite' => 0.1];
         }
 
+=======
+    private function fallbackFull(float $dist, float $prog, string $statut, string $ville): array
+    {
+        $heure = (int)date('H');
+        $jour = (int)date('N');
+        $estWeekend = ($jour >= 6);
+        
+        if ($estWeekend) {
+            $trafic = ['label' => 'Fluide', 'icon' => '🟢', 'color' => '#10B981', 'detail' => "Weekend calme à $ville", 'vitesse_reduite' => 0.0];
+        } elseif ($heure >= 7 && $heure <= 9) {
+            $trafic = ['label' => 'Dense', 'icon' => '🔴', 'color' => '#EF4444', 'detail' => "Heure de pointe matinale à $ville", 'vitesse_reduite' => 0.4];
+        } elseif ($heure >= 17 && $heure <= 19) {
+            $trafic = ['label' => 'Dense', 'icon' => '🔴', 'color' => '#EF4444', 'detail' => "Heure de pointe du soir à $ville", 'vitesse_reduite' => 0.4];
+        } elseif ($heure >= 12 && $heure <= 14) {
+            $trafic = ['label' => 'Modéré', 'icon' => '🟠', 'color' => '#F59E0B', 'detail' => "Pause déjeuner, trafic modéré", 'vitesse_reduite' => 0.2];
+        } elseif ($heure >= 22 || $heure <= 5) {
+            $trafic = ['label' => 'Fluide', 'icon' => '🟢', 'color' => '#10B981', 'detail' => "Circulation nocturne fluide", 'vitesse_reduite' => 0.0];
+        } else {
+            $trafic = ['label' => 'Normal', 'icon' => '🟡', 'color' => '#F59E0B', 'detail' => "Trafic normal", 'vitesse_reduite' => 0.1];
+        }
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $month = (int)date('n');
         if ($month >= 6 && $month <= 9) {
             $meteo = ['label' => 'Ensoleillé', 'icon' => '☀️', 'temp' => '32°C', 'color' => '#F59E0B', 'impact' => 'normal'];
         } elseif ($month >= 11 || $month <= 2) {
+<<<<<<< HEAD
             $meteo = ['label' => 'Nuageux',    'icon' => '☁️', 'temp' => '14°C', 'color' => '#6B7280', 'impact' => 'normal'];
         } else {
             $meteo = ['label' => 'Ensoleillé', 'icon' => '☀️', 'temp' => '24°C', 'color' => '#F59E0B', 'impact' => 'normal'];
@@ -214,10 +274,31 @@ PROMPT;
                 'eta_hours' => round($etaH, 2),
                 'message'   => $message,
                 'source'    => 'fallback',
+=======
+            $meteo = ['label' => 'Nuageux', 'icon' => '☁️', 'temp' => '14°C', 'color' => '#6B7280', 'impact' => 'normal'];
+        } else {
+            $meteo = ['label' => 'Ensoleillé', 'icon' => '☀️', 'temp' => '24°C', 'color' => '#F59E0B', 'impact' => 'normal'];
+        }
+        
+        $distRestante = $dist * (1 - $prog / 100);
+        $vitesse = 40 * (1 - $trafic['vitesse_reduite']);
+        $etaH = $distRestante / $vitesse;
+        
+        $message = $trafic['detail'] . ". Livraison estimée dans " . round($etaH * 60) . " minutes.";
+        
+        return [
+            'meteo' => $meteo,
+            'trafic' => $trafic,
+            'ia' => [
+                'eta_hours' => round($etaH, 2),
+                'message' => $message,
+                'source' => 'fallback',
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             ],
         ];
     }
 
+<<<<<<< HEAD
     /**
      * Compatibilité avec l'ancienne méthode
      *
@@ -226,6 +307,12 @@ PROMPT;
     public function getDeliveryPrediction(
         float  $distanceKm,
         float  $progression,
+=======
+    // Compatibilité avec l'ancienne méthode
+    public function getDeliveryPrediction(
+        float $distanceKm,
+        float $progression,
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         string $statut,
         string $meteo,
         string $trafic,
@@ -242,4 +329,8 @@ PROMPT;
         );
         return $result['ia'];
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb

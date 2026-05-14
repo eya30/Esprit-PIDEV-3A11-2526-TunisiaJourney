@@ -32,4 +32,6 @@ class AccueilController extends AbstractController
             'publications' => $pubRepo->findAll(),
         ]);
     }
+
+    
 }

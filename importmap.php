@@ -25,4 +25,8 @@ return [
     '@hotwired/turbo' => [
         'version' => '7.3.0',
     ],
+<<<<<<< HEAD
 ];
+=======
+];
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb

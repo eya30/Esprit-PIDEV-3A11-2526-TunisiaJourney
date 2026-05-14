@@ -4,4 +4,8 @@ services:
         arguments:
             - '%env(STRIPE_SECRET_KEY)%'
 
+<<<<<<< HEAD
     Stripe\StripeClient: '@stripe.client'
+=======
+    Stripe\StripeClient: '@stripe.client'
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb

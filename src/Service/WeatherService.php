@@ -7,15 +7,24 @@ use Symfony\Component\HttpClient\HttpClient;
 
 class WeatherService
 {
+<<<<<<< HEAD
     private HttpClientInterface $httpClient;
    
     /** @var array<string, array{lat: float, lon: float, region: string, description: string}> */
     private array $cities;
+=======
+    private $httpClient;
+    private $cities;
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
     public function __construct(HttpClientInterface $httpClient)
     {
         $this->httpClient = $httpClient;
+<<<<<<< HEAD
        
+=======
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $this->cities = [
             'Tunis' => ['lat' => 36.8065, 'lon' => 10.1815, 'region' => 'Nord', 'description' => 'Capitale tunisienne, entre lac et médina'],
             'Sousse' => ['lat' => 35.8254, 'lon' => 10.6370, 'region' => 'Centre-Est', 'description' => 'Perle du Sahel, médina classée UNESCO'],
@@ -38,21 +47,31 @@ class WeatherService
         ];
     }
 
+<<<<<<< HEAD
     /**
      * @return array<string, array{lat: float, lon: float, region: string, description: string}>
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     public function getAllCities(): array
     {
         return $this->cities;
     }
 
+<<<<<<< HEAD
     /**
      * @return array<int, array<string, mixed>>
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     public function getAllWeather5Days(): array
     {
         $results = [];
         foreach (array_keys($this->cities) as $city) {
+<<<<<<< HEAD
+=======
+            // Utilise directement la méthode de secours pour être sûr d'avoir des données
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $results[] = $this->getCityWeatherFallback($city, null);
         }
         return $results;
@@ -60,8 +79,11 @@ class WeatherService
 
     /**
      * Récupère la météo pour une ville (avec fallback si API ne répond pas)
+<<<<<<< HEAD
      *
      * @return array<string, mixed>|null
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
      */
     public function getWeather5Days(string $city, ?string $specificDate = null): ?array
     {
@@ -94,11 +116,20 @@ class WeatherService
             $response = $this->httpClient->request('GET', $url, [
                 'timeout' => 5,
             ]);
+<<<<<<< HEAD
            
             if ($response->getStatusCode() !== 200) {
                 return $this->getCityWeatherFallback($city, $specificDate);
             }
            
+=======
+            
+            if ($response->getStatusCode() !== 200) {
+                // Si l'API ne répond pas, retourne les données de secours
+                return $this->getCityWeatherFallback($city, $specificDate);
+            }
+            
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $data = $response->toArray();
 
             if (!isset($data['daily']) || empty($data['daily']['time'])) {
@@ -109,7 +140,11 @@ class WeatherService
             for ($i = 0; $i < count($data['daily']['time']); $i++) {
                 $weatherCode = $data['daily']['weather_code'][$i] ?? 0;
                 $rainSum = $data['daily']['rain_sum'][$i] ?? 0;
+<<<<<<< HEAD
                
+=======
+                
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                 $forecast[] = [
                     'date' => $data['daily']['time'][$i],
                     'day' => $this->getDayName($data['daily']['time'][$i]),
@@ -144,20 +179,32 @@ class WeatherService
                 'has_rain' => !empty(array_filter($forecast, fn($f) => $f['rain']))
             ];
         } catch (\Exception $e) {
+<<<<<<< HEAD
+=======
+            // En cas d'erreur, retourne TOUJOURS les données de secours
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             return $this->getCityWeatherFallback($city, $specificDate);
         }
     }
 
     /**
      * Données de secours pour une ville spécifique (utilisées quand l'API ne répond pas)
+<<<<<<< HEAD
      *
      * @return array<string, mixed>
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
      */
     private function getCityWeatherFallback(string $city, ?string $specificDate = null): array
     {
         $region = $this->cities[$city]['region'] ?? 'Tunisie';
         $description = $this->cities[$city]['description'] ?? 'Magnifique ville tunisienne';
+<<<<<<< HEAD
        
+=======
+        
+        // Données météo statiques par ville
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $weatherData = [
             'Tunis' => ['temp_max' => 22, 'temp_min' => 14, 'condition' => 'Ciel dégagé', 'icon' => 'fa-sun', 'humidity' => 65, 'wind_speed' => 12, 'pressure' => 1015, 'cloud_cover' => 10, 'uv_index' => 6],
             'Sousse' => ['temp_max' => 23, 'temp_min' => 15, 'condition' => 'Partiellement nuageux', 'icon' => 'fa-cloud-sun', 'humidity' => 68, 'wind_speed' => 14, 'pressure' => 1013, 'cloud_cover' => 30, 'uv_index' => 5],
@@ -178,6 +225,7 @@ class WeatherService
             'Mahdia' => ['temp_max' => 23, 'temp_min' => 15, 'condition' => 'Ensoleillé', 'icon' => 'fa-sun', 'humidity' => 65, 'wind_speed' => 12, 'pressure' => 1014, 'cloud_cover' => 10, 'uv_index' => 6],
             'Zarzis' => ['temp_max' => 24, 'temp_min' => 16, 'condition' => 'Ciel dégagé', 'icon' => 'fa-sun', 'humidity' => 60, 'wind_speed' => 14, 'pressure' => 1014, 'cloud_cover' => 5, 'uv_index' => 7],
         ];
+<<<<<<< HEAD
        
         $data = $weatherData[$city] ?? $weatherData['Tunis'];
        
@@ -196,6 +244,28 @@ class WeatherService
         $forecast = [];
         $dayNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
        
+=======
+        
+        $data = $weatherData[$city] ?? $weatherData['Tunis'];
+        
+        // Ajustement pour date spécifique
+        $tempMax = $data['temp_max'];
+        $tempMin = $data['temp_min'];
+        $hasRain = $data['icon'] == 'fa-cloud-rain';
+        
+        if ($specificDate) {
+            $dayOffset = (strtotime($specificDate) - time()) / (60 * 60 * 24);
+            if ($dayOffset > 0 && $dayOffset <= 16) {
+                $tempMax = $data['temp_max'] + floor($dayOffset / 4);
+                $tempMin = $data['temp_min'] + floor($dayOffset / 5);
+            }
+        }
+        
+        // Prévisions 5 jours
+        $forecast = [];
+        $dayNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         for ($i = 1; $i <= 5; $i++) {
             $forecastDate = (new \DateTime("+$i days"))->format('Y-m-d');
             $dayOfWeek = (new \DateTime($forecastDate))->format('w');
@@ -219,7 +289,11 @@ class WeatherService
                 'rain_sum' => $hasRain ? rand(1, 10) : 0,
             ];
         }
+<<<<<<< HEAD
        
+=======
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         return [
             'city' => $city,
             'region' => $region,
@@ -248,21 +322,28 @@ class WeatherService
         ];
     }
 
+<<<<<<< HEAD
     /**
      * @return array<string, mixed>|null
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     public function getWeatherByDate(string $city, string $date): ?array
     {
         return $this->getWeather5Days($city, $date);
     }
 
+<<<<<<< HEAD
     /**
      * @return array<string, mixed>
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     public function calculateDynamicPrice(float $basePrice, string $city, string $checkinDate, string $checkoutDate): array
     {
         $start = new \DateTime($checkinDate);
         $end = new \DateTime($checkoutDate);
+<<<<<<< HEAD
         $diff = $start->diff($end);
         // FIX : $diff->days peut être false, on cast explicitement en int
         $nights = (int)$diff->days;
@@ -272,19 +353,35 @@ class WeatherService
        
         $weather = $this->getWeather5Days($city);
        
+=======
+        $nights = $start->diff($end)->days;
+        
+        $weather = $this->getWeather5Days($city);
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $seasonCoeff = $this->getSeasonCoefficient($checkinDate);
         $weatherCoeff = $this->getWeatherCoefficient($weather);
         $eventCoeff = $this->getEventCoefficient($city, $checkinDate);
         $advanceCoeff = $this->getAdvanceBookingCoefficient($checkinDate);
         $durationCoeff = $this->getDurationCoefficient($nights);
+<<<<<<< HEAD
        
+=======
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $finalPrice = $basePrice * $seasonCoeff * $weatherCoeff * $eventCoeff * $advanceCoeff * $durationCoeff;
         $finalPrice = max($finalPrice, $basePrice * 0.5);
         $finalPrice = min($finalPrice, $basePrice * 2.5);
         $finalPrice = round($finalPrice, 2);
+<<<<<<< HEAD
        
         $totalPrice = $finalPrice * $nights;
        
+=======
+        
+        $totalPrice = $finalPrice * $nights;
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         return [
             'base_price' => $basePrice,
             'nights' => $nights,
@@ -301,11 +398,16 @@ class WeatherService
     {
         $month = (int)(new \DateTime($date))->format('n');
         $day = (int)(new \DateTime($date))->format('j');
+<<<<<<< HEAD
        
+=======
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         if (($month == 12 && $day >= 20) || ($month == 1 && $day <= 5)) return 1.40;
         if (($month == 7 && $day >= 15) || ($month == 8 && $day <= 15)) return 1.50;
         if ($month >= 6 && $month <= 9) return 1.30;
         if ($month == 12 || $month <= 2) return 0.80;
+<<<<<<< HEAD
         if ($month <= 5) return 1.00;
         return 0.90;
     }
@@ -320,6 +422,19 @@ class WeatherService
         $code = $weather['current']['weather_code'] ?? 0;
         $hasRain = $weather['has_rain'] ?? false;
        
+=======
+        if ($month >= 3 && $month <= 5) return 1.00;
+        return 0.90;
+    }
+
+    private function getWeatherCoefficient(?array $weather): float
+    {
+        if (!$weather || !isset($weather['current'])) return 1.0;
+        
+        $code = $weather['current']['weather_code'] ?? 0;
+        $hasRain = $weather['has_rain'] ?? false;
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         if ($hasRain) return $code >= 65 && $code <= 82 ? 0.75 : 0.85;
         if ($code == 0) return 1.10;
         if ($code <= 3) return 1.05;
@@ -334,9 +449,15 @@ class WeatherService
             'Djerba' => [['start' => '2025-03-20', 'end' => '2025-04-10', 'coefficient' => 1.25]],
             'Tozeur' => [['start' => '2025-11-15', 'end' => '2025-11-25', 'coefficient' => 1.30]],
         ];
+<<<<<<< HEAD
        
         if (!isset($staticEvents[$city])) return 1.0;
        
+=======
+        
+        if (!isset($staticEvents[$city])) return 1.0;
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $checkin = new \DateTime($date);
         foreach ($staticEvents[$city] as $event) {
             $eventStart = new \DateTime($event['start']);
@@ -350,6 +471,7 @@ class WeatherService
     {
         $today = new \DateTime();
         $checkin = new \DateTime($checkinDate);
+<<<<<<< HEAD
         $diff = $today->diff($checkin);
         // FIX : $diff->days peut être false, on cast explicitement en int
         $days = (int)$diff->days;
@@ -359,11 +481,21 @@ class WeatherService
         if ($days >= 14) return 0.90;
         if ($days >= 7)  return 0.95;
         if ($days <= 3)  return 1.15;
+=======
+        $days = $today->diff($checkin)->days;
+        
+        if ($days >= 60) return 0.80;
+        if ($days >= 30) return 0.85;
+        if ($days >= 14) return 0.90;
+        if ($days >= 7) return 0.95;
+        if ($days <= 3) return 1.15;
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         return 1.0;
     }
 
     private function getDurationCoefficient(int $nights): float
     {
+<<<<<<< HEAD
         // Utilisation de match pour éviter l'erreur PHPStan greaterOrEqual.alwaysTrue
         // (après >= 14, >= 7, >= 5, la condition >= 3 était toujours vraie pour PHPStan)
         return match(true) {
@@ -373,6 +505,14 @@ class WeatherService
             $nights >= 3  => 0.95,
             default       => 1.0,
         };
+=======
+        if ($nights >= 14) return 0.80;
+        if ($nights >= 7) return 0.85;
+        if ($nights >= 5) return 0.90;
+        if ($nights >= 3) return 0.95;
+        if ($nights == 1) return 1.10;
+        return 1.0;
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     }
 
     private function getDayName(string $date): string
@@ -405,4 +545,8 @@ class WeatherService
         if ($code <= 99) return 'fa-bolt';
         return 'fa-cloud-sun';
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb

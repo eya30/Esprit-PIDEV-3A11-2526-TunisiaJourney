@@ -10,7 +10,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+<<<<<<< HEAD
 use Symfony\Component\Form\FormInterface;
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/admin/produit')]
@@ -19,10 +22,17 @@ class AdminProduitController extends AbstractController
     #[Route('', name: 'admin_produit_index')]
     public function index(ProduitRepository $repo, Request $request, PaginatorInterface $paginator): Response
     {
+<<<<<<< HEAD
         $searchTerm = $request->query->getString('q') ?: null;
         $cat        = $request->query->getString('category') ?: null;
         $sortBy     = $request->query->getString('sort', 'p.idPR');
         $direction  = $request->query->getString('direction', 'desc');
+=======
+        $searchTerm = $request->query->get('q', null);
+        $cat        = $request->query->get('category', null);
+        $sortBy     = $request->query->get('sort', 'p.idPR');
+        $direction  = $request->query->get('direction', 'desc');
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
         $pagination = $paginator->paginate(
             $repo->getQueryForPagination($searchTerm, $cat, $sortBy, $direction),
@@ -30,6 +40,7 @@ class AdminProduitController extends AbstractController
             10
         );
 
+<<<<<<< HEAD
         $produitsReappro = $repo->findNeedsReappro();
 
         return $this->render('admin/produit/index.html.twig', [
@@ -38,6 +49,17 @@ class AdminProduitController extends AbstractController
             'currentSort'      => $sortBy,
             'currentDirection' => $direction,
             'produitsReappro'  => $produitsReappro,
+=======
+        // ✅ Produits nécessitant réapprovisionnement
+        $produitsReappro = $repo->findNeedsReappro();
+
+        return $this->render('admin/produit/index.html.twig', [
+            'produits'        => $pagination,
+            'lastSearch'      => $searchTerm,
+            'currentSort'     => $sortBy,
+            'currentDirection'=> $direction,
+            'produitsReappro' => $produitsReappro, // ✅ Suggestions réappro
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         ]);
     }
 
@@ -92,6 +114,7 @@ class AdminProduitController extends AbstractController
         return $this->redirectToRoute('admin_produit_index');
     }
 
+<<<<<<< HEAD
     private function handleImage(FormInterface $form, Produit $produit): void
     {
         $file = $form->get('imageFile')->getData();
@@ -104,6 +127,16 @@ class AdminProduitController extends AbstractController
         $uploadDir = $projectDir . '/public/uploads/produits';
         if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
+=======
+    private function handleImage($form, Produit $produit): void
+    {
+        $file = $form->get('imageFile')->getData();
+        if (!$file) return;
+
+        $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/produits';
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $ancienneImage = $produit->getImage();
         if ($ancienneImage && file_exists($uploadDir . '/' . $ancienneImage)) {
             unlink($uploadDir . '/' . $ancienneImage);

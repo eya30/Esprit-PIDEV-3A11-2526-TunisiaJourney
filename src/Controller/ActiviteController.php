@@ -28,7 +28,10 @@ class ActiviteController extends AbstractController
     public function index(ActiviteRepository $activiteRepository): Response
     {
         $activites = $activiteRepository->findAll();
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         return $this->render('admin/activite/admin_activite_index.html.twig', [
             'activites' => $activites,
         ]);
@@ -39,7 +42,11 @@ class ActiviteController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $activite = new Activite();
+<<<<<<< HEAD
         $form     = $this->createForm(ActiviteType::class, $activite);
+=======
+        $form = $this->createForm(ActiviteType::class, $activite);
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -52,7 +59,10 @@ class ActiviteController extends AbstractController
             $entityManager->persist($activite);
             $entityManager->flush();
             $this->addFlash('success', 'Activité créée avec succès !');
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             return $this->redirectToRoute('app_activite_index');
         }
 
@@ -61,6 +71,7 @@ class ActiviteController extends AbstractController
 
     #[Route('/{IDAct}', name: 'app_activite_show', methods: ['GET'])]
     public function show(
+<<<<<<< HEAD
         Activite               $activite,
         Connection             $connection,
         AvisActRepository      $avisRepo,
@@ -95,10 +106,42 @@ class ActiviteController extends AbstractController
         $avis        = $avisRepo->findByActivite($activite);
         $moyenneNote = $avisRepo->getMoyenneNote($activite);
         $formAvis    = $this->createForm(AvisActType::class, new AvisAct(), [
+=======
+        Activite          $activite,
+        Connection        $connection,
+        AvisActRepository $avisRepo,
+        ListeAttenteRepository $listeRepo
+    ): Response {
+        // Compter UNIQUEMENT les réservations CONFIRMEES
+        $placesReservees = (int) $connection->fetchOne(
+            "SELECT COALESCE(SUM(NombrePlaces), 0) FROM ReservationAct WHERE IDAct = ? AND status = 'confirmé'",
+            [$activite->getIDAct()]
+        );
+        $placesDisponibles = $activite->getCapaciteM() - $placesReservees;
+        
+        $estComplet = $placesDisponibles <= 0;
+        
+        $estEnListeAttente = false;
+        $positionListe = null;
+        
+        /** @var \App\Entity\User|null $user */
+        $user = $this->getUser();
+        if ($user && $estComplet) {
+            $estEnListeAttente = $listeRepo->estDejaInscrit($activite->getIDAct(), $user->getEmail());
+            if ($estEnListeAttente) {
+                $positionListe = $listeRepo->getPositionDansFile($activite->getIDAct(), $user->getEmail());
+            }
+        }
+
+        $avis = $avisRepo->findByActivite($activite);
+        $moyenneNote = $avisRepo->getMoyenneNote($activite);
+        $formAvis = $this->createForm(AvisActType::class, new AvisAct(), [
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             'action' => $this->generateUrl('app_avis_new', ['IDAct' => $activite->getIDAct()]),
             'method' => 'POST',
         ]);
 
+<<<<<<< HEAD
         $apiKey      = $_ENV['EXCHANGERATE_API_KEY'] ?? '';
         $apiKeyValid = !empty($apiKey);
 
@@ -115,11 +158,30 @@ class ActiviteController extends AbstractController
             'formAvis'            => $formAvis->createView(),
             'exchangeRateApiKey'  => $apiKey,
             'apiKeyValid'         => $apiKeyValid,
+=======
+        $apiKey = $_ENV['EXCHANGERATE_API_KEY'] ?? '';
+        $apiKeyValid = !empty($apiKey);
+
+        return $this->render('activite/showactv.html.twig', [
+            'activite' => $activite,
+            'placesDisponibles' => $placesDisponibles,
+            'estComplet' => $estComplet,
+            'estEnListeAttente' => $estEnListeAttente,
+            'positionListe' => $positionListe,
+            'reservation' => new ReservationAct(),
+            'errors' => [],
+            'avis' => $avis,
+            'moyenneNote' => $moyenneNote,
+            'formAvis' => $formAvis->createView(),
+            'exchangeRateApiKey' => $apiKey,
+            'apiKeyValid' => $apiKeyValid,
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         ]);
     }
 
     #[Route('/{IDAct}/ai-summary', name: 'app_activite_ai_summary', methods: ['GET'])]
     public function getAISummary(
+<<<<<<< HEAD
         Activite         $activite,
         AISummaryService $aiSummaryService
     ): JsonResponse {
@@ -132,12 +194,28 @@ class ActiviteController extends AbstractController
         $summary = $aiSummaryService->generateSummary($idAct);
 
         return $this->json(['success' => true, 'summary' => $summary]);
+=======
+        Activite $activite,
+        AISummaryService $aiSummaryService
+    ): JsonResponse {
+        $summary = $aiSummaryService->generateSummary($activite->getIDAct());
+        
+        return $this->json([
+            'success' => true,
+            'summary' => $summary
+        ]);
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     }
 
     #[Route('/{IDAct}/avis', name: 'app_avis_new', methods: ['POST'])]
     public function newAvis(
+<<<<<<< HEAD
         Request                $request,
         Activite               $activite,
+=======
+        Request $request,
+        Activite $activite,
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         EntityManagerInterface $entityManager
     ): Response {
         /** @var \App\Entity\User|null $user */
@@ -145,7 +223,10 @@ class ActiviteController extends AbstractController
 
         if (!$user) {
             $this->addFlash('error', 'Vous devez être connecté pour laisser un avis.');
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             return $this->redirectToRoute('app_activite_show', ['IDAct' => $activite->getIDAct()]);
         }
 
@@ -159,12 +240,20 @@ class ActiviteController extends AbstractController
         if ($form->isSubmitted()) {
             $postData = $request->request->all();
             $formName = $form->getName();
+<<<<<<< HEAD
             $noteRaw  = $postData[$formName]['note'] ?? '';
             $note     = (int) $noteRaw;
 
             if ($note < 1 || $note > 5) {
                 $this->addFlash('error', 'Veuillez sélectionner une note entre 1 et 5.');
 
+=======
+            $noteRaw = $postData[$formName]['note'] ?? '';
+            $note = (int) $noteRaw;
+
+            if ($note < 1 || $note > 5) {
+                $this->addFlash('error', 'Veuillez sélectionner une note entre 1 et 5.');
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                 return $this->redirectToRoute('app_activite_show', ['IDAct' => $activite->getIDAct()]);
             }
 
@@ -198,7 +287,10 @@ class ActiviteController extends AbstractController
             }
             $entityManager->flush();
             $this->addFlash('success', 'Activité modifiée avec succès !');
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             return $this->redirectToRoute('app_activite_index');
         }
 
@@ -209,35 +301,58 @@ class ActiviteController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function delete(Request $request, Activite $activite, EntityManagerInterface $entityManager): Response
     {
+<<<<<<< HEAD
         // FIX PHPStan :193 — cast token to string|null
         $token = $request->request->get('_token');
         if ($this->isCsrfTokenValid('delete' . $activite->getIDAct(), is_string($token) ? $token : null)) {
+=======
+        if ($this->isCsrfTokenValid('delete' . $activite->getIDAct(), $request->request->get('_token'))) {
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $entityManager->remove($activite);
             $entityManager->flush();
             $this->addFlash('success', 'Activité supprimée avec succès !');
         }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         return $this->redirectToRoute('app_activite_index');
     }
 
     #[Route('/evenement/{IDEv}', name: 'app_activite_by_evenement', methods: ['GET'])]
     public function activitesByEvenement(
+<<<<<<< HEAD
         Evenement          $evenement,
         ActiviteRepository $activiteRepository,
         Connection         $connection
+=======
+        Evenement $evenement,
+        ActiviteRepository $activiteRepository,
+        Connection $connection
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     ): Response {
         $activites = $activiteRepository->findBy(['evenement' => $evenement]);
 
         if (empty($activites)) {
             return $this->render('evenement/activites_ev.html.twig', [
+<<<<<<< HEAD
                 'evenement'     => $evenement,
                 'activites'     => [],
                 'placesData'    => [],
+=======
+                'evenement' => $evenement,
+                'activites' => [],
+                'placesData' => [],
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                 'typesActivite' => [],
             ]);
         }
 
+<<<<<<< HEAD
         $ids          = array_map(fn ($a) => $a->getIDAct(), $activites);
+=======
+        $ids = array_map(fn($a) => $a->getIDAct(), $activites);
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
 
         $reservations = $connection->fetchAllAssociative(
@@ -250,6 +365,7 @@ class ActiviteController extends AbstractController
 
         $reserveMap = [];
         foreach ($reservations as $row) {
+<<<<<<< HEAD
             $reserveMap[(int) $row['IDAct']] = (int) $row['totalReserve'];
         }
 
@@ -292,6 +408,30 @@ class ActiviteController extends AbstractController
                 'placesReservees'        => $reserve,
                 'pourcentageRemplissage' => $pourcentage,
                 'disponibilite'          => $disponibilite,
+=======
+            $reserveMap[(int)$row['IDAct']] = (int)$row['totalReserve'];
+        }
+
+        $placesData = [];
+        $typesActivite = [];
+
+        foreach ($activites as $activite) {
+            $id = $activite->getIDAct();
+            $capacite = $activite->getCapaciteM();
+            $reserve = $reserveMap[$id] ?? 0;
+            $restantes = max(0, $capacite - $reserve);
+            $pourcentage = $capacite > 0 ? round(($reserve / $capacite) * 100) : 100;
+
+            if ($pourcentage >= 100) $disponibilite = 'soldout';
+            elseif ($pourcentage >= 80) $disponibilite = 'warning';
+            else $disponibilite = 'available';
+
+            $placesData[$id] = [
+                'placesRestantes' => $restantes,
+                'placesReservees' => $reserve,
+                'pourcentageRemplissage' => $pourcentage,
+                'disponibilite' => $disponibilite,
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             ];
 
             $type = $activite->getTypeActivite();
@@ -303,9 +443,15 @@ class ActiviteController extends AbstractController
         sort($typesActivite);
 
         return $this->render('evenement/activites_ev.html.twig', [
+<<<<<<< HEAD
             'evenement'     => $evenement,
             'activites'     => $activites,
             'placesData'    => $placesData,
+=======
+            'evenement' => $evenement,
+            'activites' => $activites,
+            'placesData' => $placesData,
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             'typesActivite' => $typesActivite,
         ]);
     }

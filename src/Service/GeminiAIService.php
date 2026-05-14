@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+<<<<<<< HEAD
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 
@@ -28,6 +29,26 @@ class GeminiAIService
      * @param string $question La question posée par l'utilisateur
      * @return array{success: bool, answer: string}
      */
+=======
+use Doctrine\DBAL\Connection;
+use GuzzleHttp\Client;
+
+class GeminiAIService
+{
+    private $apiKey;
+    private $client;
+    private $connection;
+
+    public function __construct(string $apiKey, Connection $connection)
+    {
+        $this->apiKey = $apiKey;
+        $this->connection = $connection;
+        $this->client = new Client([
+            'timeout' => 30
+        ]);
+    }
+
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     public function ask(string $question): array
     {
         // Si pas de clé API, utiliser le fallback
@@ -66,6 +87,7 @@ class GeminiAIService
         }
     }
     
+<<<<<<< HEAD
     /**
      * Génère le prompt pour l'API Gemini
      *
@@ -73,6 +95,9 @@ class GeminiAIService
      * @return string Le prompt formaté
      */
     private function getPrompt(string $question): string
+=======
+    private function getPrompt($question): string
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     {
         return "Tu es un assistant vocal expert de la Tunisie pour TunisiaJourney. Réponds en français de façon naturelle et chaleureuse.
         
@@ -85,6 +110,7 @@ class GeminiAIService
         Question: " . $question;
     }
     
+<<<<<<< HEAD
     /**
      * Réponse de fallback quand l'API Gemini n'est pas disponible
      *
@@ -92,6 +118,9 @@ class GeminiAIService
      * @return array{success: bool, answer: string}
      */
     private function getFallbackAnswer(string $question): array
+=======
+    private function getFallbackAnswer($question): array
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     {
         $questionLower = strtolower($question);
         
@@ -103,6 +132,7 @@ class GeminiAIService
             'djerba' => "Djerba est une île paradisiaque du sud tunisien ! Connue pour ses plages de sable fin, la Ghriba, et son climat doux toute l'année.",
             'carthage' => "Carthage est un site archéologique exceptionnel ! Ancienne cité punique puis romaine, classée à l'UNESCO.",
             'couscous' => "Le couscous est le plat national tunisien ! À base de semoule, légumes et viande. Un délice !",
+<<<<<<< HEAD
             'brik' => "Le brik est une délicieuse beignet tunisien à l'œuf, au thon et aux câpres. Un incontournable de l'apéro !",
             'lablabi' => "Le lablabi est une soupe de pois chiches épicée, parfaite pour l'hiver. À déguster avec des morceaux de pain !",
             'voyage' => "Nous avons de magnifiques voyages en Tunisie : Djerba, Hammamet, Carthage, Sidi Bou Saïd, et bien d'autres ! Les prix commencent à partir de 300 DT.",
@@ -127,12 +157,22 @@ class GeminiAIService
         
         foreach ($reponses as $key => $answer) {
             if (str_contains($questionLower, $key)) {
+=======
+            'voyage' => "Nous avons de magnifiques voyages en Tunisie : Djerba, Hammamet, Carthage, Sidi Bou Saïd, et bien d'autres ! Les prix commencent à partir de 300 DT.",
+            'prix' => "Les prix de nos voyages varient entre 300 et 1500 DT par personne. En moyenne, comptez 600 DT pour une semaine.",
+            'réservation' => "Pour réserver, choisissez votre destination sur notre site, remplissez le formulaire, et confirmez. C'est très simple !",
+        ];
+        
+        foreach ($reponses as $key => $answer) {
+            if (strpos($questionLower, $key) !== false) {
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                 return ['success' => true, 'answer' => $answer];
             }
         }
         
         return ['success' => true, 'answer' => "Merci pour votre question ! Je suis votre expert Tunisie. Je peux vous parler des voyages, des plats comme le couscous, des lieux comme Sidi Bou Saïd ou Djerba, des prix, et comment réserver. Que souhaitez-vous savoir exactement ?"];
     }
+<<<<<<< HEAD
 
     /**
      * Vérifie si l'API Gemini est configurée
@@ -200,4 +240,6 @@ class GeminiAIService
             ];
         }
     }
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 }

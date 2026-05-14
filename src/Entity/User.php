@@ -22,8 +22,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
+<<<<<<< HEAD
     /** @phpstan-ignore-next-line */
 private ?int $id = null;
+=======
+    private ?int $id = null;
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
     #[ORM\Column(type: "string", length: 100)]
     #[Assert\NotBlank(message: "Le nom est obligatoire.", groups: ['Default', 'registration', 'profile'])]
@@ -133,7 +137,11 @@ private ?int $id = null;
 
     public function getPassword(): ?string { return $this->motDePasse; }
 
+<<<<<<< HEAD
     public function getUserIdentifier(): string { return $this->email ?? ''; }
+=======
+    public function getUserIdentifier(): string { return $this->email; }
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
     public function getFaceEmbedding(): ?string { return $this->faceEmbedding; }
     public function setFaceEmbedding(?string $v): self { $this->faceEmbedding = $v; return $this; }
@@ -155,4 +163,8 @@ private ?int $id = null;
     }
 
     public function eraseCredentials(): void {}
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb

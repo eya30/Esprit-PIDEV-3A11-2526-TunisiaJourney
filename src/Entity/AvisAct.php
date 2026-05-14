@@ -16,7 +16,10 @@ class AvisAct
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'idAv', type: 'integer')]
+<<<<<<< HEAD
     /** @phpstan-ignore-next-line */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     private ?int $idAv = null;
 
     #[ORM\ManyToOne(targetEntity: Activite::class)]
@@ -32,21 +35,37 @@ class AvisAct
     #[ORM\Column(name: 'commentaire', type: 'text', nullable: true)]
     private ?string $commentaire = null;
 
+<<<<<<< HEAD
     #[ORM\Column(name: 'image', type: 'string', length: 255, nullable: true)]
     private ?string $image = null;
 
+=======
+    // Champ image stocké en BDD (nom du fichier)
+    #[ORM\Column(name: 'image', type: 'string', length: 255, nullable: true)]
+    private ?string $image = null;
+
+    // Champ virtuel pour VichUploader (pas en BDD)
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     #[Vich\UploadableField(mapping: 'avis_images', fileNameProperty: 'image')]
     private ?File $imageFile = null;
 
     #[Gedmo\Timestampable(on: 'create')]
     #[ORM\Column(name: 'date_avis', type: 'datetime')]
+<<<<<<< HEAD
     /** @phpstan-ignore-next-line */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     private ?\DateTimeInterface $dateAvis = null;
 
     #[Gedmo\Timestampable(on: 'update')]
     #[ORM\Column(name: 'updated_at', type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $updatedAt = null;
 
+<<<<<<< HEAD
+=======
+    // ── Getters / Setters ──
+
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     public function getIdAv(): ?int { return $this->idAv; }
 
     public function getActivite(): ?Activite { return $this->activite; }
@@ -68,6 +87,10 @@ class AvisAct
     public function setImageFile(?File $imageFile): self
     {
         $this->imageFile = $imageFile;
+<<<<<<< HEAD
+=======
+        // Obligatoire pour que VichUploader déclenche le update
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         if ($imageFile !== null) {
             $this->updatedAt = new \DateTimeImmutable();
         }

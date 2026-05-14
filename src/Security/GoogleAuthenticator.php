@@ -43,7 +43,11 @@ class GoogleAuthenticator extends OAuth2Authenticator
 
                 /** @var GoogleUser $googleUser */
                 $googleUser = $client->fetchUserFromToken($accessToken);
+<<<<<<< HEAD
                 $email = strtolower(trim((string) $googleUser->getEmail()));
+=======
+                $email      = strtolower(trim($googleUser->getEmail()));
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
                 $user = $this->em->getRepository(User::class)
                     ->createQueryBuilder('u')
@@ -61,6 +65,7 @@ class GoogleAuthenticator extends OAuth2Authenticator
                 }
 
                 // Nouveau compte Google
+<<<<<<< HEAD
                $firstName = $googleUser->getFirstName();
                 $lastName  = $googleUser->getLastName();
                 if (!$firstName && !$lastName) {
@@ -68,6 +73,16 @@ class GoogleAuthenticator extends OAuth2Authenticator
                     $firstName = $parts[0];
                     $lastName  = $parts[1] ?? $parts[0];
                 }
+=======
+                $firstName = $googleUser->getFirstName() ?? '';
+                $lastName  = $googleUser->getLastName()  ?? '';
+                if (!$firstName && !$lastName) {
+                    $parts     = explode(' ', $googleUser->getName() ?? 'Utilisateur Google', 2);
+                    $firstName = $parts[0];
+                    $lastName  = $parts[1] ?? $parts[0];
+                }
+
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                 $user = new User();
                 $user->setNom($lastName  ?: 'Google');
                 $user->setPrenom($firstName ?: 'Utilisateur');
@@ -124,4 +139,8 @@ class GoogleAuthenticator extends OAuth2Authenticator
     }
     return new RedirectResponse($this->router->generate('app_login'));
 }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb

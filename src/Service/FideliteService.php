@@ -6,18 +6,29 @@ use Doctrine\DBAL\Connection;
 
 class FideliteService
 {
+<<<<<<< HEAD
     private Connection $connection;
 
     /** @var array<string, int> */
     private array $seuils = [
+=======
+    private $connection;
+
+    // NOUVEAUX SEUILS : 1000 DT = 10 points → 100 DT = 1 point
+    private $seuils = [
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         'bronze' => 0,
         'argent' => 10000,    // 10 000 points = 1 000 000 DT dépensés
         'or' => 50000,        // 50 000 points = 5 000 000 DT dépensés
         'platine' => 100000,  // 100 000 points = 10 000 000 DT dépensés
     ];
 
+<<<<<<< HEAD
     /** @var array<string, int> */
     private array $reductions = [
+=======
+    private $reductions = [
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         'bronze' => 0,
         'argent' => 5,
         'or' => 10,
@@ -35,9 +46,12 @@ class FideliteService
         return intval($montant / 100);
     }
 
+<<<<<<< HEAD
     /**
      * @return array<string, int|string|null>
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     public function getOrCreateFidelite(int $idUtilisateur): array
     {
         $sql = "SELECT * FROM fidelite WHERE id_utilisateur = ?";
@@ -51,7 +65,11 @@ class FideliteService
                 'total_depense' => 0,
                 'created_at' => date('Y-m-d H:i:s'),
             ]);
+<<<<<<< HEAD
            
+=======
+            
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             return [
                 'id_utilisateur' => $idUtilisateur,
                 'points' => 0,
@@ -66,6 +84,7 @@ class FideliteService
     public function ajouterPoints(int $idUtilisateur, float $montant): void
     {
         $pointsGagnes = $this->calculerPoints($montant);
+<<<<<<< HEAD
        
         $fidelite = $this->getOrCreateFidelite($idUtilisateur);
        
@@ -77,6 +96,15 @@ class FideliteService
        
         $nouveauNiveau = $this->calculerNiveau($nouveauxPoints);
        
+=======
+        
+        $fidelite = $this->getOrCreateFidelite($idUtilisateur);
+        $nouveauxPoints = $fidelite['points'] + $pointsGagnes;
+        $nouveauTotal = $fidelite['total_depense'] + $montant;
+        
+        $nouveauNiveau = $this->calculerNiveau($nouveauxPoints);
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $this->connection->update('fidelite', [
             'points' => $nouveauxPoints,
             'niveau' => $nouveauNiveau,
@@ -96,6 +124,7 @@ class FideliteService
     public function getReduction(int $idUtilisateur): int
     {
         $fidelite = $this->getOrCreateFidelite($idUtilisateur);
+<<<<<<< HEAD
         $niveau = is_string($fidelite['niveau']) ? $fidelite['niveau'] : 'bronze';
         return $this->reductions[$niveau] ?? 0;
     }
@@ -123,6 +152,22 @@ class FideliteService
         $prochainSeuil = null;
         $pointsRestants = null;
        
+=======
+        return $this->reductions[$fidelite['niveau']] ?? 0;
+    }
+
+    public function getInfosFidelite(int $idUtilisateur): array
+    {
+        $fidelite = $this->getOrCreateFidelite($idUtilisateur);
+        
+        $niveau = $fidelite['niveau'];
+        $points = $fidelite['points'];
+        $reduction = $this->reductions[$niveau] ?? 0;
+        
+        $prochainSeuil = null;
+        $pointsRestants = null;
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         if ($niveau === 'bronze') {
             $prochainSeuil = 'argent';
             $pointsRestants = $this->seuils['argent'] - $points;
@@ -133,6 +178,7 @@ class FideliteService
             $prochainSeuil = 'platine';
             $pointsRestants = $this->seuils['platine'] - $points;
         }
+<<<<<<< HEAD
        
         $pourcentage = 100.0;
         // ✅ Correction ligne 139 : suppression de la condition inutile
@@ -141,13 +187,26 @@ class FideliteService
             $pourcentage = ($points / $totalPourProchain) * 100;
         }
        
+=======
+        
+        $pourcentage = 100;
+        if ($pointsRestants && $pointsRestants > 0 && $prochainSeuil) {
+            $totalPourProchain = $this->seuils[$prochainSeuil];
+            $pourcentage = ($points / $totalPourProchain) * 100;
+        }
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $couleurs = [
             'bronze' => '#CD7F32',
             'argent' => '#C0C0C0',
             'or' => '#FFD700',
             'platine' => '#E5E4E2',
         ];
+<<<<<<< HEAD
        
+=======
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         return [
             'niveau' => $niveau,
             'points' => $points,
@@ -155,8 +214,16 @@ class FideliteService
             'total_depense' => $fidelite['total_depense'],
             'prochain_seuil' => $prochainSeuil,
             'points_restants' => $pointsRestants,
+<<<<<<< HEAD
             'pourcentage_progression' => min(100.0, $pourcentage),
             'couleur' => $couleurs[$niveau] ?? '#CD7F32',
         ];
     }
 }
+=======
+            'pourcentage_progression' => min(100, $pourcentage),
+            'couleur' => $couleurs[$niveau] ?? '#CD7F32',
+        ];
+    }
+}
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb

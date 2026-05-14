@@ -7,4 +7,8 @@ services:
     Psr\Http\Message\UriFactoryInterface: '@http_discovery.psr17_factory'
 
     http_discovery.psr17_factory:
+<<<<<<< HEAD
         class: Http\Discovery\Psr17Factory
+=======
+        class: Http\Discovery\Psr17Factory
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb

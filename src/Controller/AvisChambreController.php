@@ -10,13 +10,20 @@ use App\Service\AvisChambreService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+<<<<<<< HEAD
 use Symfony\Component\HttpFoundation\Response; // Add this import
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 use Symfony\Component\Routing\Annotation\Route;
 
 class AvisChambreController extends AbstractController
 {
     #[Route('/avis/chambre/{token}', name: 'app_avis_chambre_form')]
+<<<<<<< HEAD
     public function formulaire(string $token, Request $request, EntityManagerInterface $em, AvisChambreService $avisService): Response // Added : Response return type
+=======
+    public function formulaire(string $token, Request $request, EntityManagerInterface $em, AvisChambreService $avisService)
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     {
         // 1. Trouver la réservation avec ce token
         $reservation = $em->getRepository(ReservationChambre::class)->findOneBy(['tokenAvis' => $token]);
@@ -42,7 +49,10 @@ class AvisChambreController extends AbstractController
         }
         
         // 4. Vérifier que c'est bien sa réservation
+<<<<<<< HEAD
         // Correction : utilisation de getIdUtilisateur() au lieu de getUtilisateur()
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         if ($reservation->getIdUtilisateur() !== $userComplete->getId()) {
             $this->addFlash('error', '⛔ Cette réservation ne vous appartient pas.');
             return $this->redirectToRoute('app_home');

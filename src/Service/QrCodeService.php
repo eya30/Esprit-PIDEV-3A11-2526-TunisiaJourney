@@ -4,6 +4,7 @@ namespace App\Service;
 
 class QrCodeService
 {
+<<<<<<< HEAD
     /**
      * @param array{
      *     hotel_nom?: string|null,
@@ -20,6 +21,8 @@ class QrCodeService
      *     detailsPrix?: string|null
      * } $reservation
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     public function generateReservationQRCode(array $reservation): string
     {
         // Construire un texte simple pour le QR code
@@ -38,4 +41,8 @@ class QrCodeService
         // Utiliser l'API externe gratuite (pas besoin de GD)
         return 'https://quickchart.io/qr?text=' . urlencode($qrText) . '&size=250&margin=2';
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb

@@ -3,16 +3,24 @@
 namespace App\Controller;
 
 use App\Service\FideliteService;
+<<<<<<< HEAD
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Psr\Log\LoggerInterface;
+=======
+use App\Entity\User;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
 class FideliteController extends AbstractController
 {
     #[Route('/api/fidelite', name: 'api_fidelite')]
+<<<<<<< HEAD
     #[IsGranted('ROLE_USER')]
     public function getFidelite(FideliteService $fideliteService, LoggerInterface $logger): JsonResponse
     {
@@ -56,5 +64,19 @@ class FideliteController extends AbstractController
             $logger->error('Erreur fidelité: ' . $e->getMessage());
             return $this->json(['error' => 'Une erreur interne est survenue'], 500);
         }
+=======
+    public function getFidelite(FideliteService $fideliteService): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['error' => 'Non connecté']);
+        }
+        
+        $idUtilisateur = $user->getId();
+        $infos = $fideliteService->getInfosFidelite($idUtilisateur);
+        
+        return $this->json($infos);
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     }
 }

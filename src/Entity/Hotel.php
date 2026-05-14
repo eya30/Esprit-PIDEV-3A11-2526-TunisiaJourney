@@ -11,10 +11,14 @@ class Hotel
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
+<<<<<<< HEAD
     // FIX : ajout de name: "idH" pour que Doctrine connaisse le vrai nom de colonne
     // Chambre fait referencedColumnName: 'idH' donc la PK doit explicitement s'appeler idH
     #[ORM\Column(name: "idH", type: "integer")]
     /** @phpstan-ignore-next-line */
+=======
+    #[ORM\Column]
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     private ?int $idH = null;
 
     #[ORM\Column(length: 120)]
@@ -100,6 +104,10 @@ class Hotel
     #[Assert\Positive(message: "L'ID utilisateur doit être un nombre positif.")]
     private ?int $idUtilisateur = null;
 
+<<<<<<< HEAD
+=======
+    // Getters et Setters (inchangés)
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     public function getIdH(): ?int
     {
         return $this->idH;

@@ -120,6 +120,7 @@ class PaymentController extends AbstractController
             $em->persist($commande);
             $em->flush();
 
+<<<<<<< HEAD
            foreach ($items as $item) {
     $produit = $item->getProduit();
     if ($produit !== null) {
@@ -129,6 +130,14 @@ class PaymentController extends AbstractController
     $item->setIsPanier(false);
     $item->setUser(null);
 }
+=======
+            foreach ($items as $item) {
+                $item->getProduit()->decrementStock($item->getQuantite());
+                $item->setCommande($commande);
+                $item->setIsPanier(false);
+                $item->setUser(null);
+            }
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
             $em->flush();
 

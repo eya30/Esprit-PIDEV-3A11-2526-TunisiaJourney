@@ -4,6 +4,7 @@ namespace App\Service;
 
 use Doctrine\DBAL\Connection;
 use GuzzleHttp\Client;
+<<<<<<< HEAD
 use GuzzleHttp\Exception\GuzzleException;
 
 class GeminiEAIService
@@ -11,6 +12,14 @@ class GeminiEAIService
     private string $apiKey;
     private Client $client;
     private Connection $connection;
+=======
+
+class GeminiEAIService
+{
+    private $apiKey;
+    private $client;
+    private $connection;
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
     public function __construct(string $apiKey, Connection $connection)
     {
@@ -40,12 +49,18 @@ class GeminiEAIService
         Tu peux donner des conseils de voyage, des informations sur les destinations, les meilleures périodes, etc.";
     }
 
+<<<<<<< HEAD
     /**
      * @return array<int, array<string, mixed>>
      */
     private function getVoyages(): array
     {
         return $this->connection->fetchAllAssociative("
+=======
+    private function getTravelContext(): string
+    {
+        $voyages = $this->connection->fetchAllAssociative("
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             SELECT v.nom, v.description, v.prix, v.capacite, 
                    GROUP_CONCAT(p.nom SEPARATOR ', ') as programmes
             FROM voyages v
@@ -53,11 +68,14 @@ class GeminiEAIService
             GROUP BY v.idV
             LIMIT 20
         ");
+<<<<<<< HEAD
     }
 
     private function getTravelContext(): string
     {
         $voyages = $this->getVoyages();
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         
         $context = "Voici les voyages proposés par TunisiaJourney :\n\n";
         
@@ -73,9 +91,12 @@ class GeminiEAIService
         return $context;
     }
 
+<<<<<<< HEAD
     /**
      * @return array{success: bool, answer?: string, question?: string, error?: string, debug?: string}
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     public function ask(string $question): array
     {
         try {
@@ -83,7 +104,11 @@ class GeminiEAIService
             
             $prompt = $this->getSystemPrompt() . "\n\n" . $context . "\n\nQuestion de l'utilisateur : " . $question;
             
+<<<<<<< HEAD
             $response = $this->client->post("models/gemini-2.0-flash:generateContent?key={$this->apiKey}", [
+=======
+         $response = $this->client->post("models/gemini-2.0-flash:generateContent?key={$this->apiKey}",  [
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                 'json' => [
                     'contents' => [
                         [
@@ -100,7 +125,11 @@ class GeminiEAIService
                 ]
             ]);
             
+<<<<<<< HEAD
             $data = json_decode($response->getBody()->getContents(), true);
+=======
+            $data = json_decode($response->getBody(), true);
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             
             $answer = $data['candidates'][0]['content']['parts'][0]['text'] ?? 'Désolé, je n\'ai pas pu générer une réponse.';
             

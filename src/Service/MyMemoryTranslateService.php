@@ -6,7 +6,11 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class MyMemoryTranslateService
 {
+<<<<<<< HEAD
     private HttpClientInterface $httpClient;
+=======
+    private $httpClient;
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
     public function __construct(HttpClientInterface $httpClient)
     {
@@ -35,6 +39,7 @@ class MyMemoryTranslateService
             ]);
 
             $data = $response->toArray();
+<<<<<<< HEAD
            
             if (isset($data['responseData']['translatedText'])) {
                 $translatedText = $data['responseData']['translatedText'];
@@ -42,11 +47,24 @@ class MyMemoryTranslateService
                 // MyMemory retourne parfois le texte original avec "******", on nettoie
                 $translatedText = str_replace('******', '', $translatedText);
                
+=======
+            
+            if (isset($data['responseData']['translatedText'])) {
+                $translatedText = $data['responseData']['translatedText'];
+                
+                // MyMemory retourne parfois le texte original avec "******", on nettoie
+                $translatedText = str_replace('******', '', $translatedText);
+                
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                 if (!empty($translatedText) && $translatedText !== $text) {
                     return $translatedText;
                 }
             }
+<<<<<<< HEAD
            
+=======
+            
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             return $text;
         } catch (\Exception $e) {
             error_log('MyMemory error: ' . $e->getMessage());
@@ -56,9 +74,12 @@ class MyMemoryTranslateService
 
     /**
      * Traduit plusieurs textes à la fois
+<<<<<<< HEAD
      *
      * @param array<int|string, string> $texts
      * @return array<int|string, string>
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
      */
     public function translateMultiple(array $texts, string $targetLanguage = 'en', string $sourceLanguage = 'fr'): array
     {
@@ -68,4 +89,8 @@ class MyMemoryTranslateService
         }
         return $results;
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb

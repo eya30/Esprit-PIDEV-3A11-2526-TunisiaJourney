@@ -36,15 +36,19 @@ class StripeService
 
     /**
      * Crée une session de paiement Stripe
+<<<<<<< HEAD
      * 
      * @param ReservationProg $reservation La réservation à payer
      * @param string $successUrl URL de redirection en cas de succès
      * @param string $cancelUrl URL de redirection en cas d'annulation
      * @return Session|null La session Stripe créée ou null en cas d'erreur
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
      */
     public function createCheckoutSession(ReservationProg $reservation, string $successUrl, string $cancelUrl): ?Session
     {
         try {
+<<<<<<< HEAD
             $reservationId = $reservation->getIdRP();
             $clientEmail = $reservation->getEmail();
             $clientName = trim($reservation->getPrenom() . ' ' . $reservation->getNom());
@@ -57,6 +61,8 @@ class StripeService
                 $clientEmail = 'client@example.com';
             }
             
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $session = Session::create([
                 'payment_method_types' => ['card'],
                 'line_items' => [
@@ -64,7 +70,11 @@ class StripeService
                         'price_data' => [
                             'currency' => 'eur',
                             'product_data' => [
+<<<<<<< HEAD
                                 'name' => 'Réservation - ' . $clientName,
+=======
+                                'name' => 'Réservation - ' . $reservation->getPrenom() . ' ' . $reservation->getNom(),
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                                 'description' => 'Programme de voyage TunisiaJourney',
                             ],
                             'unit_amount' => (int)($reservation->getPrixProg() * 100),
@@ -73,6 +83,7 @@ class StripeService
                     ],
                 ],
                 'mode' => 'payment',
+<<<<<<< HEAD
                 'success_url' => $successUrl . '?session_id={CHECKOUT_SESSION_ID}&reservation_id=' . $reservationId,
                 'cancel_url' => $cancelUrl . '?canceled=true',
                 'metadata' => [
@@ -88,6 +99,21 @@ class StripeService
                 $this->entityManager->flush();
                 $this->logger->info('Session Stripe créée pour réservation ' . $reservationId);
             }
+=======
+                'success_url' => $successUrl . '?session_id={CHECKOUT_SESSION_ID}&reservation_id=' . $reservation->getIdRP(),
+                'cancel_url' => $cancelUrl . '?canceled=true',
+                'metadata' => [
+                    'reservation_id' => $reservation->getIdRP(),
+                    'client_email' => $reservation->getEmail(),
+                    'client_name' => $reservation->getPrenom() . ' ' . $reservation->getNom(),
+                ],
+            ]);
+
+            $reservation->setStripeSessionId($session->id);
+            $this->entityManager->flush();
+
+            $this->logger->info('Session Stripe créée pour réservation ' . $reservation->getIdRP());
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             
             return $session;
 
@@ -99,15 +125,19 @@ class StripeService
 
     /**
      * Vérifie le statut d'un paiement
+<<<<<<< HEAD
      * 
      * @param string $sessionId L'ID de la session Stripe
      * @return array{status: string, paid: bool, amount?: float, currency?: string}
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
      */
     public function verifyPaymentStatus(string $sessionId): array
     {
         try {
             $session = Session::retrieve($sessionId);
             
+<<<<<<< HEAD
             $paymentStatus = $session->payment_status ?? 'unknown';
             
             $result = [
@@ -250,4 +280,17 @@ class StripeService
     {
         return $amount / 100;
     }
+=======
+            return [
+                'status' => $session->payment_status,
+                'paid' => $session->payment_status === 'paid',
+                'amount' => $session->amount_total / 100,
+                'currency' => $session->currency,
+            ];
+        } catch (\Exception $e) {
+            $this->logger->error('Erreur vérification paiement: ' . $e->getMessage());
+            return ['status' => 'error', 'paid' => false];
+        }
+    }
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 }

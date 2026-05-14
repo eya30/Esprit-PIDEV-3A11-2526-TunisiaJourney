@@ -9,7 +9,10 @@ class AIAnalyzerService
 {
     private Connection $connection;
     private OllamaService $ollamaService;
+<<<<<<< HEAD
     /** @phpstan-ignore-next-line property.onlyWritten */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     private LoggerInterface $logger;
 
     public function __construct(
@@ -26,6 +29,7 @@ class AIAnalyzerService
         }
     }
 
+<<<<<<< HEAD
     /**
      * @return array{alerts: list<array<string, mixed>>, tasks: list<array<string, mixed>>}
      */
@@ -36,6 +40,14 @@ class AIAnalyzerService
         /** @var list<array<string, mixed>> $alerts */
         $alerts = [];
 
+=======
+    public function analyzeAndGenerateTasks(): array
+    {
+        $tasks  = [];
+        $alerts = [];
+
+        // ─── Récupérer tous les programmes actifs ────────────────────────
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $programmes = $this->connection->fetchAllAssociative("
             SELECT p.*, v.nom as voyage_nom, v.capacite as voyage_capacite
             FROM programmes p
@@ -44,11 +56,19 @@ class AIAnalyzerService
             ORDER BY p.dateDebut ASC
         ");
 
+<<<<<<< HEAD
         /** @var list<array<string, mixed>> $ollamaContextData */
+=======
+        // ─── Données pour Ollama (contexte global) ───────────────────────
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $ollamaContextData = [];
 
         foreach ($programmes as $programme) {
 
+<<<<<<< HEAD
+=======
+            // ─── Stats réservations ──────────────────────────────────────
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $reservations = $this->connection->fetchAllAssociative("
                 SELECT COUNT(*) as total_reservations,
                        COALESCE(SUM(nbre), 0) as total_personnes,
@@ -62,6 +82,10 @@ class AIAnalyzerService
             $capaciteMax = $programme['capacite_max'] ?? $programme['voyage_capacite'] ?? 50;
             $placesDisponibles = $capaciteMax - ($stats['total_personnes'] ?? 0);
 
+<<<<<<< HEAD
+=======
+            // ─── Calcul jours restants avant départ ─────────────────────
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $joursRestants = 0;
             if ($programme['dateDebut']) {
                 $dateDebut = new \DateTime($programme['dateDebut']);
@@ -73,6 +97,7 @@ class AIAnalyzerService
             $prixActuel = (float)($programme['prix'] ?? 0);
             $taux = $capaciteMax > 0 ? round(($stats['total_personnes'] / $capaciteMax) * 100, 1) : 0;
 
+<<<<<<< HEAD
             $ollamaContextData[] = [
                 'programme'            => $programme['nom'],
                 'voyage'               => $programme['voyage_nom'],
@@ -87,6 +112,25 @@ class AIAnalyzerService
             ];
 
             // ═══ ALERTE 1 : AUCUNE RÉSERVATION ═══════════════════════════
+=======
+            // Accumule les données pour Ollama
+            $ollamaContextData[] = [
+                'programme'          => $programme['nom'],
+                'voyage'             => $programme['voyage_nom'],
+                'jours_avant_depart' => $joursRestants,
+                'capacite'           => $capaciteMax,
+                'reservations'       => (int)$stats['total_reservations'],
+                'personnes'          => (int)$stats['total_personnes'],
+                'places_libres'      => $placesDisponibles,
+                'taux_occupation'    => $taux . '%',
+                'paiements_en_attente' => (int)$stats['en_attente'],
+                'prix_actuel'        => $prixActuel . ' DT',
+            ];
+
+            // ═══════════════════════════════════════════════════════════════
+            // ALERTE 1 : AUCUNE RÉSERVATION (critique)
+            // ═══════════════════════════════════════════════════════════════
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             if ($stats['total_reservations'] == 0 && $joursRestants > 0) {
 
                 $prixFlash  = $prixActuel * 0.70;
@@ -115,7 +159,13 @@ class AIAnalyzerService
                 );
             }
 
+<<<<<<< HEAD
             // ═══ ALERTE 2 : TRÈS PEU DE RÉSERVATIONS ════════════════════
+=======
+            // ═══════════════════════════════════════════════════════════════
+            // ALERTE 2 : TRÈS PEU DE RÉSERVATIONS (< 3 personnes)
+            // ═══════════════════════════════════════════════════════════════
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             elseif ($stats['total_personnes'] < 3 && $stats['total_personnes'] > 0
                     && $joursRestants > 0 && $joursRestants < 45) {
 
@@ -148,7 +198,13 @@ class AIAnalyzerService
                 );
             }
 
+<<<<<<< HEAD
             // ═══ ALERTE 3 : SURCHARGE ════════════════════════════════════
+=======
+            // ═══════════════════════════════════════════════════════════════
+            // ALERTE 3 : SURCHARGE — capacité voyage < nbre réservations
+            // ═══════════════════════════════════════════════════════════════
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             elseif ($placesDisponibles < 0) {
 
                 $excedent = abs($placesDisponibles);
@@ -179,7 +235,13 @@ class AIAnalyzerService
                 );
             }
 
+<<<<<<< HEAD
             // ═══ ALERTE 4 : PRESQUE COMPLET (≥ 80 %) ════════════════════
+=======
+            // ═══════════════════════════════════════════════════════════════
+            // ALERTE 4 : PRESQUE COMPLET (≥ 80 %)
+            // ═══════════════════════════════════════════════════════════════
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             elseif ($placesDisponibles > 0 && $capaciteMax > 0
                     && ($stats['total_personnes'] / $capaciteMax) >= 0.8) {
 
@@ -210,7 +272,13 @@ class AIAnalyzerService
                 );
             }
 
+<<<<<<< HEAD
             // ═══ ALERTE 5 : PAIEMENTS EN ATTENTE ═════════════════════════
+=======
+            // ═══════════════════════════════════════════════════════════════
+            // ALERTE 5 : PAIEMENTS EN ATTENTE
+            // ═══════════════════════════════════════════════════════════════
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             if (($stats['en_attente'] ?? 0) > 0) {
                 $montantEstime = $prixActuel * $stats['en_attente'];
 
@@ -240,6 +308,7 @@ class AIAnalyzerService
             }
         }
 
+<<<<<<< HEAD
         // ─── Enrichissement IA Ollama ────────────────────────────────────
         // FIX PHPStan :259/:261 — method_exists() supprimés car OllamaService
         // déclare toujours isAvailable() et generateAlertInsights() ; PHPStan
@@ -247,6 +316,13 @@ class AIAnalyzerService
         if (!empty($alerts) && $this->ollamaService->isAvailable()) {
             $ollamaInsight = $this->ollamaService->generateAlertInsights($ollamaContextData);
             if (!empty($ollamaInsight)) {
+=======
+        // ─── Enrichissement IA Ollama des alertes ────────────────────────
+        if (!empty($alerts) && $this->ollamaService->isAvailable()) {
+            $ollamaInsight = $this->ollamaService->generateAlertInsights($ollamaContextData);
+            if (!empty($ollamaInsight)) {
+                // On attache l'insight global à la première alerte
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                 $alerts[0]['ai_insight'] = $ollamaInsight;
             }
         }
@@ -268,8 +344,17 @@ class AIAnalyzerService
             );
         }
 
+<<<<<<< HEAD
         $tasks = $this->autoTransitionTasks($tasks, $ollamaContextData);
 
+=======
+        // ─── Auto-transition : todo → done si alerte fixée ───────────────
+        // Une tâche 'todo' passe automatiquement en 'done' si son programme
+        // n'a plus le problème qui l'a générée (ex: surcharge résolue).
+        $tasks = $this->autoTransitionTasks($tasks, $ollamaContextData);
+
+        // ─── Sauvegarde en session ───────────────────────────────────────
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $_SESSION['ai_alerts']        = $alerts;
         $_SESSION['ai_tasks']         = $tasks;
         $_SESSION['ai_last_analysis'] = date('Y-m-d H:i:s');
@@ -278,6 +363,7 @@ class AIAnalyzerService
     }
 
     /**
+<<<<<<< HEAD
      * @param list<array<string, mixed>> $newTasks
      * @param list<array<string, mixed>> $currentProgrammeStats
      * @return list<array<string, mixed>>
@@ -285,12 +371,23 @@ class AIAnalyzerService
     private function autoTransitionTasks(array $newTasks, array $currentProgrammeStats): array
     {
         /** @var list<array<string, mixed>> $previousTasks */
+=======
+     * Auto-transition : si une tâche 'todo' a été précédemment résolue
+     * (le problème n'existe plus dans les données actuelles), elle passe en 'done'.
+     */
+    private function autoTransitionTasks(array $newTasks, array $currentProgrammeStats): array
+    {
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $previousTasks = $_SESSION['ai_tasks'] ?? [];
         if (empty($previousTasks)) {
             return $newTasks;
         }
 
+<<<<<<< HEAD
         /** @var array<string, bool> $currentAlertProgrammes */
+=======
+        // Index des programmes actuellement en alerte
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $currentAlertProgrammes = [];
         foreach ($newTasks as $task) {
             if ($task['entity_id']) {
@@ -298,9 +395,18 @@ class AIAnalyzerService
             }
         }
 
+<<<<<<< HEAD
         foreach ($previousTasks as $prevTask) {
             if (in_array($prevTask['status'], ['todo', 'doing']) && $prevTask['entity_id']) {
                 if (!isset($currentAlertProgrammes[$prevTask['entity_id']])) {
+=======
+        // Pour chaque tâche précédente en 'doing' ou 'todo'
+        foreach ($previousTasks as $prevTask) {
+            if (in_array($prevTask['status'], ['todo', 'doing']) && $prevTask['entity_id']) {
+                // Si le programme de cette tâche n'est plus en alerte → auto done
+                if (!isset($currentAlertProgrammes[$prevTask['entity_id']])) {
+                    // Chercher la tâche correspondante dans les nouvelles et la marquer done
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                     foreach ($newTasks as &$newTask) {
                         if ($newTask['entity_id'] === $prevTask['entity_id']
                             && $newTask['entity_type'] === $prevTask['entity_type']) {
@@ -310,6 +416,10 @@ class AIAnalyzerService
                     unset($newTask);
                 }
             }
+<<<<<<< HEAD
+=======
+            // Si la tâche était 'doing', on conserve ce statut dans les nouvelles tâches
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             if ($prevTask['status'] === 'doing') {
                 foreach ($newTasks as &$newTask) {
                     if ($newTask['entity_id'] === $prevTask['entity_id']
@@ -325,7 +435,11 @@ class AIAnalyzerService
     }
 
     /**
+<<<<<<< HEAD
      * @return list<string>
+=======
+     * Génère une liste d'idées enrichies pour un programme sans réservation.
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
      */
     private function buildNoReservationIdeas(
         string $nom,
@@ -357,9 +471,12 @@ class AIAnalyzerService
         return $idees;
     }
 
+<<<<<<< HEAD
     /**
      * @return array<string, mixed>
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     private function createTask(string $title, string $description, string $priority, string $entityType, ?string $entityId): array
     {
         $priorities = ['urgent' => 1, 'high' => 2, 'medium' => 3, 'low' => 4];
@@ -392,11 +509,16 @@ class AIAnalyzerService
         return false;
     }
 
+<<<<<<< HEAD
     /** @return list<array<string, mixed>> */
     public function getTasks(): array { return $_SESSION['ai_tasks'] ?? []; }
 
     /** @return list<array<string, mixed>> */
     public function getAlerts(): array { return $_SESSION['ai_alerts'] ?? []; }
 
+=======
+    public function getTasks(): array          { return $_SESSION['ai_tasks']         ?? []; }
+    public function getAlerts(): array         { return $_SESSION['ai_alerts']        ?? []; }
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     public function getLastAnalysis(): ?string { return $_SESSION['ai_last_analysis'] ?? null; }
 }

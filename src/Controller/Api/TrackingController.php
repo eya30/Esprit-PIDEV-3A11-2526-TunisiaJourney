@@ -1,11 +1,19 @@
 <?php
 // src/Controller/Api/TrackingController.php
+<<<<<<< HEAD
+=======
+// ✅ VERSION MISE À JOUR — avec notification WhatsApp automatique
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
 namespace App\Controller\Api;
 
 use App\Repository\CommandeRepository;
 use App\Service\OllamaEService;
+<<<<<<< HEAD
 use App\Service\WhatsAppService;
+=======
+use App\Service\WhatsAppService;           // ← AJOUT
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,6 +29,7 @@ class TrackingController extends AbstractController
         'label' => 'Entrepôt TunisiaJourney — Tunis',
     ];
 
+<<<<<<< HEAD
     private const TRAJET_DUREE = 60;
 
     public function __construct(
@@ -28,6 +37,15 @@ class TrackingController extends AbstractController
         private OllamaEService         $ollama,
         private EntityManagerInterface $em,
         private WhatsAppService        $whatsApp,
+=======
+    private const TRAJET_DUREE = 60; // 1 minute pour la démo
+
+    public function __construct(
+        private CacheInterface         $cache,
+        private OllamaEService          $ollama,
+        private EntityManagerInterface $em,
+        private WhatsAppService        $whatsApp,  // ← AJOUT
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     ) {}
 
     #[Route('/api/tracking/{id}', name: 'api_tracking', methods: ['GET'])]
@@ -52,6 +70,7 @@ class TrackingController extends AbstractController
         $coordsDest  = $this->geocode($adresseDest);
         $progression = $this->getProgression($id, $statut);
 
+<<<<<<< HEAD
         if ($progression >= 99.5 && $statut !== 'Livrée' && $statut !== 'Annulée') {
             $commande->setStatut('Livrée');
             $this->em->flush();
@@ -67,6 +86,29 @@ class TrackingController extends AbstractController
                     $user->getNom()    ?? '',
                     $user->getPrenom() ?? '',
                     $commande->getId() ?? 0
+=======
+        // ══════════════════════════════════════════════════════
+        //  ✅ PASSAGE AUTOMATIQUE À "LIVRÉE" + NOTIFICATION WHATSAPP
+        //  Déclenché une seule fois quand progression >= 99.5%
+        // ══════════════════════════════════════════════════════
+        if ($progression >= 99.5 && $statut !== 'Livrée' && $statut !== 'Annulée') {
+
+            // 1. Mettre à jour le statut en base
+            $commande->setStatut('Livrée');
+            $this->em->flush();
+
+            // 2. Nettoyer le cache de tracking
+            $this->cache->delete('tracking_start_' . $id);
+
+            // 3. ✅ Envoyer notification WhatsApp au client
+            $user = $commande->getUser();
+            if ($user && $user->getTelephone()) {
+                $this->whatsApp->sendLivreurArrive(
+                    $user->getTelephone(),
+                    $user->getNom(),
+                    $user->getPrenom(),
+                    $commande->getId()
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                 );
             }
 
@@ -110,13 +152,21 @@ class TrackingController extends AbstractController
         ]);
     }
 
+<<<<<<< HEAD
+=======
+    // ── Progression selon statut + temps réel ────────────
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     private function getProgression(int $id, string $statut): float
     {
         if ($statut === 'Livrée')  return 100.0;
         if ($statut === 'Annulée') return 0.0;
         if ($statut === 'En cours') return $this->realTime($id, 20.0, 100.0);
 
+<<<<<<< HEAD
         return match ($statut) {
+=======
+        return match($statut) {
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             'En attente'     => 0.0,
             'Confirmée'      => 5.0,
             'En préparation' => 15.0,
@@ -136,6 +186,7 @@ class TrackingController extends AbstractController
         return min($max, max($min, $progress));
     }
 
+<<<<<<< HEAD
     /**
      * @return array<int, array{label: string, icon: string, key: string, done: bool, active: bool, date: string|null}>
      */
@@ -146,6 +197,13 @@ class TrackingController extends AbstractController
         $pos   = $pos !== false ? (int) $pos : 0;
 
         $rawSteps = [
+=======
+    private function buildTimeline(string $statut, ?\DateTimeInterface $dateC): array
+    {
+        $ordre = ['En attente', 'Confirmée', 'En préparation', 'Expédiée', 'En cours', 'Livrée'];
+        $pos   = array_search($statut, $ordre) ?? 0;
+        $steps = [
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             ['label' => 'Commande reçue',       'icon' => 'fa-shopping-bag',  'key' => 'En attente'],
             ['label' => 'Confirmée',             'icon' => 'fa-check-circle',  'key' => 'Confirmée'],
             ['label' => 'En préparation',        'icon' => 'fa-box-open',      'key' => 'En préparation'],
@@ -153,6 +211,7 @@ class TrackingController extends AbstractController
             ['label' => 'En cours de livraison', 'icon' => 'fa-truck',         'key' => 'En cours'],
             ['label' => 'Livrée ✓',              'icon' => 'fa-home',          'key' => 'Livrée'],
         ];
+<<<<<<< HEAD
 
         $steps = [];
         foreach ($rawSteps as $i => $s) {
@@ -176,6 +235,19 @@ class TrackingController extends AbstractController
     /**
      * @return array{lat: float, lng: float}
      */
+=======
+        foreach ($steps as $i => &$s) {
+            $s['done']   = $i < $pos;
+            $s['active'] = $i === $pos;
+            $s['date']   = ($i === 0 && $dateC) ? $dateC->format('d/m/Y') : null;
+            if ($s['key'] === 'Livrée' && $statut === 'Livrée') {
+                $s['date'] = date('d/m/Y H:i:s');
+            }
+        }
+        return $steps;
+    }
+
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     private function geocode(string $adresse): array
     {
         $default = ['lat' => 36.8065, 'lng' => 10.1815];
@@ -188,7 +260,11 @@ class TrackingController extends AbstractController
             $json = @file_get_contents($url, false, $ctx);
             if ($json) {
                 $d = json_decode($json, true);
+<<<<<<< HEAD
                 if (!empty($d[0])) return ['lat' => (float) $d[0]['lat'], 'lng' => (float) $d[0]['lon']];
+=======
+                if (!empty($d[0])) return ['lat' => (float)$d[0]['lat'], 'lng' => (float)$d[0]['lon']];
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             }
             return $default;
         });
@@ -203,9 +279,12 @@ class TrackingController extends AbstractController
         return $R * 2 * atan2(sqrt($a), sqrt(1 - $a));
     }
 
+<<<<<<< HEAD
     /**
      * @return array{lat: float, lng: float}
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     private function interpolate(float $la1, float $lo1, float $la2, float $lo2, float $t): array
     {
         return ['lat' => $la1 + ($la2 - $la1) * $t, 'lng' => $lo1 + ($lo2 - $lo1) * $t];
@@ -219,4 +298,8 @@ class TrackingController extends AbstractController
         }
         return 'Tunis';
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb

@@ -20,10 +20,14 @@ class AdminReservationChController extends AbstractController
         $page = max(1, $request->query->getInt('page', 1));
         $search = $request->query->get('search', '');
         $sort = $request->query->get('sort', 'idRes');
+<<<<<<< HEAD
         // FIX :43 — $request->query->get() retourne mixed, strtoupper() attend string.
         // On cast en string avant d'appeler strtoupper().
         $directionRaw = $request->query->get('direction', 'DESC');
         $direction = strtoupper((string) $directionRaw) === 'ASC' ? 'ASC' : 'DESC';
+=======
+        $direction = $request->query->get('direction', 'DESC');
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         
         // Récupérer les informations de la chambre
         $chambre = $connection->fetchAssociative("
@@ -43,6 +47,11 @@ class AdminReservationChController extends AbstractController
             $sort = 'idRes';
         }
         
+<<<<<<< HEAD
+=======
+        $direction = strtoupper($direction) === 'ASC' ? 'ASC' : 'DESC';
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         // Construction de la requête avec recherche
         $searchCondition = "";
         $params = ['idCh' => $idCh];
@@ -130,9 +139,13 @@ class AdminReservationChController extends AbstractController
     #[Route('/{id}/delete', name: 'admin_reservationch_delete', methods: ['POST'])]
     public function delete(Request $request, Connection $connection, int $id): Response
     {
+<<<<<<< HEAD
         // FIX :132 — isCsrfTokenValid() attend string|null, get() retourne mixed.
         $token = $request->request->get('_token');
         if ($this->isCsrfTokenValid('delete_reservationch_' . $id, is_string($token) ? $token : null)) {
+=======
+        if ($this->isCsrfTokenValid('delete_reservationch_' . $id, $request->request->get('_token'))) {
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $connection->executeStatement("DELETE FROM reservation_chambre WHERE idRes = ?", [$id]);
             $this->addFlash('success', 'Réservation supprimée avec succès !');
         }

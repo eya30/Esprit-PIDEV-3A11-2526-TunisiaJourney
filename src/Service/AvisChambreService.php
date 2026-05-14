@@ -16,6 +16,7 @@ class AvisChambreService
         $this->em = $em;
     }
 
+<<<<<<< HEAD
     /**
      * @param array{
      *     noteConfort: int,
@@ -35,6 +36,12 @@ class AvisChambreService
         $avis = new AvisChambre();
         // Si vous voulez garder la relation, décommentez la ligne suivante :
         // $avis->setReservationChambre($reservation);
+=======
+    public function enregistrerAvis(ReservationChambre $reservation, User $user, array $data): AvisChambre
+    {
+        $avis = new AvisChambre();
+        // $avis->setReservationChambre($reservation);  // ← COMMENTÉ (plus nécessaire)
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $avis->setUtilisateur($user);
         $avis->setDateCreation(new \DateTime());
         $avis->setNoteConfort($data['noteConfort']);
@@ -50,8 +57,12 @@ class AvisChambreService
         $avis->setEstPublie(true);
 
         $this->em->persist($avis);
+<<<<<<< HEAD
         // Si la relation existe, décommentez la ligne suivante :
         // $reservation->setAvisChambre($avis);
+=======
+        // $reservation->setAvisChambre($avis);  // ← COMMENTÉ aussi
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $this->em->flush();
 
         return $avis;

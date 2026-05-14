@@ -16,6 +16,12 @@ class TwoFactorController extends AbstractController
 {
     public function __construct(private AdminLogger $adminLogger) {}
 
+<<<<<<< HEAD
+=======
+    // ══════════════════════════════════════════════════════════════
+    // PAGE DE VÉRIFICATION — appelée pendant le login si 2FA actif
+    // ══════════════════════════════════════════════════════════════
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     #[Route('/2fa/check', name: 'app_2fa_check', methods: ['GET', 'POST'])]
     public function check(Request $request, EntityManagerInterface $em): Response
     {
@@ -31,10 +37,16 @@ class TwoFactorController extends AbstractController
         }
 
         if ($request->isMethod('POST')) {
+<<<<<<< HEAD
             $code = trim((string) $request->request->get('code', ''));
 
             $secret = $user->getTwoFactorSecret();
             if ($secret && $this->verifyTotpCode($secret, $code)) {
+=======
+            $code = trim($request->request->get('code', ''));
+
+            if ($this->verifyTotpCode($user->getTwoFactorSecret(), $code)) {
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                 $request->getSession()->remove('_2fa_user_id');
 
                 $token = new \Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken(
@@ -59,6 +71,12 @@ class TwoFactorController extends AbstractController
         return $this->render('user/2fa_check.html.twig', ['user' => $user]);
     }
 
+<<<<<<< HEAD
+=======
+    // ══════════════════════════════════════════════════════════════
+    // ACTIVER 2FA — génère le secret et affiche le QR code
+    // ══════════════════════════════════════════════════════════════
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     #[Route('/profile/2fa/enable', name: 'app_2fa_enable', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_USER')]
     public function enable(Request $request, EntityManagerInterface $em): Response
@@ -68,12 +86,16 @@ class TwoFactorController extends AbstractController
 
         if ($request->isMethod('GET')) {
             $totp = TOTP::generate();
+<<<<<<< HEAD
 
             // ligne 73 : setLabel exige non-empty-string
             $email = $user->getEmail();
             if ($email) {
                 $totp->setLabel($email);
             }
+=======
+            $totp->setLabel($user->getEmail());
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $totp->setIssuer('TunisiaJourney');
 
             $secret = $totp->getSecret();
@@ -88,16 +110,25 @@ class TwoFactorController extends AbstractController
 
         // POST — vérification du code
         $secret = $request->getSession()->get('_2fa_pending_secret');
+<<<<<<< HEAD
         $code   = trim((string) $request->request->get('code', ''));
+=======
+        $code   = trim($request->request->get('code', ''));
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
         if (!$secret) {
             $this->addFlash('error', 'Session expirée. Recommencez.');
             return $this->redirectToRoute('app_2fa_enable');
         }
 
+<<<<<<< HEAD
         // $secret est non-empty ici car on a vérifié !$secret au-dessus
         if ($this->verifyTotpCode((string) $secret, $code)) {
             $user->setTwoFactorSecret((string) $secret);
+=======
+        if ($this->verifyTotpCode($secret, $code)) {
+            $user->setTwoFactorSecret($secret);
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $user->setIsTotpEnabled(true);
             $em->flush();
 
@@ -111,6 +142,7 @@ class TwoFactorController extends AbstractController
         }
 
         // Code incorrect → réafficher avec même QR
+<<<<<<< HEAD
         $totp = TOTP::createFromSecret((string) $secret);
 
         // ligne 114 : setLabel exige non-empty-string
@@ -118,22 +150,40 @@ class TwoFactorController extends AbstractController
         if ($email) {
             $totp->setLabel($email);
         }
+=======
+        $totp = TOTP::createFromSecret($secret);
+        $totp->setLabel($user->getEmail());
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $totp->setIssuer('TunisiaJourney');
 
         $this->addFlash('2fa_error', 'Code incorrect. Attendez le prochain code (30s) et réessayez.');
 
         return $this->render('user/2fa_enable.html.twig', [
             'secret'         => $secret,
+<<<<<<< HEAD
             'secret_display' => $this->formatSecret((string) $secret),
+=======
+            'secret_display' => $this->formatSecret($secret),
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             'qr_uri'         => $totp->getProvisioningUri(),
         ]);
     }
 
+<<<<<<< HEAD
+=======
+    // ══════════════════════════════════════════════════════════════
+    // DÉSACTIVER 2FA
+    // ══════════════════════════════════════════════════════════════
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     #[Route('/profile/2fa/disable', name: 'app_2fa_disable', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
     public function disable(Request $request, EntityManagerInterface $em): Response
     {
+<<<<<<< HEAD
         if (!$this->isCsrfTokenValid('2fa_disable', (string) $request->request->get('_token'))) {
+=======
+        if (!$this->isCsrfTokenValid('2fa_disable', $request->request->get('_token'))) {
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $this->addFlash('error', 'Token invalide.');
             return $this->redirectToRoute('app_accueil', ['openProfile' => '1']);
         }
@@ -151,6 +201,7 @@ class TwoFactorController extends AbstractController
         return $this->redirectToRoute('app_accueil', ['openProfile' => '1']);
     }
 
+<<<<<<< HEAD
     // lignes 153, 154 : non-empty-string requis → vérification avant appel
     private function verifyTotpCode(string $secret, string $code): bool
     {
@@ -159,6 +210,11 @@ class TwoFactorController extends AbstractController
             return false;
         }
 
+=======
+    // ── Fenêtre 2 = tolère ±60s de décalage horloge ──
+    private function verifyTotpCode(string $secret, string $code): bool
+    {
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         try {
             $totp = TOTP::createFromSecret($secret);
             return $totp->verify($code, null, 2);
@@ -167,9 +223,17 @@ class TwoFactorController extends AbstractController
         }
     }
 
+<<<<<<< HEAD
+=======
+    // ── Formater le secret en groupes de 4 : ABCD EFGH IJKL ... ──
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     private function formatSecret(string $secret): string
     {
         $clean = strtoupper(str_replace([' ', '-'], '', $secret));
         return implode(' ', str_split($clean, 4));
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb

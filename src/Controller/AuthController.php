@@ -162,9 +162,12 @@ class AuthController extends AbstractController
             return $this->json(['error' => 'Image manquante']);
         }
 
+<<<<<<< HEAD
         // ligne 222 : imageBase64 doit être string
         $imageBase64Str = is_string($imageBase64) ? $imageBase64 : '';
 
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $users = $em->getRepository(User::class)
             ->createQueryBuilder('u')
             ->where('u.faceEmbedding IS NOT NULL')
@@ -181,15 +184,24 @@ class AuthController extends AbstractController
 
         foreach ($users as $user) {
             $ch = curl_init('http://127.0.0.1:5001/compare');
+<<<<<<< HEAD
 
             // ligne 181 : CURLOPT_POSTFIELDS doit être string, pas false
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             curl_setopt_array($ch, [
                 CURLOPT_POST           => true,
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+<<<<<<< HEAD
                 CURLOPT_POSTFIELDS     => (string) json_encode([
                     'image_base64' => $imageBase64Str,
                     'embedding'    => json_decode((string) $user->getFaceEmbedding(), true),
+=======
+                CURLOPT_POSTFIELDS     => json_encode([
+                    'image_base64' => $imageBase64,
+                    'embedding'    => json_decode($user->getFaceEmbedding(), true),
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                 ]),
                 CURLOPT_TIMEOUT => 30,
             ]);
@@ -197,8 +209,12 @@ class AuthController extends AbstractController
             $out = curl_exec($ch);
             curl_close($ch);
 
+<<<<<<< HEAD
             // ligne 195 : json_decode attend string
             $result = is_string($out) ? json_decode($out, true) : null;
+=======
+            $result = $out ? json_decode($out, true) : null;
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
             if (isset($result['distance']) && $result['distance'] < $bestDistance) {
                 $bestDistance = $result['distance'];
@@ -225,7 +241,11 @@ class AuthController extends AbstractController
                 'distance: ' . round($bestDistance, 3));
 
             // ── Appeler /emotion côté PHP (pas JS) ──
+<<<<<<< HEAD
             $emotionData = $this->callEmotion($request, $imageBase64Str);
+=======
+            $emotionData = $this->callEmotion($request, $imageBase64);
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $request->getSession()->set('face_emotion', [
                 'emoji'   => $emotionData['emoji']   ?? '😐',
                 'message' => $emotionData['message'] ?? 'Bonne journée !',
@@ -247,6 +267,7 @@ class AuthController extends AbstractController
         return $this->json(['error' => 'Visage non reconnu']);
     }
 
+<<<<<<< HEAD
     /**
      * Appel Flask /emotion côté serveur PHP
      *
@@ -257,18 +278,35 @@ class AuthController extends AbstractController
         $ch = curl_init('http://127.0.0.1:5001/emotion');
 
         // ligne 248 : CURLOPT_POSTFIELDS doit être string, pas false
+=======
+    // ── Appel Flask /emotion côté serveur PHP ──
+    private function callEmotion(Request $request, string $imageBase64): array
+    {
+        $ch = curl_init('http://127.0.0.1:5001/emotion');
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         curl_setopt_array($ch, [
             CURLOPT_POST           => true,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+<<<<<<< HEAD
             CURLOPT_POSTFIELDS     => (string) json_encode(['image_base64' => $imageBase64]),
+=======
+            CURLOPT_POSTFIELDS     => json_encode(['image_base64' => $imageBase64]),
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             CURLOPT_TIMEOUT        => 15,
         ]);
         $out = curl_exec($ch);
         curl_close($ch);
+<<<<<<< HEAD
 
         // ligne 259 : json_decode attend string
         $data = is_string($out) ? json_decode($out, true) : null;
+=======
+        
+
+        $data = $out ? json_decode($out, true) : null;
+       $request->getSession()->set('emotion_debug', $out);
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
         // Mapping de secours si Flask échoue
         $messages = [
@@ -281,10 +319,21 @@ class AuthController extends AbstractController
             'neutral'  => ['emoji' => '😐', 'message' => 'Bonne journée !'],
         ];
 
+<<<<<<< HEAD
+=======
+        // Si Flask a retourné une émotion valide
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         if (isset($data['emotion']) && isset($messages[$data['emotion']])) {
             return $messages[$data['emotion']];
         }
 
+<<<<<<< HEAD
         return ['emoji' => '😊', 'message' => 'Bienvenue !'];
     }
 }
+=======
+        // Fallback
+        return ['emoji' => '😊', 'message' => 'Bienvenue !'];
+    }
+}
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb

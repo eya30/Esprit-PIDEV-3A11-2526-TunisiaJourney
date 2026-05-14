@@ -6,9 +6,12 @@ use App\Entity\ListeAttente;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+<<<<<<< HEAD
 /**
  * @extends ServiceEntityRepository<ListeAttente>
  */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 class ListeAttenteRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -20,18 +23,27 @@ class ListeAttenteRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('l')
             ->where('l.idActivite = :idActivite')
+<<<<<<< HEAD
             ->andWhere('l.statut = :statut')
             ->setParameter('idActivite', $idActivite)
             ->setParameter('statut', ListeAttente::STATUT_EN_ATTENTE)
+=======
+            ->andWhere('l.statut IN (:statuts)')
+            ->setParameter('idActivite', $idActivite)
+            ->setParameter('statuts', [ListeAttente::STATUT_EN_ATTENTE, ListeAttente::STATUT_NOTIFIE])
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             ->orderBy('l.dateInscription', 'ASC')
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
     }
 
+<<<<<<< HEAD
     /**
      * @return ListeAttente[]
      */
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     public function trouverParEmail(string $email): array
     {
         return $this->createQueryBuilder('l')
@@ -52,6 +64,7 @@ class ListeAttenteRepository extends ServiceEntityRepository
             ->setParameter('idActivite', $idActivite)
             ->setParameter('statuts', [ListeAttente::STATUT_EN_ATTENTE, ListeAttente::STATUT_NOTIFIE])
             ->setParameter('email', $email);
+<<<<<<< HEAD
 
         return (int) $qb->getQuery()->getSingleScalarResult();
     }
@@ -63,6 +76,16 @@ class ListeAttenteRepository extends ServiceEntityRepository
     {
         $now = new \DateTime();
 
+=======
+        
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    public function trouverInscriptionsExpirees(): array
+    {
+        $now = new \DateTime();
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         return $this->createQueryBuilder('l')
             ->where('l.statut = :statutNotifie')
             ->andWhere('l.dateLimiteConfirmation < :now')
@@ -84,7 +107,11 @@ class ListeAttenteRepository extends ServiceEntityRepository
             ->setParameter('statuts', [ListeAttente::STATUT_EN_ATTENTE, ListeAttente::STATUT_NOTIFIE])
             ->getQuery()
             ->getSingleScalarResult();
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         return $result > 0;
     }
 

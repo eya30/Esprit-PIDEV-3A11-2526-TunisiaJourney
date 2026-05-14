@@ -11,8 +11,12 @@ class PasswordResetToken
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
+<<<<<<< HEAD
      /** @phpstan-ignore-next-line */
 private ?int $id = null;
+=======
+    private ?int $id = null;
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]

@@ -86,6 +86,7 @@ class HotelController extends AbstractController
             
             // Création de l'avis
             $avis = new AvisChambre();
+<<<<<<< HEAD
 
             // FIX :89 — getUser() retourne UserInterface, mais setUtilisateur() attend App\Entity\User|null.
             // On vérifie que c'est bien une instance de User avant de l'assigner.
@@ -95,6 +96,9 @@ class HotelController extends AbstractController
             }
             $avis->setUtilisateur($user);
 
+=======
+            $avis->setUtilisateur($user);
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $avis->setDateCreation(new \DateTime());
             $avis->setNoteConfort((int)$data['noteConfort']);
             $avis->setNoteServices((int)$data['noteServices']);

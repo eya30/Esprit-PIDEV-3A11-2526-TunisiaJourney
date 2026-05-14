@@ -15,6 +15,12 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class PasswordResetController extends AbstractController
 {
+<<<<<<< HEAD
+=======
+    // ══════════════════════════════════════════════════════════════
+    // ÉTAPE 1 — Page "Mot de passe oublié" (GET + POST)
+    // ══════════════════════════════════════════════════════════════
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     #[Route('/forgot-password', name: 'app_forgot_password', methods: ['GET', 'POST'])]
     public function forgotPassword(
         Request $request,
@@ -30,13 +36,22 @@ class PasswordResetController extends AbstractController
             ]);
         }
 
+<<<<<<< HEAD
         // Vérification CSRF — (string) cast pour PHPStan
         if (!$this->isCsrfTokenValid('forgot_password', (string) $request->request->get('_csrf_token'))) {
+=======
+        // Vérification CSRF
+        if (!$this->isCsrfTokenValid('forgot_password', $request->request->get('_csrf_token'))) {
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $this->addFlash('reset_error', 'Token invalide. Veuillez réessayer.');
             return $this->redirectToRoute('app_forgot_password');
         }
 
+<<<<<<< HEAD
         $email = strtolower(trim((string) $request->request->get('email', '')));
+=======
+        $email = strtolower(trim($request->request->get('email', '')));
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
         $user = $em->getRepository(User::class)
             ->createQueryBuilder('u')
@@ -46,12 +61,20 @@ class PasswordResetController extends AbstractController
             ->getOneOrNullResult();
 
         if ($user) {
+<<<<<<< HEAD
+=======
+            // Supprimer les anciens tokens de cet utilisateur
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $oldTokens = $em->getRepository(PasswordResetToken::class)->findBy(['user' => $user]);
             foreach ($oldTokens as $old) {
                 $em->remove($old);
             }
             $em->flush();
 
+<<<<<<< HEAD
+=======
+            // Générer un token sécurisé
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $rawToken = bin2hex(random_bytes(32));
 
             $resetToken = new PasswordResetToken();
@@ -62,15 +85,28 @@ class PasswordResetController extends AbstractController
             $em->persist($resetToken);
             $em->flush();
 
+<<<<<<< HEAD
+=======
+            // Construire le lien absolu
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $resetUrl = $this->generateUrl(
                 'app_reset_password',
                 ['token' => $rawToken],
                 \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL
             );
 
+<<<<<<< HEAD
             $emailError = $this->sendResetEmail($httpClient, $params, $user, $resetUrl);
 
             if ($emailError !== null) {
+=======
+            // Envoyer l'email — récupère l'erreur si elle existe
+            $emailError = $this->sendResetEmail($httpClient, $params, $user, $resetUrl);
+
+            // En développement : afficher l'erreur Brevo si elle existe
+            if ($emailError !== null) {
+                // En prod tu peux commenter ce flash et logger l'erreur
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                 $this->addFlash('reset_error', 'Erreur envoi email : ' . $emailError);
                 return $this->render('user/forgot_password.html.twig', [
                     'sent'       => false,
@@ -79,12 +115,22 @@ class PasswordResetController extends AbstractController
             }
         }
 
+<<<<<<< HEAD
+=======
+        // Toujours afficher le même écran de succès (sécurité)
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         return $this->render('user/forgot_password.html.twig', [
             'sent'       => true,
             'sent_email' => $email,
         ]);
     }
 
+<<<<<<< HEAD
+=======
+    // ══════════════════════════════════════════════════════════════
+    // ÉTAPE 2 — Page de reset (GET = afficher form, POST = reset)
+    // ══════════════════════════════════════════════════════════════
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     #[Route('/reset-password/{token}', name: 'app_reset_password', methods: ['GET', 'POST'])]
     public function resetPassword(
         string $token,
@@ -115,16 +161,26 @@ class PasswordResetController extends AbstractController
             ]);
         }
 
+<<<<<<< HEAD
         // (string) cast pour PHPStan
         if (!$this->isCsrfTokenValid('reset_password', (string) $request->request->get('_csrf_token'))) {
+=======
+        if (!$this->isCsrfTokenValid('reset_password', $request->request->get('_csrf_token'))) {
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $this->addFlash('reset_error', 'Token invalide. Veuillez réessayer.');
             return $this->redirectToRoute('app_reset_password', ['token' => $token]);
         }
 
+<<<<<<< HEAD
         $newPassword     = (string) $request->request->get('new_password', '');
         $confirmPassword = (string) $request->request->get('confirm_password', '');
 
         // (string) cast pour PHPStan
+=======
+        $newPassword     = $request->request->get('new_password', '');
+        $confirmPassword = $request->request->get('confirm_password', '');
+
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         if (strlen($newPassword) < 8) {
             $this->addFlash('reset_error', 'Le mot de passe doit contenir au moins 8 caractères.');
             return $this->redirectToRoute('app_reset_password', ['token' => $token]);
@@ -135,6 +191,7 @@ class PasswordResetController extends AbstractController
             return $this->redirectToRoute('app_reset_password', ['token' => $token]);
         }
 
+<<<<<<< HEAD
         // Vérification que $user n'est pas null (ligne 150)
         $user = $resetToken->getUser();
         if (!$user instanceof User) {
@@ -142,6 +199,9 @@ class PasswordResetController extends AbstractController
             return $this->redirectToRoute('app_forgot_password');
         }
 
+=======
+        $user = $resetToken->getUser();
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $user->setMotDePasse($hasher->hashPassword($user, $newPassword));
 
         $em->remove($resetToken);
@@ -151,6 +211,13 @@ class PasswordResetController extends AbstractController
         return $this->redirectToRoute('app_login');
     }
 
+<<<<<<< HEAD
+=======
+    // ══════════════════════════════════════════════════════════════
+    // MÉTHODE PRIVÉE — Envoi email via Brevo API
+    // Retourne null si succès, ou le message d'erreur si échec
+    // ══════════════════════════════════════════════════════════════
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
     private function sendResetEmail(
         HttpClientInterface $httpClient,
         ParameterBagInterface $params,
@@ -161,6 +228,10 @@ class PasswordResetController extends AbstractController
         $apiKey      = $params->get('brevo_api_key');
         $senderEmail = $params->get('brevo_sender_email');
 
+<<<<<<< HEAD
+=======
+        // Vérification que les paramètres ne sont pas vides
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         if (empty($apiKey) || $apiKey === 'xkeysib-XXXXXXXX') {
             return 'BREVO_API_KEY manquante ou invalide dans .env.local';
         }
@@ -191,6 +262,7 @@ class PasswordResetController extends AbstractController
                 ],
             ]);
 
+<<<<<<< HEAD
             $statusCode = $response->getStatusCode();
 
             if ($statusCode !== 201 && $statusCode !== 200) {
@@ -199,16 +271,37 @@ class PasswordResetController extends AbstractController
             }
 
             return null;
+=======
+            // Forcer la lecture de la réponse (le HttpClient est lazy)
+            $statusCode = $response->getStatusCode();
+           
+            // Brevo renvoie 201 pour un email envoyé avec succès
+            if ($statusCode !== 201 && $statusCode !== 200) {
+                $body = $response->getContent(false); // false = ne pas lever d'exception
+                return 'Brevo a répondu avec le code ' . $statusCode . ' : ' . $body;
+            }
+
+            return null; // succès
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
         } catch (\Exception $e) {
             return $e->getMessage();
         }
     }
 
+<<<<<<< HEAD
     private function buildEmailHtml(User $user, string $resetUrl): string
     {
         // (string) cast pour PHPStan ligne 225
         $prenom = htmlspecialchars((string) $user->getPrenom());
+=======
+    // ══════════════════════════════════════════════════════════════
+    // MÉTHODE PRIVÉE — Template HTML de l'email
+    // ══════════════════════════════════════════════════════════════
+    private function buildEmailHtml(User $user, string $resetUrl): string
+    {
+        $prenom = htmlspecialchars($user->getPrenom());
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $url    = htmlspecialchars($resetUrl);
 
         return <<<HTML
@@ -219,10 +312,19 @@ class PasswordResetController extends AbstractController
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body style="margin:0;padding:0;background:#F5EDD8;font-family:'DM Sans',Arial,sans-serif;">
+<<<<<<< HEAD
+=======
+
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5EDD8;padding:40px 0;">
     <tr>
       <td align="center">
         <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+<<<<<<< HEAD
+=======
+
+          <!-- En-tête bordeaux -->
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
           <tr>
             <td style="background:linear-gradient(135deg,#C94040 0%,#A0231F 50%,#2A1010 100%);padding:40px 40px 30px;text-align:center;">
               <div style="width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.15);margin:0 auto 16px;border:2px solid rgba(255,255,255,0.3);display:inline-flex;align-items:center;justify-content:center;">
@@ -235,6 +337,11 @@ class PasswordResetController extends AbstractController
               <p style="color:rgba(255,255,255,0.7);font-size:12px;letter-spacing:2px;margin:0;text-transform:uppercase;">Réinitialisation du mot de passe</p>
             </td>
           </tr>
+<<<<<<< HEAD
+=======
+
+          <!-- Corps -->
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
           <tr>
             <td style="padding:40px 44px;">
               <p style="color:#1A2E4A;font-size:18px;font-weight:600;margin:0 0 12px;">Bonjour {$prenom} 👋</p>
@@ -243,6 +350,10 @@ class PasswordResetController extends AbstractController
                 Cliquez sur le bouton ci-dessous pour choisir un nouveau mot de passe.<br>
                 Ce lien est valable <strong>1 heure</strong>.
               </p>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
               <table cellpadding="0" cellspacing="0" style="margin:0 auto 28px;">
                 <tr>
                   <td style="border-radius:50px;background:linear-gradient(90deg,#A0231F,#C0392B);box-shadow:0 5px 16px rgba(160,35,31,0.35);">
@@ -252,13 +363,24 @@ class PasswordResetController extends AbstractController
                   </td>
                 </tr>
               </table>
+<<<<<<< HEAD
               <hr style="border:none;border-top:1px solid #F0E8D8;margin:0 0 24px;">
+=======
+
+              <hr style="border:none;border-top:1px solid #F0E8D8;margin:0 0 24px;">
+
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
               <p style="color:#888;font-size:12px;line-height:1.6;margin:0 0 6px;">Si le bouton ne fonctionne pas, copiez ce lien :</p>
               <p style="margin:0;">
                 <a href="{$url}" style="color:#A0231F;font-size:12px;word-break:break-all;">{$url}</a>
               </p>
             </td>
           </tr>
+<<<<<<< HEAD
+=======
+
+          <!-- Avertissement -->
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
           <tr>
             <td style="background:#FDF6EC;padding:20px 44px;border-top:1px solid #F0E8D8;">
               <p style="color:#888;font-size:12px;line-height:1.6;margin:0;">
@@ -267,6 +389,11 @@ class PasswordResetController extends AbstractController
               </p>
             </td>
           </tr>
+<<<<<<< HEAD
+=======
+
+          <!-- Footer -->
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
           <tr>
             <td style="background:#1A2E4A;padding:20px 44px;text-align:center;">
               <p style="color:rgba(255,255,255,0.5);font-size:11px;margin:0;">
@@ -275,10 +402,18 @@ class PasswordResetController extends AbstractController
               </p>
             </td>
           </tr>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         </table>
       </td>
     </tr>
   </table>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 </body>
 </html>
 HTML;

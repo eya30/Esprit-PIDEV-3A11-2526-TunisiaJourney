@@ -29,8 +29,12 @@ class AdminLog
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
+<<<<<<< HEAD
    /** @phpstan-ignore-next-line */
     private int|null $id = null;
+=======
+    private ?int $id = null;
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
     // L'acteur (peut être null si compte supprimé)
     #[ORM\ManyToOne(targetEntity: User::class)]
@@ -145,4 +149,8 @@ class AdminLog
             default                         => 'primary',
         };
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb

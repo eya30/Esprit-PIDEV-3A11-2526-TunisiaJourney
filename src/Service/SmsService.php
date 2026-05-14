@@ -19,6 +19,7 @@ class SmsService
         $this->logger = $logger;
     }
 
+<<<<<<< HEAD
     public function sendSms(?string $to, string $message): bool
     {
         // Vérifier que le numéro n'est pas nul ou vide
@@ -50,6 +51,27 @@ class SmsService
             $this->logger->info("SMS envoyé à {$toClean}");
             return true;
            
+=======
+    public function sendSms(string $to, string $message): bool
+    {
+        // Nettoyer le numéro
+        $to = preg_replace('/[^0-9+]/', '', $to);
+        
+        // Ajouter +216 si nécessaire (pour Tunisie)
+        if (!str_starts_with($to, '+') && strlen($to) === 8) {
+            $to = '+216' . $to;
+        }
+        
+        try {
+            $this->client->messages->create($to, [
+                'from' => $this->twilioPhoneNumber,
+                'body' => $message
+            ]);
+            
+            $this->logger->info("SMS envoyé à {$to}");
+            return true;
+            
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         } catch (\Exception $e) {
             $this->logger->error("Erreur SMS: " . $e->getMessage());
             return false;
@@ -65,4 +87,8 @@ class SmsService
                "💰 Total: {$prixTotal} TND\n" .
                "Merci pour votre confiance !";
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb

@@ -3,7 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\AdminLog;
+<<<<<<< HEAD
 use App\Entity\User;
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 use App\Service\AdminLogger;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -51,16 +54,25 @@ class ProfileController extends AbstractController
         HttpClientInterface         $httpClient
     ): Response {
 
+<<<<<<< HEAD
         /** @var User $user */
         $user    = $this->getUser();
         $session = $request->getSession();
 
         // (string) cast — ligne 57
         if (!$this->isCsrfTokenValid('profile_edit', (string) $request->request->get('_token'))) {
+=======
+        /** @var \App\Entity\User $user */
+        $user    = $this->getUser();
+        $session = $request->getSession();
+
+        if (!$this->isCsrfTokenValid('profile_edit', $request->request->get('_token'))) {
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_accueil', ['openProfile' => '1']);
         }
 
+<<<<<<< HEAD
         // (string) cast sur tous les trim — lignes 62-67
         $nom           = trim((string) $request->request->get('nom', ''));
         $prenom        = trim((string) $request->request->get('prenom', ''));
@@ -68,6 +80,14 @@ class ProfileController extends AbstractController
         $adresse       = trim((string) $request->request->get('adresse', ''));
         $email         = trim((string) $request->request->get('email', ''));
         $dateNaissance = trim((string) $request->request->get('dateNaissance', ''));
+=======
+        $nom           = trim($request->request->get('nom', ''));
+        $prenom        = trim($request->request->get('prenom', ''));
+        $telephone     = trim($request->request->get('telephone', ''));
+        $adresse       = trim($request->request->get('adresse', ''));
+        $email         = trim($request->request->get('email', ''));
+        $dateNaissance = trim($request->request->get('dateNaissance', ''));
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
         $profileData = compact('nom', 'prenom', 'telephone', 'adresse', 'email', 'dateNaissance');
 
@@ -102,10 +122,17 @@ class ProfileController extends AbstractController
             return $this->redirectToRoute('app_accueil', ['openEditModal' => '1']);
         }
 
+<<<<<<< HEAD
         // Mot de passe — (string) cast lignes 110, 111, 119
         $newPassword     = (string) $request->request->get('new_password', '');
         $currentPassword = (string) $request->request->get('current_password', '');
         $confirmPassword = (string) $request->request->get('confirm_password', '');
+=======
+        // Mot de passe
+        $newPassword     = $request->request->get('new_password', '');
+        $currentPassword = $request->request->get('current_password', '');
+        $confirmPassword = $request->request->get('confirm_password', '');
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         $passwordChanged = false;
 
         if ($newPassword !== '') {
@@ -131,17 +158,26 @@ class ProfileController extends AbstractController
             // 1. Générer le face embedding via Flask
             try {
                 $ch = curl_init('http://127.0.0.1:5001/embed');
+<<<<<<< HEAD
 
                 // ligne 136 : file_get_contents peut retourner false → cast (string)
                 $fileContents = file_get_contents($photoFile->getPathname());
                 $imageBase64  = base64_encode($fileContents !== false ? $fileContents : '');
 
                 // ligne 131 : CURLOPT_POSTFIELDS doit être string|array, pas false
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                 curl_setopt_array($ch, [
                     CURLOPT_POST           => true,
                     CURLOPT_RETURNTRANSFER => true,
                     CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+<<<<<<< HEAD
                     CURLOPT_POSTFIELDS     => (string) json_encode(['image_base64' => $imageBase64]),
+=======
+                    CURLOPT_POSTFIELDS     => json_encode([
+                        'image_base64' => base64_encode(file_get_contents($photoFile->getPathname()))
+                    ]),
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                     CURLOPT_TIMEOUT        => 30,
                     CURLOPT_CONNECTTIMEOUT => 5,
                 ]);
@@ -149,6 +185,7 @@ class ProfileController extends AbstractController
                 $curlError = curl_error($ch);
                 curl_close($ch);
 
+<<<<<<< HEAD
                 // lignes 149, 150, 154 : json_decode attend string
                 $outStr = is_string($out) ? $out : '';
 
@@ -172,6 +209,30 @@ class ProfileController extends AbstractController
             $ch2 = curl_init();
             curl_setopt_array($ch2, [
                 CURLOPT_URL            => 'https://api.imgbb.com/1/upload?key=' . $imgbbKey,
+=======
+                // ── DEBUG TEMPORAIRE ──
+                file_put_contents('C:/xampp/htdocs/debug_embed.txt',
+                    "out: "              . var_export($out, true) .
+                    "\ncurlError: "      . $curlError .
+                    "\nresult: "         . var_export(json_decode($out, true), true) .
+                    "\nembedding isset: " . (isset(json_decode($out, true)['embedding']) ? 'OUI' : 'NON')
+                );
+
+                if ($out && !$curlError) {
+                    $result = json_decode($out, true);
+                    if (isset($result['embedding'])) {
+                        $user->setFaceEmbedding(json_encode($result['embedding']));
+                    }
+                }
+            } catch (\Exception $e) {
+                file_put_contents('C:/xampp/htdocs/debug_embed.txt', 'Exception: ' . $e->getMessage());
+            }
+
+            // 2. Upload photo vers ImgBB
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL            => 'https://api.imgbb.com/1/upload?key=' . $params->get('imgbb_api_key'),
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
                 CURLOPT_POST           => true,
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_POSTFIELDS     => [
@@ -182,11 +243,17 @@ class ProfileController extends AbstractController
                     )
                 ],
             ]);
+<<<<<<< HEAD
             $imgOut  = curl_exec($ch2);
             curl_close($ch2);
 
             // ligne 177 : json_decode attend string
             $imgJson = json_decode(is_string($imgOut) ? $imgOut : '', true);
+=======
+            $imgJson = json_decode(curl_exec($ch), true);
+            curl_close($ch);
+
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
             if (isset($imgJson['data']['url'])) {
                 $user->setProfileImageUrl($imgJson['data']['url']);
                 $photoChanged = true;
@@ -195,12 +262,16 @@ class ProfileController extends AbstractController
 
         $em->flush();
         $em->refresh($user);
+<<<<<<< HEAD
 
         // ligne 188 : getToken() peut être null → vérification
         $token = $tokenStorage->getToken();
         if ($token !== null) {
             $token->setUser($user);
         }
+=======
+        $tokenStorage->getToken()->setUser($user);
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
         // ── LOGS ──
         $cible = 'soi-meme (id=' . $user->getId() . ')';

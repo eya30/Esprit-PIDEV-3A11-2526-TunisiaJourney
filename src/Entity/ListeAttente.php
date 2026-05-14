@@ -5,7 +5,10 @@ namespace App\Entity;
 use App\Repository\ListeAttenteRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+<<<<<<< HEAD
 use Symfony\Component\Serializer\Annotation\Ignore;
+=======
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
 #[ORM\Entity(repositoryClass: ListeAttenteRepository::class)]
 #[ORM\Table(name: 'liste_attente')]
@@ -21,8 +24,12 @@ class ListeAttente
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+<<<<<<< HEAD
     /** @phpstan-ignore-next-line */
     private int $id;
+=======
+    private ?int $id = null;
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
     #[ORM\Column(name: 'id_activite', type: 'integer')]
     private ?int $idActivite = null;
@@ -55,6 +62,7 @@ class ListeAttente
     private ?\DateTimeInterface $dateConfirmation = null;
 
     #[ORM\Column(type: 'string', length: 20, options: ['default' => 'en_attente'])]
+<<<<<<< HEAD
     private string $statut = self::STATUT_EN_ATTENTE;
 
     /**
@@ -65,6 +73,14 @@ class ListeAttente
     private ?string $tokenConfirmation = null;
 
     public function getId(): ?int { return $this->id ?? null; }
+=======
+    private ?string $statut = self::STATUT_EN_ATTENTE;
+
+    #[ORM\Column(name: 'token_confirmation', length: 100, nullable: true)]
+    private ?string $tokenConfirmation = null;
+
+    public function getId(): ?int { return $this->id; }
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
     public function getIdActivite(): ?int { return $this->idActivite; }
     public function setIdActivite(int $idActivite): self { $this->idActivite = $idActivite; return $this; }
@@ -96,6 +112,7 @@ class ListeAttente
     public function getDateConfirmation(): ?\DateTimeInterface { return $this->dateConfirmation; }
     public function setDateConfirmation(?\DateTimeInterface $dateConfirmation): self { $this->dateConfirmation = $dateConfirmation; return $this; }
 
+<<<<<<< HEAD
     public function getStatut(): string { return $this->statut; }
     public function setStatut(string $statut): self { $this->statut = $statut; return $this; }
 
@@ -107,6 +124,13 @@ class ListeAttente
         $this->tokenConfirmation = $tokenConfirmation;
         return $this;
     }
+=======
+    public function getStatut(): ?string { return $this->statut; }
+    public function setStatut(string $statut): self { $this->statut = $statut; return $this; }
+
+    public function getTokenConfirmation(): ?string { return $this->tokenConfirmation; }
+    public function setTokenConfirmation(?string $tokenConfirmation): self { $this->tokenConfirmation = $tokenConfirmation; return $this; }
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 
     public function estEnAttente(): bool { return $this->statut === self::STATUT_EN_ATTENTE; }
     public function estNotifie(): bool { return $this->statut === self::STATUT_NOTIFIE; }

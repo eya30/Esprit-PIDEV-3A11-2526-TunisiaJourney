@@ -5,7 +5,11 @@ framework:
             discord: '%env(DISCORD_WEBHOOK_URL)%'
         texter_transports:
             twilio: '%env(TWILIO_DSN)%'
+<<<<<<< HEAD
             ma_liste_attente: '%env(MON_SMS_DSN)%'
+=======
+            ma_liste_attente: '%env(SMS_DSN)%'  # ← TA LIGNE AJOUTÉE
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
         channel_policy:
             urgent: ['discord', 'email']
             high: ['discord', 'email']

@@ -3,10 +3,15 @@
 namespace App\Controller;
 
 use App\Entity\Commande;
+<<<<<<< HEAD
 use App\Entity\Produit;
 use App\Repository\CommandeRepository;
 use App\Repository\CommandeProduitRepository;
 use Doctrine\DBAL\Connection;
+=======
+use App\Repository\CommandeRepository;
+use App\Repository\CommandeProduitRepository;
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,6 +34,7 @@ class CommandeController extends AbstractController
     {
         if ($commande->getUser() !== $this->getUser()) {
             $this->addFlash('danger', 'Accès refusé.');
+<<<<<<< HEAD
             return $this->redirectToRoute('app_commande_index');
         }
         return $this->render('commande/show.html.twig', [
@@ -280,5 +286,105 @@ class CommandeController extends AbstractController
         $commande->setTotal($total);
         $commande->setQuantite($qte);
         $em->flush();
+=======
+            return $this->redirectToRoute('app_commande_index');
+        }
+        return $this->render('commande/show.html.twig', [
+            'commande' => $commande,
+            'items'    => $cpRepo->findBy(['commande' => $commande]),
+        ]);
+    }
+
+    // ✅ PAGE TRACKING
+    #[Route('/{id}/tracking', name: 'app_commande_tracking', methods: ['GET'])]
+    public function tracking(Commande $commande): Response
+    {
+        if (!$this->getUser()) return $this->redirectToRoute('app_login');
+        if ($commande->getUser() !== $this->getUser()) {
+            $this->addFlash('danger', 'Accès refusé.');
+            return $this->redirectToRoute('app_commande_index');
+        }
+        $statutsValides = ['Confirmée', 'En cours', 'Expédiée', 'Livrée'];
+        if (!in_array($commande->getStatut(), $statutsValides)) {
+            $this->addFlash('info', 'Tracking disponible une fois la commande confirmée.');
+            return $this->redirectToRoute('app_commande_show', ['id' => $commande->getId()]);
+        }
+        return $this->render('commande/tracking.html.twig', ['commande' => $commande]);
+    }
+
+    #[Route('/{id}/modifier', name: 'app_commande_edit', methods: ['GET', 'POST'])]
+    public function edit(Commande $commande, Request $request, EntityManagerInterface $em): Response
+    {
+        if ($commande->getUser() !== $this->getUser()) {
+            $this->addFlash('danger', 'Accès refusé.');
+            return $this->redirectToRoute('app_commande_index');
+        }
+        if ($commande->getStatut() !== 'En attente') {
+            $this->addFlash('warning', 'Commande déjà en cours de traitement.');
+            return $this->redirectToRoute('app_commande_index');
+        }
+        $form = $this->createForm(\App\Form\CommandeType::class, $commande);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->flush();
+            $this->addFlash('success', 'Commande mise à jour.');
+            return $this->redirectToRoute('app_commande_show', ['id' => $commande->getId()]);
+        }
+        return $this->render('commande/edit.html.twig', [
+            'commande' => $commande, 'form' => $form->createView(),
+            'action' => 'Modifier', 'produit' => null,
+        ]);
+>>>>>>> 1c94a897d2f9442710693a83ad2d8e675fdf34eb
+    }
+
+    #[Route('/{id}/article/{itemId}/quantite', name: 'app_commande_item_update', methods: ['POST'])]
+    public function updateItem(Commande $commande, int $itemId, Request $request, CommandeProduitRepository $cpRepo, EntityManagerInterface $em): Response
+    {
+        if ($commande->getUser() !== $this->getUser()) { $this->addFlash('danger', 'Accès refusé.'); return $this->redirectToRoute('app_commande_index'); }
+        if ($commande->getStatut() !== 'En attente') { $this->addFlash('warning', 'Commande non modifiable.'); return $this->redirectToRoute('app_commande_index'); }
+        $item = $cpRepo->find($itemId);
+        $quantite = (int) $request->request->get('quantite', 1);
+        if (!$item || $item->getCommande()?->getId() !== $commande->getId()) { $this->addFlash('danger', 'Article introuvable.'); return $this->redirectToRoute('app_commande_index'); }
+        if ($quantite <= 0) {
+            $em->remove($item); $em->flush();
+            if (empty($cpRepo->findBy(['commande' => $commande]))) { $em->remove($commande); $em->flush(); $this->addFlash('info', 'Commande supprimée (vide).'); return $this->redirectToRoute('app_commande_index'); }
+        } else {
+            $stockMax = ($item->getProduit()->getStock() ?? 0) + $item->getQuantite();
+            if ($quantite > $stockMax) { $this->addFlash('warning', 'Stock insuffisant. Max : ' . $stockMax); return $this->redirectToRoute('app_commande_show', ['id' => $commande->getId()]); }
+            $item->setQuantite($quantite); $em->flush();
+        }
+        $this->recalculerTotal($commande, $cpRepo, $em);
+        $this->addFlash('success', 'Article mis à jour.');
+        return $this->redirectToRoute('app_commande_show', ['id' => $commande->getId()]);
+    }
+
+    #[Route('/{id}/article/{itemId}/supprimer', name: 'app_commande_item_delete', methods: ['POST'])]
+    public function deleteItem(Commande $commande, int $itemId, CommandeProduitRepository $cpRepo, EntityManagerInterface $em): Response
+    {
+        if ($commande->getUser() !== $this->getUser()) { $this->addFlash('danger', 'Accès refusé.'); return $this->redirectToRoute('app_commande_index'); }
+        if ($commande->getStatut() !== 'En attente') { $this->addFlash('warning', 'Commande non modifiable.'); return $this->redirectToRoute('app_commande_index'); }
+        $item = $cpRepo->find($itemId);
+        if ($item && $item->getCommande()?->getId() === $commande->getId()) { $em->remove($item); $em->flush(); $this->recalculerTotal($commande, $cpRepo, $em); }
+        if (empty($cpRepo->findBy(['commande' => $commande]))) { $em->remove($commande); $em->flush(); $this->addFlash('info', 'Commande supprimée (vide).'); return $this->redirectToRoute('app_commande_index'); }
+        $this->addFlash('success', 'Article supprimé.');
+        return $this->redirectToRoute('app_commande_show', ['id' => $commande->getId()]);
+    }
+
+    #[Route('/{id}/supprimer', name: 'app_commande_delete', methods: ['POST'])]
+    public function delete(Commande $commande, EntityManagerInterface $em): Response
+    {
+        if ($commande->getUser() !== $this->getUser()) { $this->addFlash('danger', 'Accès refusé.'); return $this->redirectToRoute('app_commande_index'); }
+        if ($commande->getStatut() !== 'En attente') { $this->addFlash('warning', 'Seules les commandes "En attente" peuvent être supprimées.'); return $this->redirectToRoute('app_commande_index'); }
+        $em->remove($commande); $em->flush();
+        $this->addFlash('success', 'Commande supprimée.');
+        return $this->redirectToRoute('app_commande_index');
+    }
+
+    private function recalculerTotal(Commande $commande, CommandeProduitRepository $cpRepo, EntityManagerInterface $em): void
+    {
+        $items = $cpRepo->findBy(['commande' => $commande]);
+        $total = 0; $qte = 0;
+        foreach ($items as $item) { $total += $item->getProduit()->getPrix() * $item->getQuantite(); $qte += $item->getQuantite(); }
+        $commande->setTotal($total); $commande->setQuantite($qte); $em->flush();
     }
 }
