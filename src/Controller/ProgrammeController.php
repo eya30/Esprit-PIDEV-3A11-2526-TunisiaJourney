@@ -64,13 +64,9 @@ class ProgrammeController extends AbstractController
         ]);
     }
 
-    // ✅ CORRECTION : Version ultra-simple compatible Symfony 7+
     #[Route('/{idProg}/with-data', name: 'app_programme_show_with_data', methods: ['GET'])]
     public function showWithData(Programme $programme, Request $request): Response
     {
-        // 🟢 Les messages flash (error/success) sont automatiquement disponibles 
-        // dans Twig via app.flashes() après un redirect. Aucun besoin de getFlashBag() !
-        
         return $this->render('programme/show.html.twig', [
             'programme' => $programme,
             'old' => [
@@ -113,10 +109,18 @@ class ProgrammeController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function delete(Request $request, Programme $programme, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete' . $programme->getIdProg(), $request->request->get('_token'))) {
+        // Correction: Récupération sécurisée du token
+        $token = $request->request->get('_token');
+        
+        // Convertir en string|null
+        $token = is_string($token) ? $token : null;
+        
+        if ($token && $this->isCsrfTokenValid('delete' . $programme->getIdProg(), $token)) {
             $entityManager->remove($programme);
             $entityManager->flush();
             $this->addFlash('success', 'Programme supprimé avec succès !');
+        } else {
+            $this->addFlash('error', 'Token CSRF invalide. Veuillez réessayer.');
         }
 
         return $this->redirectToRoute('app_programme_index');

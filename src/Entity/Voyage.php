@@ -16,6 +16,7 @@ class Voyage
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: "idV", type: "integer")]
+    /** @phpstan-ignore-next-line */
     private ?int $idV = null;
 
     #[ORM\Column(length: 255)]
@@ -24,43 +25,48 @@ class Voyage
         pattern: '/^[^0-9]+$/u',
         message: 'Le nom du voyage ne doit pas contenir de chiffres.'
     )]
-    private ?string $nom = null;
+    private string $nom = '';
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: 'La description est obligatoire.')]
-    private ?string $description = null;
+    private string $description = '';
 
     #[ORM\Column]
     #[Assert\NotBlank(message: 'La capacité est obligatoire.')]
     #[Assert\Positive(message: 'La capacité doit être un nombre positif.')]
     #[Assert\LessThanOrEqual(value: 200, message: 'La capacité ne peut pas dépasser {{ compared_value }} personnes.')]
-    private ?int $capacite = null;
+    private int $capacite = 0;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     #[Assert\NotBlank(message: 'Le prix est obligatoire.')]
     #[Assert\Positive(message: 'Le prix doit être supérieur à 0.')]
-    private ?float $prix = null;
+    private string $prix = '0.00';
 
     #[ORM\Column(name: "dateCreation", type: Types::DATE_MUTABLE)]
     #[Assert\NotBlank(message: 'La date de création est obligatoire.')]
-    private ?\DateTimeInterface $dateCreation = null;
+    private \DateTimeInterface $dateCreation;
 
     #[ORM\Column(type: Types::TIME_MUTABLE)]
     #[Assert\NotBlank(message: 'L\'heure est obligatoire.')]
-    private ?\DateTimeInterface $heure = null;
+    private \DateTimeInterface $heure;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
 
     #[ORM\Column(name: "id_user", type: "integer")]
-    private ?int $idUser = null;
+    private int $idUser = 0;
 
-    #[ORM\OneToMany(mappedBy: 'voyage', targetEntity: Programme::class, cascade: ['persist', 'remove'])]
+    /**
+     * @var Collection<int, Programme>
+     */
+    #[ORM\OneToMany(mappedBy: 'voyage', targetEntity: Programme::class, cascade: ['persist'], orphanRemoval: true)]
     private Collection $programmes;
 
     public function __construct()
     {
         $this->programmes = new ArrayCollection();
+        $this->dateCreation = new \DateTime();
+        $this->heure = new \DateTime();
     }
 
     public function getIdV(): ?int
@@ -101,14 +107,15 @@ class Voyage
         return $this;
     }
 
-    public function getPrix(): ?float
+    public function getPrix(): ?string
     {
         return $this->prix;
     }
 
-    public function setPrix(float $prix): static
+    public function setPrix(float|string $prix): static
     {
-        $this->prix = $prix;
+        $this->prix = is_float($prix) ? number_format($prix, 2, '.', '') : $prix;
+
         return $this;
     }
 
@@ -156,6 +163,9 @@ class Voyage
         return $this;
     }
 
+    /**
+     * @return Collection<int, Programme>
+     */
     public function getProgrammes(): Collection
     {
         return $this->programmes;

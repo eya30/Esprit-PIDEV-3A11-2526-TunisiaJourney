@@ -4,6 +4,7 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\AvisChambreRepository;
 
 #[ORM\Entity(repositoryClass: AvisChambreRepository::class)]
 #[ORM\Table(name: 'avis_chambre')]
@@ -12,6 +13,7 @@ class AvisChambre
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    /** @phpstan-ignore-next-line */
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'avisChambres')]
@@ -19,33 +21,33 @@ class AvisChambre
     private ?User $utilisateur = null;
 
     // ========== LES 9 NOTES ==========
-    
+   
     #[ORM\Column(name: 'note_confort')]
-    private ?int $noteConfort = null;
+    private int $noteConfort = 0;
 
     #[ORM\Column(name: 'note_services')]
-    private ?int $noteServices = null;
+    private int $noteServices = 0;
 
     #[ORM\Column(name: 'note_equipements')]
-    private ?int $noteEquipements = null;
+    private int $noteEquipements = 0;
 
     #[ORM\Column(name: 'note_proprete')]
-    private ?int $noteProprete = null;
+    private int $noteProprete = 0;
 
     #[ORM\Column(name: 'note_personnel')]
-    private ?int $notePersonnel = null;
+    private int $notePersonnel = 0;
 
     #[ORM\Column(name: 'note_emplacement')]
-    private ?int $noteEmplacement = null;
+    private int $noteEmplacement = 0;
 
     #[ORM\Column(name: 'note_restauration')]
-    private ?int $noteRestauration = null;
+    private int $noteRestauration = 0;
 
     #[ORM\Column(name: 'note_prix_qualite')]
-    private ?int $notePrixQualite = null;
+    private int $notePrixQualite = 0;
 
     #[ORM\Column(name: 'note_calme')]
-    private ?int $noteCalme = null;
+    private int $noteCalme = 0;
 
     // =================================
 
@@ -53,7 +55,7 @@ class AvisChambre
     private ?string $commentaire = null;
 
     #[ORM\Column(name: 'date_creation', type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
-    private ?\DateTimeInterface $dateCreation = null;
+    private \DateTimeInterface $dateCreation;
 
     #[ORM\Column(name: 'date_modification', type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $dateModification = null;
@@ -65,12 +67,17 @@ class AvisChambre
     private bool $estPublie = true;
 
     // ========== NOUVELLES PROPRIÉTÉS POUR L'ANALYSE DE SENTIMENT ==========
-    
+   
     #[ORM\Column(type: 'string', length: 20, nullable: true)]
     private ?string $sentiment = null;
 
     #[ORM\Column(type: 'string', length: 20, options: ['default' => 'non_lue'])]
-    private ?string $statutNotification = 'non_lue';
+    private string $statutNotification = 'non_lue';
+
+    public function __construct()
+    {
+        $this->dateCreation = new \DateTime();
+    }
 
     // ========== GETTERS ET SETTERS ==========
 
@@ -264,7 +271,7 @@ class AvisChambre
 
     public function setStatutNotification(?string $statutNotification): self
     {
-        $this->statutNotification = $statutNotification;
+        $this->statutNotification = $statutNotification ?? 'non_lue';
         return $this;
     }
 
@@ -273,10 +280,10 @@ class AvisChambre
      */
     public function getNoteMoyenne(): float
     {
-        $total = $this->noteConfort + $this->noteServices + $this->noteEquipements + 
-                 $this->noteProprete + $this->notePersonnel + $this->noteEmplacement + 
+        $total = $this->noteConfort + $this->noteServices + $this->noteEquipements +
+                 $this->noteProprete + $this->notePersonnel + $this->noteEmplacement +
                  $this->noteRestauration + $this->notePrixQualite + $this->noteCalme;
-        
+       
         return round($total / 9, 1);
     }
 }

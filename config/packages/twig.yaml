@@ -1,5 +1,9 @@
 twig:
     file_name_pattern: '*.twig'
+    cache: false
+    auto_reload: true
+    globals:
+        recaptcha_site_key: '%env(RECAPTCHA_SITE_KEY)%'
 
 when@test:
     twig:

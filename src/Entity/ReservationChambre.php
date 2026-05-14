@@ -3,7 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\ReservationChambreRepository;
-use App\Entity\AvisChambre; 
+use App\Entity\AvisChambre;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -14,17 +14,18 @@ class ReservationChambre
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    /** @phpstan-ignore-next-line */
     private ?int $id = null;
 
     #[ORM\Column]
     #[Assert\NotBlank(message: "L'ID utilisateur est requis.")]
     #[Assert\Positive(message: "L'ID utilisateur doit être un nombre positif.")]
-    private ?int $idUtilisateur = null;
+    private int $idUtilisateur = 0;
 
     #[ORM\Column]
     #[Assert\NotBlank(message: "L'ID de la chambre est requis.")]
     #[Assert\Positive(message: "L'ID de la chambre doit être un nombre positif.")]
-    private ?int $idCh = null;
+    private int $idCh = 0;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     #[Assert\NotBlank(message: "La date de début est requise.")]
@@ -32,7 +33,7 @@ class ReservationChambre
         value: "today",
         message: "La date de début ne peut pas être dans le passé."
     )]
-    private ?\DateTime $dateDebut = null;
+    private \DateTime $dateDebut;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     #[Assert\NotBlank(message: "La date de fin est requise.")]
@@ -40,7 +41,7 @@ class ReservationChambre
         propertyPath: "dateDebut",
         message: "La date de fin doit être postérieure à la date de début."
     )]
-    private ?\DateTime $dateFin = null;
+    private \DateTime $dateFin;
 
     #[ORM\Column]
     #[Assert\NotBlank(message: "Le nombre de nuits est requis.")]
@@ -49,7 +50,7 @@ class ReservationChambre
         value: 90,
         message: "Le séjour ne peut pas dépasser {{ compared_value }} nuits."
     )]
-    private ?int $nbNuit = null;
+    private int $nbNuit = 0;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     #[Assert\NotBlank(message: "Le prix total est requis.")]
@@ -58,7 +59,7 @@ class ReservationChambre
         value: 100000,
         message: "Le prix total ne peut pas dépasser {{ compared_value }} €."
     )]
-    private ?string $prixTotal = null;
+    private string $prixTotal = '0.00';
 
     #[ORM\Column]
     #[Assert\NotBlank(message: "Le nombre de personnes est requis.")]
@@ -67,7 +68,7 @@ class ReservationChambre
         max: 10,
         notInRangeMessage: "Le nombre de personnes doit être compris entre {{ min }} et {{ max }}."
     )]
-    private ?int $nbPersonnes = null;
+    private int $nbPersonnes = 0;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le détail du prix est requis.")]
@@ -75,7 +76,7 @@ class ReservationChambre
         max: 255,
         maxMessage: "Le détail du prix ne peut pas dépasser {{ limit }} caractères."
     )]
-    private ?string $detailsPrix = null;
+    private string $detailsPrix = '';
 
     #[ORM\Column(length: 20)]
     #[Assert\NotBlank(message: "Le numéro de téléphone est requis.")]
@@ -89,7 +90,7 @@ class ReservationChambre
         pattern: "/^[0-9+\-\s]+$/",
         message: "Le numéro de téléphone ne doit contenir que des chiffres, espaces, tirets ou le signe +."
     )]
-    private ?string $telephone = null;
+    private string $telephone = '';
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le statut est requis.")]
@@ -97,10 +98,10 @@ class ReservationChambre
         choices: ["confirmé", "en_attente", "annulé", "terminé"],
         message: "Le statut doit être : confirmé, en_attente, annulé ou terminé."
     )]
-    private ?string $statut = null;
+    private string $statut = '';
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTime $dateAnnulation = null;
+    private ?\DateTimeImmutable $dateAnnulation = null;
 
     #[ORM\Column(length: 100, nullable: true)]
     #[Assert\Length(
@@ -146,6 +147,12 @@ class ReservationChambre
     )]
     private ?string $montantRembourse = null;
 
+    public function __construct()
+    {
+        $this->dateDebut = new \DateTime();
+        $this->dateFin = new \DateTime();
+    }
+
     // ========== NOUVEAUX CHAMPS POUR LE SYSTÈME D'AVIS ==========
 
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
@@ -154,7 +161,7 @@ class ReservationChambre
     #[ORM\Column(type: 'string', length: 100, nullable: true, unique: true)]
     private ?string $tokenAvis = null;
 
-    #[ORM\OneToOne(mappedBy: 'reservationChambre', cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(mappedBy: 'reservationChambre', cascade: ['persist'], orphanRemoval: true)]
     private ?AvisChambre $avisChambre = null;
 
     // ========== GETTERS ET SETTERS ==========
@@ -274,12 +281,12 @@ class ReservationChambre
         return $this;
     }
 
-    public function getDateAnnulation(): ?\DateTime
+    public function getDateAnnulation(): ?\DateTimeImmutable
     {
         return $this->dateAnnulation;
     }
 
-    public function setDateAnnulation(?\DateTime $dateAnnulation): static
+    public function setDateAnnulation(?\DateTimeImmutable $dateAnnulation): static
     {
         $this->dateAnnulation = $dateAnnulation;
         return $this;

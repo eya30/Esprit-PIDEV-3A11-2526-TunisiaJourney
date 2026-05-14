@@ -80,6 +80,9 @@ class AvisChambreType extends AbstractType
             ]);
     }
 
+    /**
+     * @return array<string, int>
+     */
     private function getChoices(): array
     {
         return [

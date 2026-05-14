@@ -11,17 +11,23 @@ class PasswordResetToken
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
-    private ?int $id = null;
+     /** @phpstan-ignore-next-line */
+private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     private ?User $user = null;
 
     #[ORM\Column(type: "string", length: 255, unique: true)]
-    private ?string $token = null;
+    private string $token = '';
 
     #[ORM\Column(type: "datetime")]
-    private ?\DateTimeInterface $expiresAt = null;
+    private \DateTimeInterface $expiresAt;
+
+    public function __construct()
+    {
+        $this->expiresAt = new \DateTime();
+    }
 
     public function getId(): ?int { return $this->id; }
 

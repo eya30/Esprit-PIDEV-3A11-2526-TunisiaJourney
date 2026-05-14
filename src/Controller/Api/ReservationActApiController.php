@@ -27,7 +27,12 @@ class ReservationActApiController extends AbstractController
             return new JsonResponse(['error' => 'Non authentifié'], 401);
         }
 
-        return $user->getEmail();
+        $email = $user->getEmail();
+        if ($email === null) {
+            return new JsonResponse(['error' => 'Email utilisateur introuvable'], 401);
+        }
+
+        return $email;
     }
 
     // ── Lister les réservations CONFIRMÉES de l'utilisateur connecté ─────────
@@ -38,7 +43,6 @@ class ReservationActApiController extends AbstractController
         $email = $this->getUserEmail();
         if ($email instanceof JsonResponse) return $email;
 
-        // MODIFICATION : Ne retourner que les réservations avec status = 'confirmé'
         $reservations = $connection->fetchAllAssociative(
             "SELECT * FROM ReservationAct WHERE Email = ? AND status = 'confirmé' ORDER BY IDRes DESC",
             [$email]
@@ -81,7 +85,6 @@ class ReservationActApiController extends AbstractController
 
         $data = json_decode($request->getContent(), true);
 
-        // MODIFICATION : Vérifier aussi que la réservation n'est pas annulée
         $existing = $connection->fetchAssociative(
             "SELECT * FROM ReservationAct WHERE IDRes = ? AND Email = ? AND status = 'confirmé'",
             [$id, $email]
@@ -125,6 +128,4 @@ class ReservationActApiController extends AbstractController
 
         return $this->json(['success' => true]);
     }
-
-   
 }

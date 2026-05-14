@@ -12,12 +12,13 @@ class Chambre
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    /** @phpstan-ignore-next-line */
     private ?int $idCh = null;
 
     #[ORM\Column]
     #[Assert\NotBlank(message: "Le numéro de chambre est requis.")]
     #[Assert\Positive(message: "Le numéro de chambre doit être un nombre positif.")]
-    private ?int $num = null;
+    private int $num = 0;
 
     #[ORM\Column(length: 80)]
     #[Assert\NotBlank(message: "Le type de chambre est requis.")]
@@ -31,7 +32,7 @@ class Chambre
         choices: ["simple", "double", "triple", "suite", "presidentielle", "familiale"],
         message: "Le type de chambre doit être : simple, double, triple, suite, presidentielle ou familiale."
     )]
-    private ?string $type = null;
+    private string $type = '';
 
     #[ORM\Column(type: "float")]
     #[Assert\NotBlank(message: "Le prix par nuit est requis.")]
@@ -41,7 +42,7 @@ class Chambre
         max: 2000,
         notInRangeMessage: "Le prix par nuit doit être compris entre {{ min }} et {{ max }} €."
     )]
-    private ?float $prix_nuit = null;
+    private float $prix_nuit = 0.0;
 
     #[ORM\Column(length: 50, nullable: true)]
     #[Assert\Choice(
@@ -57,7 +58,7 @@ class Chambre
         max: 10,
         notInRangeMessage: "La capacité maximale doit être comprise entre {{ min }} et {{ max }} personnes."
     )]
-    private ?int $capacite_max = null;
+    private int $capacite_max = 0;
 
     #[ORM\Column(type: 'text', nullable: true)]
     #[Assert\Length(
@@ -84,11 +85,10 @@ class Chambre
     private ?string $modele3D_URL = null;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(name: 'idH', referencedColumnName: 'idH')]
+    #[ORM\JoinColumn(name: 'hotel_id', referencedColumnName: 'idH')]
     #[Assert\NotBlank(message: "L'hôtel associé est requis.")]
     private ?Hotel $hotel = null;
 
-    // Getters et Setters (inchangés)
     public function getIdCh(): ?int
     {
         return $this->idCh;

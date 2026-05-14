@@ -14,11 +14,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Commande
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column(name: 'IDCO')]
-    private ?int $id = null;
+#[ORM\GeneratedValue]
+#[ORM\Column(name: 'IDCO')]
+/** @phpstan-ignore property.unusedType */
+private ?int $id = null;
 
-    // ✅ Propriétés en camelCase — le name: mappe vers la vraie colonne BDD
     #[ORM\Column(name: 'Quantite', nullable: true)]
     #[Assert\Positive(message: "La quantité doit être supérieure à zéro.")]
     private ?int $quantite = 1;
@@ -29,8 +29,8 @@ class Commande
     #[ORM\Column(name: 'Statut', length: 30, nullable: true)]
     private ?string $statut = 'En attente';
 
-    #[ORM\Column(name: 'Total', nullable: true)]
-    private ?float $total = 0.0;
+    #[ORM\Column(name: 'Total', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $total = '0.00';
 
     #[ORM\Column(name: 'AdresseLiv', length: 255, nullable: true)]
     #[Assert\NotBlank(message: "L'adresse est obligatoire.")]
@@ -46,19 +46,20 @@ class Commande
     #[Assert\NotBlank(message: "Le mode de paiement est obligatoire.")]
     private ?string $modePaiement = null;
 
-    // ✅ Relation User
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: true)]
     private ?User $user = null;
 
-    #[ORM\OneToMany(mappedBy: 'commande', targetEntity: CommandeProduit::class, cascade: ['persist', 'remove'])]
+    // ✅ Génériques spécifiés pour PHPStan
+    /** @var Collection<int, CommandeProduit> */
+    #[ORM\OneToMany(mappedBy: 'commande', targetEntity: CommandeProduit::class, cascade: ['persist'], orphanRemoval: true)]
     private Collection $lignes;
 
     public function __construct()
     {
-        $this->lignes   = new ArrayCollection();
-        $this->dateC    = new \DateTime();
-        $this->statut   = 'En attente';
+        $this->lignes = new ArrayCollection();
+        $this->dateC  = new \DateTime();
+        $this->statut = 'En attente';
     }
 
     public function getId(): ?int { return $this->id; }
@@ -72,8 +73,17 @@ class Commande
     public function getStatut(): ?string { return $this->statut; }
     public function setStatut(?string $statut): self { $this->statut = $statut; return $this; }
 
-    public function getTotal(): ?float { return $this->total; }
-    public function setTotal(?float $total): self { $this->total = $total; return $this; }
+    public function getTotal(): ?string { return $this->total; }
+
+    public function setTotal(float|string|null $total): self
+    {
+        // Doctrine DECIMAL hydrates into strings: keep exact money representation.
+        $this->total = $total === null
+            ? null
+            : (is_float($total) ? number_format($total, 2, '.', '') : $total);
+
+        return $this;
+    }
 
     public function getAdresseLiv(): ?string { return $this->adresseLiv; }
     public function setAdresseLiv(?string $adresseLiv): self { $this->adresseLiv = $adresseLiv; return $this; }
@@ -87,6 +97,8 @@ class Commande
     public function getUser(): ?User { return $this->user; }
     public function setUser(?User $user): self { $this->user = $user; return $this; }
 
+    // ✅ Type de retour générique explicite
+    /** @return Collection<int, CommandeProduit> */
     public function getLignes(): Collection { return $this->lignes; }
 
     public function addLigne(CommandeProduit $ligne): self

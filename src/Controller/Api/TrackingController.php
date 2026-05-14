@@ -1,12 +1,11 @@
 <?php
 // src/Controller/Api/TrackingController.php
-// ✅ VERSION MISE À JOUR — avec notification WhatsApp automatique
 
 namespace App\Controller\Api;
 
 use App\Repository\CommandeRepository;
 use App\Service\OllamaEService;
-use App\Service\WhatsAppService;           // ← AJOUT
+use App\Service\WhatsAppService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -22,13 +21,13 @@ class TrackingController extends AbstractController
         'label' => 'Entrepôt TunisiaJourney — Tunis',
     ];
 
-    private const TRAJET_DUREE = 60; // 1 minute pour la démo
+    private const TRAJET_DUREE = 60;
 
     public function __construct(
         private CacheInterface         $cache,
-        private OllamaEService          $ollama,
+        private OllamaEService         $ollama,
         private EntityManagerInterface $em,
-        private WhatsAppService        $whatsApp,  // ← AJOUT
+        private WhatsAppService        $whatsApp,
     ) {}
 
     #[Route('/api/tracking/{id}', name: 'api_tracking', methods: ['GET'])]
@@ -53,27 +52,21 @@ class TrackingController extends AbstractController
         $coordsDest  = $this->geocode($adresseDest);
         $progression = $this->getProgression($id, $statut);
 
-        // ══════════════════════════════════════════════════════
-        //  ✅ PASSAGE AUTOMATIQUE À "LIVRÉE" + NOTIFICATION WHATSAPP
-        //  Déclenché une seule fois quand progression >= 99.5%
-        // ══════════════════════════════════════════════════════
         if ($progression >= 99.5 && $statut !== 'Livrée' && $statut !== 'Annulée') {
-
-            // 1. Mettre à jour le statut en base
             $commande->setStatut('Livrée');
             $this->em->flush();
 
-            // 2. Nettoyer le cache de tracking
             $this->cache->delete('tracking_start_' . $id);
 
-            // 3. ✅ Envoyer notification WhatsApp au client
-            $user = $commande->getUser();
-            if ($user && $user->getTelephone()) {
+            $user      = $commande->getUser();
+            $telephone = $user->getTelephone(); // -> au lieu de ?-> : $user est non-nullable ici
+
+            if ($telephone !== null) {
                 $this->whatsApp->sendLivreurArrive(
-                    $user->getTelephone(),
-                    $user->getNom(),
-                    $user->getPrenom(),
-                    $commande->getId()
+                    $telephone,
+                    $user->getNom()    ?? '',
+                    $user->getPrenom() ?? '',
+                    $commande->getId() ?? 0
                 );
             }
 
@@ -117,14 +110,13 @@ class TrackingController extends AbstractController
         ]);
     }
 
-    // ── Progression selon statut + temps réel ────────────
     private function getProgression(int $id, string $statut): float
     {
         if ($statut === 'Livrée')  return 100.0;
         if ($statut === 'Annulée') return 0.0;
         if ($statut === 'En cours') return $this->realTime($id, 20.0, 100.0);
 
-        return match($statut) {
+        return match ($statut) {
             'En attente'     => 0.0,
             'Confirmée'      => 5.0,
             'En préparation' => 15.0,
@@ -144,11 +136,16 @@ class TrackingController extends AbstractController
         return min($max, max($min, $progress));
     }
 
+    /**
+     * @return array<int, array{label: string, icon: string, key: string, done: bool, active: bool, date: string|null}>
+     */
     private function buildTimeline(string $statut, ?\DateTimeInterface $dateC): array
     {
         $ordre = ['En attente', 'Confirmée', 'En préparation', 'Expédiée', 'En cours', 'Livrée'];
-        $pos   = array_search($statut, $ordre) ?? 0;
-        $steps = [
+        $pos   = array_search($statut, $ordre);
+        $pos   = $pos !== false ? (int) $pos : 0;
+
+        $rawSteps = [
             ['label' => 'Commande reçue',       'icon' => 'fa-shopping-bag',  'key' => 'En attente'],
             ['label' => 'Confirmée',             'icon' => 'fa-check-circle',  'key' => 'Confirmée'],
             ['label' => 'En préparation',        'icon' => 'fa-box-open',      'key' => 'En préparation'],
@@ -156,17 +153,29 @@ class TrackingController extends AbstractController
             ['label' => 'En cours de livraison', 'icon' => 'fa-truck',         'key' => 'En cours'],
             ['label' => 'Livrée ✓',              'icon' => 'fa-home',          'key' => 'Livrée'],
         ];
-        foreach ($steps as $i => &$s) {
-            $s['done']   = $i < $pos;
-            $s['active'] = $i === $pos;
-            $s['date']   = ($i === 0 && $dateC) ? $dateC->format('d/m/Y') : null;
+
+        $steps = [];
+        foreach ($rawSteps as $i => $s) {
+            $date = ($i === 0 && $dateC) ? $dateC->format('d/m/Y') : null;
             if ($s['key'] === 'Livrée' && $statut === 'Livrée') {
-                $s['date'] = date('d/m/Y H:i:s');
+                $date = date('d/m/Y H:i:s');
             }
+            $steps[] = [
+                'label'  => $s['label'],
+                'icon'   => $s['icon'],
+                'key'    => $s['key'],
+                'done'   => $i < $pos,
+                'active' => $i === $pos,
+                'date'   => $date,
+            ];
         }
+
         return $steps;
     }
 
+    /**
+     * @return array{lat: float, lng: float}
+     */
     private function geocode(string $adresse): array
     {
         $default = ['lat' => 36.8065, 'lng' => 10.1815];
@@ -179,7 +188,7 @@ class TrackingController extends AbstractController
             $json = @file_get_contents($url, false, $ctx);
             if ($json) {
                 $d = json_decode($json, true);
-                if (!empty($d[0])) return ['lat' => (float)$d[0]['lat'], 'lng' => (float)$d[0]['lon']];
+                if (!empty($d[0])) return ['lat' => (float) $d[0]['lat'], 'lng' => (float) $d[0]['lon']];
             }
             return $default;
         });
@@ -194,6 +203,9 @@ class TrackingController extends AbstractController
         return $R * 2 * atan2(sqrt($a), sqrt(1 - $a));
     }
 
+    /**
+     * @return array{lat: float, lng: float}
+     */
     private function interpolate(float $la1, float $lo1, float $la2, float $lo2, float $t): array
     {
         return ['lat' => $la1 + ($la2 - $la1) * $t, 'lng' => $lo1 + ($lo2 - $lo1) * $t];

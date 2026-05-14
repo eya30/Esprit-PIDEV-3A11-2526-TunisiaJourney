@@ -10,20 +10,26 @@ class LikePublication
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id', type: 'integer')]
+    /** @phpstan-ignore property.unusedType (Doctrine assigns via reflection) */
     private ?int $id = null;
 
     #[ORM\Column(name: 'type', type: 'string', length: 10)]
-    private ?string $type = null;
+    private string $type = '';
 
     #[ORM\ManyToOne(targetEntity: Publication::class, inversedBy: 'likesCollection')]
     #[ORM\JoinColumn(name: 'publication_id', referencedColumnName: 'idP', nullable: false)]
     private ?Publication $publication = null;
 
     #[ORM\Column(name: 'user_id', type: 'integer')]
-    private ?int $userId = null;
+    private int $userId = 0;
 
     #[ORM\Column(name: 'date_action', type: 'datetime')]
-    private ?\DateTimeInterface $dateAction = null;
+    private \DateTimeInterface $dateAction;
+
+    public function __construct()
+    {
+        $this->dateAction = new \DateTime();
+    }
 
     public function getId(): ?int { return $this->id; }
     public function getType(): ?string { return $this->type; }

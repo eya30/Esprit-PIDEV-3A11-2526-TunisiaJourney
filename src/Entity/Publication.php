@@ -14,14 +14,13 @@ class Publication
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'idP', type: 'integer')]
+    /** @phpstan-ignore property.unusedType (Doctrine assigns via reflection) */
     private ?int $idP = null;
 
     #[ORM\Column(name: 'Description', type: 'string', length: 200, nullable: true)]
     #[Assert\Length(max: 200, maxMessage: 'La description ne peut pas dépasser {{ limit }} caractères.')]
     private ?string $description = null;
 
-    // ✅ FIX : le champ est nullable en BDD et dans PHP pour éviter le crash
-    // quand le formulaire soumet un champ vide. La validation se fait dans le controller.
     #[ORM\Column(name: 'nom', type: 'string', length: 100, nullable: true)]
     private ?string $nom = null;
 
@@ -32,19 +31,21 @@ class Publication
     private ?string $video = null;
 
     #[ORM\Column(name: 'date_creation', type: 'date')]
-    private ?\DateTimeInterface $dateCreation = null;
+    private \DateTimeInterface $dateCreation;
 
     #[ORM\ManyToOne(targetEntity: Forum::class, inversedBy: 'publications')]
-    #[ORM\JoinColumn(name: 'idF', referencedColumnName: 'idF', nullable: false)]
+    #[ORM\JoinColumn(name: 'forum_id', referencedColumnName: 'idF', nullable: false)]
     private ?Forum $forum = null;
 
     #[ORM\Column(name: 'id', type: 'integer')]
-    private ?int $id = null;
+    private int $id = 0;
 
-    #[ORM\OneToMany(mappedBy: 'publication', targetEntity: LikePublication::class, cascade: ['persist', 'remove'])]
+    /** @var Collection<int, LikePublication> */
+    #[ORM\OneToMany(mappedBy: 'publication', targetEntity: LikePublication::class, cascade: ['persist'], orphanRemoval: true)]
     private Collection $likesCollection;
 
-    #[ORM\OneToMany(mappedBy: 'publication', targetEntity: Commentaire::class, cascade: ['persist', 'remove'])]
+    /** @var Collection<int, Commentaire> */
+    #[ORM\OneToMany(mappedBy: 'publication', targetEntity: Commentaire::class, cascade: ['persist'], orphanRemoval: true)]
     private Collection $commentaires;
 
     #[ORM\Column(name: 'vues', type: 'integer', options: ['default' => 0])]
@@ -64,8 +65,6 @@ class Publication
     public function setDescription(?string $d): self { $this->description = $d; return $this; }
 
     public function getNom(): ?string { return $this->nom; }
-    // ✅ FIX CRITIQUE : accepter ?string (nullable) pour éviter l'erreur
-    // "Expected argument of type string, null given" quand le champ est vidé
     public function setNom(?string $n): self { $this->nom = $n; return $this; }
 
     public function getImage(): ?string { return $this->image; }
@@ -79,7 +78,7 @@ class Publication
 
     public function isYoutubeVideo(): bool
     {
-        return $this->video !== null && preg_match('/(youtube\.com|youtu\.be)/i', $this->video);
+        return $this->video !== null && (bool) preg_match('/(youtube\.com|youtu\.be)/i', $this->video);
     }
 
     public function isVimeoVideo(): bool
@@ -122,6 +121,7 @@ class Publication
     public function getId(): ?int { return $this->id; }
     public function setId(int $id): self { $this->id = $id; return $this; }
 
+    /** @return Collection<int, LikePublication> */
     public function getLikesCollection(): Collection { return $this->likesCollection; }
 
     public function countLikes(): int
@@ -134,6 +134,7 @@ class Publication
         return $this->likesCollection->filter(fn(LikePublication $l) => $l->getType() === 'dislike')->count();
     }
 
+    /** @return Collection<int, Commentaire> */
     public function getCommentaires(): Collection { return $this->commentaires; }
 
     public function addCommentaire(Commentaire $c): self

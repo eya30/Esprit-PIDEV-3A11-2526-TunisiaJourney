@@ -13,19 +13,20 @@ class Commentaire
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'idC', type: 'integer')]
+    /** @phpstan-ignore property.unusedType (Doctrine assigns via reflection) */
     private ?int $idC = null;
 
     #[ORM\Column(name: 'description', type: 'text')]
-    private ?string $description = null;
+    private string $description = '';
 
     #[ORM\Column(name: 'image', type: 'string', length: 255, nullable: true)]
     private ?string $image = null;
 
     #[ORM\Column(name: 'date_creation', type: 'date')]
-    private ?\DateTimeInterface $dateCreation = null;
+    private \DateTimeInterface $dateCreation;
 
     #[ORM\ManyToOne(targetEntity: Publication::class, inversedBy: 'commentaires')]
-    #[ORM\JoinColumn(name: 'idP', referencedColumnName: 'idP', nullable: false)]
+    #[ORM\JoinColumn(name: 'publication_id', referencedColumnName: 'idP', nullable: false)]
     private ?Publication $publication = null;
 
     #[ORM\Column(name: 'id', type: 'integer', nullable: true)]
@@ -34,8 +35,9 @@ class Commentaire
     #[ORM\Column(name: 'tags', type: 'string', length: 255, nullable: true)]
     private ?string $tags = null;
 
+    // Fix ligne 38 : jamais assigné null → ?bool devient bool
     #[ORM\Column(name: 'is_cancelled', type: 'boolean', options: ['default' => false])]
-    private ?bool $isCancelled = false;
+    private bool $isCancelled = false;
 
     #[ORM\Column(name: 'cancelled_at', type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $cancelledAt = null;
@@ -46,12 +48,9 @@ class Commentaire
     #[ORM\Column(name: 'user_agent', type: 'string', length: 500, nullable: true)]
     private ?string $userAgent = null;
 
-    #[ORM\Column(name: 'created_at', type: 'datetime', nullable: true)]
-    private ?\DateTimeInterface $createdAt = null;
+    #[ORM\Column(name: 'created_at', type: 'datetime')]
+    private \DateTimeInterface $createdAt;
 
-    // ══════════════════════════════════════════════════════════════════════
-    // CHAMPS POUR LA TRADUCTION
-    // ══════════════════════════════════════════════════════════════════════
     #[ORM\Column(name: 'original_description', type: 'text', nullable: true)]
     private ?string $originalDescription = null;
 
@@ -64,11 +63,11 @@ class Commentaire
     public function __construct()
     {
         $this->dateCreation = new \DateTime();
-        $this->isCancelled = false;
+        $this->createdAt    = new \DateTime();
+        $this->isCancelled  = false;
         $this->isTranslated = false;
     }
 
-    // Getters et Setters
     public function getIdC(): ?int { return $this->idC; }
 
     public function getDescription(): ?string { return $this->description; }
@@ -89,7 +88,8 @@ class Commentaire
     public function getTags(): ?string { return $this->tags; }
     public function setTags(?string $t): self { $this->tags = $t; return $this; }
 
-    public function getIsCancelled(): ?bool { return $this->isCancelled; }
+    // Fix : getter retourne bool (plus ?bool)
+    public function getIsCancelled(): bool { return $this->isCancelled; }
     public function setIsCancelled(bool $isCancelled): self { $this->isCancelled = $isCancelled; return $this; }
 
     public function getCancelledAt(): ?\DateTimeInterface { return $this->cancelledAt; }
@@ -102,9 +102,8 @@ class Commentaire
     public function setUserAgent(?string $userAgent): self { $this->userAgent = $userAgent; return $this; }
 
     public function getCreatedAt(): ?\DateTimeInterface { return $this->createdAt; }
-    public function setCreatedAt(?\DateTimeInterface $createdAt): self { $this->createdAt = $createdAt; return $this; }
+    public function setCreatedAt(?\DateTimeInterface $createdAt): self { $this->createdAt = $createdAt ?? new \DateTime(); return $this; }
 
-    // Getters et Setters pour la traduction
     public function getOriginalDescription(): ?string { return $this->originalDescription; }
     public function setOriginalDescription(?string $desc): self { $this->originalDescription = $desc; return $this; }
 

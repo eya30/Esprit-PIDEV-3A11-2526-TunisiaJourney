@@ -86,7 +86,15 @@ class HotelController extends AbstractController
             
             // Création de l'avis
             $avis = new AvisChambre();
+
+            // FIX :89 — getUser() retourne UserInterface, mais setUtilisateur() attend App\Entity\User|null.
+            // On vérifie que c'est bien une instance de User avant de l'assigner.
+            if (!$user instanceof User) {
+                $this->addFlash('error', 'Utilisateur invalide.');
+                return $this->redirectToRoute('app_hotel_show', ['idH' => $idH]);
+            }
             $avis->setUtilisateur($user);
+
             $avis->setDateCreation(new \DateTime());
             $avis->setNoteConfort((int)$data['noteConfort']);
             $avis->setNoteServices((int)$data['noteServices']);

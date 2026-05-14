@@ -19,25 +19,37 @@ class SmsService
         $this->logger = $logger;
     }
 
-    public function sendSms(string $to, string $message): bool
+    public function sendSms(?string $to, string $message): bool
     {
-        // Nettoyer le numéro
-        $to = preg_replace('/[^0-9+]/', '', $to);
-        
-        // Ajouter +216 si nécessaire (pour Tunisie)
-        if (!str_starts_with($to, '+') && strlen($to) === 8) {
-            $to = '+216' . $to;
+        // Vérifier que le numéro n'est pas nul ou vide
+        if ($to === null || trim($to) === '') {
+            $this->logger->error("Numéro de téléphone invalide (null ou vide)");
+            return false;
         }
-        
+       
+        // Nettoyer le numéro
+        $toClean = preg_replace('/[^0-9+]/', '', $to);
+       
+        // Vérifier que le nettoyage a donné un résultat valide
+        if ($toClean === null || $toClean === '') {
+            $this->logger->error("Numéro de téléphone invalide après nettoyage");
+            return false;
+        }
+       
+        // Ajouter +216 si nécessaire (pour Tunisie)
+        if (!str_starts_with($toClean, '+') && strlen($toClean) === 8) {
+            $toClean = '+216' . $toClean;
+        }
+       
         try {
-            $this->client->messages->create($to, [
+            $this->client->messages->create($toClean, [
                 'from' => $this->twilioPhoneNumber,
                 'body' => $message
             ]);
-            
-            $this->logger->info("SMS envoyé à {$to}");
+           
+            $this->logger->info("SMS envoyé à {$toClean}");
             return true;
-            
+           
         } catch (\Exception $e) {
             $this->logger->error("Erreur SMS: " . $e->getMessage());
             return false;

@@ -16,6 +16,9 @@ class ReservationProgRepository extends ServiceEntityRepository
         parent::__construct($registry, ReservationProg::class);
     }
 
+    /**
+     * @return ReservationProg[]
+     */
     public function findReservationsByUser(int $userId): array
     {
         return $this->createQueryBuilder('r')
@@ -26,6 +29,9 @@ class ReservationProgRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return ReservationProg[]
+     */
     public function findReservationsByProgramme(string $programmeId): array
     {
         return $this->createQueryBuilder('r')
@@ -36,6 +42,9 @@ class ReservationProgRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return ReservationProg[]
+     */
     public function findPaidReservations(): array
     {
         return $this->createQueryBuilder('r')
@@ -54,13 +63,13 @@ class ReservationProgRepository extends ServiceEntityRepository
             ->setParameter('statut', 'payé')
             ->getQuery()
             ->getSingleScalarResult();
-        
-        return $result ?: 0;
+
+        return (float) ($result ?? 0);
     }
 
     public function getReservationsCountByPeriod(\DateTime $start, \DateTime $end): int
     {
-        return $this->createQueryBuilder('r')
+        return (int) $this->createQueryBuilder('r')
             ->select('COUNT(r.idRP)')
             ->where('r.dateProgramme BETWEEN :start AND :end')
             ->setParameter('start', $start)

@@ -13,7 +13,7 @@ class Programme
 {
     #[ORM\Id]
     #[ORM\Column(name: "idProg", type: "string", length: 50)]
-    private ?string $idProg = null;
+    private string $idProg = '';
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'Le nom du programme est obligatoire.')]
@@ -21,38 +21,44 @@ class Programme
         pattern: '/^[^0-9]+$/u',
         message: 'Le nom ne doit pas contenir de chiffres.'
     )]
-    private ?string $nom = null;
+    private string $nom = '';
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: 'La description est obligatoire.')]
-    private ?string $description = null;
+    private string $description = '';
 
     #[ORM\Column(name: "dateDebut", type: Types::DATE_MUTABLE)]
     #[Assert\NotBlank(message: 'La date de début est obligatoire.')]
-    private ?\DateTimeInterface $dateDebut = null;
+    private \DateTimeInterface $dateDebut;
 
     #[ORM\Column(name: "dateFin", type: Types::DATE_MUTABLE)]
     #[Assert\NotBlank(message: 'La date de fin est obligatoire.')]
-    private ?\DateTimeInterface $dateFin = null;
+    private \DateTimeInterface $dateFin;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'Le lieu est obligatoire.')]
-    private ?string $lieu = null;
+    private string $lieu = '';
 
     #[ORM\Column(name: "activiteAssociee", length: 255)]
     #[Assert\NotBlank(message: 'L\'activité associée est obligatoire.')]
-    private ?string $activiteAssociee = null;
+    private string $activiteAssociee = '';
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'L\'hôtel est obligatoire.')]
-    private ?string $hotel = null;
+    private string $hotel = '';
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(name: "idV", referencedColumnName: "idV", nullable: true)]
+    #[ORM\JoinColumn(name: "voyage_id", referencedColumnName: "idV", nullable: true)]
     private ?Voyage $voyage = null;
+
+    public function __construct()
+    {
+        $this->dateDebut = new \DateTime();
+        $this->dateFin   = new \DateTime();
+    }
 
     public function getIdProg(): ?string
     {

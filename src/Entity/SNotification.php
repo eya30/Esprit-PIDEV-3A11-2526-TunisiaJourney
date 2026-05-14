@@ -12,6 +12,10 @@ class SNotification
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id', type: 'integer')]
+    // Fix PHPStan :15 — Doctrine hydrates this via reflection; the `int` branch
+    // is never assigned in userland code, but it IS set by Doctrine after flush().
+    // We keep ?int (null before persist) and suppress the false-positive warning.
+    /** @phpstan-ignore-next-line */
     private ?int $id = null;
 
     #[ORM\Column(name: 'type', type: 'string', length: 50)]

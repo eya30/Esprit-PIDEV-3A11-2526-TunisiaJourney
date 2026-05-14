@@ -16,38 +16,42 @@ class AvisAct
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'idAv', type: 'integer')]
+    /** @phpstan-ignore-next-line */
     private ?int $idAv = null;
 
     #[ORM\ManyToOne(targetEntity: Activite::class)]
-    #[ORM\JoinColumn(name: 'IDAct', referencedColumnName: 'IDAct', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'activite_id', referencedColumnName: 'IDAct', nullable: false, onDelete: 'CASCADE')]
     private ?Activite $activite = null;
 
     #[ORM\Column(name: 'nom', type: 'string', length: 100)]
-    private ?string $nom = null;
+    private string $nom = '';
 
     #[ORM\Column(name: 'note', type: 'integer')]
-    private ?int $note = null;
+    private int $note = 0;
 
     #[ORM\Column(name: 'commentaire', type: 'text', nullable: true)]
     private ?string $commentaire = null;
 
-    // Champ image stocké en BDD (nom du fichier)
     #[ORM\Column(name: 'image', type: 'string', length: 255, nullable: true)]
     private ?string $image = null;
 
-    // Champ virtuel pour VichUploader (pas en BDD)
     #[Vich\UploadableField(mapping: 'avis_images', fileNameProperty: 'image')]
     private ?File $imageFile = null;
 
     #[Gedmo\Timestampable(on: 'create')]
     #[ORM\Column(name: 'date_avis', type: 'datetime')]
-    private ?\DateTimeInterface $dateAvis = null;
+    /** @phpstan-ignore-next-line */
+    private \DateTimeInterface $dateAvis;
 
     #[Gedmo\Timestampable(on: 'update')]
     #[ORM\Column(name: 'updated_at', type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $updatedAt = null;
 
-    // ── Getters / Setters ──
+    public function __construct()
+    {
+        // Gedmo will set these on persist, but defaults avoid nullability/type issues.
+        $this->dateAvis = new \DateTime();
+    }
 
     public function getIdAv(): ?int { return $this->idAv; }
 
@@ -70,7 +74,6 @@ class AvisAct
     public function setImageFile(?File $imageFile): self
     {
         $this->imageFile = $imageFile;
-        // Obligatoire pour que VichUploader déclenche le update
         if ($imageFile !== null) {
             $this->updatedAt = new \DateTimeImmutable();
         }

@@ -2,11 +2,11 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/api/favoris')]
@@ -18,11 +18,18 @@ class FavoriController extends AbstractController
      */
     private function getUserId(): int|JsonResponse
     {
+        /** @var User|null $user */
         $user = $this->getUser();
-        if (!$user) {
+        if (!$user instanceof User) {
             return new JsonResponse(['success' => false, 'message' => 'Non authentifié'], 401);
         }
-        return $user->getId();
+
+        $id = $user->getId();
+        if ($id === null) {
+            return new JsonResponse(['success' => false, 'message' => 'Utilisateur sans ID'], 401);
+        }
+
+        return $id;
     }
 
     // ── Lister tous les favoris de l'utilisateur ─────────────────────────────
@@ -53,16 +60,16 @@ class FavoriController extends AbstractController
         foreach ($favoris as $fav) {
             if ($fav['type'] === 'evenement') {
                 $result[] = [
-                    'idfav'         => $fav['idfav'],
-                    'type'          => 'evenement',
-                    'id'            => $fav['IDEv'],
-                    'titre'         => $fav['titre_ev'] ?? '',
-                    'sousTitre'     => $fav['lieu_ev'] ?? '',
-                    'image'         => $fav['image_ev']
+                    'idfav'        => $fav['idfav'],
+                    'type'         => 'evenement',
+                    'id'           => $fav['IDEv'],
+                    'titre'        => $fav['titre_ev'] ?? '',
+                    'sousTitre'    => $fav['lieu_ev'] ?? '',
+                    'image'        => $fav['image_ev']
                         ? '/uploads/evenements/' . basename($fav['image_ev'])
                         : 'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=400',
-                    'urlDetails'    => '/evenement/' . $fav['IDEv'],
-                    'urlActivites'  => '/evenement/' . $fav['IDEv'] . '/activites',
+                    'urlDetails'   => '/evenement/' . $fav['IDEv'],
+                    'urlActivites' => '/evenement/' . $fav['IDEv'] . '/activites',
                 ];
             } else {
                 $actRow  = $connection->fetchAssociative(
@@ -72,16 +79,16 @@ class FavoriController extends AbstractController
                 $idEvAct = $actRow['IDEv'] ?? null;
 
                 $result[] = [
-                    'idfav'         => $fav['idfav'],
-                    'type'          => 'activite',
-                    'id'            => $fav['IDAct'],
-                    'titre'         => $fav['titre_act'] ?? '',
-                    'sousTitre'     => $fav['TypeActivite'] ?? '',
-                    'image'         => $fav['image_act']
+                    'idfav'        => $fav['idfav'],
+                    'type'         => 'activite',
+                    'id'           => $fav['IDAct'],
+                    'titre'        => $fav['titre_act'] ?? '',
+                    'sousTitre'    => $fav['TypeActivite'] ?? '',
+                    'image'        => $fav['image_act']
                         ? '/uploads/activites/' . basename($fav['image_act'])
                         : 'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=400',
-                    'urlDetails'    => '/activite/' . $fav['IDAct'],
-                    'urlActivites'  => $idEvAct ? '/evenement/' . $idEvAct . '/activites' : '#',
+                    'urlDetails'   => '/activite/' . $fav['IDAct'],
+                    'urlActivites' => $idEvAct ? '/evenement/' . $idEvAct . '/activites' : '#',
                 ];
             }
         }

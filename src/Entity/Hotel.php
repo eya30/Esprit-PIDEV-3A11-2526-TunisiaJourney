@@ -12,6 +12,7 @@ class Hotel
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    /** @phpstan-ignore-next-line */
     private ?int $idH = null;
 
     #[ORM\Column(length: 120)]
@@ -26,7 +27,7 @@ class Hotel
         pattern: "/^[a-zA-ZÀ-ÿ\s\'-]+$/",
         message: "Le nom ne doit contenir que des lettres, espaces, apostrophes ou tirets."
     )]
-    private ?string $nom = null;
+    private string $nom = '';
 
     #[ORM\Column(length: 120)]
     #[Assert\NotBlank(message: "La ville est requise.")]
@@ -40,7 +41,7 @@ class Hotel
         pattern: "/^[a-zA-ZÀ-ÿ\s\'-]+$/",
         message: "La ville ne doit contenir que des lettres, espaces, apostrophes ou tirets."
     )]
-    private ?string $ville = null;
+    private string $ville = '';
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\Length(
@@ -95,9 +96,9 @@ class Hotel
     #[ORM\Column]
     #[Assert\NotBlank(message: "L'ID utilisateur est requis.")]
     #[Assert\Positive(message: "L'ID utilisateur doit être un nombre positif.")]
-    private ?int $idUtilisateur = null;
+    private int $idUtilisateur = 0;
 
-    // Getters et Setters (inchangés)
+    // Pas de setter pour $idH car il est auto-généré par Doctrine
     public function getIdH(): ?int
     {
         return $this->idH;

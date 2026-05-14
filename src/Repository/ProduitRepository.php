@@ -4,8 +4,12 @@ namespace App\Repository;
 
 use App\Entity\Produit;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<Produit>
+ */
 class ProduitRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -13,8 +17,7 @@ class ProduitRepository extends ServiceEntityRepository
         parent::__construct($registry, Produit::class);
     }
 
-    // ✅ Pour la pagination admin avec recherche et tri
-    public function getQueryForPagination(?string $search, ?string $cat, string $sort, string $direction)
+    public function getQueryForPagination(?string $search, ?string $cat, string $sort, string $direction): Query
     {
         $qb = $this->createQueryBuilder('p');
 
@@ -37,7 +40,9 @@ class ProduitRepository extends ServiceEntityRepository
         return $qb->getQuery();
     }
 
-    // ✅ Recherche + tri pour le front
+    /**
+     * @return array<int, Produit>
+     */
     public function findBySearchAndSort(?string $search, string $sort, string $direction = 'ASC'): array
     {
         $qb = $this->createQueryBuilder('p');
@@ -55,7 +60,9 @@ class ProduitRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
-    // ✅ Produits en rupture de stock
+    /**
+     * @return array<int, Produit>
+     */
     public function findEnRupture(): array
     {
         return $this->createQueryBuilder('p')
@@ -65,7 +72,9 @@ class ProduitRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    // ✅ Produits avec stock faible (≤ seuil)
+    /**
+     * @return array<int, Produit>
+     */
     public function findStockFaible(): array
     {
         return $this->createQueryBuilder('p')
@@ -76,7 +85,9 @@ class ProduitRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    // ✅ Produits nécessitant réapprovisionnement (stock ≤ seuil réappro)
+    /**
+     * @return array<int, Produit>
+     */
     public function findNeedsReappro(): array
     {
         return $this->createQueryBuilder('p')
@@ -86,5 +97,4 @@ class ProduitRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-    
 }

@@ -2,264 +2,230 @@
 
 namespace App\Controller;
 
+use App\Entity\AdminLog;
+use App\Entity\User;
+use App\Service\AdminLogger;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
+#[IsGranted('ROLE_USER')]
 class ProfileController extends AbstractController
 {
-    // ----------------------------------------------------------------
-    // ROUTE DEBUG : tester l'API gratuite
-    // ----------------------------------------------------------------
-    #[Route('/profile/debug-free', name: 'profile_debug_free', methods: ['GET'])]
-    public function debugFree(): JsonResponse
+    public function __construct(private AdminLogger $adminLogger) {}
+
+    #[Route('/profile', name: 'app_profile')]
+    public function index(): Response
     {
-        $hfKey = $_ENV['HF_API_KEY'] ?? getenv('HF_API_KEY') ?? '';
-
-        if (empty($hfKey)) {
-            return new JsonResponse([
-                'error' => 'HF_API_KEY non configuré',
-                'help' => 'Ajoutez votre token Hugging Face dans .env'
-            ], 500);
-        }
-
-        // Tester avec un modèle gratuit qui fonctionne
-        $result = $this->callFreeModel($hfKey, 'anime cat, cute, ghibli style');
-
-        return new JsonResponse($result);
-    }
-
-    // ----------------------------------------------------------------
-    // ROUTE : tester la configuration
-    // ----------------------------------------------------------------
-    #[Route('/profile/test-api', name: 'profile_test_api', methods: ['GET'])]
-    public function testApi(): JsonResponse
-    {
-        $hfKey = $_ENV['HF_API_KEY'] ?? getenv('HF_API_KEY') ?? '';
-
-        return new JsonResponse([
-            'php_version' => PHP_VERSION,
-            'curl_available' => function_exists('curl_version') ? curl_version()['version'] : 'NON',
-            'openssl_enabled' => extension_loaded('openssl'),
-            'hf_key_set' => !empty($hfKey)
-                ? '✅ Oui (' . substr($hfKey, 0, 8) . '...)'
-                : '❌ NON — ajoutez HF_API_KEY dans .env',
-            'internet' => $this->checkInternet() ? '✅ Connexion internet OK' : '❌ Pas de connexion internet',
-            'next_step' => 'Allez sur /profile/debug-free pour tester',
-            'info' => 'Les modèles gratuits peuvent prendre 30-60s la première fois (chargement)'
+        return $this->render('user/profile.html.twig', [
+            'user' => $this->getUser(),
         ]);
     }
 
-    // ----------------------------------------------------------------
-    // ROUTE PRINCIPALE - POST uniquement
-    // ----------------------------------------------------------------
-    #[Route('/profile/proxy-cartoon', name: 'profile_proxy_cartoon', methods: ['POST'])]
-    public function proxyCartoon(Request $request): JsonResponse
+    #[Route('/profile/clear-errors', name: 'app_profile_clear_errors', methods: ['POST'])]
+    public function clearErrors(Request $request): JsonResponse
     {
-        $file = $request->files->get('image');
-        if (!$file) {
-            return new JsonResponse(['error' => 'Aucune image envoyée.'], 400);
-        }
-
-        $style = $request->request->get('style', 'anime');
-
-        $hfKey = $_ENV['HF_API_KEY'] ?? getenv('HF_API_KEY') ?? '';
-        if (empty($hfKey)) {
-            return new JsonResponse([
-                'error' => 'HF_API_KEY non configurée dans .env',
-                'help' => 'Créez un token gratuit sur huggingface.co/settings/tokens'
-            ], 500);
-        }
-
-        $imageData = file_get_contents($file->getPathname());
-        if ($imageData === false) {
-            return new JsonResponse(['error' => "Impossible de lire l'image."], 500);
-        }
-
-        // Sauvegarder l'image originale pour le fallback
-        $base64Original = base64_encode($imageData);
-
-        // Créer un prompt basé sur le style
-        $prompts = [
-            'anime' => 'beautiful anime portrait, studio ghibli style, soft colors, detailed face, high quality illustration, cute, artistic',
-            'cartoon' => 'cartoon portrait, pixar style, colorful 3d render, friendly face, smooth, high quality, cute',
-            'sketch' => 'pencil sketch portrait, detailed line art, black and white drawing, artistic, high quality',
-            'oil' => 'oil painting portrait, classical style, rich colors, detailed brushstrokes, masterpiece',
-            'pixel' => 'pixel art portrait, 16-bit retro style, game character sprite, colorful, 8-bit aesthetic',
-        ];
-        $prompt = $prompts[$style] ?? $prompts['anime'];
-
-        // Essayer de générer une image
-        $result = $this->callFreeModel($hfKey, $prompt);
-
-        if ($result['success']) {
-            return new JsonResponse([
-                'success' => true,
-                'image' => 'data:image/png;base64,' . base64_encode($result['data']),
-                'style' => $style,
-                'model' => $result['model'] ?? 'unknown',
-                'note' => 'Image générée par IA (style: ' . $style . ')'
-            ]);
-        }
-
-        // Si échec, retourner l'image originale avec un message
-        return new JsonResponse([
-            'success' => false,
-            'error' => $result['error'] ?? 'Échec de la génération',
-            'fallback' => 'data:image/png;base64,' . $base64Original,
-            'style' => $style,
-            'message' => 'Image originale conservée',
-            'debug_url' => '/profile/debug-free'
-        ], 200); // 200 pour que le front-end puisse utiliser le fallback
+        $session = $request->getSession();
+        $session->remove('_profile_errors');
+        $session->remove('_profile_data');
+        return new JsonResponse(['ok' => true]);
     }
 
-    // ----------------------------------------------------------------
-    // Appel aux modèles gratuits qui fonctionnent
-    // ----------------------------------------------------------------
-    private function callFreeModel(string $hfKey, string $prompt): array
-    {
-        // Liste des modèles gratuits qui fonctionnent pour text-to-image
-        $models = [
-            'stabilityai/stable-diffusion-2-1' => [
-                'url' => 'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1',
-                'params' => [
-                    'negative_prompt' => 'ugly, blurry, bad quality, distorted',
-                    'num_inference_steps' => 30,
-                    'guidance_scale' => 7.5,
-                    'width' => 512,
-                    'height' => 512,
-                ]
-            ],
-            'runwayml/stable-diffusion-v1-5' => [
-                'url' => 'https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5',
-                'params' => [
-                    'negative_prompt' => 'ugly, blurry, bad quality, distorted',
-                    'num_inference_steps' => 30,
-                    'guidance_scale' => 7.5,
-                    'width' => 512,
-                    'height' => 512,
-                ]
-            ],
-            'prompthero/openjourney' => [
-                'url' => 'https://api-inference.huggingface.co/models/prompthero/openjourney',
-                'params' => [
-                    'negative_prompt' => 'ugly, bad quality',
-                    'num_inference_steps' => 30,
-                    'guidance_scale' => 7,
-                    'width' => 512,
-                    'height' => 512,
-                ]
-            ],
-            'dreamlike-art/dreamlike-photoreal-2.0' => [
-                'url' => 'https://api-inference.huggingface.co/models/dreamlike-art/dreamlike-photoreal-2.0',
-                'params' => [
-                    'negative_prompt' => 'ugly, blurry, low quality',
-                    'num_inference_steps' => 30,
-                    'guidance_scale' => 7,
-                    'width' => 512,
-                    'height' => 512,
-                ]
-            ],
-        ];
+    #[Route('/profile/edit', name: 'app_profile_edit', methods: ['POST'])]
+    public function edit(
+        Request                     $request,
+        EntityManagerInterface      $em,
+        UserPasswordHasherInterface $hasher,
+        ParameterBagInterface       $params,
+        TokenStorageInterface       $tokenStorage,
+        ValidatorInterface          $validator,
+        HttpClientInterface         $httpClient
+    ): Response {
 
-        foreach ($models as $modelName => $config) {
-            $payload = json_encode([
-                'inputs' => $prompt,
-                'parameters' => $config['params'],
-            ]);
+        /** @var User $user */
+        $user    = $this->getUser();
+        $session = $request->getSession();
 
-            $ch = curl_init($config['url']);
-            curl_setopt_array($ch, [
+        // (string) cast — ligne 57
+        if (!$this->isCsrfTokenValid('profile_edit', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_accueil', ['openProfile' => '1']);
+        }
+
+        // (string) cast sur tous les trim — lignes 62-67
+        $nom           = trim((string) $request->request->get('nom', ''));
+        $prenom        = trim((string) $request->request->get('prenom', ''));
+        $telephone     = trim((string) $request->request->get('telephone', ''));
+        $adresse       = trim((string) $request->request->get('adresse', ''));
+        $email         = trim((string) $request->request->get('email', ''));
+        $dateNaissance = trim((string) $request->request->get('dateNaissance', ''));
+
+        $profileData = compact('nom', 'prenom', 'telephone', 'adresse', 'email', 'dateNaissance');
+
+        // Snapshot AVANT
+        $beforeNom       = $user->getNom();
+        $beforePrenom    = $user->getPrenom();
+        $beforeTelephone = $user->getTelephone();
+        $beforeAdresse   = $user->getAdresse();
+        $beforeEmail     = $user->getEmail();
+        $beforeNaissance = $user->getDateNaissance()?->format('d/m/Y');
+
+        $user->setNom($nom);
+        $user->setPrenom($prenom);
+        $user->setTelephone($telephone !== '' ? $telephone : null);
+        $user->setAdresse($adresse !== '' ? $adresse : null);
+        if ($email !== '') { $user->setEmail($email); }
+
+        if ($dateNaissance !== '') {
+            try { $user->setDateNaissance(new \DateTime($dateNaissance)); }
+            catch (\Exception) { $user->setDateNaissance(null); }
+        } else {
+            $user->setDateNaissance(null);
+        }
+
+        $violations = $validator->validate($user);
+        if (count($violations) > 0) {
+            $errors = [];
+            foreach ($violations as $v) { $errors[$v->getPropertyPath()][] = $v->getMessage(); }
+            $session->set('_profile_errors', $errors);
+            $session->set('_profile_data', $profileData);
+            $em->refresh($user);
+            return $this->redirectToRoute('app_accueil', ['openEditModal' => '1']);
+        }
+
+        // Mot de passe — (string) cast lignes 110, 111, 119
+        $newPassword     = (string) $request->request->get('new_password', '');
+        $currentPassword = (string) $request->request->get('current_password', '');
+        $confirmPassword = (string) $request->request->get('confirm_password', '');
+        $passwordChanged = false;
+
+        if ($newPassword !== '') {
+            $pwdErrors = [];
+            if (strlen($newPassword) < 8) $pwdErrors['new_password'][] = 'Le mot de passe doit contenir au moins 8 caractères.';
+            if (!$hasher->isPasswordValid($user, $currentPassword)) $pwdErrors['current_password'][] = 'Mot de passe actuel incorrect.';
+            if ($newPassword !== $confirmPassword) $pwdErrors['confirm_password'][] = 'Les mots de passe ne correspondent pas.';
+            if (!empty($pwdErrors)) {
+                $session->set('_profile_errors', $pwdErrors);
+                $session->set('_profile_data', $profileData);
+                $em->refresh($user);
+                return $this->redirectToRoute('app_accueil', ['openEditModal' => '1']);
+            }
+            $user->setMotDePasse($hasher->hashPassword($user, $newPassword));
+            $passwordChanged = true;
+        }
+
+        // ── Photo + Face Embedding ──
+        $photoChanged = false;
+        $photoFile    = $request->files->get('photo');
+        if ($photoFile && $photoFile->isValid()) {
+
+            // 1. Générer le face embedding via Flask
+            try {
+                $ch = curl_init('http://127.0.0.1:5001/embed');
+
+                // ligne 136 : file_get_contents peut retourner false → cast (string)
+                $fileContents = file_get_contents($photoFile->getPathname());
+                $imageBase64  = base64_encode($fileContents !== false ? $fileContents : '');
+
+                // ligne 131 : CURLOPT_POSTFIELDS doit être string|array, pas false
+                curl_setopt_array($ch, [
+                    CURLOPT_POST           => true,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+                    CURLOPT_POSTFIELDS     => (string) json_encode(['image_base64' => $imageBase64]),
+                    CURLOPT_TIMEOUT        => 30,
+                    CURLOPT_CONNECTTIMEOUT => 5,
+                ]);
+                $out       = curl_exec($ch);
+                $curlError = curl_error($ch);
+                curl_close($ch);
+
+                // lignes 149, 150, 154 : json_decode attend string
+                $outStr = is_string($out) ? $out : '';
+
+                if ($outStr && !$curlError) {
+                    // ligne 149-150 : cast string avant json_decode
+                    $result = json_decode($outStr, true);
+                    if (isset($result['embedding'])) {
+                        // ligne 156 : json_encode peut retourner false → cast string
+                        $embedding = json_encode($result['embedding']);
+                        $user->setFaceEmbedding($embedding !== false ? $embedding : null);
+                    }
+                }
+            } catch (\Exception $e) {
+                // Flask indisponible → on continue
+            }
+
+            // 2. Upload photo vers ImgBB
+            // ligne 166 : $params->get() peut retourner mixed → cast string
+           $imgbbKeyRaw = $params->get('imgbb_api_key');
+           $imgbbKey = is_string($imgbbKeyRaw) ? $imgbbKeyRaw : '';
+            $ch2 = curl_init();
+            curl_setopt_array($ch2, [
+                CURLOPT_URL            => 'https://api.imgbb.com/1/upload?key=' . $imgbbKey,
+                CURLOPT_POST           => true,
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_POST => true,
-                CURLOPT_POSTFIELDS => $payload,
-                CURLOPT_TIMEOUT => 120,
-                CURLOPT_HTTPHEADER => [
-                    'Authorization: Bearer ' . $hfKey,
-                    'Content-Type: application/json',
+                CURLOPT_POSTFIELDS     => [
+                    'image' => new \CURLFile(
+                        $photoFile->getPathname(),
+                        $photoFile->getMimeType(),
+                        $photoFile->getClientOriginalName()
+                    )
                 ],
             ]);
+            $imgOut  = curl_exec($ch2);
+            curl_close($ch2);
 
-            $response = curl_exec($ch);
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            $curlError = curl_error($ch);
-            curl_close($ch);
-
-            if ($curlError) {
-                continue; // Essayer le modèle suivant
-            }
-
-            // Si le modèle est en chargement (503), on attend et on réessaie une fois
-            if ($httpCode === 503) {
-                $json = @json_decode($response, true);
-                if (isset($json['estimated_time'])) {
-                    sleep(min($json['estimated_time'], 30));
-                } else {
-                    sleep(20);
-                }
-                
-                // Réessayer
-                $ch = curl_init($config['url']);
-                curl_setopt_array($ch, [
-                    CURLOPT_RETURNTRANSFER => true,
-                    CURLOPT_POST => true,
-                    CURLOPT_POSTFIELDS => $payload,
-                    CURLOPT_TIMEOUT => 120,
-                    CURLOPT_HTTPHEADER => [
-                        'Authorization: Bearer ' . $hfKey,
-                        'Content-Type: application/json',
-                    ],
-                ]);
-                $response = curl_exec($ch);
-                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                curl_close($ch);
-            }
-
-            // Vérifier si c'est une image
-            if ($httpCode === 200 && strlen($response) > 1000) {
-                $isJpeg = substr($response, 0, 3) === "\xFF\xD8\xFF";
-                $isPng = substr($response, 0, 8) === "\x89PNG\r\n\x1a\n";
-                $isWebp = substr($response, 0, 4) === "RIFF" && substr($response, 8, 4) === "WEBP";
-                
-                if ($isJpeg || $isPng || $isWebp) {
-                    return [
-                        'success' => true,
-                        'data' => $response,
-                        'model' => $modelName,
-                    ];
-                }
-            }
-
-            // Erreur d'authentification = arrêter tout
-            if (in_array($httpCode, [401, 403])) {
-                return [
-                    'success' => false,
-                    'error' => 'Token Hugging Face invalide (HTTP ' . $httpCode . ')',
-                ];
+            // ligne 177 : json_decode attend string
+            $imgJson = json_decode(is_string($imgOut) ? $imgOut : '', true);
+            if (isset($imgJson['data']['url'])) {
+                $user->setProfileImageUrl($imgJson['data']['url']);
+                $photoChanged = true;
             }
         }
 
-        return [
-            'success' => false,
-            'error' => 'Tous les modèles sont indisponibles. Réessayez dans quelques minutes.',
-        ];
-    }
+        $em->flush();
+        $em->refresh($user);
 
-    // ----------------------------------------------------------------
-    // Vérifier la connexion internet
-    // ----------------------------------------------------------------
-    private function checkInternet(): bool
-    {
-        $ch = curl_init('https://api-inference.huggingface.co');
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 5,
-            CURLOPT_NOBODY => true,
+        // ligne 188 : getToken() peut être null → vérification
+        $token = $tokenStorage->getToken();
+        if ($token !== null) {
+            $token->setUser($user);
+        }
+
+        // ── LOGS ──
+        $cible = 'soi-meme (id=' . $user->getId() . ')';
+
+        if ($passwordChanged) {
+            $this->adminLogger->log($user, AdminLog::ACTION_CHANGE_PASSWORD, $cible, null);
+        }
+        if ($photoChanged) {
+            $this->adminLogger->log($user, AdminLog::ACTION_UPLOAD_PHOTO, $cible, null);
+        }
+        $profileDiff = AdminLogger::buildDetails([
+            AdminLogger::diff('nom',       $beforeNom,       $user->getNom()),
+            AdminLogger::diff('prenom',    $beforePrenom,    $user->getPrenom()),
+            AdminLogger::diff('email',     $beforeEmail,     $user->getEmail()),
+            AdminLogger::diff('telephone', $beforeTelephone, $user->getTelephone()),
+            AdminLogger::diff('adresse',   $beforeAdresse,   $user->getAdresse()),
+            AdminLogger::diff('naissance', $beforeNaissance, $user->getDateNaissance()?->format('d/m/Y')),
         ]);
-        curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-        return $httpCode > 0;
+        if ($profileDiff) {
+            $this->adminLogger->log($user, AdminLog::ACTION_EDIT_PROFILE, $cible, $profileDiff);
+        }
+
+        $session->remove('_profile_errors');
+        $session->remove('_profile_data');
+        $this->addFlash('success', 'Profil mis a jour avec succes.');
+        return $this->redirectToRoute('app_accueil', ['openProfile' => '1']);
     }
 }

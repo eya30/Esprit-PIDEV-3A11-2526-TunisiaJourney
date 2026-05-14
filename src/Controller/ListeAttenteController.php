@@ -26,9 +26,18 @@ class ListeAttenteController extends AbstractController
     ): JsonResponse {
         /** @var User|null $user */
         $user = $this->getUser();
-        
-        if (!$user) {
+
+        if (!$user instanceof User) {
             return $this->json(['success' => false, 'message' => 'Connectez-vous pour vous inscrire'], 401);
+        }
+
+        // FIX :64 — getId() retourne int|null, setIdUtilisateur() attend string|null
+        $userId = $user->getId() !== null ? (string) $user->getId() : null;
+
+        // FIX :53 :54 :63 :75 — getEmail() retourne string|null
+        $email = $user->getEmail();
+        if ($email === null) {
+            return $this->json(['success' => false, 'message' => 'Email utilisateur introuvable'], 400);
         }
 
         $activite = $connection->fetchAssociative(
@@ -45,23 +54,23 @@ class ListeAttenteController extends AbstractController
         }
 
         $placesDisponibles = $activite['CapaciteM'] - $activite['total_reserve'];
-        
+
         if ($placesDisponibles > 0) {
             return $this->json(['success' => false, 'message' => 'Des places sont disponibles, réservez directement']);
         }
 
-        if ($repo->estDejaInscrit($idActivite, $user->getEmail())) {
-            $position = $repo->getPositionDansFile($idActivite, $user->getEmail());
+        if ($repo->estDejaInscrit($idActivite, $email)) {
+            $position = $repo->getPositionDansFile($idActivite, $email);
             return $this->json([
-                'success' => false, 
+                'success' => false,
                 'message' => "Vous êtes déjà en liste d'attente (position {$position})"
             ]);
         }
 
         $attente = new ListeAttente();
         $attente->setIdActivite($idActivite);
-        $attente->setEmailUtilisateur($user->getEmail());
-        $attente->setIdUtilisateur($user->getId());
+        $attente->setEmailUtilisateur($email);
+        $attente->setIdUtilisateur($userId);
         $attente->setTelephoneUtilisateur($user->getTelephone());
         $attente->setNomUtilisateur($user->getNom());
         $attente->setPrenomUtilisateur($user->getPrenom());
@@ -72,7 +81,7 @@ class ListeAttenteController extends AbstractController
         $em->persist($attente);
         $em->flush();
 
-        $position = $repo->getPositionDansFile($idActivite, $user->getEmail());
+        $position = $repo->getPositionDansFile($idActivite, $email);
 
         return $this->json([
             'success' => true,
@@ -82,10 +91,10 @@ class ListeAttenteController extends AbstractController
     }
 
     #[Route('/confirmer/{token}', name: 'liste_attente_confirmer_page', methods: ['GET'])]
-    public function pageConfirmation(string $token, ListeAttenteRepository $repo): Response
+    public function pageConfirmation(string $token, ListeAttenteRepository $repo, EntityManagerInterface $em): Response
     {
         $attente = $repo->findOneBy(['tokenConfirmation' => $token]);
-        
+
         if (!$attente) {
             throw $this->createNotFoundException('Lien invalide');
         }
@@ -97,7 +106,8 @@ class ListeAttenteController extends AbstractController
 
         if ($attente->estDelaiDepasse()) {
             $attente->setStatut(ListeAttente::STATUT_EXPIRE);
-            $repo->getEntityManager()->flush();
+            // FIX :100 — getEntityManager() est protected, on injecte EntityManagerInterface
+            $em->flush();
             $this->addFlash('error', 'Délai de confirmation dépassé (2h)');
             return $this->redirectToRoute('app_accueil');
         }
@@ -116,7 +126,7 @@ class ListeAttenteController extends AbstractController
         EntityManagerInterface $em
     ): JsonResponse {
         $attente = $repo->findOneBy(['tokenConfirmation' => $token]);
-        
+
         if (!$attente) {
             return $this->json(['success' => false, 'message' => 'Lien invalide'], 404);
         }
@@ -131,10 +141,15 @@ class ListeAttenteController extends AbstractController
             return $this->json(['success' => false, 'message' => 'Délai dépassé']);
         }
 
+        // FIX :151 — fetchAssociative() retourne array|false, vérifier avant d'accéder à 'Prix'
         $activite = $connection->fetchAssociative(
             "SELECT * FROM Activite WHERE IDAct = ?",
             [$attente->getIdActivite()]
         );
+
+        if (!$activite) {
+            return $this->json(['success' => false, 'message' => 'Activité introuvable'], 404);
+        }
 
         $connection->executeStatement(
             "INSERT INTO ReservationAct (id, IDAct, Nom, Prenom, email, telephone, DateReservation, NombrePlaces, Prix, status)
@@ -165,18 +180,24 @@ class ListeAttenteController extends AbstractController
     {
         /** @var User|null $user */
         $user = $this->getUser();
-        
-        if (!$user) {
+
+        if (!$user instanceof User) {
             return $this->json(['success' => false, 'message' => 'Non connecté'], 401);
         }
 
-        $estInscrit = $repo->estDejaInscrit($idActivite, $user->getEmail());
-        
+        // FIX :173 :179 — getEmail() retourne string|null
+        $email = $user->getEmail();
+        if ($email === null) {
+            return $this->json(['success' => false, 'message' => 'Email utilisateur introuvable'], 400);
+        }
+
+        $estInscrit = $repo->estDejaInscrit($idActivite, $email);
+
         if (!$estInscrit) {
             return $this->json(['success' => true, 'inscrit' => false]);
         }
 
-        $position = $repo->getPositionDansFile($idActivite, $user->getEmail());
+        $position = $repo->getPositionDansFile($idActivite, $email);
 
         return $this->json([
             'success' => true,

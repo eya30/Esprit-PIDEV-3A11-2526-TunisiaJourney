@@ -29,7 +29,8 @@ class AdminLog
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
-    private ?int $id = null;
+   /** @phpstan-ignore-next-line */
+    private int|null $id = null;
 
     // L'acteur (peut être null si compte supprimé)
     #[ORM\ManyToOne(targetEntity: User::class)]

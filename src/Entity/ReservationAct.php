@@ -11,20 +11,20 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'ReservationAct')]
 class ReservationAct
 {
-    // ── Constantes pour les statuts ──────────────────────────────────────────
     public const STATUS_CONFIRMED = 'confirmé';
     public const STATUS_CANCELLED = 'annulé';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: "IDRes", type: "integer")]
-    private ?int $IDRes = null;
+    /** @phpstan-ignore-next-line */
+    private int $IDRes;
 
     #[ORM\Column(name: "id", length: 50)]
-    private ?string $userId = null;
+    private string $userId = '';
 
     #[ORM\Column(name: "IDAct", type: "integer")]
-    private ?int $IDAct = null;
+    private int $IDAct = 0;
 
     #[ORM\Column(length: 50)]
     #[Assert\NotBlank(message: "Le nom est requis.")]
@@ -36,7 +36,7 @@ class ReservationAct
         pattern: '/^[A-Za-zÀ-ÿ\s\-]+$/u',
         message: "Le nom ne doit contenir que des lettres, espaces ou tirets."
     )]
-    private ?string $Nom = null;
+    private string $Nom = '';
 
     #[ORM\Column(length: 50)]
     #[Assert\NotBlank(message: "Le prénom est requis.")]
@@ -48,10 +48,10 @@ class ReservationAct
         pattern: '/^[A-Za-zÀ-ÿ\s\-]+$/u',
         message: "Le prénom ne doit contenir que des lettres, espaces ou tirets."
     )]
-    private ?string $Prenom = null;
+    private string $Prenom = '';
 
     #[ORM\Column(name: "DateReservation", type: Types::DATE_MUTABLE)]
-    private ?\DateTimeInterface $DateReservation = null;
+    private \DateTimeInterface $DateReservation;
 
     #[ORM\Column(name: "NombrePlaces", type: "integer", nullable: true)]
     #[Assert\NotBlank(message: "Le nombre de personnes est requis.")]
@@ -71,7 +71,7 @@ class ReservationAct
     #[Assert\Email(
         message: "L'email '{{ value }}' n'est pas valide. Exemple: nom@domaine.com"
     )]
-    private ?string $email = null;
+    private string $email = '';
 
     #[ORM\Column(length: 8)]
     #[Assert\NotBlank(message: "Le téléphone est requis.")]
@@ -83,15 +83,20 @@ class ReservationAct
         pattern: '/^\d{8}$/',
         message: "Le téléphone ne doit contenir que des chiffres (8 chiffres)."
     )]
-    private ?string $telephone = null;
+    private string $telephone = '';
 
-    // ── NOUVEAU CHAMP STATUS ─────────────────────────────────────────────────
     #[ORM\Column(type: "string", length: 20, options: ["default" => "confirmé"])]
-    private ?string $status = self::STATUS_CONFIRMED;
+    private string $status = self::STATUS_CONFIRMED;
 
-    // ── Getters / Setters ────────────────────────────────────────────────────
+    public function __construct()
+    {
+        $this->DateReservation = new \DateTime();
+    }
 
-    public function getIDRes(): ?int { return $this->IDRes; }
+    public function getIDRes(): ?int
+    {
+        return $this->IDRes ?? null;
+    }
 
     public function getUserId(): ?string { return $this->userId; }
     public function setUserId(string $userId): static { $this->userId = $userId; return $this; }
@@ -100,10 +105,10 @@ class ReservationAct
     public function setIDAct(int $IDAct): static { $this->IDAct = $IDAct; return $this; }
 
     public function getNom(): ?string { return $this->Nom; }
-    public function setNom(?string $Nom): static { $this->Nom = $Nom; return $this; }
+    public function setNom(?string $Nom): static { $this->Nom = $Nom ?? ''; return $this; }
 
     public function getPrenom(): ?string { return $this->Prenom; }
-    public function setPrenom(?string $Prenom): static { $this->Prenom = $Prenom; return $this; }
+    public function setPrenom(?string $Prenom): static { $this->Prenom = $Prenom ?? ''; return $this; }
 
     public function getDateReservation(): ?\DateTimeInterface { return $this->DateReservation; }
     public function setDateReservation(\DateTimeInterface $DateReservation): static { $this->DateReservation = $DateReservation; return $this; }
@@ -115,16 +120,12 @@ class ReservationAct
     public function setPrix(?float $Prix): static { $this->Prix = $Prix; return $this; }
 
     public function getEmail(): ?string { return $this->email; }
-    public function setEmail(?string $email): static { $this->email = $email; return $this; }
+    public function setEmail(?string $email): static { $this->email = $email ?? ''; return $this; }
 
     public function getTelephone(): ?string { return $this->telephone; }
-    public function setTelephone(?string $telephone): static { $this->telephone = $telephone; return $this; }
+    public function setTelephone(?string $telephone): static { $this->telephone = $telephone ?? ''; return $this; }
 
-    // ── NOUVEAUX GETTERS/SETTERS POUR STATUS ─────────────────────────────────
-    public function getStatus(): ?string
-    {
-        return $this->status;
-    }
+    public function getStatus(): string { return $this->status; }
 
     public function setStatus(string $status): static
     {
@@ -135,13 +136,6 @@ class ReservationAct
         return $this;
     }
 
-    public function isCancelled(): bool
-    {
-        return $this->status === self::STATUS_CANCELLED;
-    }
-
-    public function isConfirmed(): bool
-    {
-        return $this->status === self::STATUS_CONFIRMED;
-    }
+    public function isCancelled(): bool { return $this->status === self::STATUS_CANCELLED; }
+    public function isConfirmed(): bool { return $this->status === self::STATUS_CONFIRMED; }
 }

@@ -23,14 +23,14 @@ class AdminReservationController extends AbstractController
         $page = max(1, $request->query->getInt('page', 1));
         $search = $request->query->get('search', '');
         $sort = $request->query->get('sort', 'idRP');
-        $direction = $request->query->get('direction', 'DESC');
+        $directionRaw = (string) $request->query->get('direction', 'DESC');
         
         $allowedSorts = ['idRP', 'nom', 'prenom', 'email', 'telephone', 'nbre', 'prixProg', 'dateProgramme', 'statutPaiement', 'programme_nom'];
         if (!in_array($sort, $allowedSorts)) {
             $sort = 'idRP';
         }
         
-        $direction = strtoupper($direction) === 'ASC' ? 'ASC' : 'DESC';
+        $direction = strtoupper($directionRaw) === 'ASC' ? 'ASC' : 'DESC';
         
         $searchCondition = "";
         $params = [];
@@ -80,7 +80,10 @@ class AdminReservationController extends AbstractController
     #[Route('/{id}/delete', name: 'admin_reservation_delete', methods: ['POST'])]
     public function delete(Request $request, Connection $connection, int $id): Response
     {
-        if ($this->isCsrfTokenValid('delete_reservation_' . $id, $request->request->get('_token'))) {
+        $token = $request->request->get('_token');
+        $tokenString = is_string($token) ? $token : null;
+
+        if ($this->isCsrfTokenValid('delete_reservation_' . $id, $tokenString)) {
             $connection->executeStatement("DELETE FROM reservationprog WHERE idRP = ?", [$id]);
             $this->addFlash('success', 'Réservation supprimée avec succès !');
         }
@@ -156,7 +159,6 @@ class AdminReservationController extends AbstractController
     #[Route('/discord/force-check', name: 'admin_discord_force_check', methods: ['GET'])]
     public function forceCheckDiscord(Request $request, Connection $connection, DiscordNotifierService $discordNotifier): Response
     {
-        // Récupérer la dernière réservation
         $lastReservation = $connection->fetchAssociative("
             SELECT r.*, p.nom as programme_nom, v.nom as voyage_nom, v.idV as voyage_id
             FROM reservationprog r 
@@ -170,24 +172,42 @@ class AdminReservationController extends AbstractController
             $this->addFlash('warning', 'Aucune réservation trouvée dans la base.');
             return $this->redirectToRoute('admin_voyage_index');
         }
-        
-        // Envoyer la notification manuellement
-        $sent = $discordNotifier->notifyNewReservation($lastReservation);
+
+        // FIX :198 — notifyNewReservation() expects voyage_id as int (never null).
+        // The LEFT JOIN may yield NULL when no voyage row matches, so we cast with
+        // a fallback of 0 instead of null to satisfy the strict array shape.
+        $typedReservation = [
+            'idRP'          => (int) ($lastReservation['idRP'] ?? 0),
+            'nom'           => (string) ($lastReservation['nom'] ?? ''),
+            'prenom'        => (string) ($lastReservation['prenom'] ?? ''),
+            'telephone'     => (string) ($lastReservation['telephone'] ?? ''),
+            'email'         => (string) ($lastReservation['email'] ?? ''),
+            'nbre'          => (int) ($lastReservation['nbre'] ?? 0),
+            'dateProgramme' => (string) ($lastReservation['dateProgramme'] ?? ''),
+            'programme_nom' => (string) ($lastReservation['programme_nom'] ?? ''),
+            'voyage_nom'    => (string) ($lastReservation['voyage_nom'] ?? ''),
+            'voyage_id'     => (int) ($lastReservation['voyage_id'] ?? 0),
+        ];
+
+        if (isset($lastReservation['prixProg']) && is_numeric($lastReservation['prixProg'])) {
+            $typedReservation['prixProg'] = (float) $lastReservation['prixProg'];
+        }
+
+        $sent = $discordNotifier->notifyNewReservation($typedReservation);
         
         if ($sent) {
-            $this->addFlash('success', '✅ Notification envoyée pour la réservation #' . $lastReservation['idRP']);
+            $this->addFlash('success', '✅ Notification envoyée pour la réservation #' . $typedReservation['idRP']);
             
-            // Stocker en session
             $session = $request->getSession();
             $notifications = $session->get('discord_notifications', []);
             array_unshift($notifications, [
-                'id' => $lastReservation['idRP'],
-                'message' => "🆕 Réservation #{$lastReservation['idRP']} - {$lastReservation['prenom']} {$lastReservation['nom']}",
-                'time' => date('H:i:s'),
-                'read' => false
+                'id'      => $typedReservation['idRP'],
+                'message' => "🆕 Réservation #{$typedReservation['idRP']} - {$typedReservation['prenom']} {$typedReservation['nom']}",
+                'time'    => date('H:i:s'),
+                'read'    => false,
             ]);
             $session->set('discord_notifications', $notifications);
-            $session->set('last_notified_reservation_id', $lastReservation['idRP']);
+            $session->set('last_notified_reservation_id', $typedReservation['idRP']);
             
         } else {
             $this->addFlash('error', '❌ Erreur lors de l\'envoi Discord');
@@ -195,37 +215,42 @@ class AdminReservationController extends AbstractController
         
         return $this->redirectToRoute('admin_voyage_index');
     }
+
     #[Route('/discord/diagnostic', name: 'admin_discord_diagnostic', methods: ['GET'])]
-public function discordDiagnostic(DiscordNotifierService $discordNotifier): Response
-{
-    // 1. Vérifier la variable d'environnement
-    $envUrl = $_ENV['DISCORD_WEBHOOK_URL'] ?? 'NON TROUVEE';
-    
-    // 2. Tester le webhook directement depuis PHP
-    $ch = curl_init($envUrl);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(['content' => '🔍 Test diagnostic Symfony - ' . date('H:i:s')]));
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-    
-    // 3. Résultats
-    $output = "<h1>🔧 Diagnostic Discord</h1>";
-    $output .= "<p>📌 Variable .env: <code>" . htmlspecialchars(substr($envUrl, 0, 80)) . "...</code></p>";
-    $output .= "<p>📡 Test cURL: Code HTTP <strong>" . $httpCode . "</strong></p>";
-    
-    if ($httpCode == 204) {
-        $output .= "<p style='color:green'>✅ Webhook fonctionne ! Regarde Discord.</p>";
-    } else {
-        $output .= "<p style='color:red'>❌ Webhook ne répond pas correctement.</p>";
+    public function discordDiagnostic(DiscordNotifierService $discordNotifier): Response
+    {
+        $envUrl = $_ENV['DISCORD_WEBHOOK_URL'] ?? '';
+
+        $payload = json_encode(['content' => '🔍 Test diagnostic Symfony - ' . date('H:i:s')]);
+
+        $httpCode = 0;
+        if ($envUrl !== '' && $payload !== false) {
+            $ch = curl_init($envUrl);
+            if ($ch !== false) {
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_exec($ch);
+                $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                curl_close($ch);
+            }
+        }
+
+        $displayUrl = $envUrl !== '' ? substr($envUrl, 0, 80) . '...' : 'NON TROUVEE';
+        $output  = "<h1>🔧 Diagnostic Discord</h1>";
+        $output .= "<p>📌 Variable .env: <code>" . htmlspecialchars($displayUrl) . "</code></p>";
+        $output .= "<p>📡 Test cURL: Code HTTP <strong>" . $httpCode . "</strong></p>";
+
+        if ($httpCode === 204) {
+            $output .= "<p style='color:green'>✅ Webhook fonctionne ! Regarde Discord.</p>";
+        } else {
+            $output .= "<p style='color:red'>❌ Webhook ne répond pas correctement.</p>";
+        }
+
+        $testResult = $discordNotifier->testConnection();
+        $output .= "<p>📨 Service Symfony: " . ($testResult ? "<span style='color:green'>✅ OK</span>" : "<span style='color:red'>❌ ÉCHEC</span>") . "</p>";
+
+        return new Response($output);
     }
-    
-    // 4. Tester le service Symfony
-    $testResult = $discordNotifier->testConnection();
-    $output .= "<p>📨 Service Symfony: " . ($testResult ? "<span style='color:green'>✅ OK</span>" : "<span style='color:red'>❌ ÉCHEC</span>") . "</p>";
-    
-    return new Response($output);
-}
 }

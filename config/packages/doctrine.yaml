@@ -8,6 +8,8 @@ doctrine:
             collate: utf8mb4_general_ci
         profiling_collect_backtrace: '%kernel.debug%'
         use_savepoints: true
+        mapping_types:
+            enum: string
     orm:
         auto_generate_proxy_classes: true
         enable_lazy_ghost_objects: true
@@ -27,6 +29,7 @@ when@test:
     doctrine:
         dbal:
             dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+            server_version: 'mariadb-10.4.32'
 
 when@prod:
     doctrine:

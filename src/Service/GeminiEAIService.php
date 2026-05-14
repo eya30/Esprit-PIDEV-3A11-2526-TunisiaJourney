@@ -4,12 +4,13 @@ namespace App\Service;
 
 use Doctrine\DBAL\Connection;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 
 class GeminiEAIService
 {
-    private $apiKey;
-    private $client;
-    private $connection;
+    private string $apiKey;
+    private Client $client;
+    private Connection $connection;
 
     public function __construct(string $apiKey, Connection $connection)
     {
@@ -39,9 +40,12 @@ class GeminiEAIService
         Tu peux donner des conseils de voyage, des informations sur les destinations, les meilleures périodes, etc.";
     }
 
-    private function getTravelContext(): string
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function getVoyages(): array
     {
-        $voyages = $this->connection->fetchAllAssociative("
+        return $this->connection->fetchAllAssociative("
             SELECT v.nom, v.description, v.prix, v.capacite, 
                    GROUP_CONCAT(p.nom SEPARATOR ', ') as programmes
             FROM voyages v
@@ -49,6 +53,11 @@ class GeminiEAIService
             GROUP BY v.idV
             LIMIT 20
         ");
+    }
+
+    private function getTravelContext(): string
+    {
+        $voyages = $this->getVoyages();
         
         $context = "Voici les voyages proposés par TunisiaJourney :\n\n";
         
@@ -64,6 +73,9 @@ class GeminiEAIService
         return $context;
     }
 
+    /**
+     * @return array{success: bool, answer?: string, question?: string, error?: string, debug?: string}
+     */
     public function ask(string $question): array
     {
         try {
@@ -71,7 +83,7 @@ class GeminiEAIService
             
             $prompt = $this->getSystemPrompt() . "\n\n" . $context . "\n\nQuestion de l'utilisateur : " . $question;
             
-         $response = $this->client->post("models/gemini-2.0-flash:generateContent?key={$this->apiKey}",  [
+            $response = $this->client->post("models/gemini-2.0-flash:generateContent?key={$this->apiKey}", [
                 'json' => [
                     'contents' => [
                         [
@@ -88,7 +100,7 @@ class GeminiEAIService
                 ]
             ]);
             
-            $data = json_decode($response->getBody(), true);
+            $data = json_decode($response->getBody()->getContents(), true);
             
             $answer = $data['candidates'][0]['content']['parts'][0]['text'] ?? 'Désolé, je n\'ai pas pu générer une réponse.';
             

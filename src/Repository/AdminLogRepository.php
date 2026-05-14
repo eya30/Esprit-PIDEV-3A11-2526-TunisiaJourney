@@ -6,6 +6,9 @@ use App\Entity\AdminLog;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<AdminLog>
+ */
 class AdminLogRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -15,6 +18,8 @@ class AdminLogRepository extends ServiceEntityRepository
 
     /**
      * Logs paginés avec filtres optionnels
+     *
+     * @return array<string, mixed>
      */
     public function findFiltered(
         ?string $action = null,
@@ -48,7 +53,9 @@ class AdminLogRepository extends ServiceEntityRepository
                ->setParameter('dateTo', new \DateTime($dateTo . ' 23:59:59'));
         }
 
-        $total = (clone $qb)->select('COUNT(l.id)')->getQuery()->getSingleScalarResult();
+        // ligne 61 : getSingleScalarResult() retourne mixed → cast int
+        $totalRaw = (clone $qb)->select('COUNT(l.id)')->getQuery()->getSingleScalarResult();
+        $total    = (int) $totalRaw;
 
         $logs = $qb->setFirstResult(($page - 1) * $limit)
                    ->setMaxResults($limit)
@@ -56,16 +63,18 @@ class AdminLogRepository extends ServiceEntityRepository
                    ->getResult();
 
         return [
-            'logs'       => $logs,
-            'total'      => (int) $total,
-            'pages'      => (int) ceil($total / $limit),
-            'current'    => $page,
-            'limit'      => $limit,
+            'logs'    => $logs,
+            'total'   => $total,
+            'pages'   => (int) ceil($total / $limit),
+            'current' => $page,
+            'limit'   => $limit,
         ];
     }
 
     /**
      * Les N derniers logs (pour widget dashboard)
+     *
+     * @return array<int, AdminLog>
      */
     public function findRecent(int $limit = 10): array
     {
@@ -78,6 +87,8 @@ class AdminLogRepository extends ServiceEntityRepository
 
     /**
      * Stats par action (pour graphique)
+     *
+     * @return array<int, array<string, mixed>>
      */
     public function countByAction(): array
     {

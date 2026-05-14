@@ -82,13 +82,12 @@ class SignalementController extends AbstractController
         $signalement->setReason($reason);
         $signalement->setDescription($description);
         $signalement->setDateCreation(new \DateTime());
-        $signalement->setUserReporterId(999); // visiteur non connecté
+        $signalement->setUserReporterId(999);
 
         try {
             $this->em->persist($signalement);
             $this->em->flush();
 
-            // Créer la notification pour l'admin
             $snotification = $this->snotificationService->createSignalementNotification(
                 $signalement,
                 999,
@@ -112,7 +111,6 @@ class SignalementController extends AbstractController
 
     // ══════════════════════════════════════════════════════
     // GET /signalement/snotifications — Liste des notifications (back-office)
-    // IMPORTANT : cette route doit être avant /{id}/...
     // ══════════════════════════════════════════════════════
     #[Route('/snotifications', name: 'api_snotifications_list', methods: ['GET'])]
     public function getSNotifications(): JsonResponse
@@ -121,8 +119,6 @@ class SignalementController extends AbstractController
 
         $result = [];
         foreach ($snotifications as $snotif) {
-            // Récupérer le commentaire pour avoir son texte à jour
-            $comment     = null;
             $commentText = 'Commentaire introuvable';
             if ($snotif->getCommentId()) {
                 $comment = $this->commentaireRepository->find($snotif->getCommentId());
@@ -195,20 +191,17 @@ class SignalementController extends AbstractController
         }
 
         try {
-            // Bloquer le commentaire
             $commentaire->setIsCancelled(true);
             $commentaire->setCancelledAt(new \DateTime());
 
-            // Marquer le signalement comme traité
             $signalement->setIsTreated(true);
             $signalement->setTreatedAt(new \DateTime());
 
             $this->em->flush();
 
-            // Marquer la notification comme lue
-            if ($signalement->getSnotificationId()) {
-                $snotif = $this->em->getRepository(SNotification::class)
-                    ->find($signalement->getSnotificationId());
+            $snotifId = $signalement->getSnotificationId();
+            if ($snotifId !== null) {
+                $snotif = $this->em->getRepository(SNotification::class)->find($snotifId);
                 if ($snotif) {
                     $this->snotificationService->markAsRead($snotif);
                 }
@@ -245,7 +238,7 @@ class SignalementController extends AbstractController
                 'reason'       => $s->getReason(),
                 'reasonLabel'  => $s->getReasonLabel(),
                 'description'  => $s->getDescription() ?? '',
-                'dateCreation' => $s->getDateCreation()->format('d/m/Y H:i'),
+                'dateCreation' => $s->getDateCreation()?->format('d/m/Y H:i') ?? '',
                 'isTreated'    => $s->getIsTreated(),
             ];
         }

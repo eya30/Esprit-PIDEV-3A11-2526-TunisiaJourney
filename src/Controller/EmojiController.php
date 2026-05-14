@@ -45,7 +45,8 @@ class EmojiController extends AbstractController
     #[Route('/search', name: 'api_emojis_search', methods: ['GET'])]
     public function searchEmojis(Request $request): JsonResponse
     {
-        $query = trim($request->query->get('q', ''));
+        $raw   = $request->query->get('q', '');
+        $query = trim(is_string($raw) ? $raw : '');
         $limit = max(1, min(50, $request->query->getInt('limit', 20)));
 
         if ($query === '') {
@@ -128,7 +129,7 @@ class EmojiController extends AbstractController
     public function getRandomEmojis(Request $request): JsonResponse
     {
         $limit  = max(1, min(30, $request->query->getInt('limit', 10)));
-        $emojis = $this->emojiService->getTravelEmojis($limit); // réutilise travel pour rester thématique
+        $emojis = $this->emojiService->getTravelEmojis($limit);
 
         return $this->json([
             'success' => true,

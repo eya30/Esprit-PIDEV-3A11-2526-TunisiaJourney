@@ -14,46 +14,52 @@ class ReservationProg
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: "idRP", type: "integer")]
+    /** @phpstan-ignore-next-line */
     private ?int $idRP = null;
  
     #[ORM\Column(name: "nom", length: 255)]
     #[Assert\NotBlank(message: 'Le nom est obligatoire')]
     #[Assert\Length(min: 2, max: 50, minMessage: 'Le nom doit contenir au moins 2 caractères', maxMessage: 'Le nom ne peut pas dépasser 50 caractères')]
     #[Assert\Regex(pattern: '/^[a-zA-ZÀ-ÿ\s-]+$/', message: 'Le nom ne doit contenir que des lettres, espaces ou tirets')]
-    private ?string $nom = null;
+    private string $nom = '';
  
     #[ORM\Column(name: "prenom", length: 255)]
     #[Assert\NotBlank(message: 'Le prénom est obligatoire')]
     #[Assert\Length(min: 2, max: 50, minMessage: 'Le prénom doit contenir au moins 2 caractères', maxMessage: 'Le prénom ne peut pas dépasser 50 caractères')]
     #[Assert\Regex(pattern: '/^[a-zA-ZÀ-ÿ\s-]+$/', message: 'Le prénom ne doit contenir que des lettres, espaces ou tirets')]
-    private ?string $prenom = null;
+    private string $prenom = '';
  
     #[ORM\Column(name: "telephone", length: 20)]
     #[Assert\NotBlank(message: 'Le téléphone est obligatoire')]
     #[Assert\Length(min: 8, max: 8, exactMessage: 'Le téléphone doit contenir exactement 8 chiffres')]
     #[Assert\Regex(pattern: '/^[0-9]+$/', message: 'Le téléphone ne doit contenir que des chiffres')]
-    private ?string $telephone = null;
+    private string $telephone = '';
  
     #[ORM\Column(name: "nbre", type: "integer")]
     #[Assert\NotBlank(message: 'Le nombre de personnes est obligatoire')]
     #[Assert\Positive(message: 'Le nombre de personnes doit être supérieur à 0')]
     #[Assert\LessThanOrEqual(value: 20, message: 'Le nombre de personnes ne peut pas dépasser 20')]
-    private ?int $nbre = null;
+    private int $nbre = 0;
  
     #[ORM\Column(name: "prixProg", type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
-    private ?float $prixProg = null;
+    private ?string $prixProg = null;
  
     #[ORM\Column(name: "idP", type: "string", length: 50)]
     #[Assert\NotBlank(message: 'Le programme est obligatoire')]
-    private ?string $idP = null;
+    private string $idP = '';
  
     #[ORM\Column(name: "dateProgramme", type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $dateProgramme = null;
+    private \DateTimeInterface $dateProgramme;
  
     #[ORM\Column(name: "email", length: 255)]
     #[Assert\NotBlank(message: "L'email est obligatoire")]
     #[Assert\Email(message: 'Veuillez saisir un email valide')]
-    private ?string $email = null;
+    private string $email = '';
+
+    public function __construct()
+    {
+        $this->dateProgramme = new \DateTime();
+    }
  
     #[ORM\Column(name: "statutPaiement", length: 50, nullable: true)]
     private ?string $statutPaiement = null;
@@ -63,8 +69,7 @@ class ReservationProg
  
     #[ORM\Column(name: "user_id", type: "integer", nullable: true)]
     private ?int $userId = null;
- 
-    // GETTERS ET SETTERS
+
     public function getIdRP(): ?int { return $this->idRP; }
  
     public function getNom(): ?string { return $this->nom; }
@@ -79,8 +84,16 @@ class ReservationProg
     public function getNbre(): ?int { return $this->nbre; }
     public function setNbre(int $nbre): static { $this->nbre = $nbre; return $this; }
  
-    public function getPrixProg(): ?float { return $this->prixProg; }
-    public function setPrixProg(?float $prixProg): static { $this->prixProg = $prixProg; return $this; }
+    public function getPrixProg(): ?string { return $this->prixProg; }
+
+    public function setPrixProg(float|string|null $prixProg): static
+    {
+        $this->prixProg = $prixProg === null
+            ? null
+            : (is_float($prixProg) ? number_format($prixProg, 2, '.', '') : $prixProg);
+
+        return $this;
+    }
  
     public function getIdP(): ?string { return $this->idP; }
     public function setIdP(string $idP): static { $this->idP = $idP; return $this; }

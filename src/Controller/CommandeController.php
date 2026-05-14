@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Commande;
+use App\Entity\Produit;
 use App\Repository\CommandeRepository;
 use App\Repository\CommandeProduitRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -35,7 +36,6 @@ class CommandeController extends AbstractController
         ]);
     }
 
-    // ✅ PAGE TRACKING
     #[Route('/{id}/tracking', name: 'app_commande_tracking', methods: ['GET'])]
     public function tracking(Commande $commande): Response
     {
@@ -81,17 +81,36 @@ class CommandeController extends AbstractController
     {
         if ($commande->getUser() !== $this->getUser()) { $this->addFlash('danger', 'Accès refusé.'); return $this->redirectToRoute('app_commande_index'); }
         if ($commande->getStatut() !== 'En attente') { $this->addFlash('warning', 'Commande non modifiable.'); return $this->redirectToRoute('app_commande_index'); }
-        $item = $cpRepo->find($itemId);
+
+        $item     = $cpRepo->find($itemId);
         $quantite = (int) $request->request->get('quantite', 1);
-        if (!$item || $item->getCommande()?->getId() !== $commande->getId()) { $this->addFlash('danger', 'Article introuvable.'); return $this->redirectToRoute('app_commande_index'); }
-        if ($quantite <= 0) {
-            $em->remove($item); $em->flush();
-            if (empty($cpRepo->findBy(['commande' => $commande]))) { $em->remove($commande); $em->flush(); $this->addFlash('info', 'Commande supprimée (vide).'); return $this->redirectToRoute('app_commande_index'); }
-        } else {
-            $stockMax = ($item->getProduit()->getStock() ?? 0) + $item->getQuantite();
-            if ($quantite > $stockMax) { $this->addFlash('warning', 'Stock insuffisant. Max : ' . $stockMax); return $this->redirectToRoute('app_commande_show', ['id' => $commande->getId()]); }
-            $item->setQuantite($quantite); $em->flush();
+
+        if (!$item || $item->getCommande()?->getId() !== $commande->getId()) {
+            $this->addFlash('danger', 'Article introuvable.');
+            return $this->redirectToRoute('app_commande_index');
         }
+
+        if ($quantite <= 0) {
+            $em->remove($item);
+            $em->flush();
+            if (empty($cpRepo->findBy(['commande' => $commande]))) {
+                $em->remove($commande); $em->flush();
+                $this->addFlash('info', 'Commande supprimée (vide).');
+                return $this->redirectToRoute('app_commande_index');
+            }
+        } else {
+            $produit  = $item->getProduit();
+            $stockMax = ($produit instanceof Produit ? $produit->getStock() : 0) + $item->getQuantite();
+
+            if ($quantite > $stockMax) {
+                $this->addFlash('warning', 'Stock insuffisant. Max : ' . $stockMax);
+                return $this->redirectToRoute('app_commande_show', ['id' => $commande->getId()]);
+            }
+
+            $item->setQuantite($quantite);
+            $em->flush();
+        }
+
         $this->recalculerTotal($commande, $cpRepo, $em);
         $this->addFlash('success', 'Article mis à jour.');
         return $this->redirectToRoute('app_commande_show', ['id' => $commande->getId()]);
@@ -102,9 +121,18 @@ class CommandeController extends AbstractController
     {
         if ($commande->getUser() !== $this->getUser()) { $this->addFlash('danger', 'Accès refusé.'); return $this->redirectToRoute('app_commande_index'); }
         if ($commande->getStatut() !== 'En attente') { $this->addFlash('warning', 'Commande non modifiable.'); return $this->redirectToRoute('app_commande_index'); }
+
         $item = $cpRepo->find($itemId);
-        if ($item && $item->getCommande()?->getId() === $commande->getId()) { $em->remove($item); $em->flush(); $this->recalculerTotal($commande, $cpRepo, $em); }
-        if (empty($cpRepo->findBy(['commande' => $commande]))) { $em->remove($commande); $em->flush(); $this->addFlash('info', 'Commande supprimée (vide).'); return $this->redirectToRoute('app_commande_index'); }
+        if ($item && $item->getCommande()?->getId() === $commande->getId()) {
+            $em->remove($item);
+            $em->flush();
+            $this->recalculerTotal($commande, $cpRepo, $em);
+        }
+        if (empty($cpRepo->findBy(['commande' => $commande]))) {
+            $em->remove($commande); $em->flush();
+            $this->addFlash('info', 'Commande supprimée (vide).');
+            return $this->redirectToRoute('app_commande_index');
+        }
         $this->addFlash('success', 'Article supprimé.');
         return $this->redirectToRoute('app_commande_show', ['id' => $commande->getId()]);
     }
@@ -114,7 +142,8 @@ class CommandeController extends AbstractController
     {
         if ($commande->getUser() !== $this->getUser()) { $this->addFlash('danger', 'Accès refusé.'); return $this->redirectToRoute('app_commande_index'); }
         if ($commande->getStatut() !== 'En attente') { $this->addFlash('warning', 'Seules les commandes "En attente" peuvent être supprimées.'); return $this->redirectToRoute('app_commande_index'); }
-        $em->remove($commande); $em->flush();
+        $em->remove($commande);
+        $em->flush();
         $this->addFlash('success', 'Commande supprimée.');
         return $this->redirectToRoute('app_commande_index');
     }
@@ -122,8 +151,20 @@ class CommandeController extends AbstractController
     private function recalculerTotal(Commande $commande, CommandeProduitRepository $cpRepo, EntityManagerInterface $em): void
     {
         $items = $cpRepo->findBy(['commande' => $commande]);
-        $total = 0; $qte = 0;
-        foreach ($items as $item) { $total += $item->getProduit()->getPrix() * $item->getQuantite(); $qte += $item->getQuantite(); }
-        $commande->setTotal($total); $commande->setQuantite($qte); $em->flush();
+        $total = 0.0;
+        $qte   = 0;
+
+        foreach ($items as $item) {
+            $produit = $item->getProduit();
+            if (!$produit instanceof Produit) {
+                continue;
+            }
+            $total += $produit->getPrix() * $item->getQuantite();
+            $qte   += $item->getQuantite();
+        }
+
+        $commande->setTotal($total);
+        $commande->setQuantite($qte);
+        $em->flush();
     }
 }

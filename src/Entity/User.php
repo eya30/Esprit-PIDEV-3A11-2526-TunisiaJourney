@@ -22,24 +22,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
-    private ?int $id = null;
+    /** @phpstan-ignore-next-line */
+private ?int $id = null;
 
     #[ORM\Column(type: "string", length: 100)]
     #[Assert\NotBlank(message: "Le nom est obligatoire.", groups: ['Default', 'registration', 'profile'])]
     #[Assert\Length(max: 100, maxMessage: "100 caractères maximum.", groups: ['Default', 'registration', 'profile'])]
     #[Assert\Regex(pattern: '/^[a-zA-ZÀ-ÿ\s\-\']+$/', message: "Le nom ne doit contenir que des lettres.", groups: ['Default', 'registration', 'profile'])]
-    private ?string $nom = null;
+    private string $nom = '';
 
     #[ORM\Column(type: "string", length: 100)]
     #[Assert\NotBlank(message: "Le prénom est obligatoire.", groups: ['Default', 'registration', 'profile'])]
     #[Assert\Length(max: 100, maxMessage: "100 caractères maximum.", groups: ['Default', 'registration', 'profile'])]
     #[Assert\Regex(pattern: '/^[a-zA-ZÀ-ÿ\s\-\']+$/', message: "Le prénom ne doit contenir que des lettres.", groups: ['Default', 'registration', 'profile'])]
-    private ?string $prenom = null;
+    private string $prenom = '';
 
     #[ORM\Column(type: "string", length: 150, unique: true)]
     #[Assert\NotBlank(message: "L'email est obligatoire.", groups: ['Default', 'registration'])]
     #[Assert\Email(message: "Adresse email invalide.", groups: ['Default', 'registration'])]
-    private ?string $email = null;
+    private string $email = '';
 
     #[ORM\Column(type: "string", length: 255, nullable: true)]
     private ?string $motDePasse = null;
@@ -60,10 +61,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $adresse = null;
 
     #[ORM\Column(type: "string", length: 20)]
-    private ?string $role = null;
+    private string $role = '';
 
     #[ORM\Column(type: "datetime")]
-    private ?\DateTimeInterface $dateInscription = null;
+    private \DateTimeInterface $dateInscription;
+
+    public function __construct()
+    {
+        $this->dateInscription = new \DateTime();
+    }
 
     #[ORM\Column(type: "string", length: 20, nullable: true)]
     private ?string $statut = null;
@@ -132,7 +138,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getPassword(): ?string { return $this->motDePasse; }
 
-    public function getUserIdentifier(): string { return $this->email; }
+    public function getUserIdentifier(): string { return $this->email ?? ''; }
 
     public function getFaceEmbedding(): ?string { return $this->faceEmbedding; }
     public function setFaceEmbedding(?string $v): self { $this->faceEmbedding = $v; return $this; }
