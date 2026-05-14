@@ -23,6 +23,25 @@ class AIReportGenerator
         $this->logger        = $logger;
     }
 
+    /**
+     * @return array{
+     *     generated_at: string,
+     *     period: array{start: string, end: string},
+     *     summary: array{
+     *         total_voyages: int,
+     *         total_reservations: int,
+     *         total_participants: int,
+     *         total_revenue: float,
+     *         paid_revenue: float,
+     *         pending_revenue: float,
+     *         avg_occupancy_rate: float
+     *     },
+     *     best_voyages: array<int, array<string, mixed>>,
+     *     worst_voyages: array<int, array<string, mixed>>,
+     *     ai_insights: string,
+     *     detailed_voyages: array<int, array<string, mixed>>
+     * }
+     */
     public function generateWeeklyReport(): array
     {
         try {
@@ -44,18 +63,19 @@ class AIReportGenerator
                     'end'   => $endDate->format('Y-m-d'),
                 ],
                 'summary' => [
-                    'total_voyages'      => $voyagesData['total_voyages']      ?? 0,
-                    'total_reservations' => $voyagesData['total_reservations'] ?? 0,
-                    'total_participants' => $voyagesData['total_participants'] ?? 0,
-                    'total_revenue'      => $revenues['total_revenue']         ?? 0,
-                    'paid_revenue'       => $revenues['paid_revenue']          ?? 0,
-                    'pending_revenue'    => $revenues['pending_revenue']       ?? 0,
-                    'avg_occupancy_rate' => $voyagesData['avg_occupancy_rate'] ?? 0,
+                    // Suppression des ?? car les offsets existent toujours
+                    'total_voyages'      => $voyagesData['total_voyages'],
+                    'total_reservations' => $voyagesData['total_reservations'],
+                    'total_participants' => $voyagesData['total_participants'],
+                    'total_revenue'      => $revenues['total_revenue'],
+                    'paid_revenue'       => $revenues['paid_revenue'],
+                    'pending_revenue'    => $revenues['pending_revenue'],
+                    'avg_occupancy_rate' => $voyagesData['avg_occupancy_rate'],
                 ],
                 'best_voyages'     => $bestVoyages,
                 'worst_voyages'    => $worstVoyages,
                 'ai_insights'      => $aiInsights,
-                'detailed_voyages' => $voyagesData['voyages'] ?? [],
+                'detailed_voyages' => $voyagesData['voyages'],
             ];
 
             return $report;
@@ -68,6 +88,12 @@ class AIReportGenerator
 
     /**
      * Génère les insights via Ollama (100% IA locale, pas de texte hardcodé).
+     *
+     * @param array<string, mixed> $voyagesData
+     * @param array<string, float> $revenues
+     * @param array<int, array<string, mixed>> $bestVoyages
+     * @param array<int, array<string, mixed>> $worstVoyages
+     * @return string
      */
     private function generateAIInsightsViaOllama(
         array $voyagesData,
@@ -108,7 +134,7 @@ class AIReportGenerator
         ];
 
         // Appel Ollama
-        $aiText = $this->ollamaService->generateFinancialReport($reportDataForAI);
+        $aiText = $this->ollamaService->generate($reportDataForAI);
 
         if (!empty($aiText)) {
             return $aiText;
@@ -120,6 +146,12 @@ class AIReportGenerator
 
     /**
      * Fallback statique si Ollama est indisponible.
+     *
+     * @param array<string, mixed> $voyagesData
+     * @param array<string, float> $revenues
+     * @param array<int, array<string, mixed>> $bestVoyages
+     * @param array<int, array<string, mixed>> $worstVoyages
+     * @return string
      */
     private function generateStaticInsights(
         array $voyagesData,
@@ -171,6 +203,15 @@ class AIReportGenerator
         return $summary;
     }
 
+    /**
+     * @return array{
+     *     voyages: array<int, array<string, mixed>>,
+     *     total_voyages: int,
+     *     total_reservations: int,
+     *     total_participants: int,
+     *     avg_occupancy_rate: float
+     * }
+     */
     private function getVoyagesPerformance(): array
     {
         try {
@@ -229,6 +270,9 @@ class AIReportGenerator
         }
     }
 
+    /**
+     * @return array{total_revenue: float, paid_revenue: float, pending_revenue: float}
+     */
     private function calculateTotalRevenues(): array
     {
         try {
@@ -243,8 +287,8 @@ class AIReportGenerator
             ");
 
             return [
-                'total_revenue'   => (float)($revenues['total_revenue']   ?? 0),
-                'paid_revenue'    => (float)($revenues['paid_revenue']    ?? 0),
+                'total_revenue'   => (float)($revenues['total_revenue'] ?? 0),
+                'paid_revenue'    => (float)($revenues['paid_revenue'] ?? 0),
                 'pending_revenue' => (float)($revenues['pending_revenue'] ?? 0),
             ];
 
@@ -254,6 +298,10 @@ class AIReportGenerator
         }
     }
 
+    /**
+     * @param array<string, mixed> $voyagesData
+     * @return array<int, array<string, mixed>>
+     */
     private function getBestVoyages(array $voyagesData): array
     {
         $voyages = array_filter($voyagesData['voyages'] ?? [], fn($v) => ($v['paid_revenue'] ?? 0) > 0 || ($v['total_participants'] ?? 0) > 0);
@@ -261,6 +309,10 @@ class AIReportGenerator
         return array_slice($voyages, 0, 5);
     }
 
+    /**
+     * @param array<string, mixed> $voyagesData
+     * @return array<int, array<string, mixed>>
+     */
     private function getWorstVoyages(array $voyagesData): array
     {
         $voyages = array_filter($voyagesData['voyages'] ?? [], fn($v) => ($v['total_reservations'] ?? 0) > 0);
@@ -268,6 +320,25 @@ class AIReportGenerator
         return array_slice($voyages, 0, 5);
     }
 
+    /**
+     * @return array{
+     *     generated_at: string,
+     *     period: array{start: string, end: string},
+     *     summary: array{
+     *         total_voyages: int,
+     *         total_reservations: int,
+     *         total_participants: int,
+     *         total_revenue: int,
+     *         paid_revenue: int,
+     *         pending_revenue: int,
+     *         avg_occupancy_rate: int
+     *     },
+     *     best_voyages: array<int, mixed>,
+     *     worst_voyages: array<int, mixed>,
+     *     ai_insights: string,
+     *     detailed_voyages: array<int, mixed>
+     * }
+     */
     private function getDefaultReport(): array
     {
         $now = new \DateTime();
@@ -282,6 +353,10 @@ class AIReportGenerator
         ];
     }
 
+    /**
+     * @param array<string, mixed> $report
+     * @return string
+     */
     public function generatePDFReport(array $report): string
     {
         try {
@@ -305,6 +380,10 @@ class AIReportGenerator
         }
     }
 
+    /**
+     * @param array<string, mixed> $report
+     * @return string
+     */
     private function renderReportHTML(array $report): string
     {
         $bestVoyages = $report['best_voyages'] ?? [];
@@ -349,10 +428,10 @@ body { font-family: "DejaVu Sans", Arial, sans-serif; font-size: 11px; color: #1
 </div>
 <table class="stats">
 <tr>
-<td><div class="value">' . ($report['summary']['total_voyages'] ?? 0) . '</div><div class="label">Voyages</div></td>
-<td><div class="value">' . ($report['summary']['total_reservations'] ?? 0) . '</div><div class="label">Réservations</div></td>
-<td><div class="value">' . ($report['summary']['total_participants'] ?? 0) . '</div><div class="label">Participants</div></td>
-<td><div class="value">' . ($report['summary']['avg_occupancy_rate'] ?? 0) . '%</div><div class="label">Occupation</div></td>
+    <td><div class="value">' . ($report['summary']['total_voyages'] ?? 0) . '</div><div class="label">Voyages</div></td>
+    <td><div class="value">' . ($report['summary']['total_reservations'] ?? 0) . '</div><div class="label">Réservations</div></td>
+    <td><div class="value">' . ($report['summary']['total_participants'] ?? 0) . '</div><div class="label">Participants</div></td>
+    <td><div class="value">' . ($report['summary']['avg_occupancy_rate'] ?? 0) . '%</div><div class="label">Occupation</div></td>
 </tr>
 </table>
 <div class="revenue-box">
@@ -366,14 +445,14 @@ body { font-family: "DejaVu Sans", Arial, sans-serif; font-size: 11px; color: #1
 
         foreach ($bestVoyages as $v) {
             $html .= '<tr>
-<td>' . htmlspecialchars($v['nom'] ?? '') . '</td>
-<td>' . ($v['total_participants'] ?? 0) . '</td>
-<td>' . ($v['occupancy_rate'] ?? 0) . '%</td>
-<td>' . number_format($v['paid_revenue'] ?? 0, 2) . ' DT</td>
+    <td>' . htmlspecialchars($v['nom'] ?? '') . '</td>
+    <td>' . ($v['total_participants'] ?? 0) . '</td>
+    <td>' . ($v['occupancy_rate'] ?? 0) . '%</td>
+    <td>' . number_format($v['paid_revenue'] ?? 0, 2) . ' DT</td>
 </tr>';
         }
 
-        $html .= '</table>
+        $html .= '<tr>
 <div class="section-title">Insights IA (Ollama)</div>
 <div class="insights">' . nl2br(htmlspecialchars($report['ai_insights'] ?? 'Aucun insight disponible')) . '</div>
 <div class="footer">Rapport généré automatiquement par Ollama AI — TunisiaJourney</div>

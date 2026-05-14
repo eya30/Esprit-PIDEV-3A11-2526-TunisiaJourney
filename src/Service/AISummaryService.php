@@ -3,9 +3,9 @@
 namespace App\Service;
 
 use App\Entity\Activite;
+use App\Entity\AvisAct;
 use App\Repository\AvisActRepository;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class AISummaryService
 {
@@ -18,12 +18,18 @@ class AISummaryService
         $this->mlPath = $projectDir . '/ml';
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function generateSummary(int $activiteId): array
     {
         $avisList = $this->avisRepo->findByActiviteId($activiteId);
         return $this->runMlAnalysis($avisList);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function generateSummaryForActivite(Activite $activite): array
     {
         $avisList = $this->avisRepo->findByActivite($activite);
@@ -39,6 +45,10 @@ class AISummaryService
             : $summary;
     }
 
+    /**
+     * @param AvisAct[] $avisList
+     * @return array<string, mixed>
+     */
     private function runMlAnalysis(array $avisList): array
     {
         if (empty($avisList)) {
@@ -52,9 +62,8 @@ class AISummaryService
 
         $jsonPayload = json_encode($payload, JSON_UNESCAPED_UNICODE);
 
-        // Chemin complet vers python.exe pour que XAMPP/PHP le trouve
         $process = new Process([
-            'C:\\Users\\Maram\\AppData\\Local\\Programs\\Python\\Python311\\python.exe',
+            'C:\\Users\\chaim_if4qa5x\\AppData\\Local\\Programs\\Python\\Python312\\python.exe',
             $this->mlPath . '/predict.py',
             $jsonPayload,
         ]);
@@ -84,6 +93,9 @@ class AISummaryService
         ];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function emptyResponse(): array
     {
         return [
@@ -102,6 +114,10 @@ class AISummaryService
         ];
     }
 
+    /**
+     * @param AvisAct[] $avisList
+     * @return array<string, mixed>
+     */
     private function fallbackResponse(array $avisList, string $errorMsg = ''): array
     {
         $total = count($avisList);

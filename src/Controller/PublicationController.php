@@ -1,5 +1,4 @@
 <?php
-// src/Controller/PublicationController.php
 
 namespace App\Controller;
 
@@ -26,10 +25,6 @@ class PublicationController extends AbstractController
 {
     private const ADMIN_USER_ID = 1;
 
-    // ════════════════════════════════════════════════════════════════════
-    // Retourne un visitor_id STABLE >= 10000 stocké en session.
-    // Créé une seule fois, jamais réinitialisé.
-    // ════════════════════════════════════════════════════════════════════
     private function getOrCreateVisitorId(SessionInterface $session): int
     {
         $visitorId = (int) $session->get('visitor_id', 0);
@@ -56,6 +51,9 @@ class PublicationController extends AbstractController
         ->getOneOrNullResult();
     }
 
+    /**
+     * @return array{like: int, dislike: int}
+     */
     private function getStats(EntityManagerInterface $em, int $pubId): array
     {
         $rows = $em->createQuery(
@@ -67,13 +65,24 @@ class PublicationController extends AbstractController
         ->setParameter('pubId', $pubId)
         ->getResult();
 
-        $stats = ['like' => 0, 'dislike' => 0];
+        // Fix ligne 75 : on déclare les clés explicitement pour satisfaire array{like: int, dislike: int}
+        $like    = 0;
+        $dislike = 0;
+
         foreach ($rows as $row) {
-            $stats[$row['type']] = (int) $row['total'];
+            if ($row['type'] === 'like') {
+                $like = (int) $row['total'];
+            } elseif ($row['type'] === 'dislike') {
+                $dislike = (int) $row['total'];
+            }
         }
-        return $stats;
+
+        return ['like' => $like, 'dislike' => $dislike];
     }
 
+    /**
+     * @return array{like: int, love: int, haha: int, wow: int, sad: int, angry: int}
+     */
     private function getReactionStats(EntityManagerInterface $em, int $pubId): array
     {
         $rows = $em->createQuery(
@@ -85,28 +94,36 @@ class PublicationController extends AbstractController
         ->setParameter('pubId', $pubId)
         ->getResult();
 
-        $stats = ['like' => 0, 'love' => 0, 'haha' => 0, 'wow' => 0, 'sad' => 0, 'angry' => 0];
+        $like  = 0;
+        $love  = 0;
+        $haha  = 0;
+        $wow   = 0;
+        $sad   = 0;
+        $angry = 0;
+
         foreach ($rows as $row) {
-            $type = $row['type'];
-            if (isset($stats[$type])) {
-                $stats[$type] = (int) $row['total'];
-            }
+            match ($row['type']) {
+                'like'  => $like  = (int) $row['total'],
+                'love'  => $love  = (int) $row['total'],
+                'haha'  => $haha  = (int) $row['total'],
+                'wow'   => $wow   = (int) $row['total'],
+                'sad'   => $sad   = (int) $row['total'],
+                'angry' => $angry = (int) $row['total'],
+                default => null,
+            };
         }
-        return $stats;
+
+        return [
+            'like'  => $like,
+            'love'  => $love,
+            'haha'  => $haha,
+            'wow'   => $wow,
+            'sad'   => $sad,
+            'angry' => $angry,
+        ];
     }
 
-    private function findReaction(EntityManagerInterface $em, int $pubId, int $userId): ?LikePublication
-    {
-        return $em->createQuery(
-            'SELECT l FROM App\Entity\LikePublication l
-             WHERE IDENTITY(l.publication) = :pubId AND l.userId = :userId'
-        )
-        ->setParameter('pubId', $pubId)
-        ->setParameter('userId', $userId)
-        ->getOneOrNullResult();
-    }
-
-    private function saveUploadedFile($file, SluggerInterface $slugger): ?string
+    private function saveUploadedFile(mixed $file, SluggerInterface $slugger): ?string
     {
         if (!$file) return null;
         $newFilename = $slugger->slug(
@@ -119,10 +136,6 @@ class PublicationController extends AbstractController
             return null;
         }
     }
-
-    // ════════════════════════════════════════════════════════════════════
-    // ADMIN CRUD
-    // ════════════════════════════════════════════════════════════════════
 
     #[Route('/', name: 'app_publication_index', methods: ['GET'])]
     public function index(PublicationRepository $repo): Response
@@ -143,24 +156,32 @@ class PublicationController extends AbstractController
         $publication = new Publication();
         $form = $this->createForm(PublicationType::class, $publication, ['is_edit' => false]);
         $form->handleRequest($request);
+        $errors = [];
 
         if ($request->isMethod('POST')) {
             $imageFile = $request->files->get('publication_image_file');
             $videoFile = $request->files->get('publication_video_file');
-            $imageUrl  = trim((string) $request->request->get('image_url', ''));
-            $videoUrl  = trim((string) $request->request->get('video_url', ''));
-            $errors    = [];
-            $nomValue  = $publication->getNom();
+
+            $imageUrl = trim($request->request->getString('image_url'));
+            $videoUrl = trim($request->request->getString('video_url'));
+
+            $nomValue = $publication->getNom();
 
             $titreErrors = $validator->validate($nomValue, [
                 new NotBlank(['message' => 'Le titre est obligatoire.']),
-                new Length(['min' => 3, 'max' => 100,
+                new Length([
+                    'min' => 3, 'max' => 100,
                     'minMessage' => 'Le titre doit contenir au moins {{ limit }} caractères.',
-                    'maxMessage' => 'Le titre ne peut pas dépasser {{ limit }} caractères.']),
-                new Regex(['pattern' => '/^[a-zA-ZÀ-ÿ\p{Arabic}]/u',
-                    'message' => 'Le titre doit commencer par une lettre.']),
+                    'maxMessage' => 'Le titre ne peut pas dépasser {{ limit }} caractères.',
+                ]),
+                new Regex([
+                    'pattern' => '/^[a-zA-ZÀ-ÿ\p{Arabic}]/u',
+                    'message' => 'Le titre doit commencer par une lettre.',
+                ]),
             ]);
-            foreach ($titreErrors as $e) { $errors['nom'] = $e->getMessage(); }
+            foreach ($titreErrors as $e) {
+                $errors['nom'] = $e->getMessage();
+            }
             if ($publication->getForum() === null) {
                 $errors['forum'] = 'Veuillez sélectionner un forum.';
             }
@@ -178,13 +199,14 @@ class PublicationController extends AbstractController
                 } elseif (!empty($videoUrl)) {
                     $publication->setVideo($videoUrl);
                 }
-                // Publications admin → id = 1 (forum public uniquement)
+
                 $publication->setId(self::ADMIN_USER_ID);
                 $publication->setDateCreation(new \DateTime());
                 $publication->setVues(0);
                 $em->persist($publication);
                 $em->flush();
                 $this->addFlash('success', '✅ Publication créée avec succès !');
+
                 $forum = $publication->getForum();
                 if ($forum !== null) {
                     return $this->redirectToRoute('app_forum_show', ['idF' => $forum->getIdF()]);
@@ -195,15 +217,10 @@ class PublicationController extends AbstractController
 
         return $this->render('admin/publication/new.html.twig', [
             'form'   => $form->createView(),
-            'errors' => $errors ?? [],
+            'errors' => $errors,
         ]);
     }
 
-    // ════════════════════════════════════════════════════════════════════
-    // ✅ API NEW — "Partager votre aventure"
-    //    → visitor_id >= 10000 → jamais confondu avec admin (id=1)
-    //    → apparaît UNIQUEMENT dans le profil visiteur
-    // ════════════════════════════════════════════════════════════════════
     #[Route('/api/new', name: 'api_publication_new', methods: ['POST'])]
     public function apiNew(
         Request $request,
@@ -212,10 +229,10 @@ class PublicationController extends AbstractController
         SessionInterface $session,
         ValidatorInterface $validator
     ): JsonResponse {
-        $title       = trim((string) $request->request->get('title', ''));
-        $description = trim((string) $request->request->get('description', ''));
-        $forumId     = (int) $request->request->get('forumId', 0);
-        $videoUrl    = trim((string) $request->request->get('videoUrl', ''));
+        $title       = trim($request->request->getString('title'));
+        $description = trim($request->request->getString('description'));
+        $forumId     = $request->request->getInt('forumId');
+        $videoUrl    = trim($request->request->getString('videoUrl'));
 
         if (empty($title) || mb_strlen($title) < 3) {
             return new JsonResponse([
@@ -238,7 +255,6 @@ class PublicationController extends AbstractController
             ], 404);
         }
 
-        // ✅ Toujours >= 10000, jamais 1 (admin)
         $visitorId = $this->getOrCreateVisitorId($session);
 
         $publication = new Publication();
@@ -282,7 +298,6 @@ class PublicationController extends AbstractController
             $session->set('profile_just_created_' . $visitorId, true);
         }
 
-        // ✅ URL du profil avec le visitor_id réel (>= 10000)
         $profileUrl = $this->generateUrl('app_user_profile', ['userId' => $visitorId]);
 
         return new JsonResponse([
@@ -312,9 +327,15 @@ class PublicationController extends AbstractController
         $publication->setVues($publication->getVues() + 1);
         $em->flush();
 
-        $userId   = $this->getCurrentUserId($session);
-        $stats    = $this->getStats($em, $publication->getIdP());
-        $userVote = $this->findVote($em, $publication->getIdP(), $userId);
+        $userId = $this->getCurrentUserId($session);
+        $pubId  = $publication->getIdP();
+
+        if ($pubId === null) {
+            throw $this->createNotFoundException('Publication sans identifiant.');
+        }
+
+        $stats    = $this->getStats($em, $pubId);
+        $userVote = $this->findVote($em, $pubId, $userId);
 
         return $this->render('Forum/watch.html.twig', [
             'publication' => $publication,
@@ -334,24 +355,29 @@ class PublicationController extends AbstractController
     ): Response {
         $forumOriginal = $publication->getForum();
         $form = $this->createForm(PublicationType::class, $publication, ['is_edit' => true]);
+        $errors = [];
 
         if ($request->isMethod('POST')) {
             $form->handleRequest($request);
-            $imageFile   = $request->files->get('publication_image_file');
-            $videoFile   = $request->files->get('publication_video_file');
-            $imageUrl    = trim((string) $request->request->get('image_url', ''));
-            $videoUrl    = trim((string) $request->request->get('video_url', ''));
-            $removeImage = $request->request->get('remove_image') === '1';
-            $removeVideo = $request->request->get('remove_video') === '1';
-            $errors      = [];
+            $imageFile = $request->files->get('publication_image_file');
+            $videoFile = $request->files->get('publication_video_file');
+
+            $imageUrl    = trim($request->request->getString('image_url'));
+            $videoUrl    = trim($request->request->getString('video_url'));
+            $removeImage = $request->request->getString('remove_image') === '1';
+            $removeVideo = $request->request->getString('remove_video') === '1';
 
             $titreErrors = $validator->validate($publication->getNom() ?? '', [
                 new NotBlank(['message' => 'Le titre est obligatoire.']),
-                new Length(['min' => 3, 'max' => 100,
+                new Length([
+                    'min' => 3, 'max' => 100,
                     'minMessage' => 'Le titre doit contenir au moins {{ limit }} caractères.',
-                    'maxMessage' => 'Le titre ne peut pas dépasser {{ limit }} caractères.']),
+                    'maxMessage' => 'Le titre ne peut pas dépasser {{ limit }} caractères.',
+                ]),
             ]);
-            foreach ($titreErrors as $e) { $errors['nom'] = $e->getMessage(); }
+            foreach ($titreErrors as $e) {
+                $errors['nom'] = $e->getMessage();
+            }
             if ($publication->getForum() === null) {
                 $errors['forum'] = 'Veuillez sélectionner un forum.';
             }
@@ -371,6 +397,7 @@ class PublicationController extends AbstractController
                 } elseif (!empty($videoUrl) && filter_var($videoUrl, FILTER_VALIDATE_URL)) {
                     $publication->setVideo($videoUrl);
                 }
+
                 $em->flush();
                 $this->addFlash('success', '✅ Publication modifiée avec succès !');
                 $forum = $publication->getForum() ?? $forumOriginal;
@@ -384,7 +411,7 @@ class PublicationController extends AbstractController
         return $this->render('admin/publication/edit.html.twig', [
             'form'        => $form->createView(),
             'publication' => $publication,
-            'errors'      => $errors ?? [],
+            'errors'      => $errors,
         ]);
     }
 
@@ -395,11 +422,14 @@ class PublicationController extends AbstractController
         EntityManagerInterface $em
     ): Response {
         $forum = $publication->getForum();
-        if ($this->isCsrfTokenValid('delete' . $publication->getIdP(), $request->request->get('_token'))) {
+        $token = $request->request->get('_token');
+
+        if ($this->isCsrfTokenValid('delete' . $publication->getIdP(), is_string($token) ? $token : null)) {
             $em->remove($publication);
             $em->flush();
             $this->addFlash('success', '✅ Publication supprimée !');
         }
+
         if ($forum !== null) {
             return $this->redirectToRoute('app_forum_show', ['idF' => $forum->getIdF()]);
         }
@@ -420,7 +450,12 @@ class PublicationController extends AbstractController
             return new JsonResponse(['success' => false, 'error' => 'Type invalide'], 400);
         }
 
-        $existingVote    = $this->findVote($em, $publication->getIdP(), $userId);
+        $pubId = $publication->getIdP();
+        if ($pubId === null) {
+            return new JsonResponse(['success' => false, 'error' => 'Publication invalide'], 500);
+        }
+
+        $existingVote    = $this->findVote($em, $pubId, $userId);
         $userCurrentVote = null;
 
         if ($existingVote !== null) {
@@ -441,7 +476,7 @@ class PublicationController extends AbstractController
         }
 
         $em->flush();
-        $stats = $this->getStats($em, $publication->getIdP());
+        $stats = $this->getStats($em, $pubId);
 
         return new JsonResponse([
             'success'  => true,
@@ -457,9 +492,15 @@ class PublicationController extends AbstractController
         EntityManagerInterface $em,
         SessionInterface $session
     ): JsonResponse {
-        $userId   = $this->getCurrentUserId($session);
-        $stats    = $this->getStats($em, $publication->getIdP());
-        $userVote = $this->findVote($em, $publication->getIdP(), $userId);
+        $userId = $this->getCurrentUserId($session);
+
+        $pubId = $publication->getIdP();
+        if ($pubId === null) {
+            return new JsonResponse(['success' => false, 'error' => 'Publication invalide'], 500);
+        }
+
+        $stats    = $this->getStats($em, $pubId);
+        $userVote = $this->findVote($em, $pubId, $userId);
 
         return new JsonResponse([
             'likes'    => $stats['like'],
@@ -468,9 +509,6 @@ class PublicationController extends AbstractController
         ]);
     }
 
-    // ════════════════════════════════════════════════════════════════════
-    // ✅ ROUTE POUR LES RÉACTIONS (like, love, haha, wow, sad, angry)
-    // ════════════════════════════════════════════════════════════════════
     #[Route('/{idP}/react', name: 'app_publication_react', methods: ['POST'])]
     public function react(
         int $idP,
@@ -479,24 +517,23 @@ class PublicationController extends AbstractController
         SessionInterface $session
     ): JsonResponse {
         $data = json_decode($request->getContent(), true);
-        $type = $data['type'] ?? null;
+        $type = is_array($data) && isset($data['type']) && is_string($data['type'])
+            ? $data['type']
+            : null;
 
-        // Types de réactions valides
         $validTypes = ['like', 'love', 'haha', 'wow', 'sad', 'angry'];
-        
+
         if ($type !== null && !in_array($type, $validTypes, true)) {
             return new JsonResponse(['success' => false, 'error' => 'Type de réaction invalide'], 400);
         }
 
-        // Récupérer la publication
         $publication = $em->getRepository(Publication::class)->find($idP);
         if (!$publication) {
             return new JsonResponse(['success' => false, 'error' => 'Publication non trouvée'], 404);
         }
 
         $userId = $this->getOrCreateVisitorId($session);
-        
-        // Chercher la réaction existante
+
         $existingReaction = $em->createQuery(
             'SELECT l FROM App\Entity\LikePublication l
              WHERE IDENTITY(l.publication) = :pubId AND l.userId = :userId'
@@ -506,7 +543,6 @@ class PublicationController extends AbstractController
         ->getOneOrNullResult();
 
         if ($type === null) {
-            // Supprimer la réaction
             if ($existingReaction) {
                 $em->remove($existingReaction);
                 $em->flush();
@@ -514,15 +550,12 @@ class PublicationController extends AbstractController
         } else {
             if ($existingReaction) {
                 if ($existingReaction->getType() === $type) {
-                    // Même réaction → on la supprime (toggle off)
                     $em->remove($existingReaction);
                 } else {
-                    // Changement de réaction
                     $existingReaction->setType($type);
                     $existingReaction->setDateAction(new \DateTime());
                 }
             } else {
-                // Nouvelle réaction
                 $newReaction = new LikePublication();
                 $newReaction->setType($type);
                 $newReaction->setPublication($publication);
@@ -533,7 +566,6 @@ class PublicationController extends AbstractController
             $em->flush();
         }
 
-        // Récupérer les statistiques mises à jour
         $stats = $this->getReactionStats($em, $idP);
         $total = array_sum($stats);
 
@@ -545,12 +577,6 @@ class PublicationController extends AbstractController
         ]);
     }
 
-    // ════════════════════════════════════════════════════════════════════
-    // ✅ PAGE PROFIL VOYAGEUR
-    // - userId dans l'URL = visitor_id réel (>= 10000)
-    // - Affiche uniquement les publications de ce visiteur
-    // - Exclut toujours les publications admin (id=1 = forum public)
-    // ════════════════════════════════════════════════════════════════════
     #[Route('/profil/{userId}', name: 'app_user_profile', methods: ['GET'])]
     public function userProfile(
         int $userId,
@@ -565,7 +591,6 @@ class PublicationController extends AbstractController
         $currentVisitorId = $this->getOrCreateVisitorId($session);
         $isOwner          = ($currentVisitorId === $userId);
 
-        // ✅ Publications de ce visiteur uniquement, jamais celles de l'admin
         $publications = $pubRepo->createQueryBuilder('p')
             ->where('p.id = :userId')
             ->andWhere('p.id != :adminId')

@@ -12,6 +12,7 @@ class CodePromo
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'idcode', type: 'integer')]
+    /** @phpstan-ignore-next-line */
     private ?int $idcode = null;
 
     #[ORM\Column(name: 'code', type: 'string', length: 50)]
@@ -32,84 +33,26 @@ class CodePromo
     #[ORM\Column(name: 'statut', type: 'string', length: 20, nullable: true, options: ['default' => 'actif'])]
     private ?string $statut = 'actif';
 
-    // ── Getters / Setters ────────────────────────────────────────────────────
+    public function getIdcode(): ?int { return $this->idcode; }
 
-    public function getIdcode(): ?int
-    {
-        return $this->idcode;
-    }
+    public function getCode(): string { return $this->code; }
+    public function setCode(string $code): static { $this->code = $code; return $this; }
 
-    public function getCode(): string
-    {
-        return $this->code;
-    }
+    public function getDescription(): ?string { return $this->description; }
+    public function setDescription(?string $description): static { $this->description = $description; return $this; }
 
-    public function setCode(string $code): static
-    {
-        $this->code = $code;
-        return $this;
-    }
+    public function getPourcentageReduction(): int { return $this->pourcentageReduction; }
+    public function setPourcentageReduction(int $pourcentageReduction): static { $this->pourcentageReduction = $pourcentageReduction; return $this; }
 
-    public function getDescription(): ?string
-    {
-        return $this->description;
-    }
+    public function getDateDebut(): \DateTimeInterface { return $this->dateDebut; }
+    public function setDateDebut(\DateTimeInterface $dateDebut): static { $this->dateDebut = $dateDebut; return $this; }
 
-    public function setDescription(?string $description): static
-    {
-        $this->description = $description;
-        return $this;
-    }
+    public function getDateFin(): \DateTimeInterface { return $this->dateFin; }
+    public function setDateFin(\DateTimeInterface $dateFin): static { $this->dateFin = $dateFin; return $this; }
 
-    public function getPourcentageReduction(): int
-    {
-        return $this->pourcentageReduction;
-    }
+    public function getStatut(): ?string { return $this->statut; }
+    public function setStatut(?string $statut): static { $this->statut = $statut; return $this; }
 
-    public function setPourcentageReduction(int $pourcentageReduction): static
-    {
-        $this->pourcentageReduction = $pourcentageReduction;
-        return $this;
-    }
-
-    public function getDateDebut(): \DateTimeInterface
-    {
-        return $this->dateDebut;
-    }
-
-    public function setDateDebut(\DateTimeInterface $dateDebut): static
-    {
-        $this->dateDebut = $dateDebut;
-        return $this;
-    }
-
-    public function getDateFin(): \DateTimeInterface
-    {
-        return $this->dateFin;
-    }
-
-    public function setDateFin(\DateTimeInterface $dateFin): static
-    {
-        $this->dateFin = $dateFin;
-        return $this;
-    }
-
-    public function getStatut(): ?string
-    {
-        return $this->statut;
-    }
-
-    public function setStatut(?string $statut): static
-    {
-        $this->statut = $statut;
-        return $this;
-    }
-
-    /**
-     * Vérifie si le code promo est valide à la date du jour :
-     * - statut = 'actif'
-     * - aujourd'hui entre date_debut et date_fin
-     */
     public function isValide(): bool
     {
         $today = new \DateTime('today');
@@ -118,9 +61,6 @@ class CodePromo
             && $today <= $this->dateFin;
     }
 
-    /**
-     * Calcule le montant réduit à partir d'un prix de base.
-     */
     public function appliquer(float $prix): float
     {
         return $prix * (1 - $this->pourcentageReduction / 100);

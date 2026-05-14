@@ -7,6 +7,9 @@ use App\Entity\Signalement;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<Signalement>
+ */
 class SignalementRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -14,7 +17,11 @@ class SignalementRepository extends ServiceEntityRepository
         parent::__construct($registry, Signalement::class);
     }
 
-    /** Tous les signalements non traités, du plus récent au plus ancien */
+    /**
+     * Tous les signalements non traités, du plus récent au plus ancien.
+     *
+     * @return array<int, Signalement>
+     */
     public function findPending(): array
     {
         return $this->createQueryBuilder('s')
@@ -24,7 +31,11 @@ class SignalementRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    /** Signalements d'un contenu précis */
+    /**
+     * Signalements d'un contenu précis.
+     *
+     * @return array<int, Signalement>
+     */
     public function findByTarget(string $type, int $targetId): array
     {
         return $this->createQueryBuilder('s')

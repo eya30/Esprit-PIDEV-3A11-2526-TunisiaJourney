@@ -1,11 +1,14 @@
 framework:
     notifier:
         chatter_transports:
+            telegram: '%env(TELEGRAM_DSN)%'
+            discord: '%env(DISCORD_WEBHOOK_URL)%'
         texter_transports:
+            twilio: '%env(TWILIO_DSN)%'
+            ma_liste_attente: '%env(MON_SMS_DSN)%'
         channel_policy:
-            # use chat/slack, chat/telegram, sms/twilio or sms/nexmo
-            urgent: ['email']
-            high: ['email']
+            urgent: ['discord', 'email']
+            high: ['discord', 'email']
             medium: ['email']
             low: ['email']
         admin_recipients:

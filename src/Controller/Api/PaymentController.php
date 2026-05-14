@@ -120,12 +120,15 @@ class PaymentController extends AbstractController
             $em->persist($commande);
             $em->flush();
 
-            foreach ($items as $item) {
-                $item->getProduit()->decrementStock($item->getQuantite());
-                $item->setCommande($commande);
-                $item->setIsPanier(false);
-                $item->setUser(null);
-            }
+           foreach ($items as $item) {
+    $produit = $item->getProduit();
+    if ($produit !== null) {
+        $produit->decrementStock($item->getQuantite());
+    }
+    $item->setCommande($commande);
+    $item->setIsPanier(false);
+    $item->setUser(null);
+}
 
             $em->flush();
 

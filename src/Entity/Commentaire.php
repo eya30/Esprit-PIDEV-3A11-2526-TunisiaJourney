@@ -1,5 +1,4 @@
 <?php
-// src/Entity/Commentaire.php
 
 namespace App\Entity;
 
@@ -13,6 +12,7 @@ class Commentaire
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'idC', type: 'integer')]
+    /** @phpstan-ignore-next-line */
     private ?int $idC = null;
 
     #[ORM\Column(name: 'description', type: 'text')]
@@ -34,41 +34,11 @@ class Commentaire
     #[ORM\Column(name: 'tags', type: 'string', length: 255, nullable: true)]
     private ?string $tags = null;
 
-    #[ORM\Column(name: 'is_cancelled', type: 'boolean', options: ['default' => false])]
-    private ?bool $isCancelled = false;
-
-    #[ORM\Column(name: 'cancelled_at', type: 'datetime', nullable: true)]
-    private ?\DateTimeInterface $cancelledAt = null;
-
-    #[ORM\Column(name: 'ip_address', type: 'string', length: 45, nullable: true)]
-    private ?string $ipAddress = null;
-
-    #[ORM\Column(name: 'user_agent', type: 'string', length: 500, nullable: true)]
-    private ?string $userAgent = null;
-
-    #[ORM\Column(name: 'created_at', type: 'datetime', nullable: true)]
-    private ?\DateTimeInterface $createdAt = null;
-
-    // ══════════════════════════════════════════════════════════════════════
-    // CHAMPS POUR LA TRADUCTION
-    // ══════════════════════════════════════════════════════════════════════
-    #[ORM\Column(name: 'original_description', type: 'text', nullable: true)]
-    private ?string $originalDescription = null;
-
-    #[ORM\Column(name: 'translated_lang', type: 'string', length: 5, nullable: true)]
-    private ?string $translatedLang = null;
-
-    #[ORM\Column(name: 'is_translated', type: 'boolean', options: ['default' => false])]
-    private bool $isTranslated = false;
-
     public function __construct()
     {
         $this->dateCreation = new \DateTime();
-        $this->isCancelled = false;
-        $this->isTranslated = false;
     }
 
-    // Getters et Setters
     public function getIdC(): ?int { return $this->idC; }
 
     public function getDescription(): ?string { return $this->description; }
@@ -88,29 +58,4 @@ class Commentaire
 
     public function getTags(): ?string { return $this->tags; }
     public function setTags(?string $t): self { $this->tags = $t; return $this; }
-
-    public function getIsCancelled(): ?bool { return $this->isCancelled; }
-    public function setIsCancelled(bool $isCancelled): self { $this->isCancelled = $isCancelled; return $this; }
-
-    public function getCancelledAt(): ?\DateTimeInterface { return $this->cancelledAt; }
-    public function setCancelledAt(?\DateTimeInterface $cancelledAt): self { $this->cancelledAt = $cancelledAt; return $this; }
-
-    public function getIpAddress(): ?string { return $this->ipAddress; }
-    public function setIpAddress(?string $ipAddress): self { $this->ipAddress = $ipAddress; return $this; }
-
-    public function getUserAgent(): ?string { return $this->userAgent; }
-    public function setUserAgent(?string $userAgent): self { $this->userAgent = $userAgent; return $this; }
-
-    public function getCreatedAt(): ?\DateTimeInterface { return $this->createdAt; }
-    public function setCreatedAt(?\DateTimeInterface $createdAt): self { $this->createdAt = $createdAt; return $this; }
-
-    // Getters et Setters pour la traduction
-    public function getOriginalDescription(): ?string { return $this->originalDescription; }
-    public function setOriginalDescription(?string $desc): self { $this->originalDescription = $desc; return $this; }
-
-    public function getTranslatedLang(): ?string { return $this->translatedLang; }
-    public function setTranslatedLang(?string $lang): self { $this->translatedLang = $lang; return $this; }
-
-    public function getIsTranslated(): bool { return $this->isTranslated; }
-    public function setIsTranslated(bool $isTranslated): self { $this->isTranslated = $isTranslated; return $this; }
 }

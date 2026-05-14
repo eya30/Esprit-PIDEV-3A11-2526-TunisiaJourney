@@ -134,6 +134,99 @@
     }
     .form-group input:focus { outline: none; border-color: var(--tunisia-blue); }
 
+    /* ===== CODE PROMO ===== */
+    .promo-section {
+        background: linear-gradient(135deg, #FFF8E7, #FFF3D4);
+        border: 1px dashed #F5A623;
+        border-radius: 14px;
+        padding: 1rem 1.2rem;
+        margin-bottom: 1rem;
+    }
+
+    .promo-section-title {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #B7791F;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.6rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .promo-input-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .promo-input-row input {
+        flex: 1;
+        padding: 9px 12px;
+        border: 1.5px solid #E8DFD1;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-sizing: border-box;
+    }
+
+    .promo-input-row input:focus {
+        outline: none;
+        border-color: #F5A623;
+    }
+
+    .btn-verifier-promo {
+        background: #F5A623;
+        color: white;
+        border: none;
+        padding: 9px 16px;
+        border-radius: 10px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background 0.2s;
+        flex-shrink: 0;
+    }
+
+    .btn-verifier-promo:hover { background: #D48C0F; }
+
+    .promo-feedback {
+        margin-top: 0.5rem;
+        font-size: 0.82rem;
+        font-weight: 600;
+        min-height: 1.2rem;
+    }
+
+    .promo-feedback.success { color: #047857; }
+    .promo-feedback.error   { color: #DC2626; }
+
+    .prix-total-bloc {
+        background: #F0F7FF;
+        border-radius: 10px;
+        padding: 0.8rem 1rem;
+        margin-bottom: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid #BFDBFE;
+    }
+
+    .prix-total-label { font-size: 0.85rem; font-weight: 600; color: #1e3a5f; }
+
+    .prix-total-value { font-size: 1.1rem; font-weight: 800; color: var(--tunisia-blue); }
+
+    .prix-barre {
+        text-decoration: line-through;
+        color: #9CA3AF;
+        font-size: 0.8rem;
+        font-weight: 400;
+        margin-right: 6px;
+    }
+    /* ====================== */
+
     .btn-submit {
         width: 100%;
         background: var(--tunisia-blue);
@@ -295,9 +388,38 @@
 
                     <div class="form-group">
                         <label>Nombre de personnes <span class="required">*</span></label>
-                        <input type="number" name="nbre" value="1" min="1" max="20">
+                        <input type="number" name="nbre" id="prog-nbre" value="1" min="1" max="20">
                         <small style="font-size: 0.7rem; color: #6c757d;">Maximum 20 personnes</small>
                     </div>
+
+                    {# ===== SECTION CODE PROMO ===== #}
+                    <div class="promo-section">
+                        <div class="promo-section-title">
+                            <i class="fas fa-ticket-alt"></i> Code promo (facultatif)
+                        </div>
+                        <div class="promo-input-row">
+                            <input
+                                type="text"
+                                id="prog-code-promo-input"
+                                placeholder="Ex : PROMO20"
+                                autocomplete="off"
+                                maxlength="30"
+                            >
+                            <button type="button" class="btn-verifier-promo" onclick="verifierPromo()">
+                                Vérifier
+                            </button>
+                        </div>
+                        <div class="promo-feedback" id="prog-promo-feedback"></div>
+                        {# Champ caché envoyé au serveur #}
+                        <input type="hidden" name="code_promo" id="prog-code-promo-hidden" value="">
+                    </div>
+
+                    {# Bloc récapitulatif du prix total #}
+                    <div class="prix-total-bloc" id="prog-prix-bloc">
+                        <span class="prix-total-label"><i class="fas fa-receipt me-1"></i> Total estimé</span>
+                        <span class="prix-total-value" id="prog-prix-total">— TND</span>
+                    </div>
+                    {# ============================== #}
 
                     <button type="submit" class="btn-submit">
                         Confirmer la réservation
@@ -309,6 +431,105 @@
 </div>
 
 <script>
+    // Prix unitaire du voyage (par personne)
+    const prixUnitaire = {{ programme.voyage.prix ?? 0 }};
+
+    const nbreInput       = document.getElementById('prog-nbre');
+    const prixTotalEl     = document.getElementById('prog-prix-total');
+    const promoInput      = document.getElementById('prog-code-promo-input');
+    const promoHidden     = document.getElementById('prog-code-promo-hidden');
+    const promoFeedback   = document.getElementById('prog-promo-feedback');
+
+    let reductionAppliquee = 0; // pourcentage (0–100)
+
+    function getPrixBase() {
+        const nbre = parseInt(nbreInput ? nbreInput.value : 1) || 1;
+        return prixUnitaire * nbre;
+    }
+
+    function afficherPrix() {
+        const base    = getPrixBase();
+        const reduit  = base * (1 - reductionAppliquee / 100);
+
+        if (prixTotalEl) {
+            if (reductionAppliquee > 0) {
+                prixTotalEl.innerHTML =
+                    '<span class="prix-barre">' + base.toFixed(2) + ' TND</span>' +
+                    reduit.toFixed(2) + ' TND';
+            } else {
+                prixTotalEl.textContent = (base > 0 ? base.toFixed(2) + ' TND' : '— TND');
+            }
+        }
+    }
+
+    if (nbreInput) {
+        nbreInput.addEventListener('input', function () {
+            // Si un code promo valide était appliqué, on ré-affiche le nouveau total
+            afficherPrix();
+        });
+    }
+
+    afficherPrix();
+
+    function verifierPromo() {
+        const code     = promoInput ? promoInput.value.trim().toUpperCase() : '';
+        const prixBase = getPrixBase();
+
+        if (!code) {
+            promoFeedback.className = 'promo-feedback error';
+            promoFeedback.textContent = '⚠️ Veuillez saisir un code promo.';
+            return;
+        }
+
+        promoFeedback.className = 'promo-feedback';
+        promoFeedback.textContent = '⏳ Vérification…';
+
+        fetch('{{ path('api_verifier_code_promo') }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: code, prix_base: prixBase })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.valid) {
+                reductionAppliquee = data.reduction;
+                promoHidden.value  = code;
+                promoFeedback.className  = 'promo-feedback success';
+                promoFeedback.textContent = data.message;
+                afficherPrix();
+            } else {
+                reductionAppliquee = 0;
+                promoHidden.value  = '';
+                promoFeedback.className  = 'promo-feedback error';
+                promoFeedback.textContent = '❌ ' + data.message;
+                afficherPrix();
+            }
+        })
+        .catch(() => {
+            promoFeedback.className  = 'promo-feedback error';
+            promoFeedback.textContent = '❌ Erreur réseau. Réessayez.';
+        });
+    }
+
+    // Permettre la validation du code promo avec la touche Entrée
+    if (promoInput) {
+        promoInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') { e.preventDefault(); verifierPromo(); }
+        });
+
+        // Réinitialiser si l'utilisateur efface le code
+        promoInput.addEventListener('input', function () {
+            if (this.value.trim() === '') {
+                reductionAppliquee = 0;
+                promoHidden.value  = '';
+                promoFeedback.className  = 'promo-feedback';
+                promoFeedback.textContent = '';
+                afficherPrix();
+            }
+        });
+    }
+
+    // ===== Gestion de la modale =====
     function openModal() {
         document.getElementById('reservationModal').classList.add('active');
         document.body.style.overflow = 'hidden';

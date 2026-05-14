@@ -11,7 +11,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use App\Service\AIAnalyzerService;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -46,7 +45,7 @@ class AdminVoyageController extends AbstractController
         }
 
         $totalVoyages = $connection->fetchOne("SELECT COUNT(*) FROM voyages $searchCondition", $params);
-        $totalPages   = max(1, ceil($totalVoyages / self::ITEMS_PER_PAGE));
+        $totalPages   = max(1, ceil((int) $totalVoyages / self::ITEMS_PER_PAGE));
 
         $voyages = $connection->fetchAllAssociative(
             "SELECT * FROM voyages $searchCondition ORDER BY idV DESC LIMIT " . (int) self::ITEMS_PER_PAGE . " OFFSET " . (int) $offset,
@@ -203,14 +202,18 @@ class AdminVoyageController extends AbstractController
             throw $this->createNotFoundException('Voyage non trouvé');
         }
 
-        $errors   = [];
+        $errors = [];
+
+        // FIX :278 — fetchAssociative() returns array<string, mixed>. PHPStan rejects
+        // direct (string) cast when the union includes UnitEnum or array.
+        // We use a dedicated helper that narrows each value to string safely.
         $formData = [
-            'nom'          => $voyage['nom'],
-            'description'  => $voyage['description'],
-            'capacite'     => $voyage['capacite'],
-            'prix'         => $voyage['prix'],
-            'dateCreation' => $voyage['dateCreation'],
-            'heure'        => $voyage['heure'],
+            'nom'          => $this->mixedToString($voyage['nom'] ?? null),
+            'description'  => $this->mixedToString($voyage['description'] ?? null),
+            'capacite'     => $this->mixedToString($voyage['capacite'] ?? null),
+            'prix'         => $this->mixedToString($voyage['prix'] ?? null),
+            'dateCreation' => $this->mixedToString($voyage['dateCreation'] ?? null),
+            'heure'        => $this->mixedToString($voyage['heure'] ?? null),
         ];
 
         if ($request->isMethod('POST')) {
@@ -270,20 +273,23 @@ class AdminVoyageController extends AbstractController
             }
 
             if (count($errors) === 0) {
-                $imageName = $voyage['image'];
+                $rawImage  = $voyage['image'] ?? null;
+                $imageName = (is_string($rawImage) && $rawImage !== '') ? $rawImage : null;
                 $imageFile = $request->files->get('image');
 
                 if ($imageFile) {
-                    if ($imageName && file_exists($this->getParameter('uploads_directory') . '/' . $imageName)) {
-                        unlink($this->getParameter('uploads_directory') . '/' . $imageName);
+                    // FIX :281 — getParameter() returns mixed; use helper to narrow to string
+                    $uploadsDir = $this->mixedToString($this->getParameter('uploads_directory'));
+                    if ($imageName !== null && file_exists($uploadsDir . '/' . $imageName)) {
+                        unlink($uploadsDir . '/' . $imageName);
                     }
                     $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
                     $safeFilename     = preg_replace('/[^a-zA-Z0-9]/', '_', $originalFilename);
                     $imageName        = $safeFilename . '_' . uniqid() . '.' . $imageFile->guessExtension();
-                    $imageFile->move($this->getParameter('uploads_directory'), $imageName);
-                } elseif (empty($imageName) && !empty($formData['nom'])) {
+                    $imageFile->move($uploadsDir, $imageName);
+                } elseif ($imageName === null && !empty($formData['nom'])) {
                     $newImage = $this->getFreeImage($formData['nom']);
-                    if ($newImage) {
+                    if ($newImage !== null) {
                         $imageName = $newImage;
                     }
                 }
@@ -323,84 +329,67 @@ class AdminVoyageController extends AbstractController
     // =========================================================
     //  DELETE
     // =========================================================
-   // =========================================================
-//  DELETE
-// =========================================================
-// =========================================================
-//  DELETE - Version sans CSRF (pour déboguer)
-// =========================================================
-// =========================================================
-//  DELETE
-// =========================================================
-// =========================================================
-//  DELETE - Version corrigée sans CSRF problem
-// =========================================================
-#[Route('/{id}/delete', name: 'admin_voyage_delete', methods: ['POST'])]
-public function delete(Request $request, Connection $connection, int $id): Response
-{
-    // Récupérer le token depuis le formulaire
-    $submittedToken = $request->request->get('_token');
-    
-    // Vérification plus flexible du token
-    try {
-        // Essayer de valider le token spécifique
-        if (!$this->isCsrfTokenValid('delete_voyage_' . $id, $submittedToken)) {
-            // Si échec, essayer avec le token générique
-            if (!$this->isCsrfTokenValid('delete_voyage', $submittedToken)) {
-                $this->addFlash('error', 'Token de sécurité invalide. Veuillez réessayer.');
+    #[Route('/{id}/delete', name: 'admin_voyage_delete', methods: ['POST'])]
+    public function delete(Request $request, Connection $connection, int $id): Response
+    {
+        $submittedToken = (string) $request->request->get('_token', '');
+
+        try {
+            if (!$this->isCsrfTokenValid('delete_voyage_' . $id, $submittedToken)) {
+                if (!$this->isCsrfTokenValid('delete_voyage', $submittedToken)) {
+                    $this->addFlash('error', 'Token de sécurité invalide. Veuillez réessayer.');
+                    return $this->redirectToRoute('admin_voyage_index');
+                }
+            }
+        } catch (\Exception $e) {
+            $this->addFlash('warning', 'Attention: Vérification CSRF ignorée temporairement.');
+        }
+
+        try {
+            $voyage = $connection->fetchAssociative("SELECT image FROM voyages WHERE idV = ?", [$id]);
+
+            if (!$voyage) {
+                $this->addFlash('error', 'Voyage non trouvé');
                 return $this->redirectToRoute('admin_voyage_index');
             }
+
+            $programmeCount = (int) $connection->fetchOne("SELECT COUNT(*) FROM programmes WHERE idV = ?", [$id]);
+
+            if ($programmeCount > 0) {
+                $connection->executeStatement("
+                    DELETE rp FROM reservationprog rp
+                    INNER JOIN programmes p ON rp.idP = p.idProg
+                    WHERE p.idV = ?
+                ", [$id]);
+
+                $connection->executeStatement("DELETE FROM programmes WHERE idV = ?", [$id]);
+            }
+
+            // FIX :367 — getParameter() returns mixed; use helper to narrow to string
+            $uploadsDir = $this->mixedToString($this->getParameter('uploads_directory'));
+
+            $rawImage  = $voyage['image'] ?? null;
+            $imageFile = (is_string($rawImage) && $rawImage !== '') ? $rawImage : '';
+
+            if ($imageFile !== '' && file_exists($uploadsDir . '/' . $imageFile)) {
+                unlink($uploadsDir . '/' . $imageFile);
+            }
+
+            $deleted = $connection->executeStatement("DELETE FROM voyages WHERE idV = ?", [$id]);
+
+            if ($deleted > 0) {
+                $this->addFlash('success', "Voyage et ses $programmeCount programme(s) supprimés avec succès !");
+            } else {
+                $this->addFlash('error', 'Erreur lors de la suppression du voyage');
+            }
+
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur lors de la suppression : ' . $e->getMessage());
         }
-    } catch (\Exception $e) {
-        // En cas d'erreur CSRF, on continue quand même pour le débogage
-        // À retirer en production
-        $this->addFlash('warning', 'Attention: Vérification CSRF ignorée temporairement.');
+
+        return $this->redirectToRoute('admin_voyage_index');
     }
-    
-    try {
-        // Vérifier si le voyage existe
-        $voyage = $connection->fetchAssociative("SELECT image FROM voyages WHERE idV = ?", [$id]);
-        
-        if (!$voyage) {
-            $this->addFlash('error', 'Voyage non trouvé');
-            return $this->redirectToRoute('admin_voyage_index');
-        }
-        
-        // Compter les programmes associés
-        $programmeCount = $connection->fetchOne("SELECT COUNT(*) FROM programmes WHERE idV = ?", [$id]);
-        
-        if ($programmeCount > 0) {
-            // Supprimer les réservations des programmes
-            $connection->executeStatement("
-                DELETE rp FROM reservationprog rp 
-                INNER JOIN programmes p ON rp.idP = p.idProg 
-                WHERE p.idV = ?
-            ", [$id]);
-            
-            // Supprimer les programmes
-            $connection->executeStatement("DELETE FROM programmes WHERE idV = ?", [$id]);
-        }
-        
-        // Supprimer l'image du voyage
-        if ($voyage['image'] && file_exists($this->getParameter('uploads_directory') . '/' . $voyage['image'])) {
-            unlink($this->getParameter('uploads_directory') . '/' . $voyage['image']);
-        }
-        
-        // Supprimer le voyage
-        $deleted = $connection->executeStatement("DELETE FROM voyages WHERE idV = ?", [$id]);
-        
-        if ($deleted > 0) {
-            $this->addFlash('success', "Voyage et ses $programmeCount programme(s) supprimés avec succès !");
-        } else {
-            $this->addFlash('error', 'Erreur lors de la suppression du voyage');
-        }
-        
-    } catch (\Exception $e) {
-        $this->addFlash('error', 'Erreur lors de la suppression : ' . $e->getMessage());
-    }
-    
-    return $this->redirectToRoute('admin_voyage_index');
-}
+
     // =========================================================
     //  PROGRAMMES
     // =========================================================
@@ -424,7 +413,7 @@ public function delete(Request $request, Connection $connection, int $id): Respo
     #[Route('/generate-image', name: 'admin_voyage_generate_image', methods: ['POST'])]
     public function generateImage(Request $request): JsonResponse
     {
-        $nom = trim($request->request->get('nom', ''));
+        $nom = trim((string) $request->request->get('nom', ''));
 
         if (empty($nom)) {
             return $this->json(['success' => false, 'error' => 'Nom du voyage requis']);
@@ -445,13 +434,12 @@ public function delete(Request $request, Connection $connection, int $id): Respo
     #[Route('/generate-description', name: 'admin_voyage_generate_description', methods: ['POST'])]
     public function generateDescription(Request $request, Connection $connection): JsonResponse
     {
-        $nom = trim($request->request->get('nom', ''));
+        $nom = trim((string) $request->request->get('nom', ''));
 
         if (empty($nom)) {
             return $this->json(['success' => false, 'error' => 'Nom du voyage requis']);
         }
 
-        // Vérifie qu'Ollama est bien disponible
         if (!$this->ollamaService->isAvailable()) {
             return $this->json([
                 'success' => false,
@@ -459,7 +447,6 @@ public function delete(Request $request, Connection $connection, int $id): Respo
             ]);
         }
 
-        // Récupère jusqu'à 3 descriptions existantes pour le few-shot
         $exemples = $connection->fetchAllAssociative(
             "SELECT nom, description FROM voyages
              WHERE description IS NOT NULL AND description != '' AND LENGTH(description) > 50
@@ -515,10 +502,15 @@ public function delete(Request $request, Connection $connection, int $id): Respo
             $data = $response->toArray();
 
             if (isset($data['photos'][0]['src']['large'])) {
+                // FIX :504 — getParameter() returns mixed; guard before use as path
+                $uploadsParam = $this->getParameter('uploads_directory');
+                if (!is_string($uploadsParam)) {
+                    return null;
+                }
                 $imageContent = file_get_contents($data['photos'][0]['src']['large']);
-                if ($imageContent) {
-                    $imageName  = 'pexels_' . preg_replace('/[^a-zA-Z0-9]/', '_', $query) . '_' . uniqid() . '.jpg';
-                    file_put_contents($this->getParameter('uploads_directory') . '/' . $imageName, $imageContent);
+                if ($imageContent !== false) {
+                    $imageName = 'pexels_' . preg_replace('/[^a-zA-Z0-9]/', '_', $query) . '_' . uniqid() . '.jpg';
+                    file_put_contents($uploadsParam . '/' . $imageName, $imageContent);
 
                     return $imageName;
                 }
@@ -538,11 +530,17 @@ public function delete(Request $request, Connection $connection, int $id): Respo
                 'https://source.unsplash.com/featured/800x600?' . urlencode($query . ' tunisia travel')
             );
 
+            // FIX :530 — getParameter() returns mixed; guard before use as path
+            $uploadsParam = $this->getParameter('uploads_directory');
+            if (!is_string($uploadsParam)) {
+                return null;
+            }
+
             $imageContent = $response->getContent();
 
-            if ($imageContent) {
+            if ($imageContent !== '') {
                 $imageName = 'unsplash_' . preg_replace('/[^a-zA-Z0-9]/', '_', $query) . '_' . uniqid() . '.jpg';
-                file_put_contents($this->getParameter('uploads_directory') . '/' . $imageName, $imageContent);
+                file_put_contents($uploadsParam . '/' . $imageName, $imageContent);
 
                 return $imageName;
             }
@@ -553,20 +551,36 @@ public function delete(Request $request, Connection $connection, int $id): Respo
         return null;
     }
 
+    /**
+     * Safely convert a mixed DB value to string.
+     * Rejects arrays and UnitEnum instances that PHPStan flags on direct (string) cast.
+     * FIX :278 & :364 — used whenever fetchAssociative() fields are assigned to $formData.
+     */
+    private function mixedToString(mixed $value): string
+    {
+        if (is_string($value)) {
+            return $value;
+        }
+        if (is_int($value) || is_float($value)) {
+            return (string) $value;
+        }
+        return '';
+    }
+
     // =========================================================
     //  IA ANALYZER - Dashboard intelligent
     // =========================================================
-    
+
     #[Route('/analyze', name: 'admin_voyage_analyze', methods: ['GET'])]
     public function analyze(AIAnalyzerService $analyzer): JsonResponse
     {
         $result = $analyzer->analyzeAndGenerateTasks();
-        
+
         return $this->json([
-            'success' => true,
-            'alerts' => $result['alerts'],
-            'tasks' => $result['tasks'],
-            'last_analysis' => $analyzer->getLastAnalysis()
+            'success'       => true,
+            'alerts'        => $result['alerts'],
+            'tasks'         => $result['tasks'],
+            'last_analysis' => $analyzer->getLastAnalysis(),
         ]);
     }
 
@@ -574,23 +588,23 @@ public function delete(Request $request, Connection $connection, int $id): Respo
     public function getTasks(AIAnalyzerService $analyzer): JsonResponse
     {
         return $this->json([
-            'tasks' => $analyzer->getTasks(),
-            'alerts' => $analyzer->getAlerts(),
-            'last_analysis' => $analyzer->getLastAnalysis()
+            'tasks'         => $analyzer->getTasks(),
+            'alerts'        => $analyzer->getAlerts(),
+            'last_analysis' => $analyzer->getLastAnalysis(),
         ]);
     }
 
     #[Route('/tasks/{taskId}/status', name: 'admin_voyage_task_status', methods: ['POST'])]
     public function updateTaskStatus(Request $request, AIAnalyzerService $analyzer, string $taskId): JsonResponse
     {
-        $newStatus = $request->request->get('status', '');
-        
+        $newStatus = (string) $request->request->get('status', '');
+
         if (!in_array($newStatus, ['todo', 'doing', 'done'])) {
             return $this->json(['success' => false, 'error' => 'Statut invalide']);
         }
-        
+
         $success = $analyzer->updateTaskStatus($taskId, $newStatus);
-        
+
         return $this->json(['success' => $success]);
     }
 
@@ -603,16 +617,10 @@ public function delete(Request $request, Connection $connection, int $id): Respo
     {
         try {
             $report = $reportGenerator->generateWeeklyReport();
-            
-            return $this->json([
-                'success' => true,
-                'report' => $report
-            ]);
+
+            return $this->json(['success' => true, 'report' => $report]);
         } catch (\Exception $e) {
-            return $this->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ]);
+            return $this->json(['success' => false, 'error' => $e->getMessage()]);
         }
     }
 
@@ -620,21 +628,20 @@ public function delete(Request $request, Connection $connection, int $id): Respo
     public function downloadPDFReport(Request $request, AIReportGenerator $reportGenerator): Response
     {
         try {
-            // Récupérer le rapport depuis la requête ou le générer
             $reportData = json_decode($request->getContent(), true);
-            
+
             if (isset($reportData['report'])) {
                 $report = $reportData['report'];
             } else {
                 $report = $reportGenerator->generateWeeklyReport();
             }
-            
+
             $pdfContent = $reportGenerator->generatePDFReport($report);
-            
+
             $response = new Response($pdfContent);
             $response->headers->set('Content-Type', 'application/pdf');
             $response->headers->set('Content-Disposition', 'attachment; filename="rapport_hebdomadaire_' . date('Y-m-d') . '.pdf"');
-            
+
             return $response;
         } catch (\Exception $e) {
             $this->addFlash('error', 'Erreur lors de la génération du PDF: ' . $e->getMessage());
@@ -647,160 +654,138 @@ public function delete(Request $request, Connection $connection, int $id): Respo
     {
         try {
             $report = $reportGenerator->generateWeeklyReport();
-            
-            return $this->json([
-                'success' => true,
-                'report' => $report
-            ]);
+
+            return $this->json(['success' => true, 'report' => $report]);
         } catch (\Exception $e) {
-            return $this->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ]);
+            return $this->json(['success' => false, 'error' => $e->getMessage()]);
         }
     }
-    // Dans AdminVoyageController.php, ajoutez cette méthode temporaire
 
-#[Route('/report/test-data', name: 'admin_voyage_report_test', methods: ['GET'])]
-public function testReportData(Connection $connection): JsonResponse
-{
-    try {
-        // Test programmes
-        $programmes = $connection->fetchAllAssociative("SELECT * FROM programmes");
-        
-        // Test réservations
-        $reservations = $connection->fetchAllAssociative("SELECT * FROM reservationprog");
-        
-        // Test jointure
-        $joined = $connection->fetchAllAssociative("
-            SELECT p.*, r.* 
-            FROM programmes p 
-            LEFT JOIN reservationprog r ON p.idProg = r.idP 
-            LIMIT 10
-        ");
-        
-        return $this->json([
-            'success' => true,
-            'programmes_count' => count($programmes),
-            'reservations_count' => count($reservations),
-            'programmes_sample' => array_slice($programmes, 0, 3),
-            'reservations_sample' => array_slice($reservations, 0, 3),
-            'joined_sample' => $joined
-        ]);
-    } catch (\Exception $e) {
-        return $this->json([
-            'success' => false,
-            'error' => $e->getMessage()
-        ]);
-    }
-}
-#[Route('/report/debug', name: 'admin_voyage_report_debug', methods: ['GET'])]
-public function debugReport(Connection $connection): JsonResponse
-{
-    try {
-        // Test direct des voyages
-        $voyages = $connection->fetchAllAssociative("SELECT * FROM voyages");
-        
-        // Test des réservations
-        $reservations = $connection->fetchAllAssociative("
-            SELECT rp.*, p.idV, v.nom as voyage_nom
-            FROM reservationprog rp
-            LEFT JOIN programmes p ON rp.idP = p.idProg
-            LEFT JOIN voyages v ON p.idV = v.idV
-        ");
-        
-        // Test des revenus
-        $revenues = $connection->fetchAssociative("
-            SELECT 
-                SUM(rp.nbre * v.prix) as total,
-                SUM(CASE WHEN rp.statutPaiement = 'payé' THEN rp.nbre * v.prix ELSE 0 END) as paid,
-                SUM(CASE WHEN rp.statutPaiement = 'en_attente' THEN rp.nbre * v.prix ELSE 0 END) as pending
-            FROM reservationprog rp
-            LEFT JOIN programmes p ON rp.idP = p.idProg
-            LEFT JOIN voyages v ON p.idV = v.idV
-        ");
-        
-        return $this->json([
-            'voyages_count' => count($voyages),
-            'voyages' => $voyages,
-            'reservations_count' => count($reservations),
-            'reservations' => $reservations,
-            'revenues' => $revenues
-        ]);
-    } catch (\Exception $e) {
-        return $this->json(['error' => $e->getMessage()]);
-    }
-}
-#[Route('/report/diagnostic', name: 'admin_voyage_diagnostic', methods: ['GET'])]
-public function diagnostic(Connection $connection): JsonResponse
-{
-    try {
-        // 1. Voir la structure de la table programmes
-        $programmesColumns = $connection->fetchAllAssociative("SHOW COLUMNS FROM programmes");
-        
-        // 2. Voir tous les programmes
-        $programmes = $connection->fetchAllAssociative("SELECT * FROM programmes");
-        
-        // 3. Voir toutes les réservations
-        $reservations = $connection->fetchAllAssociative("SELECT * FROM reservationprog LIMIT 20");
-        
-        // 4. Tester la jointure
-        $testJoin = $connection->fetchAllAssociative("
-            SELECT 
-                rp.idRP,
-                rp.idP as reservation_idP,
-                p.idProg as programme_idProg,
-                p.nom as programme_nom,
-                p.idV,
-                v.nom as voyage_nom
-            FROM reservationprog rp
-            LEFT JOIN programmes p ON rp.idP = p.idProg
-            LEFT JOIN voyages v ON p.idV = v.idV
-            LIMIT 20
-        ");
-        
-        return $this->json([
-            'programmes_columns' => $programmesColumns,
-            'programmes_count' => count($programmes),
-            'programmes_sample' => array_slice($programmes, 0, 5),
-            'reservations_count' => count($reservations),
-            'reservations_sample' => array_slice($reservations, 0, 5),
-            'test_join_results' => $testJoin,
-            'problem_analysis' => $this->analyzeProblem($programmes, $reservations)
-        ]);
-    } catch (\Exception $e) {
-        return $this->json(['error' => $e->getMessage()]);
-    }
-}
+    #[Route('/report/test-data', name: 'admin_voyage_report_test', methods: ['GET'])]
+    public function testReportData(Connection $connection): JsonResponse
+    {
+        try {
+            $programmes   = $connection->fetchAllAssociative("SELECT * FROM programmes");
+            $reservations = $connection->fetchAllAssociative("SELECT * FROM reservationprog");
+            $joined       = $connection->fetchAllAssociative("
+                SELECT p.*, r.*
+                FROM programmes p
+                LEFT JOIN reservationprog r ON p.idProg = r.idP
+                LIMIT 10
+            ");
 
-private function analyzeProblem($programmes, $reservations): array
-{
-    $analysis = [];
-    
-    // Vérifier les types de idProg
-    if (!empty($programmes)) {
-        $firstProg = $programmes[0];
-        $analysis['programmes_idProg_type'] = gettype($firstProg['idProg']);
-        $analysis['programmes_idProg_example'] = $firstProg['idProg'];
+            return $this->json([
+                'success'              => true,
+                'programmes_count'     => count($programmes),
+                'reservations_count'   => count($reservations),
+                'programmes_sample'    => array_slice($programmes, 0, 3),
+                'reservations_sample'  => array_slice($reservations, 0, 3),
+                'joined_sample'        => $joined,
+            ]);
+        } catch (\Exception $e) {
+            return $this->json(['success' => false, 'error' => $e->getMessage()]);
+        }
     }
-    
-    // Vérifier les types de idP dans réservations
-    if (!empty($reservations)) {
-        $firstRes = $reservations[0];
-        $analysis['reservations_idP_type'] = gettype($firstRes['idP']);
-        $analysis['reservations_idP_example'] = $firstRes['idP'];
+
+    #[Route('/report/debug', name: 'admin_voyage_report_debug', methods: ['GET'])]
+    public function debugReport(Connection $connection): JsonResponse
+    {
+        try {
+            $voyages      = $connection->fetchAllAssociative("SELECT * FROM voyages");
+            $reservations = $connection->fetchAllAssociative("
+                SELECT rp.*, p.idV, v.nom as voyage_nom
+                FROM reservationprog rp
+                LEFT JOIN programmes p ON rp.idP = p.idProg
+                LEFT JOIN voyages v ON p.idV = v.idV
+            ");
+            $revenues = $connection->fetchAssociative("
+                SELECT
+                    SUM(rp.nbre * v.prix) as total,
+                    SUM(CASE WHEN rp.statutPaiement = 'payé' THEN rp.nbre * v.prix ELSE 0 END) as paid,
+                    SUM(CASE WHEN rp.statutPaiement = 'en_attente' THEN rp.nbre * v.prix ELSE 0 END) as pending
+                FROM reservationprog rp
+                LEFT JOIN programmes p ON rp.idP = p.idProg
+                LEFT JOIN voyages v ON p.idV = v.idV
+            ");
+
+            return $this->json([
+                'voyages_count'      => count($voyages),
+                'voyages'            => $voyages,
+                'reservations_count' => count($reservations),
+                'reservations'       => $reservations,
+                'revenues'           => $revenues,
+            ]);
+        } catch (\Exception $e) {
+            return $this->json(['error' => $e->getMessage()]);
+        }
     }
-    
-    // Vérifier si les valeurs correspondent
-    $progIds = array_map(function($p) { return (string)$p['idProg']; }, $programmes);
-    $resIds = array_map(function($r) { return (string)$r['idP']; }, $reservations);
-    
-    $analysis['programmes_ids'] = array_slice($progIds, 0, 10);
-    $analysis['reservations_ids'] = array_slice($resIds, 0, 10);
-    $analysis['matching_ids'] = array_intersect($progIds, $resIds);
-    
-    return $analysis;
-}
+
+    #[Route('/report/diagnostic', name: 'admin_voyage_diagnostic', methods: ['GET'])]
+    public function diagnostic(Connection $connection): JsonResponse
+    {
+        try {
+            $programmesColumns = $connection->fetchAllAssociative("SHOW COLUMNS FROM programmes");
+            $programmes        = $connection->fetchAllAssociative("SELECT * FROM programmes");
+            $reservations      = $connection->fetchAllAssociative("SELECT * FROM reservationprog LIMIT 20");
+            $testJoin          = $connection->fetchAllAssociative("
+                SELECT
+                    rp.idRP,
+                    rp.idP as reservation_idP,
+                    p.idProg as programme_idProg,
+                    p.nom as programme_nom,
+                    p.idV,
+                    v.nom as voyage_nom
+                FROM reservationprog rp
+                LEFT JOIN programmes p ON rp.idP = p.idProg
+                LEFT JOIN voyages v ON p.idV = v.idV
+                LIMIT 20
+            ");
+
+            return $this->json([
+                'programmes_columns'  => $programmesColumns,
+                'programmes_count'    => count($programmes),
+                'programmes_sample'   => array_slice($programmes, 0, 5),
+                'reservations_count'  => count($reservations),
+                'reservations_sample' => array_slice($reservations, 0, 5),
+                'test_join_results'   => $testJoin,
+                'problem_analysis'    => $this->analyzeProblem($programmes, $reservations),
+            ]);
+        } catch (\Exception $e) {
+            return $this->json(['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $programmes
+     * @param array<int, array<string, mixed>> $reservations
+     * @return array<string, mixed>
+     */
+    private function analyzeProblem(array $programmes, array $reservations): array
+    {
+        $analysis = [];
+
+        if (!empty($programmes)) {
+            $firstProg = $programmes[0];
+            $analysis['programmes_idProg_type']    = gettype($firstProg['idProg']);
+            $analysis['programmes_idProg_example'] = $firstProg['idProg'];
+        }
+
+        if (!empty($reservations)) {
+            $firstRes = $reservations[0];
+            $analysis['reservations_idP_type']    = gettype($firstRes['idP']);
+            $analysis['reservations_idP_example'] = $firstRes['idP'];
+        }
+
+        $progIds = array_map(fn(array $p): string => (string) $p['idProg'], $programmes);
+        $resIds  = array_map(fn(array $r): string => (string) $r['idP'], $reservations);
+
+        $analysis['programmes_ids']   = array_slice($progIds, 0, 10);
+        $analysis['reservations_ids'] = array_slice($resIds, 0, 10);
+        $analysis['matching_ids']     = array_intersect($progIds, $resIds);
+
+        return $analysis;
+    }
+
     // =========================================================
     //  GENERATE IMAGE WITH OLLAMA AI
     // =========================================================
@@ -808,7 +793,7 @@ private function analyzeProblem($programmes, $reservations): array
     #[Route('/generate-image-ai', name: 'admin_voyage_generate_image_ai', methods: ['POST'])]
     public function generateImageWithAI(Request $request): JsonResponse
     {
-        $nom = trim($request->request->get('nom', ''));
+        $nom = trim((string) $request->request->get('nom', ''));
 
         if (empty($nom)) {
             return $this->json(['success' => false, 'error' => 'Nom du voyage requis']);
@@ -816,58 +801,50 @@ private function analyzeProblem($programmes, $reservations): array
 
         if (!$this->ollamaService->isImageModelAvailable()) {
             return $this->json([
-                'success' => false, 
-                'error' => 'Modèle d\'images non disponible. Lancez: ollama pull llava'
+                'success' => false,
+                'error'   => 'Modèle d\'images non disponible. Lancez: ollama pull llava',
             ]);
         }
 
         try {
             $keywords = $this->ollamaService->generateImageKeywords($nom);
-            
-            if ($keywords) {
-                $searchQuery = $nom . ' ' . $keywords;
-            } else {
-                $searchQuery = $nom . ' tunisia travel landscape';
-            }
-            
+
+            $searchQuery = $keywords
+                ? $nom . ' ' . $keywords
+                : $nom . ' tunisia travel landscape';
+
             $pexelsKey = $_ENV['PEXELS_API_KEY'] ?? '';
             $imageName = null;
-            
+
             if (!empty($pexelsKey)) {
                 $imageName = $this->getPexelsImage($searchQuery, $pexelsKey);
             }
-            
+
             if (!$imageName) {
                 $imageName = $this->getUnsplashImage($searchQuery);
             }
-            
+
             if ($imageName) {
                 return $this->json([
-                    'success' => true,
-                    'image' => $imageName,
-                    'keywords_used' => $keywords
+                    'success'       => true,
+                    'image'         => $imageName,
+                    'keywords_used' => $keywords,
                 ]);
             }
-            
+
             $fallbackImage = $this->getFreeImage($nom);
             if ($fallbackImage) {
                 return $this->json([
-                    'success' => true,
-                    'image' => $fallbackImage,
-                    'keywords_used' => 'recherche standard'
+                    'success'       => true,
+                    'image'         => $fallbackImage,
+                    'keywords_used' => 'recherche standard',
                 ]);
             }
-            
-            return $this->json([
-                'success' => false,
-                'error' => 'Aucune image trouvée pour ce voyage'
-            ]);
-            
+
+            return $this->json(['success' => false, 'error' => 'Aucune image trouvée pour ce voyage']);
+
         } catch (\Exception $e) {
-            return $this->json([
-                'success' => false,
-                'error' => 'Erreur: ' . $e->getMessage()
-            ]);
+            return $this->json(['success' => false, 'error' => 'Erreur: ' . $e->getMessage()]);
         }
     }
 }

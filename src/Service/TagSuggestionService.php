@@ -9,8 +9,8 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 class TagSuggestionService
 {
     private const AI_TAGGING_API_URL = 'https://aiautotagging.com/api/tag/text';
-    
-    // Liste étendue et diversifiée de tags par catégorie
+
+    /** @var array<string, array<int, string>> */
     private array $tagCategories = [
         'lieux' => [
             'djerba', 'tunis', 'carthage', 'sidi-bou-said', 'sousse', 'hammamet',
@@ -53,8 +53,8 @@ class TagSuggestionService
             'villa', 'appartement', 'glamping', 'ecolodge', 'guesthouse'
         ]
     ];
-    
-    // Tags de secours diversifiés
+
+    /** @var array<int, string> */
     private array $fallbackTagsPool = [
         'tunisie', 'voyage', 'decouverte', 'aventure', 'depaysement',
         'coucher-soleil', 'culture', 'gastronomie', 'plage', 'desert',
@@ -74,6 +74,9 @@ class TagSuggestionService
         $this->httpClient = $httpClient;
     }
 
+    /**
+     * @return array{tags: array<int, string>, success: bool, error: string|null}
+     */
     public function suggestTags(string $text, ?string $existingTags = null, int $maxTags = 8): array
     {
         if (trim($text) === '') {
@@ -143,14 +146,18 @@ class TagSuggestionService
         }
     }
 
+    /**
+     * @param array<int, string> $tags
+     * @return array<int, string>
+     */
     private function diversifyTags(array $tags, string $text, int $maxTags): array
     {
         $textLower = mb_strtolower($text);
         $diversified = [];
         $usedCategories = [];
-        
+
         $relevantCategories = $this->detectRelevantCategories($textLower);
-        
+
         foreach ($tags as $tag) {
             if (count($diversified) >= $maxTags) break;
             if (!in_array($tag, $diversified, true)) {
@@ -159,21 +166,21 @@ class TagSuggestionService
                 if ($category) $usedCategories[$category] = true;
             }
         }
-        
+
         foreach ($relevantCategories as $category => $priority) {
             if (count($diversified) >= $maxTags) break;
             if (isset($usedCategories[$category])) continue;
-            
+
             $availableTags = $this->tagCategories[$category] ?? [];
             $availableTags = array_diff($availableTags, $diversified);
-            
+
             if (!empty($availableTags)) {
                 $randomTag = $availableTags[array_rand($availableTags)];
                 $diversified[] = $randomTag;
                 $usedCategories[$category] = true;
             }
         }
-        
+
         if (count($diversified) < $maxTags) {
             $genericTags = $this->fallbackTagsPool;
             $genericTags = array_diff($genericTags, $diversified);
@@ -181,24 +188,27 @@ class TagSuggestionService
             $needed = $maxTags - count($diversified);
             $diversified = array_merge($diversified, array_slice($genericTags, 0, $needed));
         }
-        
+
         return array_slice($diversified, 0, $maxTags);
     }
 
+    /**
+     * @return array<string, int>
+     */
     private function detectRelevantCategories(string $text): array
     {
         $relevance = [];
         $keywords = [
-            'lieux' => ['djerba', 'tunis', 'carthage', 'sidi bou', 'sousse', 'hammamet', 'monastir', 'tabarka', 'dougga', 'el jem', 'kairouan', 'tozeur', 'douz', 'matmata', 'ville', 'region', 'ile'],
-            'activites' => ['randonnee', 'trekking', 'plongee', 'snorkeling', 'kayak', 'voile', 'peche', 'golf', 'quad', 'dromadaire', 'equitation', 'yoga', 'activite', 'sport', 'bateau'],
-            'nature' => ['plage', 'mer', 'desert', 'oasis', 'montagne', 'foret', 'cascade', 'palmier', 'olivier', 'coucher', 'soleil', 'paysage', 'nature', 'sable', 'dune'],
-            'culture' => ['musee', 'histoire', 'patrimoine', 'medina', 'souk', 'mosquee', 'artisanat', 'poterie', 'musique', 'festival', 'culturel', 'tradition'],
+            'lieux'       => ['djerba', 'tunis', 'carthage', 'sidi bou', 'sousse', 'hammamet', 'monastir', 'tabarka', 'dougga', 'el jem', 'kairouan', 'tozeur', 'douz', 'matmata', 'ville', 'region', 'ile'],
+            'activites'   => ['randonnee', 'trekking', 'plongee', 'snorkeling', 'kayak', 'voile', 'peche', 'golf', 'quad', 'dromadaire', 'equitation', 'yoga', 'activite', 'sport', 'bateau'],
+            'nature'      => ['plage', 'mer', 'desert', 'oasis', 'montagne', 'foret', 'cascade', 'palmier', 'olivier', 'coucher', 'soleil', 'paysage', 'nature', 'sable', 'dune'],
+            'culture'     => ['musee', 'histoire', 'patrimoine', 'medina', 'souk', 'mosquee', 'artisanat', 'poterie', 'musique', 'festival', 'culturel', 'tradition'],
             'gastronomie' => ['couscous', 'brik', 'lablabi', 'harissa', 'olive', 'dattes', 'restaurant', 'manger', 'cuisine', 'plat', 'specialite', 'degustation'],
-            'sentiments' => ['aventure', 'decouverte', 'authentique', 'paisible', 'depaysement', 'evasion', 'ressourcement', 'partage', 'inspiration', 'magnifique', 'superbe'],
-            'pratique' => ['conseil', 'astuce', 'budget', 'transport', 'hebergement', 'securite', 'saison', 'prix', 'payer', 'voyager', 'tarif'],
+            'sentiments'  => ['aventure', 'decouverte', 'authentique', 'paisible', 'depaysement', 'evasion', 'ressourcement', 'partage', 'inspiration', 'magnifique', 'superbe'],
+            'pratique'    => ['conseil', 'astuce', 'budget', 'transport', 'hebergement', 'securite', 'saison', 'prix', 'payer', 'voyager', 'tarif'],
             'hebergement' => ['hotel', 'riad', 'villa', 'camping', 'auberge', 'resort', 'logement', 'nuit', 'sejour']
         ];
-        
+
         foreach ($keywords as $category => $words) {
             $score = 0;
             foreach ($words as $word) {
@@ -210,13 +220,13 @@ class TagSuggestionService
                 $relevance[$category] = $score;
             }
         }
-        
+
         arsort($relevance);
-        
+
         if (empty($relevance)) {
             return ['nature' => 1, 'sentiments' => 1, 'pratique' => 1];
         }
-        
+
         return $relevance;
     }
 
@@ -230,6 +240,10 @@ class TagSuggestionService
         return null;
     }
 
+    /**
+     * @param array<mixed> $raw
+     * @return array<int, string>
+     */
     private function sanitizeTags(array $raw, int $max): array
     {
         $clean = [];
@@ -238,8 +252,8 @@ class TagSuggestionService
                 continue;
             }
             $tag = mb_strtolower($tag);
-            $tag = preg_replace('/[^a-z0-9éèêëàâäôöûüç\-_]/u', '', $tag);
-            $tag = preg_replace('/-+/', '-', $tag);
+            $tag = (string) preg_replace('/[^a-z0-9éèêëàâäôöûüç\-_]/u', '', $tag);
+            $tag = (string) preg_replace('/-+/', '-', $tag);
             $tag = trim($tag, '-');
 
             if ($tag !== '' && strlen($tag) >= 2 && strlen($tag) <= 25) {
@@ -251,27 +265,30 @@ class TagSuggestionService
         return array_slice($clean, 0, $max);
     }
 
+    /**
+     * @return array{tags: array<int, string>, success: bool, error: string|null}
+     */
     private function diversifiedFallbackTags(string $text, ?string $existingTags, int $maxTags): array
     {
         $textLower = mb_strtolower($text);
         $existing = $existingTags
             ? array_map('trim', explode(',', mb_strtolower($existingTags)))
             : [];
-        
+
         $found = [];
         $usedCategories = [];
-        
+
         $relevantCategories = $this->detectRelevantCategories($textLower);
-        
+
         foreach ($relevantCategories as $category => $priority) {
             if (count($found) >= $maxTags) break;
             if (isset($usedCategories[$category])) continue;
-            
+
             $availableTags = $this->tagCategories[$category] ?? [];
-            $availableTags = array_filter($availableTags, function($tag) use ($existing, $found) {
+            $availableTags = array_filter($availableTags, function ($tag) use ($existing, $found) {
                 return !in_array($tag, $existing, true) && !in_array($tag, $found, true);
             });
-            
+
             if (!empty($availableTags)) {
                 $numToTake = min($priority, 2);
                 $selectedKeys = (array) array_rand($availableTags, min($numToTake, count($availableTags)));
@@ -284,7 +301,7 @@ class TagSuggestionService
                 $usedCategories[$category] = true;
             }
         }
-        
+
         if (count($found) < $maxTags) {
             $genericTags = $this->fallbackTagsPool;
             $genericTags = array_diff($genericTags, $existing);
@@ -293,9 +310,9 @@ class TagSuggestionService
             $needed = $maxTags - count($found);
             $found = array_merge($found, array_slice($genericTags, 0, $needed));
         }
-        
+
         $tags = array_slice(array_unique($found), 0, $maxTags);
-        
+
         return [
             'tags'    => $tags,
             'success' => true,

@@ -6,6 +6,7 @@ namespace App\Service;
 use App\Entity\SNotification;
 use App\Entity\Signalement;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
 
 class SNotificationService
 {
@@ -26,11 +27,24 @@ class SNotificationService
         ?string $commentText = null
     ): SNotification {
         $reasonLabel = self::REASON_LABELS[$signalement->getReason()] ?? $signalement->getReason();
-        $textPreview = htmlspecialchars(substr($commentText ?? 'Non disponible', 0, 200));
-        $reporter    = ($userReporterId === 999 || $userReporterId === null)
+        
+        // Vérifier que $commentText n'est pas null avant htmlspecialchars
+        $safeCommentText = $commentText ?? 'Non disponible';
+        $textPreview = htmlspecialchars(substr($safeCommentText, 0, 200), ENT_QUOTES, 'UTF-8');
+        
+        $reporter = ($userReporterId === 999 || $userReporterId === null)
             ? 'Visiteur (non connecté)'
             : 'User #' . $userReporterId;
 
+        // Vérifier que dateCreation n'est pas null avant format()
+        $dateCreation = $signalement->getDateCreation();
+        $formattedDate = ($dateCreation instanceof \DateTimeInterface) 
+            ? $dateCreation->format('d/m/Y H:i:s') 
+            : date('d/m/Y H:i:s');
+
+        // Correction ligne 52: S'assurer que $reasonLabel est une string
+        $safeReasonLabel = is_string($reasonLabel) ? $reasonLabel : 'Motif inconnu';
+        
         $message = sprintf(
             '<strong>🚩 Nouveau signalement de commentaire</strong><br>' .
             'Commentaire ID : <strong>#%d</strong><br>' .
@@ -39,10 +53,10 @@ class SNotificationService
             'Signalé par : %s<br>' .
             'Date : %s',
             $signalement->getTargetId(),
-            htmlspecialchars($reasonLabel),
+            htmlspecialchars($safeReasonLabel, ENT_QUOTES, 'UTF-8'),
             $textPreview,
-            htmlspecialchars($reporter),
-            $signalement->getDateCreation()->format('d/m/Y H:i:s')
+            htmlspecialchars($reporter, ENT_QUOTES, 'UTF-8'),
+            $formattedDate
         );
 
         $snotification = new SNotification();
@@ -65,24 +79,54 @@ class SNotificationService
         return $snotification;
     }
 
+    /**
+     * Récupère les notifications non lues
+     * 
+     * @return array<int, SNotification>
+     */
     public function getUnreadNotifications(int $limit = 100): array
     {
-        return $this->em->getRepository(SNotification::class)
-            ->findBy(['lu' => false], ['dateCreation' => 'DESC'], $limit);
+        /** @var EntityRepository<SNotification> $repository */
+        $repository = $this->em->getRepository(SNotification::class);
+        
+        /** @var array<int, SNotification> $notifications */
+        $notifications = $repository->findBy(
+            ['lu' => false], 
+            ['dateCreation' => 'DESC'], 
+            $limit
+        );
+        
+        // Correction ligne 89: On sait que findBy retourne toujours un tableau
+        return $notifications;
     }
 
+    /**
+     * Compte les notifications non lues
+     */
     public function countUnreadNotifications(): int
     {
-        return $this->em->getRepository(SNotification::class)
-            ->count(['lu' => false]);
+        /** @var EntityRepository<SNotification> $repository */
+        $repository = $this->em->getRepository(SNotification::class);
+        
+        /** @var int<0, max> $count */
+        $count = $repository->count(['lu' => false]);
+        
+        // Correction ligne 100: On sait que count retourne toujours un int
+        return $count;
     }
 
+    /**
+     * Marque une notification comme lue
+     */
     public function markAsRead(SNotification $snotification): void
     {
         $snotification->setLu(true);
         $this->em->flush();
     }
 
+    /**
+     * Marque toutes les notifications comme lues
+     */
     public function markAllAsRead(): void
     {
         $this->em->createQuery(
@@ -90,11 +134,21 @@ class SNotificationService
         )->execute();
     }
 
+    /**
+     * Supprime les notifications anciennes
+     * 
+     * @return int Nombre de notifications supprimées
+     */
     public function deleteOldNotifications(int $daysOld = 30): int
     {
         $date = new \DateTime("-{$daysOld} days");
-        return $this->em->createQuery(
+        
+        /** @var int $result */
+        $result = $this->em->createQuery(
             'DELETE FROM App\Entity\SNotification s WHERE s.dateCreation < :date'
-        )->setParameter('date', $date)->execute();
+        )->setParameter('date', $date)
+         ->execute();
+        
+        return $result;
     }
 }

@@ -8,6 +8,9 @@ doctrine:
             collate: utf8mb4_general_ci
         profiling_collect_backtrace: '%kernel.debug%'
         use_savepoints: true
+        mapping_types:
+            enum: string
+        schema_filter: '/^(avis_chambre|chambre|code_promo|commande|commande_produit|hotel|messenger_messages|panier_item|password_reset_token|produit|programmes|publication|reservation_chambre|reservationprog|utilisateur|voyages)$/'
     orm:
         auto_generate_proxy_classes: true
         enable_lazy_ghost_objects: true
@@ -27,6 +30,7 @@ when@test:
     doctrine:
         dbal:
             dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+            server_version: 'mariadb-10.4.32'
 
 when@prod:
     doctrine:
@@ -47,3 +51,5 @@ when@prod:
                     adapter: cache.app
                 doctrine.system_cache_pool:
                     adapter: cache.system
+    dbal:
+        schema_filter: '/^(avis_chambre|chambre|code_promo|commande|commande_produit|hotel|messenger_messages|panier_item|password_reset_token|produit|programmes|publication|reservation_chambre|reservationprog|utilisateur|voyages|like_publication)$/'

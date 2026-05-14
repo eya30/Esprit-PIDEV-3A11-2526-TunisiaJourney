@@ -51,7 +51,6 @@
 
     .reservation-body { padding: 2.5rem 2.5rem 3rem; }
 
-    /* Sélecteur devise */
     .currency-selector {
         text-align: right;
         margin-bottom: 1.5rem;
@@ -74,7 +73,6 @@
         transition: all 0.2s;
     }
 
-    /* Section prix détaillé */
     .prix-detail {
         background: linear-gradient(135deg, #F8F4F0, #FDF8F3);
         border-radius: 20px;
@@ -92,10 +90,7 @@
         border-bottom: 2px solid #264653;
     }
 
-    .prix-detail-header i {
-        font-size: 1.5rem;
-        color: #C0392B;
-    }
+    .prix-detail-header i { font-size: 1.5rem; color: #C0392B; }
 
     .prix-detail-header h3 {
         margin: 0;
@@ -112,66 +107,39 @@
         border-bottom: 1px dashed #E8DFD1;
     }
 
-    .prix-ligne:last-child {
-        border-bottom: none;
-    }
+    .prix-ligne:last-child { border-bottom: none; }
 
     .prix-ligne-total {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 1rem 0;
-        margin-top: 0.5rem;
         background: #264653;
         color: white;
         border-radius: 12px;
         padding: 1rem 1.5rem;
+        margin-top: 0.5rem;
     }
 
-    .prix-label-detail {
-        font-weight: 600;
-        color: #4A3B2F;
-    }
-
-    .prix-valeur {
-        font-weight: 700;
-        color: #C0392B;
-    }
-
-    .prix-valeur-original {
-        text-decoration: line-through;
-        color: #999;
-        font-size: 0.9rem;
-    }
+    .prix-label-detail { font-weight: 600; color: #4A3B2F; }
+    .prix-valeur { font-weight: 700; color: #C0392B; }
+    .prix-valeur-original { text-decoration: line-through; color: #999; font-size: 0.9rem; }
 
     .badge-remise {
-        background: #C0392B;
-        color: white;
-        border-radius: 20px;
-        padding: 2px 10px;
-        font-size: 0.7rem;
-        font-weight: 600;
-        margin-left: 8px;
+        background: #C0392B; color: white; border-radius: 20px;
+        padding: 2px 10px; font-size: 0.7rem; font-weight: 600; margin-left: 8px;
     }
-
     .badge-saison {
-        background: #E67E22;
-        color: white;
-        border-radius: 20px;
-        padding: 2px 10px;
-        font-size: 0.7rem;
-        font-weight: 600;
-        margin-left: 8px;
+        background: #E67E22; color: white; border-radius: 20px;
+        padding: 2px 10px; font-size: 0.7rem; font-weight: 600; margin-left: 8px;
     }
-
     .badge-fidelite {
         background: linear-gradient(135deg, #FFD700, #FFA500);
-        color: #1a1a2e;
-        border-radius: 20px;
-        padding: 4px 12px;
-        font-size: 0.7rem;
-        font-weight: 700;
-        margin-left: 8px;
+        color: #1a1a2e; border-radius: 20px;
+        padding: 4px 12px; font-size: 0.7rem; font-weight: 700; margin-left: 8px;
+    }
+    .badge-promo {
+        background: #6D28D9; color: white; border-radius: 20px;
+        padding: 2px 10px; font-size: 0.7rem; font-weight: 600; margin-left: 8px;
     }
 
     .info-meteo {
@@ -185,14 +153,8 @@
         gap: 10px;
     }
 
-    .info-meteo i {
-        font-size: 1.2rem;
-        color: #2196F3;
-    }
-
-    .info-meteo small {
-        color: #555;
-    }
+    .info-meteo i { font-size: 1.2rem; color: #2196F3; }
+    .info-meteo small { color: #555; }
 
     .alert-fidelite {
         background: linear-gradient(135deg, #1a1a2e, #16213e);
@@ -202,12 +164,80 @@
         border-radius: 10px;
         margin-bottom: 1.5rem;
     }
+    .alert-fidelite i { color: #FFD700; font-size: 1.2rem; margin-right: 10px; }
 
-    .alert-fidelite i {
-        color: #FFD700;
-        font-size: 1.2rem;
-        margin-right: 10px;
+    /* ===== CODE PROMO ===== */
+    .promo-section {
+        background: linear-gradient(135deg, #F5F3FF, #EDE9FE);
+        border: 1px dashed #7C3AED;
+        border-radius: 14px;
+        padding: 1rem 1.2rem;
+        margin: 1.2rem 0 1.5rem;
     }
+
+    .promo-section-title {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #5B21B6;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.6rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .promo-input-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .promo-input-row input {
+        flex: 1;
+        padding: 9px 12px;
+        border: 1.5px solid #C4B5FD;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        font-family: 'Montserrat', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        background: white;
+        box-sizing: border-box;
+    }
+
+    .promo-input-row input:focus {
+        outline: none;
+        border-color: #7C3AED;
+        box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
+    }
+
+    .btn-verifier-promo {
+        background: #7C3AED;
+        color: white;
+        border: none;
+        padding: 9px 16px;
+        border-radius: 10px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background 0.2s;
+        flex-shrink: 0;
+    }
+
+    .btn-verifier-promo:hover { background: #5B21B6; }
+
+    .promo-feedback {
+        margin-top: 0.5rem;
+        font-size: 0.82rem;
+        font-weight: 600;
+        min-height: 1.2rem;
+    }
+
+    .promo-feedback.success { color: #047857; }
+    .promo-feedback.error   { color: #DC2626; }
+    /* ====================== */
 
     .field-row {
         display: flex;
@@ -230,7 +260,6 @@
     }
 
     .field-label i { color: #264653; font-size: 1rem; width: 18px; text-align: center; }
-
     .field-input-wrap { flex: 1; display: flex; flex-direction: column; }
 
     .field-input {
@@ -268,9 +297,7 @@
         gap: 5px;
     }
 
-    .field-error.visible {
-        display: flex;
-    }
+    .field-error.visible { display: flex; }
 
     .form-row {
         display: grid;
@@ -319,21 +346,7 @@
         gap: 8px;
     }
 
-    .btn-confirmer:hover {
-        background: #a93226 !important;
-        color: white !important;
-    }
-
-    .flash-success {
-        background: #F0FFF4;
-        border: 1px solid #6EE7B7;
-        color: #065F46;
-        padding: 12px 18px;
-        border-radius: 10px;
-        margin-bottom: 1.5rem;
-        font-weight: 500;
-        display: none;
-    }
+    .btn-confirmer:hover { background: #a93226 !important; color: white !important; }
 
     .error-messages {
         background: #FEF2F2;
@@ -359,6 +372,8 @@
         .reservation-actions { flex-direction: column; align-items: center; }
         .btn-annuler, .btn-confirmer { width: 100%; justify-content: center; }
         .currency-selector { text-align: center; }
+        .promo-input-row { flex-direction: column; }
+        .btn-verifier-promo { width: 100%; }
     }
 </style>
 {% endblock %}
@@ -366,11 +381,6 @@
 {% block body %}
 <div class="reservation-page">
     <div class="container">
-
-        <div class="flash-success" id="flashSuccess" style="display: none;">
-            <i class="fas fa-check-circle me-2"></i>
-            <span id="flashSuccessText"></span>
-        </div>
 
         <div class="reservation-card">
 
@@ -397,7 +407,7 @@
                     </select>
                 </div>
 
-                {# Affichage de la réduction fidélité #}
+                {# Réduction fidélité #}
                 {% if reduction_fidelite is defined and reduction_fidelite > 0 %}
                 <div class="alert-fidelite">
                     <i class="fas fa-crown"></i>
@@ -406,7 +416,7 @@
                 </div>
                 {% endif %}
 
-                {# Affichage météo si disponible #}
+                {# Météo #}
                 {% if weather_data is defined and weather_data and weather_data.current %}
                 <div class="info-meteo">
                     <i class="fas fa-cloud-sun"></i>
@@ -428,29 +438,20 @@
                         <h3>Détail du prix</h3>
                     </div>
 
-                    {# Prix de base / nuit #}
                     <div class="prix-ligne">
-                        <span class="prix-label-detail">
-                            <i class="fas fa-tag"></i> Prix de base / nuit
-                        </span>
+                        <span class="prix-label-detail"><i class="fas fa-tag"></i> Prix de base / nuit</span>
                         <span class="prix-valeur">
                             {{ (chambre.prix_nuit * taux_conversion)|number_format(2, ',', ' ') }} {{ symbole }}
                         </span>
                     </div>
 
-                    {# Promotion hôtel si applicable #}
                     {% if chambre.promotion is defined and chambre.promotion > 0 %}
                     <div class="prix-ligne">
-                        <span class="prix-label-detail">
-                            <i class="fas fa-gift"></i> Promotion hôtel
-                        </span>
-                        <span class="prix-valeur" style="color: #27AE60;">
-                            -{{ chambre.promotion }}%
-                        </span>
+                        <span class="prix-label-detail"><i class="fas fa-gift"></i> Promotion hôtel</span>
+                        <span class="prix-valeur" style="color: #27AE60;">-{{ chambre.promotion }}%</span>
                     </div>
                     {% endif %}
 
-                    {# Coefficient saisonnier #}
                     {% if dynamic_price is defined and dynamic_price and dynamic_price.season_percent is defined %}
                         {% if dynamic_price.season_percent > 0 %}
                         <div class="prix-ligne">
@@ -475,33 +476,35 @@
                         {% endif %}
                     {% endif %}
 
-                    {# Remise météo si pluie #}
                     {% if weather_data is defined and weather_data and weather_data.current and weather_data.current.rain %}
                     <div class="prix-ligne">
                         <span class="prix-label-detail">
                             <i class="fas fa-cloud-rain"></i> Remise météo (pluie)
                             <span class="badge-remise">-15%</span>
                         </span>
-                        <span class="prix-valeur" style="color: #27AE60;">
-                            -15%
-                        </span>
+                        <span class="prix-valeur" style="color: #27AE60;">-15%</span>
                     </div>
                     {% endif %}
 
-                    {# Réduction fidélité #}
                     {% if reduction_fidelite is defined and reduction_fidelite > 0 %}
                     <div class="prix-ligne">
                         <span class="prix-label-detail">
                             <i class="fas fa-crown"></i> Réduction fidélité
                             <span class="badge-fidelite">-{{ reduction_fidelite }}%</span>
                         </span>
-                        <span class="prix-valeur" style="color: #27AE60;">
-                            -{{ reduction_fidelite }}%
-                        </span>
+                        <span class="prix-valeur" style="color: #27AE60;">-{{ reduction_fidelite }}%</span>
                     </div>
                     {% endif %}
 
-                    {# Prix par nuit après ajustements #}
+                    {# Ligne code promo (affichée dynamiquement via JS) #}
+                    <div class="prix-ligne" id="ch-promo-ligne" style="display:none;">
+                        <span class="prix-label-detail">
+                            <i class="fas fa-ticket-alt"></i> Code promo
+                            <span class="badge-promo" id="ch-promo-badge">-0%</span>
+                        </span>
+                        <span class="prix-valeur" style="color: #27AE60;" id="ch-promo-valeur">-0%</span>
+                    </div>
+
                     <div class="prix-ligne" style="background: #F0EBE3; margin: 0.5rem 0; padding: 0.8rem; border-radius: 10px;">
                         <span class="prix-label-detail" style="font-weight: 800;">
                             <i class="fas fa-star"></i> Prix par nuit (après ajustements)
@@ -511,15 +514,11 @@
                         </span>
                     </div>
 
-                    {# Nombre de nuits (calculé dynamiquement) #}
                     <div class="prix-ligne">
-                        <span class="prix-label-detail">
-                            <i class="fas fa-moon"></i> Nombre de nuits
-                        </span>
+                        <span class="prix-label-detail"><i class="fas fa-moon"></i> Nombre de nuits</span>
                         <span class="prix-valeur" id="nbNuitsAffichage">-</span>
                     </div>
 
-                    {# TOTAL #}
                     <div class="prix-ligne-total">
                         <span style="font-size: 1.2rem; font-weight: 700;">
                             <i class="fas fa-check-circle"></i> TOTAL À PAYER
@@ -606,6 +605,34 @@
                         </div>
                     </div>
 
+                    {# ===== SECTION CODE PROMO ===== #}
+                    <div class="promo-section">
+                        <div class="promo-section-title">
+                            <i class="fas fa-ticket-alt"></i> Code promo (facultatif)
+                        </div>
+                        <div class="promo-input-row">
+                            <input
+                                type="text"
+                                id="ch-code-promo-input"
+                                placeholder="Ex : PROMO20"
+                                autocomplete="off"
+                                maxlength="30"
+                                value="{{ old.code_promo ?? '' }}"
+                            >
+                            <button type="button" class="btn-verifier-promo" onclick="verifierPromo()">
+                                Vérifier
+                            </button>
+                        </div>
+                        <div class="promo-feedback" id="ch-promo-feedback">
+                            {% if errors.code_promo is defined %}
+                                <span style="color:#DC2626;">❌ {{ errors.code_promo }}</span>
+                            {% endif %}
+                        </div>
+                        {# Champ caché envoyé au serveur #}
+                        <input type="hidden" name="code_promo" id="ch-code-promo-hidden" value="{{ old.code_promo ?? '' }}">
+                    </div>
+                    {# ============================== #}
+
                     <input type="hidden" name="idUtilisateur" value="{{ app.user ? app.user.id : 1 }}">
 
                     <div class="reservation-actions">
@@ -625,82 +652,150 @@
 </div>
 
 <script>
-    // Variables pour la conversion des devises
     const tauxConversion = {{ taux_conversion|default(1) }};
-    const symboleDevise = "{{ symbole|default('TND') }}";
-    
-    // Prix par nuit (déjà avec réduction fidélité)
+    const symboleDevise  = "{{ symbole|default('TND') }}";
+    // Prix par nuit converti (déjà avec fidélité)
     const prixParNuit = {{ prix_converti|replace({',': '.'})|default(0) }};
-    
-    // Gestion des dates et calcul automatique du prix
-    (function(){
-        const dateDebut = document.getElementById('dateDebut');
-        const dateFin = document.getElementById('dateFin');
-        const nbPersonnes = document.getElementById('field-nbPersonnes');
-        const nbNuitsSpan = document.getElementById('nbNuitsAffichage');
-        const prixTotalSpan = document.getElementById('prixTotalAffichage');
-        
-        function calculerTotal() {
-            if (dateDebut && dateFin && dateDebut.value && dateFin.value) {
-                const debut = new Date(dateDebut.value);
-                const fin = new Date(dateFin.value);
-                
-                if (fin > debut) {
-                    const diffTime = Math.abs(fin - debut);
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    
-                    if (nbNuitsSpan) {
-                        nbNuitsSpan.textContent = diffDays + ' nuit(s)';
-                    }
-                    
-                    const total = prixParNuit * diffDays;
-                    if (prixTotalSpan) {
-                        prixTotalSpan.textContent = total.toFixed(2).replace('.', ',') + ' ' + symboleDevise;
-                    }
-                    
-                    return total;
-                } else {
-                    if (nbNuitsSpan) nbNuitsSpan.textContent = '-';
-                    if (prixTotalSpan) prixTotalSpan.textContent = '0,00 ' + symboleDevise;
-                    return 0;
-                }
+
+    let reductionPromo = 0; // pourcentage 0–100
+
+    const dateDebutEl  = document.getElementById('dateDebut');
+    const dateFinEl    = document.getElementById('dateFin');
+    const nbNuitsSpan  = document.getElementById('nbNuitsAffichage');
+    const prixTotalSpan= document.getElementById('prixTotalAffichage');
+    const promoInput   = document.getElementById('ch-code-promo-input');
+    const promoHidden  = document.getElementById('ch-code-promo-hidden');
+    const promoFeedback= document.getElementById('ch-promo-feedback');
+    const promoLigne   = document.getElementById('ch-promo-ligne');
+    const promoBadge   = document.getElementById('ch-promo-badge');
+    const promoValeur  = document.getElementById('ch-promo-valeur');
+
+    function getNbNuits() {
+        if (dateDebutEl && dateFinEl && dateDebutEl.value && dateFinEl.value) {
+            const debut = new Date(dateDebutEl.value);
+            const fin   = new Date(dateFinEl.value);
+            if (fin > debut) {
+                return Math.ceil(Math.abs(fin - debut) / (1000 * 60 * 60 * 24));
             }
-            return 0;
         }
-        
-        if (dateDebut && dateFin) {
-            dateDebut.addEventListener('change', calculerTotal);
-            dateFin.addEventListener('change', calculerTotal);
-            calculerTotal();
+        return 0;
+    }
+
+    function calculerTotal() {
+        const nbNuits = getNbNuits();
+        if (nbNuitsSpan) {
+            nbNuitsSpan.textContent = nbNuits > 0 ? nbNuits + ' nuit(s)' : '-';
         }
-        
-        if (dateDebut && dateFin) {
-            const today = new Date();
-            const pad = (n) => n.toString().padStart(2, '0');
-            const toYMD = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-            dateDebut.min = toYMD(today);
-            const max = new Date(); max.setFullYear(max.getFullYear()+1);
-            dateDebut.max = toYMD(max);
-            dateFin.max = toYMD(max);
-            
-            const syncDateFinMin = () => {
-                if (!dateDebut.value) {
-                    dateFin.min = dateDebut.min;
-                    return;
-                }
-                const d = new Date(dateDebut.value);
-                const minFin = new Date(d);
-                minFin.setDate(minFin.getDate() + 1);
-                dateFin.min = toYMD(minFin);
-                if (dateFin.value && dateFin.value < dateFin.min) {
-                    dateFin.value = dateFin.min;
-                }
+
+        const sousTotal = prixParNuit * nbNuits;
+        const total     = sousTotal * (1 - reductionPromo / 100);
+
+        if (prixTotalSpan) {
+            if (nbNuits > 0) {
+                prixTotalSpan.textContent = total.toFixed(2).replace('.', ',') + ' ' + symboleDevise;
+            } else {
+                prixTotalSpan.textContent = '0,00 ' + symboleDevise;
+            }
+        }
+
+        return { sousTotal, total, nbNuits };
+    }
+
+    function verifierPromo() {
+        const code    = promoInput ? promoInput.value.trim().toUpperCase() : '';
+        const nbNuits = getNbNuits();
+        const sousTotal = prixParNuit * nbNuits;
+
+        if (!code) {
+            promoFeedback.className = 'promo-feedback error';
+            promoFeedback.textContent = '⚠️ Veuillez saisir un code promo.';
+            return;
+        }
+
+        promoFeedback.className = 'promo-feedback';
+        promoFeedback.textContent = '⏳ Vérification…';
+
+        fetch('{{ path('api_verifier_code_promo') }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: code, prix_base: sousTotal })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.valid) {
+                reductionPromo = data.reduction;
+                promoHidden.value = code;
+
+                // Afficher la ligne promo dans le tableau
+                if (promoLigne) promoLigne.style.display = 'flex';
+                if (promoBadge) promoBadge.textContent = '-' + data.reduction + '%';
+                if (promoValeur) promoValeur.textContent = '-' + data.reduction + '%';
+
+                promoFeedback.className  = 'promo-feedback success';
+                promoFeedback.textContent = data.message;
                 calculerTotal();
-            };
-            syncDateFinMin();
-            dateDebut.addEventListener('change', syncDateFinMin);
-        }
-    })();
+            } else {
+                reductionPromo = 0;
+                promoHidden.value = '';
+                if (promoLigne) promoLigne.style.display = 'none';
+
+                promoFeedback.className  = 'promo-feedback error';
+                promoFeedback.textContent = '❌ ' + data.message;
+                calculerTotal();
+            }
+        })
+        .catch(() => {
+            promoFeedback.className  = 'promo-feedback error';
+            promoFeedback.textContent = '❌ Erreur réseau. Réessayez.';
+        });
+    }
+
+    // Événements
+    if (dateDebutEl && dateFinEl) {
+        dateDebutEl.addEventListener('change', calculerTotal);
+        dateFinEl.addEventListener('change', calculerTotal);
+        calculerTotal();
+
+        // Contraintes de dates
+        const today = new Date();
+        const pad   = n => n.toString().padStart(2, '0');
+        const toYMD = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+        dateDebutEl.min = toYMD(today);
+        const max = new Date(); max.setFullYear(max.getFullYear()+1);
+        dateDebutEl.max = toYMD(max);
+        dateFinEl.max   = toYMD(max);
+
+        const syncDateFinMin = () => {
+            if (!dateDebutEl.value) { dateFinEl.min = dateDebutEl.min; return; }
+            const d = new Date(dateDebutEl.value);
+            const minFin = new Date(d);
+            minFin.setDate(minFin.getDate() + 1);
+            dateFinEl.min = toYMD(minFin);
+            if (dateFinEl.value && dateFinEl.value < dateFinEl.min) {
+                dateFinEl.value = dateFinEl.min;
+            }
+            calculerTotal();
+        };
+        syncDateFinMin();
+        dateDebutEl.addEventListener('change', syncDateFinMin);
+    }
+
+    if (promoInput) {
+        promoInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); verifierPromo(); }
+        });
+
+        promoInput.addEventListener('input', function() {
+            if (this.value.trim() === '') {
+                reductionPromo = 0;
+                promoHidden.value = '';
+                if (promoLigne) promoLigne.style.display = 'none';
+                promoFeedback.className  = 'promo-feedback';
+                promoFeedback.textContent = '';
+                calculerTotal();
+            }
+        });
+    }
 
     // Changement de devise
     const currencySelect = document.getElementById('currencySelect');
@@ -711,9 +806,7 @@
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({currency: this.value})
             })
-            .then(() => {
-                window.location.reload();
-            });
+            .then(() => window.location.reload());
         });
     }
 
@@ -723,7 +816,7 @@
         const fields = ['nom', 'prenom', 'email', 'telephone', 'dateDebut', 'dateFin', 'nbPersonnes'];
         fields.forEach(function(field) {
             if (errorMessages[field]) {
-                const input = document.getElementById('field-' + field);
+                const input    = document.getElementById('field-' + field);
                 const errorDiv = document.getElementById('error-' + field);
                 if (input && errorDiv) {
                     input.classList.add('is-error');

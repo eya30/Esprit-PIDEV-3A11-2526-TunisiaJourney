@@ -337,8 +337,6 @@
     .btn-debloquer { border: 1.5px solid #BBF7D0; color: #16A34A; }
     .btn-debloquer:hover { background: #F0FDF4; border-color: #16A34A; }
 
-<<<<<<< HEAD
-=======
     /* ── Bouton Logs ── */
     .btn-logs-open {
         display: flex; align-items: center; gap: 7px;
@@ -502,7 +500,6 @@
     .logs-empty { padding: 48px; text-align: center; color: #bbb; }
     .logs-empty i { font-size: 2.5rem; display: block; margin-bottom: 10px; }
 
->>>>>>> origin/devvvvv
     /* ── Modal confirm blocage ── */
     .toggle-confirm-overlay {
         display: none; position: fixed; inset: 0; z-index: 4000;
@@ -576,8 +573,6 @@
     <a href="{{ path('admin_users_export_excel') }}" class="toolbar-btn" style="text-decoration:none; color:inherit;">
         <i class="fas fa-file-excel" style="color:#16A34A;"></i> Exporter Excel
     </a>
-<<<<<<< HEAD
-=======
 
     {# ── Bouton Logs — style alerte/badge ── #}
     <button class="btn-logs-open" onclick="openLogsModal()" title="Voir les logs d'activité">
@@ -589,7 +584,6 @@
             <span class="btn-logs-badge">{{ logsCount > 99 ? '99+' : logsCount }}</span>
         {% endif %}
     </button>
->>>>>>> origin/devvvvv
 </div>
 
 {# ── GRILLE ── #}
@@ -733,12 +727,8 @@
                 <input type="hidden" name="_token" value="{{ csrf_token('admin_user_edit') }}">
                 <input type="hidden" name="userId" id="editUserId">
                 <input type="file" name="photo" id="editPhotoInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
-<<<<<<< HEAD
-
-=======
               
                
->>>>>>> origin/devvvvv
                 <div class="upanel-hero" style="margin-bottom:16px;">
                     <div class="uedit-avatar" id="ueditAvatar"
                          onclick="document.getElementById('editPhotoInput').click()"
@@ -885,8 +875,6 @@
     </div>
 </div>
 
-<<<<<<< HEAD
-=======
 {# ══════════════════════════════════════
    MODAL LOGS D'ACTIVITÉ
 ══════════════════════════════════════ #}
@@ -1004,7 +992,6 @@
     </div>
 </div>
 
->>>>>>> origin/devvvvv
 {% endblock %}
 
 {% block javascripts %}
@@ -1259,14 +1246,7 @@ document.getElementById('searchInput').addEventListener('input', applyFilters);
 document.getElementById('filterStatut').addEventListener('change', applyFilters);
 document.getElementById('filterRole').addEventListener('change', applyFilters);
 
-<<<<<<< HEAD
-/* Échap */
-document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeUserProfile(); closeUserEdit(); closeDeleteConfirm(); closeToggleConfirm(); }
-});
-=======
 /* Échap — géré en bas avec closeLogsModal() */
->>>>>>> origin/devvvvv
 
 function toggleStatut(userId, statutActuel, userName) {
     const bloquer = statutActuel === 'ACTIF';
@@ -1301,9 +1281,6 @@ function closeToggleConfirm() {
     document.getElementById('toggleConfirmOverlay').classList.remove('active');
     document.body.style.overflow = '';
 }
-<<<<<<< HEAD
-</script>
-=======
 
 /* ══════════════════════════════════════
    LOGS MODAL
@@ -1361,5 +1338,4 @@ document.getElementById('logsModalOverlay').addEventListener('click', function(e
 
 
 
->>>>>>> origin/devvvvv
 {% endblock %}

@@ -19,9 +19,9 @@ class CurrencyController extends AbstractController
             $from = strtoupper($data['from'] ?? 'EUR');
             $to = strtoupper($data['to'] ?? 'TND');
         } else {
-            $amount = $request->query->get('amount');
-            $from = strtoupper($request->query->get('from', 'EUR'));
-            $to = strtoupper($request->query->get('to', 'TND'));
+    $amount = $request->query->get('amount');
+    $from = strtoupper($request->query->getString('from', 'EUR'));
+    $to = strtoupper($request->query->getString('to', 'TND'));
         }
         
         if (!$amount || !is_numeric($amount)) {

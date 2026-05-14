@@ -14,6 +14,7 @@ class ReservationProg
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: "idRP", type: "integer")]
+    /** @phpstan-ignore-next-line */
     private ?int $idRP = null;
  
     #[ORM\Column(name: "nom", length: 255)]
@@ -39,8 +40,9 @@ class ReservationProg
     #[Assert\Positive(message: 'Le nombre de personnes doit être supérieur à 0')]
     #[Assert\LessThanOrEqual(value: 20, message: 'Le nombre de personnes ne peut pas dépasser 20')]
     private ?int $nbre = null;
- 
-    #[ORM\Column(name: "prixProg", type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+
+    // FIX : type float au lieu de Types::DECIMAL pour correspondre à la propriété PHP float
+    #[ORM\Column(name: "prixProg", type: "float", nullable: true)]
     private ?float $prixProg = null;
  
     #[ORM\Column(name: "idP", type: "string", length: 50)]
@@ -63,8 +65,7 @@ class ReservationProg
  
     #[ORM\Column(name: "user_id", type: "integer", nullable: true)]
     private ?int $userId = null;
- 
-    // GETTERS ET SETTERS
+
     public function getIdRP(): ?int { return $this->idRP; }
  
     public function getNom(): ?string { return $this->nom; }

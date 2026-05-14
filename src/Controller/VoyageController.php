@@ -7,6 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Service\CurrencyProgService;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/voyage')]
@@ -41,44 +42,36 @@ class VoyageController extends AbstractController
     }
 
     // =========================================================
-    // NOTIFICATIONS : récupérer les non-lues
+    // NOTIFICATIONS : récupérer UNIQUEMENT les réductions de prix
     // =========================================================
-    // =========================================================
-// NOTIFICATIONS : récupérer UNIQUEMENT les réductions de prix
-// =========================================================
-#[Route('/notifications', name: 'app_notifications_list', methods: ['GET'])]
-public function notifications(Connection $connection): JsonResponse
-{
-    // 🔥 FILTRE : seulement les notifications de type 'reduction' (pas 'reservation')
-    $notifications = $connection->fetchAllAssociative(
-        "SELECT * FROM notifications 
-         WHERE type = 'reduction' 
-         ORDER BY date_creation DESC 
-         LIMIT 20"
-    );
+    #[Route('/notifications', name: 'app_notifications_list', methods: ['GET'])]
+    public function notifications(Connection $connection): JsonResponse
+    {
+        $notifications = $connection->fetchAllAssociative(
+            "SELECT * FROM notifications
+             WHERE type = 'reduction'
+             ORDER BY date_creation DESC
+             LIMIT 20"
+        );
 
-    return $this->json([
-        'notifications' => $notifications,
-        'count'         => count($notifications),
-    ]);
-}
+        return $this->json([
+            'notifications' => $notifications,
+            'count'         => count($notifications),
+        ]);
+    }
 
     // =========================================================
     // NOTIFICATIONS : marquer une notification comme lue
     // =========================================================
-    // =========================================================
-// NOTIFICATIONS : marquer une notification comme lue
-// =========================================================
-#[Route('/notifications/{id}/read', name: 'app_notification_read', methods: ['POST'])]
-public function markRead(Connection $connection, int $id): JsonResponse
-{
-    // 🔥 Vérifier que c'est bien une réduction (sécurité)
-    $connection->executeStatement(
-        "UPDATE notifications SET lu = 1 WHERE id = ? AND type = 'reduction'",
-        [$id]
-    );
-    return $this->json(['success' => true]);
-}
+    #[Route('/notifications/{id}/read', name: 'app_notification_read', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function markRead(Connection $connection, int $id): JsonResponse
+    {
+        $connection->executeStatement(
+            "UPDATE notifications SET lu = 1 WHERE id = ? AND type = 'reduction'",
+            [$id]
+        );
+        return $this->json(['success' => true]);
+    }
 
     // =========================================================
     // NOTIFICATIONS : marquer toutes comme lues
@@ -93,10 +86,10 @@ public function markRead(Connection $connection, int $id): JsonResponse
     // =========================================================
     // ADMIN : Mettre à jour le prix d'un voyage
     // =========================================================
-    #[Route('/admin/update-prix/{idV}', name: 'app_voyage_update_prix', methods: ['POST'])]
+    #[Route('/admin/update-prix/{idV}', name: 'app_voyage_update_prix', methods: ['POST'], requirements: ['idV' => '\d+'])]
     public function updatePrix(Request $request, Connection $connection, int $idV): JsonResponse
     {
-        $nouveauPrix = (float) $request->request->get('prix');
+        $nouveauPrix = (float) $request->request->get('prix', 0);
 
         $voyage = $connection->fetchAssociative(
             "SELECT nom, prix FROM voyages WHERE idV = ?",
@@ -140,7 +133,7 @@ public function markRead(Connection $connection, int $id): JsonResponse
     // =========================================================
     // ADMIN : Sauvegarder un voyage
     // =========================================================
-    #[Route('/admin/save/{idV}', name: 'app_voyage_admin_save', methods: ['POST'])]
+    #[Route('/admin/save/{idV}', name: 'app_voyage_admin_save', methods: ['POST'], requirements: ['idV' => '\d+'])]
     public function adminSave(Request $request, Connection $connection, int $idV = 0): JsonResponse
     {
         $data = $request->request->all();
@@ -203,10 +196,10 @@ public function markRead(Connection $connection, int $id): JsonResponse
     #[Route('/ai/recommend', name: 'app_ai_recommend', methods: ['POST'])]
     public function recommend(Request $request, Connection $connection): JsonResponse
     {
-        $humeur      = trim($request->request->get('humeur', ''));
-        $preferences = trim($request->request->get('preferences', ''));
-        $budget      = trim($request->request->get('budget', ''));
-        $saison      = trim($request->request->get('saison', ''));
+        $humeur      = trim((string) $request->request->get('humeur', ''));
+        $preferences = trim((string) $request->request->get('preferences', ''));
+        $budget      = trim((string) $request->request->get('budget', ''));
+        $saison      = trim((string) $request->request->get('saison', ''));
 
         $voyages = $connection->fetchAllAssociative(
             "SELECT idV, nom, description, prix, capacite FROM voyages ORDER BY idV DESC"
@@ -236,7 +229,7 @@ public function markRead(Connection $connection, int $id): JsonResponse
         if ($apiKey) {
             $result = $this->callGeminiRaw($apiKey, $promptText, 300);
             if ($result) {
-                $clean = trim(preg_replace('/```json|```/i', '', $result));
+                $clean = trim((string) preg_replace('/```json|```/i', '', $result));
                 $data  = json_decode($clean, true);
                 if ($data && isset($data['idV'])) {
                     $recommended = array_values(array_filter($voyages, fn($v) => $v['idV'] == $data['idV']))[0] ?? $voyages[0];
@@ -251,16 +244,9 @@ public function markRead(Connection $connection, int $id): JsonResponse
         }
 
         // Fallback Pollinations
-        $prompt   = rawurlencode($promptText);
-        $url      = "https://text.pollinations.ai/$prompt";
-        $ch       = curl_init($url);
-        curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 25, CURLOPT_USERAGENT => 'TunisiaJourney/1.0']);
-        $response = curl_exec($ch);
-        $error    = curl_errno($ch);
-        curl_close($ch);
-
-        if (!$error && $response) {
-            $clean = trim(preg_replace('/```json|```/i', '', $response));
+        $response = $this->httpGetRequest("https://text.pollinations.ai/" . rawurlencode($promptText), 25);
+        if ($response !== null) {
+            $clean = trim((string) preg_replace('/```json|```/i', '', $response));
             $data  = json_decode($clean, true);
             if ($data && isset($data['idV'])) {
                 $recommended = array_values(array_filter($voyages, fn($v) => $v['idV'] == $data['idV']))[0] ?? $voyages[0];
@@ -284,19 +270,19 @@ public function markRead(Connection $connection, int $id): JsonResponse
     }
 
     // =========================================================
-    // ROUTE IA CHATBOT — ULTRA INTELLIGENT (Gemini + contexte)
+    // ROUTE IA CHATBOT
     // =========================================================
     #[Route('/ai/ask', name: 'app_ai_ask', methods: ['POST'])]
     public function askAI(Request $request): JsonResponse
     {
-        $question = trim($request->request->get('question', ''));
-        $history  = json_decode($request->request->get('history', '[]'), true) ?: [];
+        $question = trim((string) $request->request->get('question', ''));
+        $historyRaw = $request->request->get('history', '[]');
+        $history = json_decode(is_string($historyRaw) ? $historyRaw : '[]', true) ?: [];
 
         if ($question === '') {
             return $this->json(['answer' => "Bonjour ! Je suis votre guide TunisiaJourney. Posez-moi n'importe quelle question sur la Tunisie, nos voyages, la météo, la gastronomie..."]);
         }
 
-        // Récupérer la météo en temps réel si la question le demande
         $weatherContext = '';
         if (preg_match('/\b(météo|temps|température|pluie|soleil|weather|chaud|froid|aujourd\'hui|ce soir|cette semaine)\b/ui', $question)) {
             $weatherContext = $this->fetchWeatherContext($question);
@@ -306,7 +292,6 @@ public function markRead(Connection $connection, int $id): JsonResponse
 
         $apiKey = $this->getGeminiKey();
 
-        // ---- GEMINI (prioritaire) ----
         if ($apiKey) {
             $answer = $this->callGeminiChat($apiKey, $systemPrompt, $history, $question);
             if ($answer) {
@@ -314,7 +299,6 @@ public function markRead(Connection $connection, int $id): JsonResponse
             }
         }
 
-        // ---- GROQ (fallback gratuit) ----
         $groqKey = $_ENV['GROQ_API_KEY'] ?? null;
         if ($groqKey) {
             $answer = $this->callGroq($groqKey, $systemPrompt, $history, $question);
@@ -323,7 +307,6 @@ public function markRead(Connection $connection, int $id): JsonResponse
             }
         }
 
-        // ---- POLLINATIONS (fallback sans clé) ----
         $answer = $this->callPollinationsChat($systemPrompt, $history, $question);
         if ($answer) {
             return $this->json(['answer' => $answer]);
@@ -338,7 +321,7 @@ public function markRead(Connection $connection, int $id): JsonResponse
     #[Route('/ai/description', name: 'app_ai_description', methods: ['POST'])]
     public function aiDescription(Request $request): JsonResponse
     {
-        $nom = trim($request->request->get('nom', ''));
+        $nom = trim((string) $request->request->get('nom', ''));
         if ($nom === '') return $this->json(['error' => 'Nom manquant'], 400);
 
         $promptText = "Décris la destination touristique \"$nom\" en Tunisie en exactement 2 phrases courtes, poétiques et évocatrices. Réponds uniquement avec ces 2 phrases, rien d'autre.";
@@ -349,19 +332,196 @@ public function markRead(Connection $connection, int $id): JsonResponse
             if ($result) return $this->json(['description' => trim($result)]);
         }
 
-        $prompt   = rawurlencode($promptText);
-        $ch       = curl_init("https://text.pollinations.ai/$prompt");
-        curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 20, CURLOPT_USERAGENT => 'TunisiaJourney/1.0']);
-        $response = curl_exec($ch);
-        $error    = curl_errno($ch);
-        curl_close($ch);
+        $response = $this->httpGetRequest("https://text.pollinations.ai/" . rawurlencode($promptText), 20);
+        if ($response !== null) {
+            return $this->json(['description' => trim($response)]);
+        }
 
-        if ($error || !$response) return $this->json(['error' => 'Service IA indisponible'], 503);
-        return $this->json(['description' => trim($response)]);
+        return $this->json(['error' => 'Service IA indisponible'], 503);
     }
 
     // =========================================================
-    // PROMPT SYSTÈME — Le cerveau du chatbot
+    // MÉTHODES UTILITAIRES HTTP
+    // =========================================================
+    /**
+     * Effectue une requête HTTP GET
+     *
+     * @return string|null La réponse ou null en cas d'erreur
+     */
+    private function httpGetRequest(string $url, int $timeout = 15): ?string
+    {
+        $ch = curl_init($url);
+        if ($ch === false) {
+            return null;
+        }
+        
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => $timeout,
+            CURLOPT_USERAGENT      => 'TunisiaJourney/1.0',
+        ]);
+        
+        $response = curl_exec($ch);
+        $error = curl_errno($ch);
+        
+        // Correction: curl_exec peut retourner false ou une string
+        if ($error || $response === false || !is_string($response)) {
+            return null;
+        }
+        
+        return $response;
+    }
+
+    /**
+     * Effectue une requête HTTP POST avec JSON
+     *
+     * @param array<string, mixed> $payload Le payload JSON
+     * @param list<string> $headers En-têtes supplémentaires
+     * @return array<string, mixed>|null La réponse décodée ou null en cas d'erreur
+     */
+    private function httpPostRequest(string $url, array $payload, array $headers = [], int $timeout = 20): ?array
+    {
+        $ch = curl_init($url);
+        if ($ch === false) {
+            return null;
+        }
+        
+        $jsonPayload = json_encode($payload);
+        if ($jsonPayload === false) {
+            return null;
+        }
+        
+        $defaultHeaders = ['Content-Type: application/json'];
+        $allHeaders = array_merge($defaultHeaders, $headers);
+        
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_HTTPHEADER     => $allHeaders,
+            CURLOPT_POSTFIELDS     => $jsonPayload,
+            CURLOPT_TIMEOUT        => $timeout,
+        ]);
+        
+        $response = curl_exec($ch);
+        $error = curl_errno($ch);
+        
+        if ($error || $response === false || !is_string($response)) {
+            return null;
+        }
+        
+        $data = json_decode($response, true);
+        return is_array($data) ? $data : null;
+    }
+
+    // =========================================================
+    // CONVERSION DE DEVISES
+    // =========================================================
+    #[Route('/convert-price', name: 'app_convert_price', methods: ['POST'])]
+    public function convertPrice(Request $request, CurrencyProgService $currencyProgService): JsonResponse
+    {
+        $amount = (float) $request->request->get('amount', 0);
+        $from   = strtoupper((string) $request->request->get('from', 'TND'));
+        $to     = strtoupper((string) $request->request->get('to', 'EUR'));
+
+        $converted = $currencyProgService->convert($amount, $from, $to);
+        $formatted = $currencyProgService->formatPrice($converted, $to);
+        $rate      = $currencyProgService->getExchangeRate($from, $to);
+
+        return $this->json([
+            'success'            => true,
+            'original_amount'    => $amount,
+            'original_currency'  => $from,
+            'converted_amount'   => $converted,
+            'converted_currency' => $to,
+            'formatted'          => $formatted,
+            'exchange_rate'      => $rate,
+            'last_update'        => date('d/m/Y H:i:s')
+        ]);
+    }
+
+    #[Route('/convert-price-simple', name: 'app_convert_price_simple', methods: ['POST'])]
+    public function convertPriceSimple(Request $request, CurrencyProgService $currencyProgService): JsonResponse
+    {
+        $amount = (float) $request->request->get('amount', 0);
+        $to     = strtoupper((string) $request->request->get('to', 'EUR'));
+
+        $converted = $currencyProgService->convert($amount, 'TND', $to);
+        $formatted = $currencyProgService->formatPrice($converted, $to);
+
+        return $this->json([
+            'success'            => true,
+            'original_amount'    => $amount,
+            'original_currency'  => 'TND',
+            'converted_amount'   => $converted,
+            'converted_currency' => $to,
+            'formatted'          => $formatted,
+            'exchange_rate'      => $currencyProgService->getExchangeRate('TND', $to)
+        ]);
+    }
+
+    #[Route('/currencies-list', name: 'app_currencies_list', methods: ['GET'])]
+    public function getCurrenciesList(CurrencyProgService $currencyProgService): JsonResponse
+    {
+        return $this->json([
+            'currencies' => $currencyProgService->getAvailableCurrencies()
+        ]);
+    }
+
+    // =========================================================
+    // SHOW / PROGRAMMES
+    // =========================================================
+    #[Route('/{idV}', name: 'app_voyage_show', requirements: ['idV' => '\d+'])]
+    public function show(Connection $connection, CurrencyProgService $currencyProgService, int $idV): Response
+    {
+        $voyage = $connection->fetchAssociative("SELECT * FROM voyages WHERE idV = ?", [$idV]);
+        if (!$voyage) throw $this->createNotFoundException('Voyage non trouvé');
+
+        $programmes = $connection->fetchAllAssociative(
+            "SELECT * FROM programmes WHERE idV = ? ORDER BY dateDebut ASC",
+            [$idV]
+        );
+
+        $allPrices     = [];
+        $currencies    = $currencyProgService->getAvailableCurrencies();
+        $originalPrice = (float) $voyage['prix'];
+
+        foreach (array_keys($currencies) as $currency) {
+            $allPrices[$currency] = [
+                'formatted' => $currencyProgService->formatPrice(
+                    $currencyProgService->convert($originalPrice, 'TND', $currency),
+                    $currency
+                ),
+                'rate' => $currencyProgService->getExchangeRate('TND', $currency)
+            ];
+        }
+
+        return $this->render('voyage/show.html.twig', [
+            'voyage'      => $voyage,
+            'programmes'  => $programmes,
+            'all_prices'  => $allPrices,
+            'currencies'  => $currencies
+        ]);
+    }
+
+    #[Route('/{idV}/programmes', name: 'app_voyage_programmes', requirements: ['idV' => '\d+'])]
+    public function programmes(Connection $connection, int $idV): Response
+    {
+        $voyage = $connection->fetchAssociative("SELECT * FROM voyages WHERE idV = ?", [$idV]);
+        if (!$voyage) throw $this->createNotFoundException('Voyage non trouvé');
+
+        $programmes = $connection->fetchAllAssociative(
+            "SELECT * FROM programmes WHERE idV = ? ORDER BY dateDebut ASC",
+            [$idV]
+        );
+
+        return $this->render('voyage/programmes.html.twig', [
+            'voyage'     => $voyage,
+            'programmes' => $programmes
+        ]);
+    }
+
+    // =========================================================
+    // PROMPT SYSTÈME
     // =========================================================
     private function buildSystemPrompt(string $weatherContext = ''): string
     {
@@ -373,110 +533,55 @@ public function markRead(Connection $connection, int $id): JsonResponse
             : "";
 
         return <<<PROMPT
-Tu es **TunisiaJourney AI**, le guide conversationnel officiel de l'agence de voyage TunisiaJourney, spécialisée dans le tourisme en Tunisie.
+Tu es **TunisiaJourney AI**, le guide conversationnel officiel de l'agence de voyage TunisiaJourney.
 
 Date et heure actuelles : $now
 Saison actuelle : $saison
 $weather
 
 ## TON RÔLE
-Tu es un expert polyvalent capable de répondre à TOUTES les questions liées à :
-- L'agence TunisiaJourney et ses offres de voyages
-- La Tunisie sous tous ses aspects (histoire, culture, géographie, actualité, pratique)
-- La météo et le climat en Tunisie (utilise les données temps réel si disponibles)
-- La gastronomie tunisienne et les restaurants
-- Les hôtels, riads, hébergements
-- Les événements, festivals, actualités touristiques
-- Les activités, sports, loisirs
-- Les transports, visas, conseils pratiques
-- La boutique souvenirs et artisanat tunisien
-- Le forum et les avis voyageurs
-- Les programmes et itinéraires de voyages
-- Les réservations et informations tarifaires
-- Toute question générale (tu peux aussi répondre aux questions hors-sujet avec intelligence et rediriger vers la Tunisie quand c'est pertinent)
-
-## L'AGENCE TUNISIAJOURNEY
-- Agence de voyage en ligne spécialisée Tunisie
-- Propose : voyages thématiques (plage, désert, culture, gastronomie, sport), programmes journaliers, hébergements, activités
-- Prix en Dinars Tunisiens (DT/TND)
-- Services : réservation en ligne, guide vocal IA, recommandation par humeur, livre numérique Tunisie
-- Contact : via le site tunisiajourney.tn
-- Sections du site : Voyages, Hôtels, Événements, Forum, Boutique, Gastronomie
-
-## TUNISIE — CONNAISSANCES CLÉS
-**Géographie** : 163 610 km², au nord de l'Afrique, entre Algérie et Libye. Côte méditerranéenne au nord et à l'est, désert saharien au sud.
-
-**Villes principales** : Tunis (capitale), Sfax, Sousse, Kairouan, Bizerte, Monastir, Nabeul, Hammamet, Djerba, Tozeur, Douz, Mahdia, Tabarka
-
-**Sites UNESCO** : Médina de Tunis, Carthage, Amphithéâtre d'El Jem, Médina de Sousse, Médina de Kairouan, Dougga, Kerkouane
-
-**Gastronomie** : Couscous (plat national), Brik à l'œuf, Lablabi, Chakchouka, Mechouia, Merguez, Kafteji, Ojja, Mloukhia, Osban, Tajine tunisien. Pâtisseries : Makroudh, Bambalouni, Zlabia, Samsa, Baklawa. Boissons : Thé à la menthe, Boukha (figue), Thibarine, vins tunisiens (Magon, Vieux Magon, Coteaux de Carthage).
-
-**Hôtels recommandés** : Four Seasons Tunis, The Residence Tunis, Hasdrubal Thalassa (Yasmine Hammamet), Movenpick Resort Djerba, Radisson Blu Hammamet, Seabel Rym Beach Djerba, Dar Dhiafa (Djerba), Le Zephyr (Tabarka), Dar Said (Sidi Bou Saïd)
-
-**Festivals** : Festival de Carthage (juillet-août), Festival de Djerba (été), Festival du Désert à Douz (décembre), Festival de Jazz à Tabarka (juillet), Festival de la Médina (Tunis), Journées de Carthage (théâtre et cinéma), Fête de l'Octopus à Mahdia
-
-**Activités** : Plongée (Tabarka, Mahdia), Kitesurf (Djerba), Golf (Monastir, Hammamet, Tabarka), Quad et dromadaire (Sahara), Randonnée (Ain Draham), Thalasso, Visites archéologiques, Shopping médinas
-
-**Transports** : Tunisair (compagnie nationale), Aéroports de Tunis-Carthage, Monastir, Djerba-Zarzis, Enfidha-Hammamet. SNCFT (trains), Louages (taxis collectifs), STT (bus nationaux)
-
-**Pratique** : Visa non requis pour ressortissants UE, Algérie, Maroc. Monnaie : Dinar Tunisien (1 EUR ≈ 3,35 DT). Langue : Arabe officiel, français très répandu. Décalage horaire : UTC+1 (été UTC+2). Religion : Islam (pays laïc ouvert). Meilleure période : avril-juin et septembre-octobre.
-
-**Climat par région** :
-- Nord et côte : Méditerranéen (étés chauds secs, hivers doux pluvieux)
-- Centre : Semi-aride
-- Sud (Sahara) : Désertique (très chaud en été, frais la nuit en hiver)
-Températures : Été côte 28-35°C, Sahara 40-48°C. Hiver côte 12-18°C, montagnes 5-10°C.
+Tu es un expert polyvalent capable de répondre à TOUTES les questions liées à la Tunisie et l'agence.
 
 ## STYLE DE RÉPONSE
 - Réponds TOUJOURS en français naturel et chaleureux
-- Sois concis mais complet : 2-4 phrases max pour les questions simples, plus détaillé pour les questions complexes
+- Sois concis mais complet : 2-4 phrases max pour les questions simples
 - Utilise quelques emojis pertinents (pas d'excès)
-- Si la question concerne la météo, utilise les données temps réel fournies
-- Pour les prix, cite des fourchettes réalistes en DT
-- Propose toujours une action concrète ou une recommandation quand c'est pertinent
-- Si tu ne sais pas quelque chose de très spécifique (ex : prix exact d'un hôtel en temps réel), dis-le honnêtement et oriente vers les bonnes ressources
-- Tu peux répondre aux questions générales non-Tunisie mais ramène naturellement la conversation vers TunisiaJourney quand c'est pertinent
 - Ne te répète JAMAIS entre les réponses successives
 PROMPT;
     }
 
     // =========================================================
-    // MÉTÉO EN TEMPS RÉEL — OpenWeatherMap (gratuit)
+    // MÉTÉO
     // =========================================================
     private function fetchWeatherContext(string $question): string
     {
         $weatherKey = $this->getWeatherKey();
         if (!$weatherKey) {
-            // Sans clé : données statiques basées sur la saison
             return $this->getStaticWeatherContext();
         }
 
-        // Détecter la ville mentionnée dans la question
         $city = $this->detectCity($question);
 
         $url = "https://api.openweathermap.org/data/2.5/weather?q={$city},TN&appid={$weatherKey}&units=metric&lang=fr";
-        $ch  = curl_init($url);
-        curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 5]);
-        $response = curl_exec($ch);
-        $errno    = curl_errno($ch);
-        curl_close($ch);
-
-        if ($errno || !$response) return $this->getStaticWeatherContext();
-
-        $data = json_decode($response, true);
-        if (!$data || isset($data['cod']) && $data['cod'] != 200) {
+        $data = $this->httpGetRequest($url, 5);
+        
+        if ($data === null) {
+            return $this->getStaticWeatherContext();
+        }
+        
+        $weatherData = json_decode($data, true);
+        if (!$weatherData || isset($weatherData['cod']) && $weatherData['cod'] != 200) {
             return $this->getStaticWeatherContext();
         }
 
-        $temp        = round($data['main']['temp']);
-        $feelsLike   = round($data['main']['feels_like']);
-        $humidity    = $data['main']['humidity'];
-        $desc        = $data['weather'][0]['description'] ?? 'ciel dégagé';
-        $wind        = round($data['wind']['speed'] * 3.6); // m/s → km/h
-        $cityName    = $data['name'] ?? $city;
+        $temp      = round($weatherData['main']['temp']);
+        $feelsLike = round($weatherData['main']['feels_like']);
+        $humidity  = $weatherData['main']['humidity'];
+        $desc      = $weatherData['weather'][0]['description'] ?? 'ciel dégagé';
+        $wind      = round($weatherData['wind']['speed'] * 3.6);
+        $cityName  = $weatherData['name'] ?? $city;
 
-        return "Météo actuelle à {$cityName} (Tunisie) : {$temp}°C (ressenti {$feelsLike}°C), {$desc}, humidité {$humidity}%, vent {$wind} km/h. Données OpenWeatherMap en temps réel.";
+        return "Météo actuelle à {$cityName} (Tunisie) : {$temp}°C (ressenti {$feelsLike}°C), {$desc}, humidité {$humidity}%, vent {$wind} km/h.";
     }
 
     private function detectCity(string $question): string
@@ -497,19 +602,19 @@ PROMPT;
             'tunis'    => 'Tunis',
         ];
         foreach ($cities as $key => $name) {
-            if (strpos($q, $key) !== false) return $name;
+            if (str_contains($q, $key)) return $name;
         }
-        return 'Tunis'; // défaut
+        return 'Tunis';
     }
 
     private function getStaticWeatherContext(): string
     {
-        $saison = $this->getCurrentSeason();
+        $saison   = $this->getCurrentSeason();
         $contexts = [
-            'printemps' => 'Printemps en Tunisie : températures douces 18-26°C, ciel généralement ensoleillé, légère brise, idéal pour visiter. Quelques pluies possibles au nord.',
-            'été'       => 'Été en Tunisie : fortes chaleurs 30-45°C selon les régions, mer chaude 26-28°C, ensoleillement maximal. Sahara très chaud (40-48°C). Hydratation essentielle.',
-            'automne'   => 'Automne en Tunisie : températures agréables 20-28°C, mer encore chaude, moins de touristes. Parfait pour les visites culturelles et le désert.',
-            'hiver'     => 'Hiver en Tunisie : côte nord 10-16°C parfois pluvieux, sud 15-22°C ensoleillé. Montagnes parfois enneigées (Ain Draham). Désert magnifique avec nuits fraîches.',
+            'printemps' => 'Printemps en Tunisie : températures douces 18-26°C, ciel ensoleillé.',
+            'été'       => 'Été en Tunisie : fortes chaleurs 30-45°C, mer chaude 26-28°C.',
+            'automne'   => 'Automne en Tunisie : températures agréables 20-28°C.',
+            'hiver'     => 'Hiver en Tunisie : côte nord 10-16°C, sud 15-22°C ensoleillé.',
         ];
         return $contexts[$saison] ?? $contexts['printemps'];
     }
@@ -524,193 +629,113 @@ PROMPT;
     }
 
     // =========================================================
-    // APPEL GEMINI — Chat multi-tours
+    // APPELS API
     // =========================================================
+    /**
+     * @param string $apiKey
+     * @param string $systemPrompt
+     * @param array<array{role: string, content: string}> $history
+     * @param string $question
+     * @return string|null
+     */
     private function callGeminiChat(string $apiKey, string $systemPrompt, array $history, string $question): ?string
     {
         $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$apiKey}";
 
-        // Construire les messages avec l'historique
-        $contents = [];
-
-        // Injecter le system prompt comme premier message user/model
-        $contents[] = [
-            'role'  => 'user',
-            'parts' => [['text' => "Voici tes instructions système :\n\n" . $systemPrompt . "\n\nCompris ? Réponds juste 'Oui, je suis prêt !' brièvement."]]
-        ];
-        $contents[] = [
-            'role'  => 'model',
-            'parts' => [['text' => 'Oui, je suis prêt !']]
+        $contents = [
+            ['role' => 'user', 'parts' => [['text' => "Instructions : " . $systemPrompt . "\n\nCompris ? Réponds 'OK'."]]],
+            ['role' => 'model', 'parts' => [['text' => 'OK']]]
         ];
 
-        // Historique de conversation (max 10 derniers échanges)
-        $recentHistory = array_slice($history, -10);
-        foreach ($recentHistory as $msg) {
-            if (isset($msg['role'], $msg['content'])) {
-                $geminiRole = $msg['role'] === 'user' ? 'user' : 'model';
-                $contents[] = [
-                    'role'  => $geminiRole,
-                    'parts' => [['text' => $msg['content']]]
-                ];
-            }
+        foreach (array_slice($history, -10) as $msg) {
+            $role = $msg['role'] === 'user' ? 'user' : 'model';
+            $contents[] = ['role' => $role, 'parts' => [['text' => $msg['content']]]];
         }
 
-        // Question actuelle
-        $contents[] = [
-            'role'  => 'user',
-            'parts' => [['text' => $question]]
-        ];
+        $contents[] = ['role' => 'user', 'parts' => [['text' => $question]]];
 
         $payload = [
-            'contents'         => $contents,
-            'generationConfig' => [
-                'temperature'     => 0.85,
-                'topK'            => 40,
-                'topP'            => 0.95,
-                'maxOutputTokens' => 600,
-            ],
-            'safetySettings' => [
-                ['category' => 'HARM_CATEGORY_HARASSMENT',        'threshold' => 'BLOCK_ONLY_HIGH'],
-                ['category' => 'HARM_CATEGORY_HATE_SPEECH',        'threshold' => 'BLOCK_ONLY_HIGH'],
-                ['category' => 'HARM_CATEGORY_SEXUALLY_EXPLICIT',  'threshold' => 'BLOCK_ONLY_HIGH'],
-                ['category' => 'HARM_CATEGORY_DANGEROUS_CONTENT',  'threshold' => 'BLOCK_ONLY_HIGH'],
-            ]
+            'contents' => $contents,
+            'generationConfig' => ['temperature' => 0.85, 'maxOutputTokens' => 600],
         ];
 
-        $ch = curl_init($url);
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST           => true,
-            CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
-            CURLOPT_POSTFIELDS     => json_encode($payload),
-            CURLOPT_TIMEOUT        => 20,
-        ]);
-        $response = curl_exec($ch);
-        if (curl_errno($ch)) { curl_close($ch); return null; }
-        curl_close($ch);
-
-        $data   = json_decode($response, true);
-        $text   = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
-
-        return $text ? trim($text) : null;
+        $result = $this->httpPostRequest($url, $payload);
+        
+        if ($result && isset($result['candidates'][0]['content']['parts'][0]['text'])) {
+            return trim($result['candidates'][0]['content']['parts'][0]['text']);
+        }
+        
+        return null;
     }
 
-    // =========================================================
-    // APPEL GEMINI — Sans historique (pour description/recommend)
-    // =========================================================
     private function callGeminiRaw(string $apiKey, string $prompt, int $maxTokens = 500): ?string
     {
-        $url     = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$apiKey}";
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$apiKey}";
         $payload = [
-            'contents'         => [['parts' => [['text' => $prompt]]]],
+            'contents' => [['parts' => [['text' => $prompt]]]],
             'generationConfig' => ['temperature' => 0.7, 'maxOutputTokens' => $maxTokens],
         ];
 
-        $ch = curl_init($url);
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST           => true,
-            CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
-            CURLOPT_POSTFIELDS     => json_encode($payload),
-            CURLOPT_TIMEOUT        => 20,
-        ]);
-        $response = curl_exec($ch);
-        if (curl_errno($ch)) { curl_close($ch); return null; }
-        curl_close($ch);
-
-        $data = json_decode($response, true);
-        return $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
+        $result = $this->httpPostRequest($url, $payload);
+        
+        if ($result && isset($result['candidates'][0]['content']['parts'][0]['text'])) {
+            return trim($result['candidates'][0]['content']['parts'][0]['text']);
+        }
+        
+        return null;
     }
 
-    // =========================================================
-    // APPEL GROQ — Fallback ultra-rapide (llama3-70b gratuit)
-    // =========================================================
+    /**
+     * @param string $apiKey
+     * @param string $systemPrompt
+     * @param array<array{role: string, content: string}> $history
+     * @param string $question
+     * @return string|null
+     */
     private function callGroq(string $apiKey, string $systemPrompt, array $history, string $question): ?string
     {
-        $url      = 'https://api.groq.com/openai/v1/chat/completions';
+        $url = 'https://api.groq.com/openai/v1/chat/completions';
         $messages = [['role' => 'system', 'content' => $systemPrompt]];
 
         foreach (array_slice($history, -8) as $msg) {
-            if (isset($msg['role'], $msg['content'])) {
-                $messages[] = ['role' => $msg['role'], 'content' => $msg['content']];
-            }
+            $messages[] = ['role' => $msg['role'], 'content' => $msg['content']];
         }
         $messages[] = ['role' => 'user', 'content' => $question];
 
         $payload = [
-            'model'       => 'llama-3.3-70b-versatile',
-            'messages'    => $messages,
-            'max_tokens'  => 600,
+            'model' => 'llama-3.3-70b-versatile',
+            'messages' => $messages,
+            'max_tokens' => 600,
             'temperature' => 0.85,
         ];
 
-        $ch = curl_init($url);
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST           => true,
-            CURLOPT_HTTPHEADER     => [
-                'Content-Type: application/json',
-                'Authorization: Bearer ' . $apiKey,
-            ],
-            CURLOPT_POSTFIELDS => json_encode($payload),
-            CURLOPT_TIMEOUT    => 20,
-        ]);
-        $response = curl_exec($ch);
-        if (curl_errno($ch)) { curl_close($ch); return null; }
-        curl_close($ch);
-
-        $data = json_decode($response, true);
-        return $data['choices'][0]['message']['content'] ?? null;
+        $result = $this->httpPostRequest($url, $payload, ['Authorization: Bearer ' . $apiKey]);
+        
+        if ($result && isset($result['choices'][0]['message']['content'])) {
+            return trim($result['choices'][0]['message']['content']);
+        }
+        
+        return null;
     }
 
-    // =========================================================
-    // APPEL POLLINATIONS — Fallback sans clé API
-    // =========================================================
+    /**
+     * @param string $systemPrompt
+     * @param array<array{role: string, content: string}> $history
+     * @param string $question
+     * @return string|null
+     */
     private function callPollinationsChat(string $systemPrompt, array $history, string $question): ?string
     {
-        // Construire un prompt condensé
-        $context = "Instructions : " . substr($systemPrompt, 0, 800) . "\n\n";
+        $context = "Instructions : " . substr($systemPrompt, 0, 500) . "\n\n";
 
         foreach (array_slice($history, -4) as $msg) {
-            $role     = $msg['role'] === 'user' ? 'Utilisateur' : 'Assistant';
+            $role = $msg['role'] === 'user' ? 'Utilisateur' : 'Assistant';
             $context .= "{$role}: {$msg['content']}\n";
         }
         $context .= "Utilisateur: {$question}\nAssistant:";
 
-        $encoded  = rawurlencode($context);
-        $url      = "https://text.pollinations.ai/{$encoded}";
-
-        $ch = curl_init($url);
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT        => 15,
-            CURLOPT_USERAGENT      => 'TunisiaJourney/1.0',
-        ]);
-        $response = curl_exec($ch);
-        $errno    = curl_errno($ch);
-        curl_close($ch);
-
-        return (!$errno && $response) ? trim($response) : null;
-    }
-
-    // =========================================================
-    // SHOW / PROGRAMMES
-    // =========================================================
-    #[Route('/{idV}', name: 'app_voyage_show')]
-    public function show(Connection $connection, int $idV): Response
-    {
-        $voyage = $connection->fetchAssociative("SELECT * FROM voyages WHERE idV = ?", [$idV]);
-        if (!$voyage) throw $this->createNotFoundException('Voyage non trouvé');
-        $programmes = $connection->fetchAllAssociative("SELECT * FROM programmes WHERE idV = ? ORDER BY dateDebut ASC", [$idV]);
-        return $this->render('voyage/show.html.twig', ['voyage' => $voyage, 'programmes' => $programmes]);
-    }
-
-    #[Route('/{idV}/programmes', name: 'app_voyage_programmes')]
-    public function programmes(Connection $connection, int $idV): Response
-    {
-        $voyage = $connection->fetchAssociative("SELECT * FROM voyages WHERE idV = ?", [$idV]);
-        if (!$voyage) throw $this->createNotFoundException('Voyage non trouvé');
-        $programmes = $connection->fetchAllAssociative("SELECT * FROM programmes WHERE idV = ? ORDER BY dateDebut ASC", [$idV]);
-        return $this->render('voyage/programmes.html.twig', ['voyage' => $voyage, 'programmes' => $programmes]);
+        $response = $this->httpGetRequest("https://text.pollinations.ai/" . rawurlencode($context), 15);
+        
+        return $response !== null ? trim($response) : null;
     }
 }

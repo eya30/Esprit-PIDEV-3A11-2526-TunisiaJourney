@@ -63,7 +63,7 @@ class ForumController extends AbstractController
         }
 
         return $this->render('admin/forum/edit.html.twig', [
-            'form' => $form->createView(),
+            'form'  => $form->createView(),
             'forum' => $forum,
         ]);
     }
@@ -71,7 +71,12 @@ class ForumController extends AbstractController
     #[Route('/{idF}', name: 'app_forum_delete', methods: ['POST'])]
     public function delete(Request $request, Forum $forum, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete' . $forum->getIdF(), $request->request->get('_token'))) {
+        // Fix PHPStan :74 — $request->request->get() returns mixed; cast to string|null
+        // so isCsrfTokenValid() receives the expected type
+        $token = $request->request->get('_token');
+        $token = is_string($token) ? $token : null;
+
+        if ($this->isCsrfTokenValid('delete' . $forum->getIdF(), $token)) {
             $entityManager->remove($forum);
             $entityManager->flush();
             $this->addFlash('success', '✅ Forum supprimé avec succès !');

@@ -46,12 +46,13 @@ class ChatbotController extends AbstractController
         // ── Appel Gemini ─────────────────────────────────────────────────
         $result = $this->gemini->sendMessage($message, $history);
 
-        // ── Toujours renvoyer un champ "response" utilisable par le JS ───
+        // ── Fix PHPStan :53 — $result['response'] always exists per return type,
+        //    so ?? fallback is redundant; access directly ───────────────────
         if (!$result['success']) {
             return $this->json([
                 'success'  => false,
-                'response' => $result['response'] ?? '❌ Une erreur s\'est produite. Veuillez réessayer.',
-                'error'    => $result['error'] ?? 'Erreur inconnue',
+                'response' => $result['response'],
+                'error'    => $result['error'],
             ]);
         }
 

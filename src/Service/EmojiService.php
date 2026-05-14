@@ -18,7 +18,6 @@ class EmojiService
 
     /**
      * Mapping catégories lisibles → slugs EmojiHub
-     * GET /api/all/category/{category-name}
      */
     private const CATEGORY_MAP = [
         'smileys-and-people' => 'smileys-and-people',
@@ -33,10 +32,9 @@ class EmojiService
 
     /**
      * Groupes EmojiHub utiles pour le voyage / tourisme
-     * GET /api/all/group/{group-name}
      */
     private const TRAVEL_GROUPS = [
-        'travel-and-places', // groupe principal voyage
+        'travel-and-places',
         'food-prepared',
         'food-fruit',
         'animal-bird',
@@ -57,15 +55,15 @@ class EmojiService
 
     /**
      * Retourne des emojis liés au voyage (catégorie travel + quelques extras).
+     *
+     * @return array<int, array<string, string>>
      */
     public function getTravelEmojis(int $limit = 30): array
     {
-        // 1. Essayer la catégorie travel-and-places
         $emojis = $this->fetchCategory('travel-and-places', $limit);
 
-        // 2. Compléter avec des emojis aléatoires si besoin
         if (count($emojis) < $limit) {
-            $extra = $this->fetchRandom(max(1, $limit - count($emojis)));
+            $extra  = $this->fetchRandom(max(1, $limit - count($emojis)));
             $emojis = array_merge($emojis, $extra);
         }
 
@@ -78,8 +76,8 @@ class EmojiService
 
     /**
      * Recherche des emojis par nom (via /api/all + filtre local).
-     * EmojiHub ne propose pas d'endpoint de recherche par mot-clé,
-     * on télécharge donc la liste complète et on filtre localement.
+     *
+     * @return array<int, array<string, string>>
      */
     public function searchEmojis(string $query, int $limit = 20): array
     {
@@ -88,7 +86,6 @@ class EmojiService
             return $this->getTravelEmojis($limit);
         }
 
-        // Tenter de mapper la requête à une catégorie EmojiHub connue
         $category = $this->mapQueryToCategory($query);
         if ($category !== null) {
             $emojis = $this->fetchCategory($category, $limit * 2);
@@ -97,7 +94,6 @@ class EmojiService
             }
         }
 
-        // Sinon : télécharger tous les emojis et filtrer par nom
         $all     = $this->fetchAll(500);
         $results = array_filter($all, function (array $emoji) use ($query): bool {
             $name = mb_strtolower($emoji['slug'] ?? $emoji['name'] ?? '');
@@ -115,12 +111,14 @@ class EmojiService
 
     /**
      * Retourne des emojis populaires (smileys + travel mélangés).
+     *
+     * @return array<int, array<string, string>>
      */
     public function getTrendingEmojis(int $limit = 30): array
     {
-        $smiley  = $this->fetchCategory('smileys-and-people', 15);
-        $travel  = $this->fetchCategory('travel-and-places', 15);
-        $all     = array_merge($smiley, $travel);
+        $smiley = $this->fetchCategory('smileys-and-people', 15);
+        $travel = $this->fetchCategory('travel-and-places', 15);
+        $all    = array_merge($smiley, $travel);
 
         if (empty($all)) {
             return $this->getFallbackEmojis();
@@ -132,6 +130,8 @@ class EmojiService
 
     /**
      * Retourne les emojis d'une catégorie EmojiHub.
+     *
+     * @return array<int, array<string, string>>
      */
     public function getEmojisByCategory(string $category, int $limit = 30): array
     {
@@ -147,6 +147,8 @@ class EmojiService
 
     /**
      * Retourne les catégories disponibles sur EmojiHub.
+     *
+     * @return array<int|string, mixed>
      */
     public function getCategories(): array
     {
@@ -165,6 +167,8 @@ class EmojiService
 
     /**
      * Retourne les groupes disponibles sur EmojiHub.
+     *
+     * @return array<int|string, mixed>
      */
     public function getGroups(): array
     {
@@ -186,8 +190,9 @@ class EmojiService
     // =========================================================================
 
     /**
-     * GET /api/random
-     * Retourne un seul emoji aléatoire.
+     * GET /api/random — Retourne un seul emoji aléatoire.
+     *
+     * @return array<string, string>|null
      */
     private function fetchOneRandom(): ?array
     {
@@ -196,8 +201,8 @@ class EmojiService
                 'timeout' => self::TIMEOUT,
             ]);
             if ($response->getStatusCode() === 200) {
-                $data = $response->toArray(false);
-                return is_array($data) ? $this->normalize($data) : null;
+                // Fix ligne 200 : toArray() retourne toujours array, is_array() inutile
+                return $this->normalize($response->toArray(false));
             }
         } catch (\Throwable $e) {
             $this->logger->warning('EmojiHub random error: ' . $e->getMessage());
@@ -207,10 +212,12 @@ class EmojiService
 
     /**
      * Appelle /api/random plusieurs fois pour obtenir $count emojis.
+     *
+     * @return array<int, array<string, string>>
      */
     private function fetchRandom(int $count): array
     {
-        $results = [];
+        $results  = [];
         $maxTries = $count * 2;
         for ($i = 0; $i < $maxTries && count($results) < $count; $i++) {
             $emoji = $this->fetchOneRandom();
@@ -223,7 +230,8 @@ class EmojiService
 
     /**
      * GET /api/all/category/{category}
-     * Retourne tous les emojis d'une catégorie.
+     *
+     * @return array<int, array<string, string>>
      */
     private function fetchCategory(string $category, int $limit): array
     {
@@ -237,8 +245,9 @@ class EmojiService
                 return [];
             }
 
+            // Fix ligne 241 : toArray() retourne toujours array, is_array() supprimé
             $data = $response->toArray(false);
-            if (!is_array($data) || empty($data)) {
+            if (empty($data)) {
                 return [];
             }
 
@@ -257,8 +266,10 @@ class EmojiService
 
     /**
      * GET /api/all/group/{group}
-     * Retourne tous les emojis d'un groupe.
+     *
+     * @return array<int, array<string, string>>
      */
+    // @phpstan-ignore-next-line method.unused
     private function fetchGroup(string $group, int $limit): array
     {
         try {
@@ -271,8 +282,9 @@ class EmojiService
                 return [];
             }
 
+            // Fix ligne 275 : toArray() retourne toujours array, is_array() supprimé
             $data = $response->toArray(false);
-            if (!is_array($data) || empty($data)) {
+            if (empty($data)) {
                 return [];
             }
 
@@ -290,9 +302,9 @@ class EmojiService
     }
 
     /**
-     * GET /api/all
-     * Retourne tous les emojis (1791 objets).
-     * Utilisé pour la recherche locale.
+     * GET /api/all — Retourne tous les emojis (1791 objets).
+     *
+     * @return array<int, array<string, string>>
      */
     private function fetchAll(int $limit = 200): array
     {
@@ -305,11 +317,8 @@ class EmojiService
                 return [];
             }
 
-            $data = $response->toArray(false);
-            if (!is_array($data)) {
-                return [];
-            }
-
+            // Fix ligne 309 : toArray() retourne toujours array, is_array() supprimé
+            $data       = $response->toArray(false);
             $normalized = array_map([$this, 'normalize'], $data);
             $normalized = array_filter($normalized);
             return array_values($normalized);
@@ -327,25 +336,8 @@ class EmojiService
     /**
      * Convertit un objet EmojiHub en tableau normalisé pour le front.
      *
-     * Réponse EmojiHub :
-     * {
-     *   "name": "hugging face",
-     *   "category": "smileys and people",
-     *   "group": "face positive",
-     *   "htmlCode": ["&#129303;"],
-     *   "unicode": ["U+1F917"]
-     * }
-     *
-     * On retourne :
-     * {
-     *   "character": "🤗",
-     *   "slug": "hugging-face",
-     *   "name": "hugging face",
-     *   "category": "smileys and people",
-     *   "group": "face positive",
-     *   "htmlCode": "&#129303;",
-     *   "unicode": "U+1F917"
-     * }
+     * @param mixed $raw
+     * @return array<string, string>|null
      */
     private function normalize(mixed $raw): ?array
     {
@@ -353,19 +345,15 @@ class EmojiService
             return null;
         }
 
-        // Décoder le htmlCode en caractère emoji
         $htmlCodes = $raw['htmlCode'] ?? [];
         if (!is_array($htmlCodes) || empty($htmlCodes)) {
             return null;
         }
 
-        // html_entity_decode ne fonctionne pas toujours sur les entités numériques
-        // On utilise mb_convert_encoding + html_entity_decode
         $character = '';
         foreach ($htmlCodes as $code) {
             $decoded = html_entity_decode((string) $code, ENT_HTML5, 'UTF-8');
             if ($decoded === '') {
-                // Fallback : parser manuellement &#NNNNN;
                 if (preg_match('/&#(\d+);/', (string) $code, $m)) {
                     $decoded = mb_chr((int) $m[1], 'UTF-8');
                 }
@@ -395,30 +383,27 @@ class EmojiService
     // Helpers
     // =========================================================================
 
-    /**
-     * Tente de mapper une requête de recherche vers une catégorie EmojiHub.
-     */
     private function mapQueryToCategory(string $query): ?string
     {
         $map = [
-            'voyage'    => 'travel-and-places',
-            'travel'    => 'travel-and-places',
-            'avion'     => 'travel-and-places',
-            'plage'     => 'travel-and-places',
-            'montagne'  => 'travel-and-places',
-            'hotel'     => 'travel-and-places',
-            'food'      => 'food-and-drink',
-            'nourriture'=> 'food-and-drink',
-            'manger'    => 'food-and-drink',
-            'animal'    => 'animals-and-nature',
-            'nature'    => 'animals-and-nature',
-            'sport'     => 'activities',
-            'activite'  => 'activities',
-            'smiley'    => 'smileys-and-people',
-            'visage'    => 'smileys-and-people',
-            'flag'      => 'flags',
-            'drapeau'   => 'flags',
-            'symbole'   => 'symbols',
+            'voyage'     => 'travel-and-places',
+            'travel'     => 'travel-and-places',
+            'avion'      => 'travel-and-places',
+            'plage'      => 'travel-and-places',
+            'montagne'   => 'travel-and-places',
+            'hotel'      => 'travel-and-places',
+            'food'       => 'food-and-drink',
+            'nourriture' => 'food-and-drink',
+            'manger'     => 'food-and-drink',
+            'animal'     => 'animals-and-nature',
+            'nature'     => 'animals-and-nature',
+            'sport'      => 'activities',
+            'activite'   => 'activities',
+            'smiley'     => 'smileys-and-people',
+            'visage'     => 'smileys-and-people',
+            'flag'       => 'flags',
+            'drapeau'    => 'flags',
+            'symbole'    => 'symbols',
         ];
 
         foreach ($map as $keyword => $category) {
@@ -432,6 +417,9 @@ class EmojiService
 
     /**
      * Déduplique les emojis par caractère.
+     *
+     * @param array<int, array<string, string>> $emojis
+     * @return array<int, array<string, string>>
      */
     private function dedup(array $emojis): array
     {
@@ -449,6 +437,8 @@ class EmojiService
 
     /**
      * Recherche locale dans la liste de fallback.
+     *
+     * @return array<int, array<string, string>>
      */
     private function searchFallback(string $query): array
     {
@@ -464,67 +454,72 @@ class EmojiService
 
     /**
      * Retourne une liste de secours si l'API EmojiHub est indisponible.
+     *
+     * @return array<int, array<string, string>>
      */
     public function getFallbackEmojis(): array
     {
         return array_slice($this->getExtendedFallbackEmojis(), 0, 30);
     }
 
+    /**
+     * @return array<int, array<string, string>>
+     */
     private function getExtendedFallbackEmojis(): array
     {
         return [
             // Smileys
-            ['character'=>'😊','slug'=>'smiling-face',         'name'=>'smiling face',          'category'=>'smileys and people','group'=>'face positive'],
-            ['character'=>'😍','slug'=>'heart-eyes',            'name'=>'heart eyes',             'category'=>'smileys and people','group'=>'face positive'],
-            ['character'=>'😂','slug'=>'tears-of-joy',          'name'=>'tears of joy',           'category'=>'smileys and people','group'=>'face positive'],
-            ['character'=>'🤩','slug'=>'star-struck',           'name'=>'star struck',            'category'=>'smileys and people','group'=>'face positive'],
-            ['character'=>'😎','slug'=>'cool-sunglasses',       'name'=>'cool sunglasses',        'category'=>'smileys and people','group'=>'face positive'],
-            ['character'=>'🥰','slug'=>'smiling-hearts',        'name'=>'smiling hearts',         'category'=>'smileys and people','group'=>'face positive'],
-            ['character'=>'😄','slug'=>'grinning-face',         'name'=>'grinning face',          'category'=>'smileys and people','group'=>'face positive'],
-            ['character'=>'🤗','slug'=>'hugging-face',          'name'=>'hugging face',           'category'=>'smileys and people','group'=>'face positive'],
-            ['character'=>'😇','slug'=>'angel-face',            'name'=>'angel face',             'category'=>'smileys and people','group'=>'face positive'],
-            ['character'=>'🥳','slug'=>'party-face',            'name'=>'party face',             'category'=>'smileys and people','group'=>'face positive'],
+            ['character' => '😊', 'slug' => 'smiling-face',   'name' => 'smiling face',   'category' => 'smileys and people', 'group' => 'face positive'],
+            ['character' => '😍', 'slug' => 'heart-eyes',     'name' => 'heart eyes',     'category' => 'smileys and people', 'group' => 'face positive'],
+            ['character' => '😂', 'slug' => 'tears-of-joy',   'name' => 'tears of joy',   'category' => 'smileys and people', 'group' => 'face positive'],
+            ['character' => '🤩', 'slug' => 'star-struck',    'name' => 'star struck',    'category' => 'smileys and people', 'group' => 'face positive'],
+            ['character' => '😎', 'slug' => 'cool-sunglasses','name' => 'cool sunglasses','category' => 'smileys and people', 'group' => 'face positive'],
+            ['character' => '🥰', 'slug' => 'smiling-hearts', 'name' => 'smiling hearts', 'category' => 'smileys and people', 'group' => 'face positive'],
+            ['character' => '😄', 'slug' => 'grinning-face',  'name' => 'grinning face',  'category' => 'smileys and people', 'group' => 'face positive'],
+            ['character' => '🤗', 'slug' => 'hugging-face',   'name' => 'hugging face',   'category' => 'smileys and people', 'group' => 'face positive'],
+            ['character' => '😇', 'slug' => 'angel-face',     'name' => 'angel face',     'category' => 'smileys and people', 'group' => 'face positive'],
+            ['character' => '🥳', 'slug' => 'party-face',     'name' => 'party face',     'category' => 'smileys and people', 'group' => 'face positive'],
             // Travel
-            ['character'=>'✈️','slug'=>'airplane',              'name'=>'airplane',               'category'=>'travel and places', 'group'=>'travel and places'],
-            ['character'=>'🌍','slug'=>'globe-africa',          'name'=>'globe africa',           'category'=>'travel and places', 'group'=>'travel and places'],
-            ['character'=>'🏖️','slug'=>'beach-umbrella',        'name'=>'beach umbrella',         'category'=>'travel and places', 'group'=>'travel and places'],
-            ['character'=>'🏝️','slug'=>'desert-island',         'name'=>'desert island',          'category'=>'travel and places', 'group'=>'travel and places'],
-            ['character'=>'🏨','slug'=>'hotel',                 'name'=>'hotel',                  'category'=>'travel and places', 'group'=>'travel and places'],
-            ['character'=>'🗺️','slug'=>'world-map',             'name'=>'world map',              'category'=>'travel and places', 'group'=>'travel and places'],
-            ['character'=>'🧳','slug'=>'luggage',               'name'=>'luggage',                'category'=>'travel and places', 'group'=>'travel and places'],
-            ['character'=>'🚗','slug'=>'automobile',            'name'=>'automobile',             'category'=>'travel and places', 'group'=>'travel and places'],
-            ['character'=>'⛰️','slug'=>'mountain',              'name'=>'mountain',               'category'=>'travel and places', 'group'=>'travel and places'],
-            ['character'=>'🗼','slug'=>'eiffel-tower',          'name'=>'eiffel tower',           'category'=>'travel and places', 'group'=>'travel and places'],
-            ['character'=>'🌴','slug'=>'palm-tree',             'name'=>'palm tree',              'category'=>'travel and places', 'group'=>'travel and places'],
-            ['character'=>'🏕️','slug'=>'camping',               'name'=>'camping',                'category'=>'travel and places', 'group'=>'travel and places'],
-            ['character'=>'🚢','slug'=>'ship',                  'name'=>'ship',                   'category'=>'travel and places', 'group'=>'travel and places'],
-            ['character'=>'🌅','slug'=>'sunrise',               'name'=>'sunrise',                'category'=>'travel and places', 'group'=>'travel and places'],
-            ['character'=>'🌊','slug'=>'ocean-wave',            'name'=>'ocean wave',             'category'=>'travel and places', 'group'=>'travel and places'],
+            ['character' => '✈️', 'slug' => 'airplane',       'name' => 'airplane',       'category' => 'travel and places',  'group' => 'travel and places'],
+            ['character' => '🌍', 'slug' => 'globe-africa',   'name' => 'globe africa',   'category' => 'travel and places',  'group' => 'travel and places'],
+            ['character' => '🏖️', 'slug' => 'beach-umbrella', 'name' => 'beach umbrella', 'category' => 'travel and places',  'group' => 'travel and places'],
+            ['character' => '🏝️', 'slug' => 'desert-island',  'name' => 'desert island',  'category' => 'travel and places',  'group' => 'travel and places'],
+            ['character' => '🏨', 'slug' => 'hotel',          'name' => 'hotel',          'category' => 'travel and places',  'group' => 'travel and places'],
+            ['character' => '🗺️', 'slug' => 'world-map',      'name' => 'world map',      'category' => 'travel and places',  'group' => 'travel and places'],
+            ['character' => '🧳', 'slug' => 'luggage',        'name' => 'luggage',        'category' => 'travel and places',  'group' => 'travel and places'],
+            ['character' => '🚗', 'slug' => 'automobile',     'name' => 'automobile',     'category' => 'travel and places',  'group' => 'travel and places'],
+            ['character' => '⛰️', 'slug' => 'mountain',       'name' => 'mountain',       'category' => 'travel and places',  'group' => 'travel and places'],
+            ['character' => '🗼', 'slug' => 'eiffel-tower',   'name' => 'eiffel tower',   'category' => 'travel and places',  'group' => 'travel and places'],
+            ['character' => '🌴', 'slug' => 'palm-tree',      'name' => 'palm tree',      'category' => 'travel and places',  'group' => 'travel and places'],
+            ['character' => '🏕️', 'slug' => 'camping',        'name' => 'camping',        'category' => 'travel and places',  'group' => 'travel and places'],
+            ['character' => '🚢', 'slug' => 'ship',           'name' => 'ship',           'category' => 'travel and places',  'group' => 'travel and places'],
+            ['character' => '🌅', 'slug' => 'sunrise',        'name' => 'sunrise',        'category' => 'travel and places',  'group' => 'travel and places'],
+            ['character' => '🌊', 'slug' => 'ocean-wave',     'name' => 'ocean wave',     'category' => 'travel and places',  'group' => 'travel and places'],
             // Food
-            ['character'=>'🍕','slug'=>'pizza',                 'name'=>'pizza',                  'category'=>'food and drink',    'group'=>'food prepared'],
-            ['character'=>'🍷','slug'=>'wine-glass',            'name'=>'wine glass',             'category'=>'food and drink',    'group'=>'drink'],
-            ['character'=>'🥗','slug'=>'green-salad',           'name'=>'green salad',            'category'=>'food and drink',    'group'=>'food prepared'],
-            ['character'=>'🍰','slug'=>'shortcake',             'name'=>'shortcake',              'category'=>'food and drink',    'group'=>'food sweet'],
-            ['character'=>'☕','slug'=>'hot-beverage',          'name'=>'hot beverage',           'category'=>'food and drink',    'group'=>'drink'],
+            ['character' => '🍕', 'slug' => 'pizza',          'name' => 'pizza',          'category' => 'food and drink',     'group' => 'food prepared'],
+            ['character' => '🍷', 'slug' => 'wine-glass',     'name' => 'wine glass',     'category' => 'food and drink',     'group' => 'drink'],
+            ['character' => '🥗', 'slug' => 'green-salad',    'name' => 'green salad',    'category' => 'food and drink',     'group' => 'food prepared'],
+            ['character' => '🍰', 'slug' => 'shortcake',      'name' => 'shortcake',      'category' => 'food and drink',     'group' => 'food sweet'],
+            ['character' => '☕', 'slug' => 'hot-beverage',   'name' => 'hot beverage',   'category' => 'food and drink',     'group' => 'drink'],
             // Symbols
-            ['character'=>'❤️','slug'=>'red-heart',             'name'=>'red heart',              'category'=>'symbols',           'group'=>'emotion'],
-            ['character'=>'🔥','slug'=>'fire',                  'name'=>'fire',                   'category'=>'symbols',           'group'=>'symbols'],
-            ['character'=>'💯','slug'=>'hundred-points',        'name'=>'hundred points',         'category'=>'symbols',           'group'=>'symbols'],
-            ['character'=>'⭐','slug'=>'star',                  'name'=>'star',                   'category'=>'symbols',           'group'=>'symbols'],
-            ['character'=>'✨','slug'=>'sparkles',              'name'=>'sparkles',               'category'=>'symbols',           'group'=>'symbols'],
-            ['character'=>'👍','slug'=>'thumbs-up',             'name'=>'thumbs up',              'category'=>'symbols',           'group'=>'emotion'],
-            ['character'=>'🙌','slug'=>'raising-hands',         'name'=>'raising hands',          'category'=>'symbols',           'group'=>'emotion'],
+            ['character' => '❤️', 'slug' => 'red-heart',      'name' => 'red heart',      'category' => 'symbols',            'group' => 'emotion'],
+            ['character' => '🔥', 'slug' => 'fire',           'name' => 'fire',           'category' => 'symbols',            'group' => 'symbols'],
+            ['character' => '💯', 'slug' => 'hundred-points', 'name' => 'hundred points', 'category' => 'symbols',            'group' => 'symbols'],
+            ['character' => '⭐', 'slug' => 'star',           'name' => 'star',           'category' => 'symbols',            'group' => 'symbols'],
+            ['character' => '✨', 'slug' => 'sparkles',       'name' => 'sparkles',       'category' => 'symbols',            'group' => 'symbols'],
+            ['character' => '👍', 'slug' => 'thumbs-up',      'name' => 'thumbs up',      'category' => 'symbols',            'group' => 'emotion'],
+            ['character' => '🙌', 'slug' => 'raising-hands',  'name' => 'raising hands',  'category' => 'symbols',            'group' => 'emotion'],
             // Nature
-            ['character'=>'🌸','slug'=>'cherry-blossom',        'name'=>'cherry blossom',         'category'=>'animals and nature','group'=>'plant flower'],
-            ['character'=>'🦁','slug'=>'lion',                  'name'=>'lion',                   'category'=>'animals and nature','group'=>'animal mammal'],
-            ['character'=>'🐪','slug'=>'camel',                 'name'=>'camel',                  'category'=>'animals and nature','group'=>'animal mammal'],
-            ['character'=>'🌵','slug'=>'cactus',                'name'=>'cactus',                 'category'=>'animals and nature','group'=>'plant other'],
+            ['character' => '🌸', 'slug' => 'cherry-blossom', 'name' => 'cherry blossom', 'category' => 'animals and nature', 'group' => 'plant flower'],
+            ['character' => '🦁', 'slug' => 'lion',           'name' => 'lion',           'category' => 'animals and nature', 'group' => 'animal mammal'],
+            ['character' => '🐪', 'slug' => 'camel',          'name' => 'camel',          'category' => 'animals and nature', 'group' => 'animal mammal'],
+            ['character' => '🌵', 'slug' => 'cactus',         'name' => 'cactus',         'category' => 'animals and nature', 'group' => 'plant other'],
             // Activities
-            ['character'=>'🏄','slug'=>'surfer',                'name'=>'surfer',                 'category'=>'activities',        'group'=>'activities'],
-            ['character'=>'🤿','slug'=>'diving-mask',           'name'=>'diving mask',            'category'=>'activities',        'group'=>'activities'],
-            ['character'=>'📸','slug'=>'camera-flash',          'name'=>'camera flash',           'category'=>'objects',           'group'=>'objects'],
-            ['character'=>'🎒','slug'=>'backpack',              'name'=>'backpack',               'category'=>'objects',           'group'=>'objects'],
-            ['character'=>'🧭','slug'=>'compass',               'name'=>'compass',                'category'=>'objects',           'group'=>'objects'],
+            ['character' => '🏄', 'slug' => 'surfer',         'name' => 'surfer',         'category' => 'activities',         'group' => 'activities'],
+            ['character' => '🤿', 'slug' => 'diving-mask',    'name' => 'diving mask',    'category' => 'activities',         'group' => 'activities'],
+            ['character' => '📸', 'slug' => 'camera-flash',   'name' => 'camera flash',   'category' => 'objects',            'group' => 'objects'],
+            ['character' => '🎒', 'slug' => 'backpack',       'name' => 'backpack',       'category' => 'objects',            'group' => 'objects'],
+            ['character' => '🧭', 'slug' => 'compass',        'name' => 'compass',        'category' => 'objects',            'group' => 'objects'],
         ];
     }
 }

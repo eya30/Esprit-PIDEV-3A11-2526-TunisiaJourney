@@ -4,6 +4,22 @@ namespace App\Service;
 
 class QrCodeService
 {
+    /**
+     * @param array{
+     *     hotel_nom?: string|null,
+     *     chambre_num?: string|int|null,
+     *     prenom?: string|null,
+     *     nom?: string|null,
+     *     email?: string|null,
+     *     telephone?: string|null,
+     *     dateDebut?: string|null,
+     *     dateFin?: string|null,
+     *     nbNuit?: int|string|null,
+     *     nbPersonnes?: int|string|null,
+     *     prixTotal?: float|int|string|null,
+     *     detailsPrix?: string|null
+     * } $reservation
+     */
     public function generateReservationQRCode(array $reservation): string
     {
         // Construire un texte simple pour le QR code

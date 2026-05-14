@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Service\BrevoEmailService;
 use App\Service\StripeService;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,38 +25,38 @@ class ReservationProgController extends AbstractController
         ValidatorInterface $validator,
         BrevoEmailService $emailService,
         StripeService $stripeService,
+        Connection $connection,
         ?string $idProg = null
     ): Response {
 
         // ✅ VÉRIFICATION : Seuls les MEMBRES (connectés) peuvent réserver
         $user = $this->getUser();
-        
+
         if (!$user) {
             $this->addFlash('warning', '⚠️ Veuillez vous connecter ou créer un compte pour effectuer une réservation.');
             return $this->redirectToRoute('app_login');
         }
-        
-        $userRepo = $entityManager->getRepository(User::class);
-        $completeUser = null;
-        
-        if (method_exists($user, 'getId')) {
-            $completeUser = $userRepo->find($user->getId());
-        } else {
-            $completeUser = $userRepo->findOneBy(['email' => $user->getUserIdentifier()]);
+
+        if (!$user instanceof User) {
+            $this->addFlash('error', 'Type d\'utilisateur non reconnu.');
+            return $this->redirectToRoute('app_login');
         }
-        
+
+        $userRepo     = $entityManager->getRepository(User::class);
+        $completeUser = $userRepo->find($user->getId());
+
         if (!$completeUser) {
             $this->addFlash('error', 'Utilisateur non trouvé.');
             return $this->redirectToRoute('app_programme_show', ['idProg' => $idProg]);
         }
-        
+
         $userRole = $completeUser->getRole() ?? '';
-        
+
         if (strtoupper($userRole) === 'ADMIN') {
             $this->addFlash('error', '❌ Les administrateurs ne peuvent pas effectuer de réservation.');
             return $this->redirectToRoute('app_programme_show', ['idProg' => $idProg]);
         }
-        
+
         if (strtoupper($userRole) !== 'MEMBRE') {
             $this->addFlash('error', '❌ Seuls les membres peuvent effectuer des réservations.');
             return $this->redirectToRoute('app_programme_show', ['idProg' => $idProg]);
@@ -68,23 +69,30 @@ class ReservationProgController extends AbstractController
             return $this->redirectToRoute('app_voyage_index');
         }
 
-        $nom = trim($request->request->get('nom', ''));
-        $prenom = trim($request->request->get('prenom', ''));
-        $telephone = trim($request->request->get('telephone', ''));
-        $email = trim($request->request->get('email', ''));
-        $nbre = $request->request->get('nbre', '');
+        $nom       = trim((string)$request->request->get('nom', ''));
+        $prenom    = trim((string)$request->request->get('prenom', ''));
+        $telephone = trim((string)$request->request->get('telephone', ''));
+        $email     = trim((string)$request->request->get('email', ''));
+        $nbre      = $request->request->get('nbre', '');
+        $codePromo = trim((string)$request->request->get('code_promo', ''));
 
-        if (empty($nom) && $completeUser->getNom()) {
+        if ($nom === '' && $completeUser->getNom()) {
             $nom = $completeUser->getNom();
         }
-        if (empty($prenom) && $completeUser->getPrenom()) {
+        if ($prenom === '' && $completeUser->getPrenom()) {
             $prenom = $completeUser->getPrenom();
         }
-        if (empty($telephone) && $completeUser->getTelephone()) {
+        if ($telephone === '' && $completeUser->getTelephone()) {
             $telephone = $completeUser->getTelephone();
         }
-        if (empty($email) && $completeUser->getEmail()) {
+        if ($email === '' && $completeUser->getEmail()) {
             $email = $completeUser->getEmail();
+        }
+
+        $idProgramme = $programme->getIdProg();
+        if ($idProgramme === null) {
+            $this->addFlash('error', 'Identifiant du programme invalide.');
+            return $this->redirectToRoute('app_voyage_index');
         }
 
         $reservation = new ReservationProg();
@@ -93,7 +101,7 @@ class ReservationProgController extends AbstractController
         $reservation->setTelephone($telephone);
         $reservation->setEmail($email);
         $reservation->setNbre(is_numeric($nbre) ? (int)$nbre : 0);
-        $reservation->setIdP($programme->getIdProg());
+        $reservation->setIdP($idProgramme);
         $reservation->setDateProgramme(new \DateTime());
         $reservation->setStatutPaiement('en_attente');
         $reservation->setUserId($completeUser->getId());
@@ -105,55 +113,132 @@ class ReservationProgController extends AbstractController
                 $this->addFlash('error', $error->getMessage());
             }
             return $this->redirectToRoute('app_programme_show', [
-                'idProg' => $programme->getIdProg()
+                'idProg' => $idProgramme,
             ]);
         }
 
-        $prixTotal = $programme->getVoyage()->getPrix() * (int)$nbre;
+        $voyage = $programme->getVoyage();
+        if ($voyage === null) {
+            $this->addFlash('error', 'Aucun voyage associé à ce programme.');
+            return $this->redirectToRoute('app_programme_show', ['idProg' => $idProgramme]);
+        }
+
+        $prixTotal = $voyage->getPrix() * (int)$nbre;
+
+        // ========== VALIDATION & APPLICATION DU CODE PROMO ==========
+        $reductionPourcentage = 0;
+        $codePromoApplique    = null;
+
+        if ($codePromo !== '') {
+            $today = (new \DateTime())->format('Y-m-d');
+            $promo = $connection->fetchAssociative(
+                "SELECT * FROM code_promo
+                 WHERE code = ? AND statut = 'actif'
+                   AND date_debut <= ? AND date_fin >= ?",
+                [$codePromo, $today, $today]
+            );
+
+            if ($promo) {
+                $reductionPourcentage = (float) $promo['pourcentage_reduction'];
+                $codePromoApplique    = $codePromo;
+                $prixTotal            = $prixTotal * (1 - $reductionPourcentage / 100);
+                $this->addFlash('success', sprintf(
+                    '🎉 Code promo "%s" appliqué ! Réduction de %d%%.',
+                    $codePromoApplique,
+                    (int)$reductionPourcentage
+                ));
+            } else {
+                $this->addFlash('error', '❌ Code promo invalide, expiré ou inactif.');
+                return $this->redirectToRoute('app_programme_show', ['idProg' => $idProgramme]);
+            }
+        }
+        // =============================================================
+
         $reservation->setPrixProg((float)$prixTotal);
+
+        $dateDebut = $programme->getDateDebut();
+        if ($dateDebut === null) {
+            $this->addFlash('error', 'Date de début du programme non définie.');
+            return $this->redirectToRoute('app_programme_show', ['idProg' => $idProgramme]);
+        }
+
+        $programmeNom   = (string)($programme->getNom() ?? '');
+        $lieu           = (string)($programme->getLieu() ?? '');
+        $programmeDate  = $dateDebut->format('d/m/Y');
+        $clientFullName = $prenom . ' ' . $nom;
 
         try {
             $entityManager->persist($reservation);
             $entityManager->flush();
-            
-            $clientFullName = $prenom . ' ' . $nom;
-            $programmeDate = $programme->getDateDebut()->format('d/m/Y');
-            $lieu = $programme->getLieu();
-            
-            // Envoi des emails avec BrevoEmailService (API directe)
+
             $emailSent = $emailService->sendReservationConfirmation(
                 $email,
                 $clientFullName,
-                $programme->getNom(),
+                $programmeNom,
                 $programmeDate,
                 $lieu,
                 (int)$nbre,
                 $prixTotal
             );
-            
+
             $emailService->sendAdminNotification(
                 $clientFullName,
                 $email,
                 $telephone,
-                $programme->getNom(),
+                $programmeNom,
                 (int)$nbre,
                 $prixTotal
             );
-            
+
             if ($emailSent) {
                 $this->addFlash('success', '✅ Réservation créée ! Email envoyé.');
             } else {
                 $this->addFlash('success', '✅ Réservation créée !');
             }
-            
+
             return $this->redirectToRoute('stripe_checkout', ['idReservation' => $reservation->getIdRP()]);
-            
+
         } catch (\Exception $e) {
             $this->addFlash('error', 'Erreur lors de la sauvegarde : ' . $e->getMessage());
         }
 
         return $this->redirectToRoute('app_programme_show', [
-            'idProg' => $programme->getIdProg()
+            'idProg' => $idProgramme,
+        ]);
+    }
+
+    // ========== AJAX : VÉRIFIER UN CODE PROMO ==========
+    #[Route('/api/verifier-code-promo', name: 'api_verifier_code_promo', methods: ['POST'])]
+    public function verifierCodePromo(Request $request, Connection $connection): Response
+    {
+        $data      = json_decode($request->getContent(), true);
+        $code      = trim((string)($data['code'] ?? ''));
+        $prixBase  = (float)($data['prix_base'] ?? 0);
+
+        if ($code === '') {
+            return $this->json(['valid' => false, 'message' => 'Code vide.']);
+        }
+
+        $today = (new \DateTime())->format('Y-m-d');
+        $promo = $connection->fetchAssociative(
+            "SELECT * FROM code_promo
+             WHERE code = ? AND statut = 'actif'
+               AND date_debut <= ? AND date_fin >= ?",
+            [$code, $today, $today]
+        );
+
+        if (!$promo) {
+            return $this->json(['valid' => false, 'message' => 'Code invalide, expiré ou inactif.']);
+        }
+
+        $reduction   = (float) $promo['pourcentage_reduction'];
+        $prixReduit  = $prixBase * (1 - $reduction / 100);
+
+        return $this->json([
+            'valid'       => true,
+            'reduction'   => $reduction,
+            'prix_reduit' => round($prixReduit, 2),
+            'message'     => sprintf('🎉 Code valide ! Réduction de %d%% appliquée.', (int)$reduction),
         ]);
     }
 

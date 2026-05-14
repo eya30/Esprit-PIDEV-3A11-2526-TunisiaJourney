@@ -73,12 +73,12 @@ class AdminUserController extends AbstractController
         $beforeStatut    = $user->getStatut();
         $beforeNiveau    = $user->getNiveau();
 
-        // ── Lecture des champs ─────────────────────────────────────
-        $nom           = trim($request->request->get('nom', ''));
-        $prenom        = trim($request->request->get('prenom', ''));
-        $telephone     = trim($request->request->get('telephone', ''));
-        $adresse       = trim($request->request->get('adresse', ''));
-        $dateNaissance = trim($request->request->get('dateNaissance', ''));
+        // ── Lecture des champs — (string) cast lignes 77-81 ────────
+        $nom           = trim((string) $request->request->get('nom', ''));
+        $prenom        = trim((string) $request->request->get('prenom', ''));
+        $telephone     = trim((string) $request->request->get('telephone', ''));
+        $adresse       = trim((string) $request->request->get('adresse', ''));
+        $dateNaissance = trim((string) $request->request->get('dateNaissance', ''));
 
         $editData = compact('nom', 'prenom', 'telephone', 'adresse', 'dateNaissance');
 
@@ -108,15 +108,15 @@ class AdminUserController extends AbstractController
             return $this->redirectToRoute('admin_users_index', ['openEditUser' => $id]);
         }
 
-        // ── Rôle / Niveau / Statut ─────────────────────────────────
-        $role = strtoupper($request->request->get('role', 'MEMBRE'));
+        // ── Rôle / Niveau / Statut — (string) cast lignes 112, 115, 119 ──
+        $role = strtoupper((string) $request->request->get('role', 'MEMBRE'));
         $user->setRole($role);
         if ($role === 'ADMIN') {
-            $niveau = strtoupper($request->request->get('niveau', 'ADMIN'));
+            $niveau = strtoupper((string) $request->request->get('niveau', 'ADMIN'));
             $user->setNiveau($niveau);
             $user->setStatut(null);
         } else {
-            $statut = strtoupper($request->request->get('statut', 'ACTIF'));
+            $statut = strtoupper((string) $request->request->get('statut', 'ACTIF'));
             $user->setStatut($statut);
             $user->setNiveau(null);
         }
@@ -129,9 +129,13 @@ class AdminUserController extends AbstractController
         }
         $photoFile = $request->files->get('photo');
         if ($photoFile && $photoFile->isValid()) {
+            // ligne 134 : $params->get() retourne mixed → is_string guard
+            $imgbbKeyRaw = $params->get('imgbb_api_key');
+            $imgbbKey    = is_string($imgbbKeyRaw) ? $imgbbKeyRaw : '';
+
             $ch = curl_init();
             curl_setopt_array($ch, [
-                CURLOPT_URL            => 'https://api.imgbb.com/1/upload?key=' . $params->get('imgbb_api_key'),
+                CURLOPT_URL            => 'https://api.imgbb.com/1/upload?key=' . $imgbbKey,
                 CURLOPT_POST           => true,
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_POSTFIELDS     => ['image' => new \CURLFile(
@@ -140,8 +144,11 @@ class AdminUserController extends AbstractController
                     $photoFile->getClientOriginalName()
                 )],
             ]);
-            $json = json_decode(curl_exec($ch), true);
+            // ligne 143 : json_decode attend string → is_string guard
+            $out  = curl_exec($ch);
+            $json = json_decode(is_string($out) ? $out : '', true);
             curl_close($ch);
+
             if (isset($json['data']['url'])) {
                 $user->setProfileImageUrl($json['data']['url']);
                 $photoChanged = true;
@@ -201,7 +208,6 @@ class AdminUserController extends AbstractController
         $admin = $this->getUser();
         $cible = $user->getPrenom() . ' ' . $user->getNom() . ' (id=' . $user->getId() . ')';
 
-        // LOG avant suppression
         $this->adminLogger->log($admin, AdminLog::ACTION_DELETE_USER, $cible,
             'email: ' . $user->getEmail()
         );

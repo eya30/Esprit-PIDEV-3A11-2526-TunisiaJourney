@@ -26,7 +26,6 @@ class AdminCommandeController extends AbstractController
         return $this->render('admin/commande/index.html.twig', ['commandes' => $pagination]);
     }
 
-    // ✅ Modifier statut + envoi WhatsApp automatique
     #[Route('/{id}/modifier', name: 'admin_commande_edit', methods: ['GET', 'POST'])]
     public function edit(
         Commande $commande,
@@ -39,17 +38,23 @@ class AdminCommandeController extends AbstractController
 
         if ($request->isMethod('POST')) {
             $ancienStatut = $commande->getStatut();
-            $newTotal = 0; $newQte = 0;
+            $newTotal = 0;
+            $newQte = 0;
 
             foreach ($lignes as $ligne) {
-                $pid  = $ligne->getProduit()->getIdPR();
+                // FIX: null-check on getProduit() before calling methods on it
+                $produit = $ligne->getProduit();
+                if ($produit === null) {
+                    continue;
+                }
+
+                $pid  = $produit->getIdPR();
                 $nQte = (int) $request->request->get('quantite_' . $pid, $ligne->getQuantite());
 
                 if ($nQte <= 0) {
                     $em->remove($ligne);
                 } else {
                     $diff = $nQte - $ligne->getQuantite();
-                    $produit = $ligne->getProduit();
                     if ($diff > 0 && ($produit->getStock() ?? 0) < $diff) {
                         $this->addFlash('warning', 'Stock insuffisant pour « ' . $produit->getTitre() . ' ».');
                         $nQte = $ligne->getQuantite() + ($produit->getStock() ?? 0);
@@ -63,28 +68,30 @@ class AdminCommandeController extends AbstractController
                 }
             }
 
-            $nouveauStatut = $request->request->get('statut', $commande->getStatut());
+            // FIX: cast request values to string to satisfy setStatut/setAdresseLiv/setCodePostal/setModePaiement type expectations
+            $nouveauStatut = (string) $request->request->get('statut', $commande->getStatut());
             $commande->setStatut($nouveauStatut);
-            $commande->setAdresseLiv($request->request->get('adresse', $commande->getAdresseLiv()));
-            $commande->setCodePostal($request->request->get('cp', $commande->getCodePostal()));
-            $commande->setModePaiement($request->request->get('paiement', $commande->getModePaiement()));
+            $commande->setAdresseLiv((string) $request->request->get('adresse', $commande->getAdresseLiv()));
+            $commande->setCodePostal((string) $request->request->get('cp', $commande->getCodePostal()));
+            $commande->setModePaiement((string) $request->request->get('paiement', $commande->getModePaiement()));
             $commande->setTotal($newTotal);
             $commande->setQuantite($newQte);
             $em->flush();
 
-            // ✅ WhatsApp si statut changé
             if ($ancienStatut !== $nouveauStatut) {
                 $user      = $commande->getUser();
                 $telephone = $user?->getTelephone() ?? null;
 
                 if ($telephone) {
-                    $nomClient = ($user->getPrenom() ?? '') . ' ' . ($user->getNom() ?? '');
-                    $nomClient = trim($nomClient) ?: 'Client';
+                    $nomClient = trim(($user->getPrenom() ?? '') . ' ' . ($user->getNom() ?? '')) ?: 'Client';
+
+                    // FIX: cast getId() to int to guarantee non-null int for WhatsApp methods
+                    $commandeId = (int) $commande->getId();
 
                     $result = match($nouveauStatut) {
-                        'Livrée'   => $wa->notifierLivraison($telephone, $nomClient, $commande->getId(), $commande->getAdresseLiv() ?? ''),
-                        'En cours' => $wa->notifierEnRoute($telephone, $nomClient, $commande->getId()),
-                        default    => $this->notifierGenerique($wa, $telephone, $nomClient, $commande->getId(), $nouveauStatut),
+                        'Livrée'   => $wa->notifierLivraison($telephone, $nomClient, $commandeId, $commande->getAdresseLiv() ?? ''),
+                        'En cours' => $wa->notifierEnRoute($telephone, $nomClient, $commandeId),
+                        default    => $this->notifierGenerique($wa, $telephone, $nomClient, $commandeId, $nouveauStatut),
                     };
 
                     $this->addFlash(
@@ -112,11 +119,18 @@ class AdminCommandeController extends AbstractController
     public function delete(Commande $commande, EntityManagerInterface $em): Response
     {
         foreach ($commande->getLignes() as $ligne) {
+            // FIX: null-check on getProduit() before calling methods on it
             $p = $ligne->getProduit();
+            if ($p === null) {
+                continue;
+            }
             $p->setStock(($p->getStock() ?? 0) + $ligne->getQuantite());
-            if ($p->getStock() > 0) $p->setDisponibilite(true);
+            if ($p->getStock() > 0) {
+                $p->setDisponibilite(true);
+            }
         }
-        $em->remove($commande); $em->flush();
+        $em->remove($commande);
+        $em->flush();
         $this->addFlash('success', "Commande #{$commande->getId()} supprimée. Stock restauré.");
         return $this->redirectToRoute('admin_commande_index');
     }
@@ -126,7 +140,11 @@ class AdminCommandeController extends AbstractController
     {
         $commandes = $repo->findBy([], ['id' => 'DESC']);
         $caTotal   = array_reduce($commandes, fn($c, $cmd) => $c + ($cmd->getTotal() ?? 0), 0);
-        $html = $this->renderView('admin/commande/pdf.html.twig', ['commandes' => $commandes, 'caTotal' => $caTotal, 'date' => new \DateTime()]);
+        $html = $this->renderView('admin/commande/pdf.html.twig', [
+            'commandes' => $commandes,
+            'caTotal'   => $caTotal,
+            'date'      => new \DateTime(),
+        ]);
         $options = new Options();
         $options->set('isHtml5ParserEnabled', true);
         $options->set('defaultFont', 'DejaVu Sans');
@@ -140,6 +158,9 @@ class AdminCommandeController extends AbstractController
         ]);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function notifierGenerique(WhatsAppService $wa, string $tel, string $nom, int $id, string $statut): array
     {
         $icons = ['Confirmée' => '✅', 'Expédiée' => '📦', 'Annulée' => '❌'];

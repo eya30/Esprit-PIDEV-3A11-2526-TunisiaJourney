@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -21,7 +22,7 @@ class AdminChambreController extends AbstractController
         $searchCondition = "";
         $params = [];
         
-        if (!empty($search)) {
+        if (!empty($search) && is_string($search)) {
             $searchCondition = " WHERE (c.num LIKE :search OR c.type LIKE :search OR h.nom LIKE :search) ";
             $params['search'] = "%$search%";
         }
@@ -49,15 +50,25 @@ class AdminChambreController extends AbstractController
         $formData = [];
 
         if ($request->isMethod('POST')) {
+            // Récupération et sécurisation des données avec conversion explicite en string
+            $numRaw = $request->request->get('num', '');
+            $typeRaw = $request->request->get('type', '');
+            $prixNuitRaw = $request->request->get('prix_nuit', '');
+            $statusRaw = $request->request->get('status', 'disponible');
+            $capaciteMaxRaw = $request->request->get('capacite_max', '');
+            $descriptionRaw = $request->request->get('description', '');
+            $modele3DUrlRaw = $request->request->get('modele3D_URL', '');
+            $idHRaw = $request->request->get('idH', '');
+            
             $formData = [
-                'num' => trim($request->request->get('num', '')),
-                'type' => trim($request->request->get('type', '')),
-                'prix_nuit' => trim($request->request->get('prix_nuit', '')),
-                'status' => trim($request->request->get('status', 'disponible')),
-                'capacite_max' => trim($request->request->get('capacite_max', '')),
-                'description' => trim($request->request->get('description', '')),
-                'modele3D_URL' => trim($request->request->get('modele3D_URL', '')),
-                'idH' => trim($request->request->get('idH', '')),
+                'num' => is_string($numRaw) ? trim($numRaw) : '',
+                'type' => is_string($typeRaw) ? trim($typeRaw) : '',
+                'prix_nuit' => is_string($prixNuitRaw) ? trim($prixNuitRaw) : '',
+                'status' => is_string($statusRaw) ? trim($statusRaw) : 'disponible',
+                'capacite_max' => is_string($capaciteMaxRaw) ? trim($capaciteMaxRaw) : '',
+                'description' => is_string($descriptionRaw) ? trim($descriptionRaw) : '',
+                'modele3D_URL' => is_string($modele3DUrlRaw) ? trim($modele3DUrlRaw) : '',
+                'idH' => is_string($idHRaw) ? trim($idHRaw) : '',
             ];
 
             // ========== VALIDATION AVEC SYMFONY ==========
@@ -144,7 +155,9 @@ class AdminChambreController extends AbstractController
 
             // 8. Validation de l'image (optionnel)
             $imageFile = $request->files->get('image');
-            if ($imageFile && $imageFile->isValid()) {
+            $imageName = null;
+            
+            if ($imageFile instanceof UploadedFile && $imageFile->isValid()) {
                 $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
                 $extension = strtolower($imageFile->getClientOriginalExtension());
                 if (!in_array($extension, $allowedExtensions)) {
@@ -155,52 +168,59 @@ class AdminChambreController extends AbstractController
             // ========== FIN VALIDATION ==========
 
             if (count($errors) === 0) {
-                $imageName = null;
-                if ($imageFile) {
-                    // vérifier les erreurs d'upload
-                    if (!$imageFile->isValid()) {
-                        $errors['image'] = 'Erreur lors de l\'upload de l\'image (vérifier la taille et le dossier temporaire PHP).';
-                    }
-                }
-
-                if (count($errors) === 0 && $imageFile && $imageFile->isValid()) {
+                if ($imageFile instanceof UploadedFile && $imageFile->isValid()) {
                     $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
                     $safeFilename = preg_replace('/[^a-zA-Z0-9]/', '_', $originalFilename);
                     $imageName = $safeFilename . '_' . uniqid() . '.' . $imageFile->guessExtension();
 
-                    // s'assurer que le dossier d'uploads existe
-                    $targetDir = $this->getParameter('uploads_chambres_directory');
-                    if (!is_dir($targetDir)) {
-                        @mkdir($targetDir, 0777, true);
-                    }
+                    // Récupération et vérification du dossier d'uploads
+                    $targetDirParam = $this->getParameter('uploads_chambres_directory');
+                    
+                    // Vérification que le paramètre est bien une string
+                    if (!is_string($targetDirParam)) {
+                        $errors['image'] = 'Le dossier d\'upload n\'est pas correctement configuré.';
+                    } else {
+                        $targetDir = $targetDirParam;
+                        
+                        // Création du dossier s'il n'existe pas
+                        if (!is_dir($targetDir)) {
+                            if (!mkdir($targetDir, 0777, true) && !is_dir($targetDir)) {
+                                $errors['image'] = 'Impossible de créer le dossier d\'upload';
+                            }
+                        }
 
-                    // déplacer le fichier
-                    try {
-                        $imageFile->move($targetDir, $imageName);
-                    } catch (\Exception $e) {
-                        $errors['image'] = 'Impossible de déplacer le fichier uploadé : ' . $e->getMessage();
-                        $imageName = null;
+                        // Déplacement du fichier
+                        if (empty($errors['image'])) {
+                            try {
+                                $imageFile->move($targetDir, $imageName);
+                            } catch (\Exception $e) {
+                                $errors['image'] = 'Impossible de déplacer le fichier uploadé : ' . $e->getMessage();
+                                $imageName = null;
+                            }
+                        }
                     }
                 }
 
-                $connection->executeStatement(
-                    "INSERT INTO chambre (num, type, prix_nuit, status, capacite_max, description, image, modele3D_URL, idH) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    [
-                        $formData['num'],
-                        $formData['type'],
-                        $formData['prix_nuit'],
-                        $formData['status'],
-                        $formData['capacite_max'],
-                        $formData['description'],
-                        $imageName,
-                        $formData['modele3D_URL'] ?: null,
-                        $formData['idH']
-                    ]
-                );
+                if (count($errors) === 0) {
+                    $connection->executeStatement(
+                        "INSERT INTO chambre (num, type, prix_nuit, status, capacite_max, description, image, modele3D_URL, idH) 
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        [
+                            $formData['num'],
+                            $formData['type'],
+                            $formData['prix_nuit'],
+                            $formData['status'],
+                            $formData['capacite_max'],
+                            $formData['description'],
+                            $imageName,
+                            $formData['modele3D_URL'] ?: null,
+                            $formData['idH']
+                        ]
+                    );
 
-                $this->addFlash('success', 'Chambre créée avec succès !');
-                return $this->redirectToRoute('admin_chambre_index');
+                    $this->addFlash('success', 'Chambre créée avec succès !');
+                    return $this->redirectToRoute('admin_chambre_index');
+                }
             }
         }
 
@@ -241,15 +261,25 @@ class AdminChambreController extends AbstractController
         ];
 
         if ($request->isMethod('POST')) {
+            // Récupération et sécurisation des données avec conversion explicite en string
+            $numRaw = $request->request->get('num', '');
+            $typeRaw = $request->request->get('type', '');
+            $prixNuitRaw = $request->request->get('prix_nuit', '');
+            $statusRaw = $request->request->get('status', 'disponible');
+            $capaciteMaxRaw = $request->request->get('capacite_max', '');
+            $descriptionRaw = $request->request->get('description', '');
+            $modele3DUrlRaw = $request->request->get('modele3D_URL', '');
+            $idHRaw = $request->request->get('idH', '');
+            
             $formData = [
-                'num' => trim($request->request->get('num', '')),
-                'type' => trim($request->request->get('type', '')),
-                'prix_nuit' => trim($request->request->get('prix_nuit', '')),
-                'status' => trim($request->request->get('status', 'disponible')),
-                'capacite_max' => trim($request->request->get('capacite_max', '')),
-                'description' => trim($request->request->get('description', '')),
-                'modele3D_URL' => trim($request->request->get('modele3D_URL', '')),
-                'idH' => trim($request->request->get('idH', '')),
+                'num' => is_string($numRaw) ? trim($numRaw) : '',
+                'type' => is_string($typeRaw) ? trim($typeRaw) : '',
+                'prix_nuit' => is_string($prixNuitRaw) ? trim($prixNuitRaw) : '',
+                'status' => is_string($statusRaw) ? trim($statusRaw) : 'disponible',
+                'capacite_max' => is_string($capaciteMaxRaw) ? trim($capaciteMaxRaw) : '',
+                'description' => is_string($descriptionRaw) ? trim($descriptionRaw) : '',
+                'modele3D_URL' => is_string($modele3DUrlRaw) ? trim($modele3DUrlRaw) : '',
+                'idH' => is_string($idHRaw) ? trim($idHRaw) : '',
             ];
 
             // ========== VALIDATION AVEC SYMFONY ==========
@@ -313,69 +343,71 @@ class AdminChambreController extends AbstractController
             }
 
             $imageFile = $request->files->get('image');
-            if ($imageFile && $imageFile->isValid()) {
-                $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
-                $extension = strtolower($imageFile->getClientOriginalExtension());
-                if (!in_array($extension, $allowedExtensions)) {
-                    $errors['image'] = 'L\'image doit être au format JPG, JPEG, PNG ou GIF.';
-                }
-            }
-
+            
             // ========== FIN VALIDATION ==========
 
             if (count($errors) === 0) {
                 $imageName = $chambre['image'];
-                if ($imageFile) {
-                    if (!$imageFile->isValid()) {
-                        $errors['image'] = 'Erreur lors de l\'upload de l\'image (vérifier la taille et le dossier temporaire PHP).';
-                    }
-                }
+                
+                if ($imageFile instanceof UploadedFile && $imageFile->isValid()) {
+                    // Récupération et vérification du dossier d'uploads
+                    $targetDirParam = $this->getParameter('uploads_chambres_directory');
+                    
+                    // Vérification que le paramètre est bien une string
+                    if (!is_string($targetDirParam)) {
+                        $errors['image'] = 'Le dossier d\'upload n\'est pas correctement configuré.';
+                    } else {
+                        $targetDir = $targetDirParam;
+                        
+                        // supprimer l'ancienne image si elle existe
+                        if ($imageName && is_string($imageName)) {
+                            $oldPath = rtrim($targetDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $imageName;
+                            if (file_exists($oldPath)) {
+                                @unlink($oldPath);
+                            }
+                        }
 
-                if (count($errors) === 0 && $imageFile && $imageFile->isValid()) {
-                    $targetDir = $this->getParameter('uploads_chambres_directory');
+                        $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                        $safeFilename = preg_replace('/[^a-zA-Z0-9]/', '_', $originalFilename);
+                        $imageName = $safeFilename . '_' . uniqid() . '.' . $imageFile->guessExtension();
 
-                    // supprimer l'ancienne image si elle existe
-                    if ($imageName) {
-                        $oldPath = rtrim($targetDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $imageName;
-                        if (file_exists($oldPath)) {
-                            @unlink($oldPath);
+                        if (!is_dir($targetDir)) {
+                            if (!mkdir($targetDir, 0777, true) && !is_dir($targetDir)) {
+                                $errors['image'] = 'Impossible de créer le dossier d\'upload';
+                            }
+                        }
+
+                        if (empty($errors['image'])) {
+                            try {
+                                $imageFile->move($targetDir, $imageName);
+                            } catch (\Exception $e) {
+                                $errors['image'] = 'Impossible de déplacer le fichier uploadé : ' . $e->getMessage();
+                                $imageName = $chambre['image'];
+                            }
                         }
                     }
-
-                    $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                    $safeFilename = preg_replace('/[^a-zA-Z0-9]/', '_', $originalFilename);
-                    $imageName = $safeFilename . '_' . uniqid() . '.' . $imageFile->guessExtension();
-
-                    if (!is_dir($targetDir)) {
-                        @mkdir($targetDir, 0777, true);
-                    }
-
-                    try {
-                        $imageFile->move($targetDir, $imageName);
-                    } catch (\Exception $e) {
-                        $errors['image'] = 'Impossible de déplacer le fichier uploadé : ' . $e->getMessage();
-                        $imageName = $chambre['image'];
-                    }
                 }
 
-                $connection->executeStatement(
-                    "UPDATE chambre SET num = ?, type = ?, prix_nuit = ?, status = ?, capacite_max = ?, description = ?, image = ?, modele3D_URL = ?, idH = ? WHERE idCh = ?",
-                    [
-                        $formData['num'],
-                        $formData['type'],
-                        $formData['prix_nuit'],
-                        $formData['status'],
-                        $formData['capacite_max'],
-                        $formData['description'],
-                        $imageName,
-                        $formData['modele3D_URL'] ?: null,
-                        $formData['idH'],
-                        $id
-                    ]
-                );
+                if (count($errors) === 0) {
+                    $connection->executeStatement(
+                        "UPDATE chambre SET num = ?, type = ?, prix_nuit = ?, status = ?, capacite_max = ?, description = ?, image = ?, modele3D_URL = ?, idH = ? WHERE idCh = ?",
+                        [
+                            $formData['num'],
+                            $formData['type'],
+                            $formData['prix_nuit'],
+                            $formData['status'],
+                            $formData['capacite_max'],
+                            $formData['description'],
+                            $imageName,
+                            $formData['modele3D_URL'] ?: null,
+                            $formData['idH'],
+                            $id
+                        ]
+                    );
 
-                $this->addFlash('success', 'Chambre modifiée avec succès !');
-                return $this->redirectToRoute('admin_chambre_index');
+                    $this->addFlash('success', 'Chambre modifiée avec succès !');
+                    return $this->redirectToRoute('admin_chambre_index');
+                }
             }
         }
 
@@ -397,13 +429,18 @@ class AdminChambreController extends AbstractController
     #[Route('/{id}/delete', name: 'admin_chambre_delete', methods: ['POST'])]
     public function delete(Request $request, Connection $connection, int $id): Response
     {
-        if ($this->isCsrfTokenValid('delete_chambre_' . $id, $request->request->get('_token'))) {
+        $token = $request->request->get('_token');
+        
+        if (is_string($token) && $this->isCsrfTokenValid('delete_chambre_' . $id, $token)) {
             $chambre = $connection->fetchAssociative("SELECT image FROM chambre WHERE idCh = ?", [$id]);
-            if ($chambre && $chambre['image']) {
-                $targetDir = $this->getParameter('uploads_chambres_directory');
-                $filePath = rtrim($targetDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $chambre['image'];
-                if (file_exists($filePath)) {
-                    @unlink($filePath);
+            if ($chambre && isset($chambre['image']) && is_string($chambre['image'])) {
+                $targetDirParam = $this->getParameter('uploads_chambres_directory');
+                if (is_string($targetDirParam)) {
+                    $targetDir = $targetDirParam;
+                    $filePath = rtrim($targetDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $chambre['image'];
+                    if (file_exists($filePath)) {
+                        @unlink($filePath);
+                    }
                 }
             }
             $connection->executeStatement("DELETE FROM chambre WHERE idCh = ?", [$id]);

@@ -50,7 +50,8 @@ class Programme
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
 
-    #[ORM\ManyToOne]
+    // FIX : ajout de inversedBy: 'programmes' pour compléter la relation bidirectionnelle avec Voyage
+    #[ORM\ManyToOne(targetEntity: Voyage::class, inversedBy: 'programmes')]
     #[ORM\JoinColumn(name: "idV", referencedColumnName: "idV", nullable: true)]
     private ?Voyage $voyage = null;
 

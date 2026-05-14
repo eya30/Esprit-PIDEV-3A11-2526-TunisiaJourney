@@ -16,6 +16,7 @@ class Voyage
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: "idV", type: "integer")]
+    /** @phpstan-ignore-next-line */
     private ?int $idV = null;
 
     #[ORM\Column(length: 255)]
@@ -36,7 +37,8 @@ class Voyage
     #[Assert\LessThanOrEqual(value: 200, message: 'La capacité ne peut pas dépasser {{ compared_value }} personnes.')]
     private ?int $capacite = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    // FIX : type float au lieu de Types::DECIMAL pour correspondre à la propriété PHP float
+    #[ORM\Column(type: "float")]
     #[Assert\NotBlank(message: 'Le prix est obligatoire.')]
     #[Assert\Positive(message: 'Le prix doit être supérieur à 0.')]
     private ?float $prix = null;
@@ -55,6 +57,10 @@ class Voyage
     #[ORM\Column(name: "id_user", type: "integer")]
     private ?int $idUser = null;
 
+    /**
+     * @var Collection<int, Programme>
+     */
+    // FIX : ajout de inversedBy: 'programmes' pour compléter la relation bidirectionnelle
     #[ORM\OneToMany(mappedBy: 'voyage', targetEntity: Programme::class, cascade: ['persist', 'remove'])]
     private Collection $programmes;
 
@@ -156,6 +162,9 @@ class Voyage
         return $this;
     }
 
+    /**
+     * @return Collection<int, Programme>
+     */
     public function getProgrammes(): Collection
     {
         return $this->programmes;

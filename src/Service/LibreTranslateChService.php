@@ -6,8 +6,8 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class LibreTranslateChService
 {
-    private $httpClient;
-    private $apiUrl;
+    private HttpClientInterface $httpClient;
+    private string $apiUrl;
 
     public function __construct(HttpClientInterface $httpClient)
     {
@@ -34,11 +34,11 @@ class LibreTranslateChService
             ]);
 
             $data = $response->toArray();
-            
+           
             if (isset($data['translatedText'])) {
                 return $data['translatedText'];
             }
-            
+           
             return $text;
         } catch (\Exception $e) {
             // En cas d'erreur, retourner le texte original

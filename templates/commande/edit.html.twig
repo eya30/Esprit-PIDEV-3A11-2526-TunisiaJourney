@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Modifier la commande #{{ commande.id }} — TunisiaJourney{% endblock %}
+{% block title %}{{ action }} une commande - TunisiaJourney{% endblock %}
 
 {% block stylesheets %}
 <style>
@@ -12,65 +12,170 @@
         --dark-gray: #2C3E50;
     }
 
-    body { background: var(--tunisia-sand); }
-
-    /* ── Header ── */
-    .page-header {
-        background: linear-gradient(135deg, var(--tunisia-red), #C41E3A, var(--tunisia-orange));
-        padding: 3rem 0 2rem;
-        text-align: center;
-        color: white;
-    }
-    .page-header h1 {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 2.5rem;
-        color: var(--tunisia-soft);
-        letter-spacing: 2px;
-        margin: 0 0 0.5rem;
-    }
-    .page-header p {
-        color: rgba(255,255,255,0.75);
-        font-size: 0.9rem;
-        margin: 0;
-    }
-
-    /* ── Notice ── */
-    .edit-notice {
-        background: #FEF3C7;
-        border: 1px solid #F59E0B;
-        border-radius: 14px;
-        padding: 12px 20px;
-        color: #92400E;
-        font-size: 0.85rem;
+    /* Hero */
+    .hero {
+        position: relative;
+        height: 35vh;
+        min-height: 240px;
+        background-image: linear-gradient(rgba(227,27,35,0.22), rgba(245,202,195,0.32)),
+            url('https://switchmed.eu/wp-content/uploads/2020/04/tunisia-1.jpg');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
         display: flex;
         align-items: center;
-        gap: 10px;
-        margin-bottom: 1.5rem;
+        justify-content: center;
+        text-align: center;
+        color: white;
+        overflow: hidden;
     }
 
-    /* ── Card formulaire ── */
+    .hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.28) 100%);
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 700px;
+        padding: 2rem;
+        animation: fadeInUp 1s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(40px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.8rem;
+        font-weight: 700;
+        margin-bottom: 0.6rem;
+        text-shadow: 3px 3px 12px rgba(0,0,0,0.5);
+        color: #F5CAC3;
+        letter-spacing: 2px;
+    }
+
+    .hero p {
+        font-size: 1rem;
+        font-weight: 300;
+        line-height: 1.7;
+        color: rgba(255,255,255,0.92);
+    }
+
+    /* Section title */
+    .section-title {
+        text-align: center;
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: var(--tunisia-red);
+        margin-bottom: 0.5rem;
+    }
+
+    .section-title:after {
+        content: '✦ ✦ ✦';
+        display: block;
+        color: #F5CAC3;
+        font-size: 1rem;
+        margin-top: 0.5rem;
+        letter-spacing: 12px;
+    }
+
+    .section-subtitle {
+        text-align: center;
+        color: var(--dark-gray);
+        font-size: 0.9rem;
+        margin-bottom: 2rem;
+        font-style: italic;
+        opacity: 0.75;
+    }
+
+    /* Carte produit résumé */
+    .produit-recap {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.07);
+        border-left: 4px solid var(--tunisia-red);
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .produit-recap img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 14px;
+        border: 2px solid #F5CAC3;
+        flex-shrink: 0;
+    }
+
+    .produit-recap-placeholder {
+        width: 80px;
+        height: 80px;
+        background: #FEF9F0;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #F5CAC3;
+        font-size: 2rem;
+        flex-shrink: 0;
+        border: 2px solid #F5CAC3;
+    }
+
+    .produit-recap-info h5 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--tunisia-red);
+        margin-bottom: 0.3rem;
+    }
+
+    .produit-recap-info .prix {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--tunisia-red);
+    }
+
+    .produit-recap-info .prix span {
+        font-size: 0.85rem;
+        font-weight: 400;
+        color: #6c757d;
+    }
+
+    /* Carte formulaire */
     .form-card {
         background: white;
         border-radius: 28px;
         padding: 2.5rem 3rem;
         box-shadow: 0 20px 50px rgba(0,0,0,0.09);
-        margin-bottom: 2rem;
     }
 
+    /* Séparateur de section */
     .form-section-title {
         font-family: 'Cormorant Garamond', serif;
         font-size: 1.2rem;
         font-weight: 700;
         color: var(--dark-gray);
-        margin-bottom: 1.2rem;
+        margin-bottom: 1rem;
         padding-bottom: 0.5rem;
         border-bottom: 2px solid #F5CAC3;
         display: flex;
         align-items: center;
         gap: 8px;
     }
+
     .form-section-title i { color: var(--tunisia-orange); }
 
+    /* Labels */
     .form-label-custom {
         display: block;
         font-weight: 600;
@@ -78,8 +183,14 @@
         color: var(--dark-gray);
         margin-bottom: 0.4rem;
     }
-    .form-label-custom i { color: var(--tunisia-orange); margin-right: 6px; width: 16px; }
 
+    .form-label-custom i {
+        color: var(--tunisia-orange);
+        margin-right: 6px;
+        width: 16px;
+    }
+
+    /* Inputs */
     .input-custom {
         width: 100%;
         padding: 11px 20px;
@@ -88,72 +199,73 @@
         background: white;
         font-size: 0.92rem;
         color: var(--dark-gray);
-        font-family: inherit;
+        font-family: 'Montserrat', sans-serif;
         transition: all 0.3s ease;
         box-sizing: border-box;
     }
+
     .input-custom:focus {
         outline: none;
         border-color: var(--tunisia-red);
         box-shadow: 0 0 0 3px rgba(227,27,35,0.1);
     }
+
     .input-custom::placeholder { color: #bbb; font-style: italic; }
     select.input-custom { appearance: auto; cursor: pointer; }
 
-    .field-error {
-        color: var(--tunisia-red);
-        font-size: 0.8rem;
-        margin-top: 4px;
-        padding-left: 12px;
+    /* Total calculé */
+    .total-display {
+        background: linear-gradient(135deg, #FEF9F0, #FDF5E6);
+        border: 2px solid #F5CAC3;
+        border-radius: 20px;
+        padding: 1.2rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1.5rem;
     }
 
+    .total-display .label { font-size: 0.9rem; color: #6c757d; font-weight: 500; }
+    .total-display .montant { font-size: 1.5rem; font-weight: 800; color: var(--tunisia-red); }
+
+    .prix-barre {
+        text-decoration: line-through;
+        color: #9CA3AF;
+        font-size: 0.9rem;
+        font-weight: 400;
+        margin-right: 6px;
+    }
+
+    /* Séparateur */
     .form-divider {
         height: 1px;
         background: linear-gradient(to right, transparent, #F5CAC3, transparent);
         margin: 1.8rem 0;
     }
 
-    /* ── Résumé commande (readonly) ── */
-    .commande-recap {
-        background: linear-gradient(135deg, #FEF9F0, #FDF5E6);
-        border: 2px solid #F5CAC3;
-        border-radius: 20px;
-        padding: 1.2rem 1.5rem;
-        margin-bottom: 1.5rem;
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 1rem;
-    }
-    .recap-item small {
-        display: block;
-        font-size: 0.75rem;
-        color: #9CA3AF;
-        font-weight: 600;
-        text-transform: uppercase;
-        margin-bottom: 4px;
-    }
-    .recap-item strong {
-        font-size: 0.95rem;
-        color: var(--dark-gray);
-    }
-    .recap-item .montant { color: var(--tunisia-red); font-size: 1.1rem; }
-
-    /* ── Boutons ── */
+    /* Boutons */
     .btn-back {
         display: inline-flex;
         align-items: center;
         gap: 8px;
         background: transparent;
-        border: 2px solid var(--dark-gray);
-        color: var(--dark-gray);
+        border: 2px solid var(--tunisia-red);
+        color: var(--tunisia-red);
         padding: 10px 24px;
         border-radius: 30px;
         font-weight: 600;
         font-size: 0.9rem;
+        font-family: 'Montserrat', sans-serif;
         text-decoration: none;
-        transition: all 0.2s;
+        transition: all 0.3s ease;
+        margin-bottom: 2rem;
     }
-    .btn-back:hover { border-color: var(--tunisia-red); color: var(--tunisia-red); }
+
+    .btn-back:hover {
+        background: var(--tunisia-red);
+        color: white;
+        transform: translateY(-2px);
+    }
 
     .btn-submit {
         width: 100%;
@@ -164,133 +276,404 @@
         border-radius: 30px;
         font-weight: 700;
         font-size: 1rem;
+        font-family: 'Montserrat', sans-serif;
         cursor: pointer;
         transition: all 0.3s ease;
         margin-top: 1rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
     }
+
     .btn-submit:hover {
         background: linear-gradient(135deg, var(--tunisia-orange), var(--tunisia-red));
         transform: translateY(-2px);
         box-shadow: 0 10px 25px rgba(227,27,35,0.4);
     }
 
+    /* Erreurs */
+    .field-error {
+        color: var(--tunisia-red);
+        font-size: 0.8rem;
+        margin-top: 4px;
+        padding-left: 12px;
+    }
+
+    /* ===== CODE PROMO ===== */
+    .promo-section {
+        background: linear-gradient(135deg, #F5F3FF, #EDE9FE);
+        border: 1px dashed #7C3AED;
+        border-radius: 14px;
+        padding: 1rem 1.2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .promo-section-title {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #5B21B6;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.6rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .promo-input-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .promo-input-row input {
+        flex: 1;
+        padding: 9px 12px;
+        border: 1.5px solid #C4B5FD;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        font-family: 'Montserrat', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        background: white;
+        box-sizing: border-box;
+    }
+
+    .promo-input-row input:focus {
+        outline: none;
+        border-color: #7C3AED;
+        box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
+    }
+
+    .btn-verifier-promo {
+        background: #7C3AED;
+        color: white;
+        border: none;
+        padding: 9px 16px;
+        border-radius: 10px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background 0.2s;
+        flex-shrink: 0;
+    }
+
+    .btn-verifier-promo:hover { background: #5B21B6; }
+
+    .promo-feedback {
+        margin-top: 0.5rem;
+        font-size: 0.82rem;
+        font-weight: 600;
+        min-height: 1.2rem;
+    }
+
+    .promo-feedback.success { color: #047857; }
+    .promo-feedback.error   { color: #DC2626; }
+    /* ====================== */
+
     @media (max-width: 768px) {
+        .hero h1 { font-size: 2rem; }
         .form-card { padding: 1.5rem 1.2rem; }
-        .commande-recap { grid-template-columns: 1fr; }
+        .produit-recap { flex-direction: column; text-align: center; }
+        .promo-input-row { flex-direction: column; }
+        .btn-verifier-promo { width: 100%; }
     }
 </style>
 {% endblock %}
 
 {% block body %}
 
-<div class="page-header">
-    <h1><i class="fas fa-edit me-2" style="font-size:1.8rem;"></i>Modifier la commande</h1>
-    <p>Commande #{{ commande.id }} — Passée le {{ commande.dateC|date('d/m/Y') }}</p>
-</div>
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>{{ action }} une Commande</h1>
+        <p>Complétez votre commande de produit artisanal tunisien.</p>
+    </div>
+</section>
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-7">
+<!-- FORMULAIRE -->
+<section class="py-5" style="background: var(--tunisia-sand);">
+    <div class="container">
 
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <a href="{{ path('app_commande_show', {id: commande.id}) }}" class="btn-back">
-                    <i class="fas fa-arrow-left"></i> Retour au détail
+        <h2 class="section-title">Détails de la Commande</h2>
+        <p class="section-subtitle">Remplissez les informations de livraison et de paiement</p>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+
+                <!-- Retour -->
+                <a href="{{ path('app_commande_index') }}" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Mes commandes
                 </a>
-            </div>
 
-            <div class="edit-notice">
-                <i class="fas fa-pencil-alt fa-lg"></i>
-                Vous pouvez modifier l'adresse de livraison et le mode de paiement tant que la commande est <strong>En attente</strong>.
-            </div>
-
-            {# Résumé de la commande (lecture seule) #}
-         {# Résumé de la commande (lecture seule) #}
-<div class="commande-recap">
-    <div class="recap-item">
-        <small><i class="fas fa-hashtag me-1"></i> Commande</small>
-        <strong>#{{ commande.id }}</strong>
-    </div>
-    <div class="recap-item">
-        <small><i class="fas fa-box me-1"></i> Articles</small>
-        <strong>{{ commande.lignes|length }} article(s)</strong>   {# ← CORRECTION ICI #}
-    </div>
-    <div class="recap-item">
-        <small><i class="fas fa-receipt me-1"></i> Total</small>
-        <strong class="montant">{{ commande.total|number_format(2, ',', ' ') }} TND</strong>
-    </div>
-</div>
-
-            <div class="form-card">
-                {{ form_start(form) }}
-
-                    {# ── Livraison ── #}
-                    <div class="form-section-title">
-                        <i class="fas fa-truck"></i> Livraison
+                <!-- Résumé produit (uniquement en mode nouveau) -->
+                {% if produit is not null %}
+                <div class="produit-recap">
+                    {% if produit.image %}
+                        <img src="{{ asset('uploads/produits/' ~ produit.image) }}" alt="{{ produit.titre }}">
+                    {% else %}
+                        <div class="produit-recap-placeholder"><i class="fas fa-box"></i></div>
+                    {% endif %}
+                    <div class="produit-recap-info">
+                        <h5>{{ produit.titre }}</h5>
+                        <div class="prix">
+                            {{ produit.prix|number_format(2, ',', ' ') }} TND
+                            <span>/ unité</span>
+                        </div>
+                        <small style="color:#6c757d;">
+                            <i class="fas fa-box me-1" style="color:var(--tunisia-orange);"></i>
+                            Stock : {{ produit.stock ?? 0 }} unités disponibles
+                        </small>
                     </div>
+                </div>
+                {% endif %}
 
-                    <div class="mb-3">
-                        <label class="form-label-custom">
-                            <i class="fas fa-map-marker-alt"></i> Adresse de livraison
-                        </label>
-                        {{ form_widget(form.AdresseLiv, {
-                            'attr': {'class': 'input-custom', 'placeholder': 'Ex : 12 Rue de la Médina, Tunis'}
-                        }) }}
-                        {% if form_errors(form.AdresseLiv) %}
-                            <div class="field-error">{{ form_errors(form.AdresseLiv) }}</div>
+                <!-- Formulaire -->
+                <div class="form-card">
+                    {{ form_start(form) }}
+
+                        <!-- Section livraison -->
+                        <div class="form-section-title">
+                            <i class="fas fa-truck"></i> Livraison
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label-custom">
+                                <i class="fas fa-map-marker-alt"></i> Adresse de livraison
+                            </label>
+                            {{ form_widget(form.AdresseLiv, {
+                                'attr': {'class': 'input-custom', 'placeholder': 'Ex : 12 Rue de la Médina, Tunis'}
+                            }) }}
+                            {% if form_errors(form.AdresseLiv) %}
+                                <div class="field-error">{{ form_errors(form.AdresseLiv) }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label-custom">
+                                <i class="fas fa-mail-bulk"></i> Code postal
+                            </label>
+                            {{ form_widget(form.CodePostal, {
+                                'attr': {'class': 'input-custom', 'placeholder': 'Ex : 1000'}
+                            }) }}
+                            {% if form_errors(form.CodePostal) %}
+                                <div class="field-error">{{ form_errors(form.CodePostal) }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-divider"></div>
+
+                        <!-- Section commande -->
+                        <div class="form-section-title">
+                            <i class="fas fa-shopping-cart"></i> Commande
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-custom">
+                                    <i class="fas fa-sort-numeric-up"></i> Quantité
+                                </label>
+                                {{ form_widget(form.Quantite, {
+                                    'attr': {'class': 'input-custom', 'id': 'quantite', 'min': 1}
+                                }) }}
+                                {% if form_errors(form.Quantite) %}
+                                    <div class="field-error">{{ form_errors(form.Quantite) }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-custom">
+                                    <i class="fas fa-calendar-alt"></i> Date de commande
+                                </label>
+                                {{ form_widget(form.DateC, {
+                                    'attr': {'class': 'input-custom'}
+                                }) }}
+                                {% if form_errors(form.DateC) %}
+                                    <div class="field-error">{{ form_errors(form.DateC) }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="form-divider"></div>
+
+                        <!-- Section paiement -->
+                        <div class="form-section-title">
+                            <i class="fas fa-credit-card"></i> Paiement
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label-custom">
+                                <i class="fas fa-wallet"></i> Mode de paiement
+                            </label>
+                            {{ form_widget(form.ModePaiement, {
+                                'attr': {'class': 'input-custom'}
+                            }) }}
+                            {% if form_errors(form.ModePaiement) %}
+                                <div class="field-error">{{ form_errors(form.ModePaiement) }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3" style="display:none;">
+                            {{ form_widget(form.Statut) }}
+                            {{ form_widget(form.Total, {'attr': {'id': 'totalField'}}) }}
+                        </div>
+
+                        <div class="form-divider"></div>
+
+                        <!-- ===== CODE PROMO (uniquement pour nouvelle commande) ===== -->
+                        {% if produit is not null %}
+                        <div class="form-section-title">
+                            <i class="fas fa-ticket-alt"></i> Code promo
+                        </div>
+
+                        <div class="promo-section">
+                            <div class="promo-section-title">
+                                <i class="fas fa-tag"></i> Avez-vous un code de réduction ?
+                            </div>
+                            <div class="promo-input-row">
+                                <input
+                                    type="text"
+                                    id="cmd-code-promo-input"
+                                    placeholder="Ex : PROMO20"
+                                    autocomplete="off"
+                                    maxlength="30"
+                                >
+                                <button type="button" class="btn-verifier-promo" onclick="verifierPromo()">
+                                    Vérifier
+                                </button>
+                            </div>
+                            <div class="promo-feedback" id="cmd-promo-feedback"></div>
+                            {# Champ caché transmis au contrôleur #}
+                            <input type="hidden" name="code_promo" id="cmd-code-promo-hidden" value="">
+                        </div>
+
+                        <!-- Total calculé -->
+                        <div class="total-display">
+                            <div class="label">
+                                <i class="fas fa-receipt me-2" style="color:var(--tunisia-orange);"></i>
+                                Total estimé
+                            </div>
+                            <div class="montant" id="totalDisplay">
+                                {{ produit.prix|number_format(2, ',', ' ') }} TND
+                            </div>
+                        </div>
                         {% endif %}
-                    </div>
+                        <!-- =========================================================== -->
 
-                    <div class="mb-3">
-                        <label class="form-label-custom">
-                            <i class="fas fa-mail-bulk"></i> Code postal
-                        </label>
-                        {{ form_widget(form.CodePostal, {
-                            'attr': {'class': 'input-custom', 'placeholder': 'Ex : 1000'}
-                        }) }}
-                        {% if form_errors(form.CodePostal) %}
-                            <div class="field-error">{{ form_errors(form.CodePostal) }}</div>
-                        {% endif %}
-                    </div>
+                        <!-- Bouton -->
+                        <button type="submit" class="btn-submit">
+                            <i class="fas fa-check-circle me-2"></i>
+                            {{ action == 'Passer' ? 'Confirmer la commande' : 'Enregistrer les modifications' }}
+                        </button>
 
-                    <div class="form-divider"></div>
+                    {{ form_end(form) }}
+                </div>
 
-                    {# ── Paiement ── #}
-                    <div class="form-section-title">
-                        <i class="fas fa-credit-card"></i> Paiement
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label-custom">
-                            <i class="fas fa-wallet"></i> Mode de paiement
-                        </label>
-                        {{ form_widget(form.ModePaiement, {
-                            'attr': {'class': 'input-custom'}
-                        }) }}
-                        {% if form_errors(form.ModePaiement) %}
-                            <div class="field-error">{{ form_errors(form.ModePaiement) }}</div>
-                        {% endif %}
-                    </div>
-
-                    {# Champs cachés non modifiables #}
-                    <div style="display:none;">
-                        {% if form.Statut is defined %}{{ form_widget(form.Statut) }}{% endif %}
-                        {% if form.Total is defined %}{{ form_widget(form.Total) }}{% endif %}
-                        {% if form.DateC is defined %}{{ form_widget(form.DateC) }}{% endif %}
-                        {% if form.Quantite is defined %}{{ form_widget(form.Quantite) }}{% endif %}
-                    </div>
-
-                    <button type="submit" class="btn-submit">
-                        <i class="fas fa-save"></i> Enregistrer les modifications
-                    </button>
-
-                {{ form_end(form) }}
             </div>
-
         </div>
+
     </div>
-</div>
+</section>
+
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+{% if produit is not null %}
+<script>
+    const prixUnitaire  = {{ produit.prix }};
+    const quantiteInput = document.getElementById('quantite');
+    const totalDisplay  = document.getElementById('totalDisplay');
+    const totalField    = document.getElementById('totalField');
+    const promoInput    = document.getElementById('cmd-code-promo-input');
+    const promoHidden   = document.getElementById('cmd-code-promo-hidden');
+    const promoFeedback = document.getElementById('cmd-promo-feedback');
+
+    let reductionPromo = 0; // pourcentage 0–100
+
+    function getPrixBase() {
+        const qte = parseInt(quantiteInput ? quantiteInput.value : 1) || 1;
+        return prixUnitaire * qte;
+    }
+
+    function updateTotal() {
+        const base   = getPrixBase();
+        const reduit = base * (1 - reductionPromo / 100);
+        const affiche = reduit.toFixed(2).replace('.', ',');
+
+        if (totalDisplay) {
+            if (reductionPromo > 0) {
+                totalDisplay.innerHTML =
+                    '<span class="prix-barre">' + base.toFixed(2).replace('.', ',') + ' TND</span>' +
+                    affiche + ' TND';
+            } else {
+                totalDisplay.textContent = affiche + ' TND';
+            }
+        }
+
+        if (totalField) {
+            totalField.value = reduit.toFixed(2);
+        }
+    }
+
+    if (quantiteInput) {
+        quantiteInput.addEventListener('input', updateTotal);
+    }
+    updateTotal();
+
+    function verifierPromo() {
+        const code     = promoInput ? promoInput.value.trim().toUpperCase() : '';
+        const prixBase = getPrixBase();
+
+        if (!code) {
+            promoFeedback.className = 'promo-feedback error';
+            promoFeedback.textContent = '⚠️ Veuillez saisir un code promo.';
+            return;
+        }
+
+        promoFeedback.className = 'promo-feedback';
+        promoFeedback.textContent = '⏳ Vérification…';
+
+        fetch('{{ path('api_verifier_code_promo_commande') }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: code, prix_base: prixBase })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.valid) {
+                reductionPromo    = data.reduction;
+                promoHidden.value = code;
+                promoFeedback.className  = 'promo-feedback success';
+                promoFeedback.textContent = data.message;
+            } else {
+                reductionPromo    = 0;
+                promoHidden.value = '';
+                promoFeedback.className  = 'promo-feedback error';
+                promoFeedback.textContent = '❌ ' + data.message;
+            }
+            updateTotal();
+        })
+        .catch(() => {
+            promoFeedback.className  = 'promo-feedback error';
+            promoFeedback.textContent = '❌ Erreur réseau. Réessayez.';
+        });
+    }
+
+    if (promoInput) {
+        // Valider avec Entrée
+        promoInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); verifierPromo(); }
+        });
+
+        // Réinitialiser si le champ est effacé
+        promoInput.addEventListener('input', function() {
+            if (this.value.trim() === '') {
+                reductionPromo    = 0;
+                promoHidden.value = '';
+                promoFeedback.className  = 'promo-feedback';
+                promoFeedback.textContent = '';
+                updateTotal();
+            }
+        });
+    }
+</script>
+{% endif %}
 {% endblock %}
